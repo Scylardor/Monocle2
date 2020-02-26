@@ -12,7 +12,10 @@ int main()
 
 	TestApplication app(contextDesc, windowDesc);
 
-	app.Run();
+	if (app.IsInitialized())
+	{
+		app.Run();
+	}
 
 	return 0;
 
