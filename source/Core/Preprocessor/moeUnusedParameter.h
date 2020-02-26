@@ -1,0 +1,6 @@
+#ifndef MOE_UNUSED_PARAMETER_H_
+#define MOE_UNUSED_PARAMETER_H_
+
+#define MOE_UNUSED_PARAMETER(param) (void)param
+
+#endif // MOE_UNUSED_PARAMETER_H_
