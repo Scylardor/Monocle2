@@ -1,4 +1,6 @@
-﻿#include "catch.hpp"
+﻿// Monocle Game Engine source files - Alexandre Baron
+
+#include "catch.hpp"
 
 #include "Input/InputHandler.h"
 

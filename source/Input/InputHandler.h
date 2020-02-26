@@ -14,6 +14,16 @@
 
 namespace moe
 {
+	/* Pure interface for the InputHandler class. */
+	class MOE_DLL_API InputHandler
+	{
+	public:
+		virtual ~InputHandler() {}
+
+
+	};
+
+
 	class MOE_DLL_API IInputHandler
 	{
 	public:

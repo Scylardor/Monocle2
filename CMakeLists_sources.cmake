@@ -1,7 +1,10 @@
 
 
 set(Monocle_SOURCES
-	source/Core/Containers/Array/Array.h
+	source/Application/Application.h
+source/Application/GlfwApplication/GlfwApplication.cpp
+source/Application/GlfwApplication/GlfwApplication.h
+source/Core/Containers/Array/Array.h
 source/Core/Containers/HashMap/HashMap.h
 source/Core/Containers/IntrusiveListNode.h
 source/Core/Containers/Private/IntrusiveListNode.internal.hpp
@@ -43,6 +46,7 @@ source/Core/Misc/moeFalse.h
 source/Core/Misc/moeNamedType.h
 source/Core/Misc/moeTypeList.h
 source/Core/Misc/Private/moeAbort.cpp
+source/Core/Misc/Types.h
 source/Core/Patterns/moeSingleton.h
 source/Core/Preprocessor/moeAssert.h
 source/Core/Preprocessor/moeDLLVisibility.h
@@ -69,6 +73,9 @@ source/Input/Private/KeyboardMapping.cpp
 source/Input/RawInputHandler.h
 source/Input/RawInputHandlerInterface.h
 source/pch.h
+source/Window/Window.h
+source/Window/WindowDescriptor.cpp
+source/Window/WindowDescriptor.h
 	)
 	
 if(WIN32)

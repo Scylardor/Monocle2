@@ -55,6 +55,7 @@ target_precompile_headers(${PROJECT_NAME}
 	<algorithm>
 	<cstdio>
 	<iostream>
+	<memory>
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${SOURCE_DIR})
