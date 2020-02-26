@@ -8,19 +8,25 @@
 
 #include "Window/WindowDescriptor.h"
 #include "Window/GlfwWindow/GlfwWindow.h"
+
 #include "Graphics/Context/GlfwGraphicsContext/GlfwGraphicsContext.h"
+
+#include "Input/GlfwInputHandler/GlfwInputHandler.h"
 
 moe::GlfwApplication::GlfwApplication(const GraphicsContextDescriptor& contextDesc, const WindowDescriptor& windowDesc)
 {
-	glfwInit();
+	if (glfwInit())
+	{
+		InitContext<GlfwGraphicsContext>();
+		m_graphicsContext->InitPreWindowCreation(contextDesc);
 
-	InitContext<GlfwGraphicsContext>();
-	m_graphicsContext->InitPreWindowCreation(contextDesc);
+		// precise moe::GlfwWindow to not confuse with GLFWwindow...
+		InitWindow<moe::GlfwWindow>(windowDesc);
 
-	// precise moe::GlfwWindow to not confuse with GLFWwindow...
-	InitWindow<moe::GlfwWindow>(windowDesc);
+		m_graphicsContext->InitPostWindowCreation(contextDesc, m_window.get());
 
-
+		InitInput<moe::GlfwInputHandler>();
+	}
 }
 
 

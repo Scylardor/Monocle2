@@ -5,6 +5,8 @@
 #include "GlfwGraphicsContext.h"
 #include "Graphics/Context/GraphicsContextDescriptor.h"
 
+#include "Window/GlfwWindow/GlfwWindow.h"
+
 #include <GLFW/glfw3.h>
 
 void moe::GlfwGraphicsContext::InitPreWindowCreation(const moe::GraphicsContextDescriptor& contextDesc)
@@ -32,7 +34,7 @@ void moe::GlfwGraphicsContext::InitPreWindowCreation(const moe::GraphicsContextD
 
 void moe::GlfwGraphicsContext::InitPostWindowCreation(const moe::GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle)
 {
-	glfwMakeContextCurrent((GLFWwindow*)windowHandle);
+	glfwMakeContextCurrent(static_cast<moe::GlfwWindow*>(windowHandle)->AsGLFWWindow());
 }
 
 

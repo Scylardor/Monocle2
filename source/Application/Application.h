@@ -15,6 +15,14 @@ namespace moe
 	*/
 	class MOE_DLL_API Application
 	{
+	public:
+		virtual ~Application() {}
+
+		bool	IsInitialized() const
+		{
+			return m_graphicsContext != nullptr && m_inputHandler != nullptr && m_window != nullptr;
+		}
+
 	protected:
 
 		template <typename TWindow, typename... Args>

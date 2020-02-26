@@ -9,6 +9,10 @@ namespace moe
 	{
 	public:
 		virtual ~IWindow() {}
+
+		virtual bool	ShouldWindowClose() const = 0;
+
+		virtual bool	IsValid() const = 0;
 	};
 
 }

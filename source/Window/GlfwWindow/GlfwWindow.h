@@ -19,7 +19,16 @@ namespace moe
 	{
 	public:
 		GlfwWindow(const WindowDescriptor& desc);
-		~GlfwWindow() = default;
+		~GlfwWindow();
+
+		virtual bool	ShouldWindowClose() const override;
+
+		virtual bool	IsValid() const override
+		{ return m_window != nullptr; }
+
+
+		GLFWwindow* AsGLFWWindow()
+		{ return m_window; }
 
 	private:
 		GLFWwindow* m_window = nullptr;
