@@ -66,6 +66,8 @@ source/Graphics/Context/GlfwGraphicsContext/GlfwGraphicsContext.h
 source/Graphics/Context/GlfwGraphicsContext.h
 source/Graphics/Context/GraphicsContext.h
 source/Graphics/Context/GraphicsContextDescriptor.h
+source/Input/GlfwInputHandler/GlfwInputHandler.cpp
+source/Input/GlfwInputHandler/GlfwInputHandler.h
 source/Input/Input.h
 source/Input/InputDescriptors.h
 source/Input/InputEventsSink.h

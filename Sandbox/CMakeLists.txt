@@ -5,6 +5,8 @@ set(SOURCE_DIR source)
 
 set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/main.cpp"
+	"${SOURCE_DIR}/TestApplication.cpp"
+	"${SOURCE_DIR}/TestApplication.h"
 )
 
 

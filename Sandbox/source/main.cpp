@@ -2,13 +2,17 @@
 
 #include "Graphics/Context/GraphicsContextDescriptor.h"
 #include "Window/WindowDescriptor.h"
-#include "Application/GlfwApplication/GlfwApplication.h"
+
+#include "TestApplication.h"
 
 int main()
 {
 	moe::GraphicsContextDescriptor contextDesc;
 	moe::WindowDescriptor windowDesc(1024_width, 728_height, "Monocle Sandbox");
-	moe::GlfwApplication app(contextDesc, windowDesc);
+
+	TestApplication app(contextDesc, windowDesc);
+
+	app.Run();
 
 	return 0;
 

@@ -20,7 +20,8 @@ namespace moe
 	public:
 		virtual ~InputHandler() {}
 
-
+		// UpdateInputs returns whether new inputs have been detected or not.
+		virtual bool	PumpEvents() = 0;
 	};
 
 
