@@ -1,5 +1,4 @@
-#ifndef MOE_ASSERT_H_
-#define MOE_ASSERT_H_
+#pragma once
 
 #include "Core/Preprocessor/moeLikely.h"
 
@@ -11,7 +10,7 @@
 // Thus, one needs to put extra care to put only additional checking code in the assert,
 // leaving expressions we want to run in Shipping outside.
 
-#ifndef MOE_SHIPPING
+#if !defined(MOE_SHIPPING) && defined(MOE_USE_ASSERTS)
     #include "Core/Debugger/moeDebugger.h"
     #include "Core/Preprocessor/moeStringize.h"
     #include "Core/Preprocessor/moeDLLVisibility.h"
@@ -33,6 +32,4 @@ namespace moe
 #else
     #define MOE_ASSERT(expr) (MOE_LIKELY(expr))
     #define MOE_DEBUG_ASSERT(expr)
-#endif // MOE_SHIPPING
-
-#endif // MOE_ASSERT_H_
+#endif // !defined(MOE_SHIPPING) && defined(MOE_USE_ASSERTS)
