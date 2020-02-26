@@ -23,7 +23,7 @@ target_include_directories(${UNIT_TESTS_TARGET} PRIVATE
 	${PROJECT_SOURCE_DIR}/vendor
 )
 
-target_link_libraries(${UNIT_TESTS_TARGET} ${PROJECT_NAME})
+target_link_libraries(${UNIT_TESTS_TARGET} ${PROJECT_NAME} )
 
 # use the main target's precompiled header.
 target_precompile_headers(${UNIT_TESTS_TARGET} REUSE_FROM ${PROJECT_NAME})

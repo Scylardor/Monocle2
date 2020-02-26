@@ -38,6 +38,8 @@ source/Core/Log/Private/Policies/NoFilterPolicy.cpp
 source/Core/Log/Private/Policies/NoFormatPolicy.cpp
 source/Core/Log/Private/Policies/OutStreamWritePolicy.cpp
 source/Core/Log/Private/Policies/SeverityFilterPolicy.cpp
+source/Core/Misc/Literals.cpp
+source/Core/Misc/Literals.h
 source/Core/Misc/moeAbort.h
 source/Core/Misc/moeCountof.h
 source/Core/Misc/moeEnum.h
@@ -59,6 +61,11 @@ source/Core/StringFormat/moeStringFormat.h
 source/Core/StringFormat/Private/moeStringFormat.internal.hpp
 source/GameFramework/FSM/FSM.h
 source/GameFramework/FSM/Private/FSM.cpp
+source/Graphics/Context/GlfwGraphicsContext/GlfwGraphicsContext.cpp
+source/Graphics/Context/GlfwGraphicsContext/GlfwGraphicsContext.h
+source/Graphics/Context/GlfwGraphicsContext.h
+source/Graphics/Context/GraphicsContext.h
+source/Graphics/Context/GraphicsContextDescriptor.h
 source/Input/Input.h
 source/Input/InputDescriptors.h
 source/Input/InputEventsSink.h
@@ -73,6 +80,8 @@ source/Input/Private/KeyboardMapping.cpp
 source/Input/RawInputHandler.h
 source/Input/RawInputHandlerInterface.h
 source/pch.h
+source/Window/GlfwWindow/GlfwWindow.cpp
+source/Window/GlfwWindow/GlfwWindow.h
 source/Window/Window.h
 source/Window/WindowDescriptor.cpp
 source/Window/WindowDescriptor.h
