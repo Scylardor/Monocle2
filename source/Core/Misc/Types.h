@@ -15,4 +15,6 @@ namespace moe
 		using std::uint16_t;
 		using std::uint32_t;
 		using std::uint64_t;
+
+		using byte_t = uint8_t;
 }
