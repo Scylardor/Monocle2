@@ -7,6 +7,7 @@
 
 #include "Window/GlfwWindow/GlfwWindow.h"
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 void moe::GlfwGraphicsContext::InitPreWindowCreation(const moe::GraphicsContextDescriptor& contextDesc)
@@ -32,9 +33,13 @@ void moe::GlfwGraphicsContext::InitPreWindowCreation(const moe::GraphicsContextD
 }
 
 
-void moe::GlfwGraphicsContext::InitPostWindowCreation(const moe::GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle)
+bool moe::GlfwGraphicsContext::InitPostWindowCreation(const moe::GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle)
 {
 	glfwMakeContextCurrent(static_cast<moe::GlfwWindow*>(windowHandle)->AsGLFWWindow());
+
+	// glad: load all OpenGL function pointers
+	// ---------------------------------------
+	return gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 }
 
 

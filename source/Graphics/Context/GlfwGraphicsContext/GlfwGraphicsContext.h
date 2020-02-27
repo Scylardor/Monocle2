@@ -23,7 +23,7 @@ namespace moe
 
 		virtual void	InitPreWindowCreation(const GraphicsContextDescriptor& contextDesc) override;
 
-		virtual void	InitPostWindowCreation(const GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle) override;
+		virtual bool	InitPostWindowCreation(const GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle) override;
 
 	};
 

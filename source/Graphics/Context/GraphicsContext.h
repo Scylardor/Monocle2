@@ -20,7 +20,8 @@ namespace moe
 
 		virtual void	InitPreWindowCreation(const GraphicsContextDescriptor& contextDesc) = 0;
 
-		virtual void	InitPostWindowCreation(const GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle) = 0;
+		/* InitPostWindowCreation returns whether it succeeded or not. */
+		virtual bool	InitPostWindowCreation(const GraphicsContextDescriptor& contextDesc, GenericWindowHandle windowHandle) = 0;
 	};
 
 }
