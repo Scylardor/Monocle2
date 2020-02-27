@@ -20,7 +20,7 @@ namespace moe
 
 		bool	IsInitialized() const
 		{
-			return m_graphicsContext != nullptr && m_inputHandler != nullptr && m_window != nullptr;
+			return m_initialized;
 		}
 
 	protected:
@@ -52,5 +52,7 @@ namespace moe
 		std::unique_ptr<IGraphicsContext>	m_graphicsContext;
 		std::unique_ptr<InputHandler>		m_inputHandler;
 		std::unique_ptr<IWindow>			m_window;
+
+		bool								m_initialized = false;
 	};
 }

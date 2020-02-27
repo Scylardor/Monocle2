@@ -23,9 +23,11 @@ moe::GlfwApplication::GlfwApplication(const GraphicsContextDescriptor& contextDe
 		// precise moe::GlfwWindow to not confuse with GLFWwindow...
 		InitWindow<moe::GlfwWindow>(windowDesc);
 
-		m_graphicsContext->InitPostWindowCreation(contextDesc, m_window.get());
+		m_initialized = m_graphicsContext->InitPostWindowCreation(contextDesc, m_window.get());
 
 		InitInput<moe::GlfwInputHandler>();
+
+		m_initialized &= (m_graphicsContext != nullptr && m_inputHandler != nullptr && m_window != nullptr);
 	}
 }
 
