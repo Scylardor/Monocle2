@@ -10,6 +10,11 @@ set(${SANDBOX_TARGET}_SOURCES
 )
 
 
+add_compile_options(
+    "$<$<CONFIG:Debug>:-DMOE_DEBUG>"
+    "$<$<CONFIG:RelWithDebInfo>:-DMOE_DEBUG>"
+)
+
 add_executable(${SANDBOX_TARGET} ${${SANDBOX_TARGET}_SOURCES} )
 
 target_include_directories(${SANDBOX_TARGET} PRIVATE
@@ -18,6 +23,7 @@ target_include_directories(${SANDBOX_TARGET} PRIVATE
 )
 
 target_link_libraries(${SANDBOX_TARGET} ${PROJECT_NAME} )
+
 
 # use the main target's precompiled header.
 target_precompile_headers(${SANDBOX_TARGET} REUSE_FROM ${PROJECT_NAME})
