@@ -8,7 +8,6 @@ set(VENDOR_DIR ${PROJECT_SOURCE_DIR} vendor) # The directory of all third party 
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 option(${PROJECT_NAME}_BUILD_SHARED_LIB "If ON, Monocle will be built as a shared library." OFF)
-
 option(${PROJECT_NAME}_USE_ASSERTS "If ON, Monocle asserts will be defined. Otherwise, they will become no-ops." ON)
 option(${PROJECT_NAME}_USE_STL "If ON, Monocle containers will use STL containers under the hood." ON)
 option(${PROJECT_NAME}_USE_GLFW "If ON, Monocle will compile with the GLFW library." ON)
@@ -32,7 +31,10 @@ endif()
 # to recreate the folder tree with filters within Visual Studio for example.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${PROJECT_NAME}_SOURCES})
 
-# Definitions tweaking
+# Definitions tweaking (I think this should rather be in a configure file...)
+
+add_compile_definitions($<$<CONFIG:Debug>:MOE_DEBUG>)
+
 if(${PROJECT_NAME}_USE_STL)
 	add_definitions(-DMOE_STD_SUPPORT)
 endif()
@@ -80,9 +82,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${VENDOR_DIR})
 
 if(${PROJECT_NAME}_USE_GLFW)
 	set(GLFW_DIR ${VENDOR_DIR}/glfw)
+
 	target_link_directories(${PROJECT_NAME} PUBLIC ${GLFW_DIR})
 	target_link_libraries(${PROJECT_NAME} PUBLIC glfw3)
-	target_include_directories(${PROJECT_NAME} PUBLIC "${GLFW_DIR}/include")
+	
+	set(GLAD_DIR ${VENDOR_DIR}/glad45)
+	set(GLAD_SOURCE ${GLAD_DIR}/src/glad.c)
+	target_include_directories(${PROJECT_NAME} PUBLIC "${GLFW_DIR}/include" "${GLAD_DIR}/include")
+	target_sources(${PROJECT_NAME} PRIVATE ${GLAD_SOURCE})
+	set_source_files_properties(${GLAD_SOURCE} PROPERTIES LANGUAGE CXX) # Set language as C++ so the file gets compiled
+
 	add_definitions(-DMOE_GLFW)
 endif()
 
