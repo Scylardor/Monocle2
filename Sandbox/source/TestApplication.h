@@ -2,6 +2,10 @@
 
 #include "Application/GlfwApplication/GlfwApplication.h"
 
+namespace moe
+{
+
+
 class TestApplication : public moe::GlfwApplication
 {
 public:
@@ -13,3 +17,5 @@ public:
 
 
 };
+
+}

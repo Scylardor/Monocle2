@@ -8,6 +8,8 @@ namespace moe
 	class IGraphicsResourceFactory
 	{
 	public:
+		virtual ~IGraphicsResourceFactory() = default;
+
 		virtual class VertexBuffer*	CreateVertexBuffer() = 0;
 
 		virtual class IndexBuffer*	CreateIndexBuffer() = 0;

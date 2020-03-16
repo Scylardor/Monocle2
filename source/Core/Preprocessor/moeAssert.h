@@ -10,7 +10,7 @@
 // Thus, one needs to put extra care to put only additional checking code in the assert,
 // leaving expressions we want to run in Shipping outside.
 
-#if !defined(MOE_SHIPPING) && defined(MOE_USE_ASSERTS)
+#if defined(MOE_USE_ASSERTS)
     #include "Core/Debugger/moeDebugger.h"
     #include "Core/Preprocessor/moeStringize.h"
     #include "Core/Preprocessor/moeDLLVisibility.h"

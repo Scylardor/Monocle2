@@ -2,12 +2,24 @@
 
 #pragma once
 
+#include "Graphics/ResourceFactory/ResourceFactory.h"
+
 namespace moe
 {
-	class OpenGLResourceFactory
+	class OpenGLResourceFactory : public IGraphicsResourceFactory
 	{
 	public:
-		VertexBuffer* CreateVertexBuffer() override;
+		virtual class VertexBuffer* CreateVertexBuffer() override;
+
+		virtual class IndexBuffer* CreateIndexBuffer() override;
+
+		virtual class VertexLayout* CreateVertexLayout() override;
+
+		virtual class Texture* CreateTexture() override;
+
+		virtual class TextureView* CreateTextureView() override
+
+			;
 
 	};
 

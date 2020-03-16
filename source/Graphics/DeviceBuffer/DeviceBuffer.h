@@ -3,6 +3,7 @@
 #pragma once
 
 #include "BufferUsage.h"
+#include "BufferDescription.h"
 
 #include "Core/Preprocessor/moeDebug.h"
 
@@ -11,7 +12,7 @@ namespace moe
 	class DeviceBuffer
 	{
 	public:
-		DeviceBuffer() = default;
+		DeviceBuffer(BufferUsage usage);
 
 		virtual ~DeviceBuffer() = default;
 
@@ -22,6 +23,8 @@ namespace moe
 		void	RemoveUsage(BufferUsage usage);
 
 		void	VerifyUsage() const MOE_NOT_DEBUG({});
+
+		virtual void	UpdateData(const BufferStorageDescription& desc) = 0;
 
 	private:
 

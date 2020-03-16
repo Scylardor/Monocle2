@@ -1,6 +1,13 @@
 #include "DeviceBuffer.h"
 
 
+moe::DeviceBuffer::DeviceBuffer(BufferUsage usage) :
+	m_usage(usage)
+{
+	VerifyUsage();
+}
+
+
 /* Will try to add the usage bits of usage parameter to our current usage */
 void moe::DeviceBuffer::AddUsage(BufferUsage usage)
 {
@@ -22,6 +29,10 @@ void moe::DeviceBuffer::RemoveUsage(BufferUsage usage)
 {
 	m_usage &= ~usage;
 	VerifyUsage();
+}
+
+void moe::DeviceBuffer::UpdateData(const BufferStorageDescription& desc)
+{
 }
 
 #ifdef MOE_DEBUG

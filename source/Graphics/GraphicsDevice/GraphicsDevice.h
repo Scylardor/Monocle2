@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include <memory>
+#include <memory> // unique_ptr
 
 #include "Graphics/ResourceFactory/ResourceFactory.h"
+
+#include "Core/Misc/Types.h"
 
 namespace moe
 {
@@ -19,6 +21,7 @@ namespace moe
 			m_resourceFactory = std::make_unique<TFactory>(std::forward<Args>(args)...);
 		}
 
+		virtual void	UpdateBuffer(class DeviceBuffer& buffer, const byte_t* data, uint32_t sizeInBytes, uint32_t bufferOffsetInBytes = 0) = 0;
 
 	private:
 

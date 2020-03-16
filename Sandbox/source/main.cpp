@@ -10,7 +10,7 @@ int main()
 	moe::GraphicsContextDescriptor contextDesc;
 	moe::WindowDescriptor windowDesc(1024_width, 728_height, "Monocle Sandbox");
 
-	TestApplication app(contextDesc, windowDesc);
+	moe::TestApplication app(contextDesc, windowDesc);
 
 	if (app.IsInitialized())
 	{
