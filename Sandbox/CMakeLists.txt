@@ -22,7 +22,17 @@ target_include_directories(${SANDBOX_TARGET} PRIVATE
 	${PROJECT_SOURCE_DIR}/vendor
 )
 
+# This is temporary as long as Math library is a header-only library because an interface library cannot have public include dirs
+if(${PROJECT_NAME}_USE_GLM)
+	set(GLM_DIR ${PROJECT_SOURCE_DIR}/vendor/glm)
+	target_include_directories(${SANDBOX_TARGET}
+		PRIVATE "${GLM_DIR}"
+	)
+endif()
+
 target_link_libraries(${SANDBOX_TARGET} PUBLIC
 	${PROJECT_NAME}_Core
 	${PROJECT_NAME}_Application
+	INTERFACE ${PROJECT_NAME}_Math
 	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
+
