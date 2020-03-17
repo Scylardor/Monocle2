@@ -1,12 +1,13 @@
 
 
 set(Monocle_Math_SOURCES
-	./GLM/Matrix.h
+	./GLM/Matrix4.h
 ./GLM/Vec2.h
 ./GLM/Vec3.h
 ./GLM/Vector.h
 ./Math.h
 ./MathUsing.h
+./Matrix4.h
 ./Vec2.h
 ./Vec3.h
 	)
