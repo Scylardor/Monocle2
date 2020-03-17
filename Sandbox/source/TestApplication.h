@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Application/GlfwApplication/GlfwApplication.h"
+#include "Application/GlfwApplication/OpenGL/OpenGLGlfwApplication.h"
 
 namespace moe
 {
 
 
-class TestApplication : public moe::GlfwApplication
+class TestApplication final : public moe::OpenGLGlfwApplication
 {
 public:
 
-	TestApplication(const moe::GraphicsContextDescriptor& contextDesc, const moe::WindowDescriptor& windowDesc);
+	TestApplication(const moe::OpenGLGlfwAppDescriptor& appDesc);
 	~TestApplication() = default;
 
 	void	Run();

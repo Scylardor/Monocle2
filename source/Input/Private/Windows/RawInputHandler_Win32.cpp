@@ -1,6 +1,6 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#include "Input/Windows/RawInputHandler_Win32.h"
+#include "Input/RawInput/Windows/RawInputHandler_Win32.h"
 
 #include "Core/Misc/Windows/GetLastErrorAsString.h"
 #include "Core/Misc/moeCountof.h"

@@ -12,6 +12,7 @@ set(${UNIT_TESTS_TARGET}_SOURCES
 	"${SOURCE_DIR}/TestLog.cpp"
 	"${SOURCE_DIR}/Testmain.cpp"
 	"${SOURCE_DIR}/TestStringFormat.cpp"
+	"${SOURCE_DIR}/TestGraphicsBuddyAllocator.cpp"
 )
 
 

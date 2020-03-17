@@ -1,7 +1,7 @@
 #!/bin/sh
 
 WORKING_DIR=${1:-..}
-TARGET_NAME=${2:-Monocle}
+TARGET_NAME=${2:-Monocle_Core}
 SOURCES_VAR=${TARGET_NAME}_SOURCES
 
 WINDOWS_ONLY_SUBPATH='Windows/'
@@ -12,7 +12,7 @@ cd "$WORKING_DIR"
 mkdir CMake
 
 # Using sed to escape filenames with spaces in them.
-BASE_SOURCES=$( find source/ -type f -name "*.cpp" -or -name "*.h" -or -name "*.hpp" | sed 's/ /\\ /g')
+BASE_SOURCES=$( find ./ -type f -name "*.cpp" -or -name "*.h" -or -name "*.hpp" | sed 's/ /\\ /g')
 CROSSPLATFORM_SOURCES=$( echo "$BASE_SOURCES" | grep -Fv -e "$WINDOWS_ONLY_SUBPATH" -e "$LINUX_ONLY_SUBPATH" -e "$MACOS_ONLY_SUBPATH" )
 
 WIN32_SOURCES=$( echo "$BASE_SOURCES" | grep "$WINDOWS_ONLY_SUBPATH")

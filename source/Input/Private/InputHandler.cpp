@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Input/InputHandler.h"
+#include "Input/InputHandler/InputHandler.h"
 
 namespace moe
 {

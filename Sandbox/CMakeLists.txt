@@ -22,7 +22,9 @@ target_include_directories(${SANDBOX_TARGET} PRIVATE
 	${PROJECT_SOURCE_DIR}/vendor
 )
 
-target_link_libraries(${SANDBOX_TARGET} ${PROJECT_NAME} )
+target_link_libraries(${SANDBOX_TARGET} PUBLIC
+	${PROJECT_NAME}_Core
+	${PROJECT_NAME}_Application)
 
 
 # use the main target's precompiled header.

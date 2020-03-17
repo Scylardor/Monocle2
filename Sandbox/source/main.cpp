@@ -1,16 +1,16 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#include "Graphics/Context/GraphicsContextDescriptor.h"
-#include "Window/WindowDescriptor.h"
 
 #include "TestApplication.h"
 
+#include "Core/Misc/Literals.h"
+
 int main()
 {
-	moe::GraphicsContextDescriptor contextDesc;
-	moe::WindowDescriptor windowDesc(1024_width, 728_height, "Monocle Sandbox");
+	//moe::GraphicsContextDescriptor contextDesc;
+	moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
 
-	moe::TestApplication app(contextDesc, windowDesc);
+	moe::TestApplication app(appDesc);
 
 	if (app.IsInitialized())
 	{

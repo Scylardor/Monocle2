@@ -1,7 +1,7 @@
 // Monocle Game Engine source files - Alexandre Baron
 
 
-#include "Input/InputEventsSink.h"
+#include "Input/InputEventSink/InputEventsSink.h"
 
 namespace moe
 {

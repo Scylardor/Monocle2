@@ -2,7 +2,7 @@
 
 #include "catch.hpp"
 
-#include "Input/InputHandler.h"
+#include "Input/InputHandler/InputHandler.h"
 
 
 static int test = 0;

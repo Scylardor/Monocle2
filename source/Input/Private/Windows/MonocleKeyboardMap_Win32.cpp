@@ -1,7 +1,7 @@
 
 #include <Windows.h>
 
-#include "Input/MonocleKeyboardMap.h"
+#include "Input/Keyboard/MonocleKeyboardMap.h"
 
 namespace moe
 {
