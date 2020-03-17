@@ -43,6 +43,7 @@ if(${PROJECT_NAME}_USE_OPENGL)
 	target_include_directories(${APPS_TARGET} PUBLIC "${GLAD_DIR}/include")
 
 	target_sources(${APPS_TARGET} PUBLIC ${GLAD_SOURCE})
+	set_source_files_properties( ${GLAD_SOURCE} PROPERTIES LANGUAGE CXX )
 endif()
 
 
