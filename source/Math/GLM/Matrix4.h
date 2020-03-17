@@ -20,6 +20,7 @@ namespace moe
 		class Mat4
 		{
 			static_assert(std::is_arithmetic<ValT>::value, "Unsupported template type for Mat4.");
+			typedef glm::mat<4, 4, ValT, glm::defaultp>	MatrixType;
 
 		public:
 			Mat4() = default;
@@ -32,10 +33,14 @@ namespace moe
 				m_mat(glm::make_mat4x4(valArray))
 			{}
 
+			explicit Mat4(const MatrixType& glmMatrix) :
+				m_mat(glmMatrix)
+			{}
+
+
 
 			ValT*	Ptr()
 			{
-
 				return glm::value_ptr(m_mat);
 			}
 
@@ -48,6 +53,18 @@ namespace moe
 			static Mat4	Identity()
 			{
 				return Mat4(ValT(1));
+			}
+
+
+			static Mat4 Orthographic(ValT left, ValT right, ValT bottom, ValT top, ValT nearVal, ValT farVal)
+			{
+				return Mat4(glm::ortho(left, right, bottom, top, nearVal, farVal));
+			}
+
+
+			static Mat4 Perspective(ValT fovy, ValT aspectRatio, ValT nearVal, ValT farVal)
+			{
+				return Mat4(glm::perspective(fovy, aspectRatio, nearVal, farVal));
 			}
 
 
@@ -95,7 +112,7 @@ namespace moe
 
 		private:
 
-			glm::mat<4, 4, ValT, glm::defaultp> m_mat;
+			MatrixType m_mat;
 		};
 
 	}
