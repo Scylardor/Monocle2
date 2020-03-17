@@ -24,8 +24,5 @@ target_include_directories(${SANDBOX_TARGET} PRIVATE
 
 target_link_libraries(${SANDBOX_TARGET} PUBLIC
 	${PROJECT_NAME}_Core
-	${PROJECT_NAME}_Application)
-
-
-# use the main target's precompiled header.
-target_precompile_headers(${SANDBOX_TARGET} REUSE_FROM ${PROJECT_NAME})
+	${PROJECT_NAME}_Application
+	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.

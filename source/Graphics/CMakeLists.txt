@@ -18,14 +18,13 @@ endif()
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${GRAPHICS_TARGET}_SOURCES})
 
 # This library uses Core
-target_link_libraries(${GRAPHICS_TARGET} PUBLIC ${PROJECT_NAME}_Core)
+target_link_libraries(${GRAPHICS_TARGET}
+	PUBLIC ${PROJECT_NAME}_Core
+	PRIVATE ${PROJECT_NAME}) # Linking with project's Interface Library allows us to reuse PCH's.
 
 # Integrate GLAD OpenGL function pointer loader into Graphics library if we wanna use OpenGL.
 if(${PROJECT_NAME}_USE_OPENGL)
 	set(GLAD_DIR ${PROJECT_SOURCE_DIR}/vendor/glad45)
 
-	target_include_directories(${GRAPHICS_TARGET} PRIVATE "${GLAD_DIR}/include")
+	target_include_directories(${GRAPHICS_TARGET} PUBLIC "${GLAD_DIR}/include")
 endif()
-
-# use the main target's precompiled header.
-target_precompile_headers(${GRAPHICS_TARGET} REUSE_FROM ${PROJECT_NAME})

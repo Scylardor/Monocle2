@@ -21,7 +21,8 @@ target_include_directories(${APPS_TARGET} PRIVATE ${PROJECT_SOURCE_DIR}/source)
 
 target_link_libraries(${APPS_TARGET} PUBLIC
 	${PROJECT_NAME}_Core
-	${PROJECT_NAME}_Input)
+	${PROJECT_NAME}_Input
+	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
 # If using GLFW, integrate it in the build
 
@@ -46,7 +47,3 @@ if(${PROJECT_NAME}_USE_OPENGL)
 	set_source_files_properties( ${GLAD_SOURCE} PROPERTIES LANGUAGE CXX )
 endif()
 
-
-
-# use the main target's precompiled header.
-target_precompile_headers(${APPS_TARGET} REUSE_FROM ${PROJECT_NAME})

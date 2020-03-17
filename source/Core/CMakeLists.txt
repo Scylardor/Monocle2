@@ -17,7 +17,7 @@ endif()
 # to recreate the folder tree with filters within Visual Studio for example.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${CORE_TARGET}_SOURCES})
 
-target_include_directories(${CORE_TARGET} PUBLIC ..)
+
 
 # Core external dependencies
 set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/vendor/)
@@ -25,6 +25,4 @@ set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/vendor/)
 # We use BetterEnums folder which is directly in the vendor directory, so use vendor as an include directory.
 target_include_directories(${CORE_TARGET} PUBLIC "${GLFW_DIR}/include" .. ${VENDOR_DIR})
 
-
-# use the main target's precompiled header.
-target_precompile_headers(${CORE_TARGET} REUSE_FROM ${PROJECT_NAME})
+target_link_libraries(${CORE_TARGET} PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.

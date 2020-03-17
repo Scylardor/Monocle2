@@ -19,7 +19,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${INPUT_TARGET}_SOURCES})
 
 target_include_directories(${INPUT_TARGET} PRIVATE ${PROJECT_SOURCE_DIR}/source)
 
-target_link_libraries(${INPUT_TARGET} PUBLIC ${PROJECT_NAME}_Core)
+target_link_libraries(${INPUT_TARGET}
+	PUBLIC ${PROJECT_NAME}_Core
+	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
 # If using GLFW, integrate it in the build
 if(${PROJECT_NAME}_USE_GLFW)
@@ -31,6 +33,3 @@ if(${PROJECT_NAME}_USE_GLFW)
 
 	target_link_libraries(${INPUT_TARGET} PUBLIC glfw3)
 endif()
-
-# use the main target's precompiled header.
-target_precompile_headers(${INPUT_TARGET} REUSE_FROM ${PROJECT_NAME})

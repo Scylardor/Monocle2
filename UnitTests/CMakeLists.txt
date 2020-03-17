@@ -24,7 +24,9 @@ target_include_directories(${UNIT_TESTS_TARGET} PRIVATE
 	${PROJECT_SOURCE_DIR}/vendor
 )
 
-target_link_libraries(${UNIT_TESTS_TARGET} ${PROJECT_NAME} )
-
-# use the main target's precompiled header.
-target_precompile_headers(${UNIT_TESTS_TARGET} REUSE_FROM ${PROJECT_NAME})
+target_link_libraries(${UNIT_TESTS_TARGET}
+	PUBLIC ${PROJECT_NAME}_Application
+	PUBLIC ${PROJECT_NAME}_Graphics
+	PUBLIC ${PROJECT_NAME}_GameFramework
+	PUBLIC ${PROJECT_NAME}_Input
+	PRIVATE ${PROJECT_NAME} )  # Linking with project's Interface Library allows us to reuse PCH's.
