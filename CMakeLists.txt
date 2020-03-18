@@ -41,6 +41,9 @@ option(${PROJECT_NAME}_BUILD_SANDBOX "If ON, Monocle will build a test project."
 
 # End of options
 
+# C++17 features used :
+# std::optional
+# [[nodiscard]]
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
