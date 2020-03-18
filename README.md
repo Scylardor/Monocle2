@@ -20,3 +20,10 @@ Once you have it and you have cloned the repository, everything should be very s
 
 To build unit tests, make sure you tick the Monocle_BUILD_UNIT_TESTS option to true !
 
+
+Unit Tests
+==========
+
+Monocle vendors the header-only unit test library Catch2.
+
+To run the unit tests of the engine, simply tick in the CMake the "BUILD_UNIT_TESTS" option, then build the Monocle_UnitTests project.
