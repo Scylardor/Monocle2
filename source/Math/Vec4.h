@@ -3,6 +3,8 @@
 #pragma once
 
 #ifdef MOE_GLM
+
+#include <glm/vec4.hpp>
 #include "GLM/Vector.h"
 
 namespace moe

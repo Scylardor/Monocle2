@@ -4,9 +4,6 @@
 
 #include <Core/Preprocessor/moeAssert.h>
 
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/gtc/type_ptr.hpp> // value_ptr
 #include <glm/gtx/norm.hpp> // length2, distance2
 
