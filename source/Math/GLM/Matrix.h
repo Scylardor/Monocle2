@@ -4,7 +4,9 @@
 
 #ifdef MOE_GLM
 
-#include "Angles/Angles.h"
+#include "Core/Preprocessor/moeAssert.h"
+
+#include "Math/Angles/Angles.h"
 
 #include <glm/gtc/type_ptr.hpp> // value_ptr
 
@@ -46,8 +48,65 @@ namespace moe
 			{}
 
 
-
 			// Math Functions
+
+
+			/**
+			 * \brief Sets the matrix to a transposed version of itself.
+			 * Transposing a matrix effectively means switching rows and columns.
+			 * This function is NOT const : the matrix is affected.
+			 * For const version, use Matrix::GetTransposed.
+			 * \return The same matrix, transposed
+			 */
+			Matrix&	Transpose()
+			{
+				m_mat = glm::transpose(m_mat);
+				return *this;
+			}
+
+
+			/**
+			 * \brief Computes a transposed version of the matrix.
+			 * Transposing a matrix effectively means switching rows and columns.
+			 * This function is const : the matrix is unaffected.
+			 * If you want to affect the matrix, use Matrix::Transpose.
+			 * \return A transposed copy of this matrix.
+			 */
+			Matrix	GetTransposed() const
+			{
+				return Matrix(glm::transpose(m_mat));
+			}
+
+
+			/**
+			* \brief Computes an inverse version of the matrix.
+			* The inverse of a matrix A is another matrix B such as A*B and B*A both equal to the identity matrix.
+			* Only square matrices are invertible, but that's not the only condition.
+			* This function is NOT const : the matrix is affected.
+			* For const version, use Matrix::GetInverse.
+			* \return The same matrix, inverted
+			*/
+			template<typename = std::enable_if_t<ColsT == RowsT>>
+			Matrix&	Invert()
+			{
+				m_mat = glm::inverse(m_mat);
+				return *this;
+			}
+
+
+			/**
+			* \brief Computes an inverse copy of the matrix.
+			* The inverse of a matrix A is another matrix B such as A*B and B*A both equal to the identity matrix.
+			* Only square matrices are invertible, but that's not the only condition.
+			 * This function is const : the matrix is unaffected.
+			 * If you want to affect the matrix, use Matrix::Invert.
+			* \return An inverted copy of the matrix
+			*/
+			template<typename = std::enable_if_t<ColsT == RowsT>>
+			Matrix	GetInverse() const
+			{
+				return Matrix(glm::inverse(m_mat));
+			}
 
 
 			/**
@@ -58,7 +117,6 @@ namespace moe
 			{
 				return Matrix(ValT(1));
 			}
-
 
 
 			/**
@@ -96,8 +154,6 @@ namespace moe
 			}
 
 
-
-
 			// Member Accessors
 
 
@@ -112,15 +168,15 @@ namespace moe
 			}
 
 
-
-
 			ValT&	operator[](int idx)
 			{
+				MOE_DEBUG_ASSERT(idx < ColsT * RowsT);
 				return m_mat[idx];
 			}
 
 			ValT	operator[](int idx) const
 			{
+				MOE_DEBUG_ASSERT(idx < ColsT * RowsT);
 				return m_mat[idx];
 			}
 
@@ -134,26 +190,51 @@ namespace moe
 				return m_mat != other.m_mat;
 			}
 
-			bool	operator<(const Matrix& other) const
+
+			Matrix operator*(Matrix other) const
 			{
-				return m_mat < other.m_mat;
+				return Matrix(m_mat * other.m_mat);
 			}
 
-			bool	operator<=(const Matrix& other) const
+			Matrix& operator*=(const Matrix& other)
 			{
-				return m_mat <= other.m_mat;
+				m_mat *= other.m_mat;
+				return *this;
 			}
 
-			bool	operator>(const Matrix& other) const
+
+			Matrix operator+(Matrix other) const
 			{
-				return m_mat > other.m_mat;
+				return Matrix(m_mat + other.m_mat);
 			}
 
-			bool	operator>=(const Matrix& other) const
+			Matrix& operator+=(Matrix other)
 			{
-				return m_mat >= other.m_mat;
+				m_mat += other.m_mat;
+				return *this;
 			}
 
+			Matrix operator-(Matrix other) const
+			{
+				return Matrix(m_mat - other.m_mat);
+			}
+
+			Matrix& operator-=(Matrix other)
+			{
+				m_mat -= other.m_mat;
+				return *this;
+			}
+
+			Matrix operator/(Matrix other) const
+			{
+				return Matrix(m_mat / other.m_mat);
+			}
+
+			Matrix& operator/=(Matrix other)
+			{
+				m_mat /= other.m_mat;
+				return *this;
+			}
 
 		private:
 

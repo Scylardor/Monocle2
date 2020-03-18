@@ -99,8 +99,8 @@ namespace moe
 			 * \brief Normalizes this vector.
 			 * This effectively divides the vector by its norm (or length, or magnitude).
 			 * WARNING! Since it divides by vector length, it will perform a division by zero on zero vectors !!
-			 * This function is const : the vector is affected.
-			 * For const version, use \ref Vector::GetNormalized.
+			 * This function is NOT const : the vector is affected.
+			 * For const version, use Vector::GetNormalized.
 			 * \return this
 			 */
 			Vector&	Normalize()
