@@ -1,7 +1,10 @@
 
 
 set(Monocle_Math_SOURCES
-	./GLM/Matrix4.h
+	./Angles/Angles.cpp
+./Angles/Angles.h
+./GLM/Angles_glm.h
+./GLM/Matrix.h
 ./GLM/Vector.h
 ./Math.h
 ./Matrix4.h

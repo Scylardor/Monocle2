@@ -8,33 +8,34 @@ set(SOURCE_DIR .)
 include(CMake/CMakeLists_sources.cmake)
 
 # So far, Math is a header-only library, so make it an Interface. Maybe that will change someday.
-# if(${PROJECT_NAME}_BUILD_SHARED_LIB)
-add_library(${MATH_TARGET} INTERFACE)
-# else()
-# add_library(${MATH_TARGET} STATIC ${${MATH_TARGET}_SOURCES} )
-# endif()
-
-# Kinda "trick" to make Visual Studio add a project that doesn't compile but lets us edit code in the editor.
-if(MSVC)
-    add_custom_target(${MATH_TARGET}.headers SOURCES ${${MATH_TARGET}_SOURCES})
+if(${PROJECT_NAME}_BUILD_SHARED_LIB)
+add_library(${MATH_TARGET} SHARED ${${MATH_TARGET}_SOURCES})
+else()
+add_library(${MATH_TARGET} STATIC ${${MATH_TARGET}_SOURCES} )
 endif()
-
-target_sources(${MATH_TARGET} INTERFACE ${${MATH_TARGET}_SOURCES})
 
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR
 # to recreate the folder tree with filters within Visual Studio for example.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${MATH_TARGET}_SOURCES})
 
-target_include_directories(${MATH_TARGET} INTERFACE ${PROJECT_SOURCE_DIR}/source)
+target_include_directories(${MATH_TARGET} PUBLIC ${PROJECT_SOURCE_DIR}/source)
 
 target_link_libraries(${MATH_TARGET}
-	INTERFACE ${PROJECT_NAME}_Core
-	INTERFACE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
+	PUBLIC ${PROJECT_NAME}_Core
+	PUBLIC ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
 # If using GLM, integrate it in the build (it's a header only library)
 if(${PROJECT_NAME}_USE_GLM)
 	set(GLM_DIR ${PROJECT_SOURCE_DIR}/vendor/glm)
 
-	target_include_directories(${MATH_TARGET} INTERFACE "${GLM_DIR}")
+	target_include_directories(${MATH_TARGET} PUBLIC "${GLM_DIR}")
 
 endif()
+
+# Kinda "trick" to make Visual Studio add a project that doesn't compile but lets us edit code in the editor.
+# if(MSVC)
+    # add_custom_target(${MATH_TARGET}.headers SOURCES ${${MATH_TARGET}_SOURCES})
+	# target_link_libraries(${MATH_TARGET}.headers
+	# PUBLIC ${PROJECT_NAME}_Core
+	# PUBLIC ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
+# endif()

@@ -33,6 +33,6 @@ endif()
 target_link_libraries(${SANDBOX_TARGET} PUBLIC
 	${PROJECT_NAME}_Core
 	${PROJECT_NAME}_Application
-	INTERFACE ${PROJECT_NAME}_Math
-	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
+	${PROJECT_NAME}_Math
+	${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
