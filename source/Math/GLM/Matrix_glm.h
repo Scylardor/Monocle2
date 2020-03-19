@@ -8,7 +8,11 @@
 
 #include "Math/Angles/Angles.h"
 
+#include "Vector_glm.h"
+
 #include <glm/gtc/type_ptr.hpp> // value_ptr
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp> // identity, translate, rotate, scale...
 
 namespace moe
 {
@@ -27,6 +31,8 @@ namespace moe
 			static_assert(ColsT > 0 && RowsT > 0, "Unsupported column or row number for Matrix.");
 			static_assert(std::is_arithmetic<ValT>::value, "Unsupported template type for Matrix.");
 
+			using MatrixType = glm::mat<ColsT, RowsT, ValT, glm::defaultp>;
+
 		public:
 
 			// Constructors
@@ -42,7 +48,12 @@ namespace moe
 				m_mat(glm::make_mat4x4(valArray))
 			{}
 
-			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+
+			/**
+			 * \brief Builds a Monocle Matrix from a GLM one
+			 * This is mostly internally convenient to allow to build matrices directly from glm calls.
+			 * \param matrix The initializer matrix
+			 */
 			explicit Matrix(const glm::mat<ColsT, RowsT, ValT>& matrix) :
 				m_mat(matrix)
 			{}
@@ -72,7 +83,7 @@ namespace moe
 			 * If you want to affect the matrix, use Matrix::Transpose.
 			 * \return A transposed copy of this matrix.
 			 */
-			Matrix	GetTransposed() const
+			[[nodiscard]] Matrix	GetTransposed() const
 			{
 				return Matrix(glm::transpose(m_mat));
 			}
@@ -103,9 +114,20 @@ namespace moe
 			* \return An inverted copy of the matrix
 			*/
 			template<typename = std::enable_if_t<ColsT == RowsT>>
-			Matrix	GetInverse() const
+			[[nodiscard]] Matrix	GetInverse() const
 			{
 				return Matrix(glm::inverse(m_mat));
+			}
+
+
+			/**
+			 * \brief Resets this matrix to the identity matrix.
+			 * \return This matrix, filled with zeros except ones in the main diagonal.
+			 */
+			Matrix&	SetIdentity()
+			{
+				m_mat = glm::identity<MatrixType>();
+				return *this;
 			}
 
 
@@ -113,9 +135,9 @@ namespace moe
 			 * \brief Yields an identity matrix.
 			 * \return A matrix filled with zeros except ones in the main diagonal.
 			 */
-			static Matrix	Identity()
+			[[nodiscard]] static Matrix	Identity()
 			{
-				return Matrix(ValT(1));
+				return Matrix(glm::identity<MatrixType>());
 			}
 
 
@@ -131,7 +153,7 @@ namespace moe
 			 * \return
 			 */
 			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
-			static Matrix Orthographic(ValT left, ValT right, ValT bottom, ValT top, ValT nearVal, ValT farVal)
+			[[nodiscard]] static Matrix Orthographic(ValT left, ValT right, ValT bottom, ValT top, ValT nearVal, ValT farVal)
 			{
 				return Matrix(glm::ortho(left, right, bottom, top, nearVal, farVal));
 			}
@@ -141,14 +163,14 @@ namespace moe
 			 * \brief Computes a perspective projection matrix (to use with cameras for example)
 			 * This matrix maps a given frustum range to clip space, but also manipulates the w value of each vertex.
 			 * The further away a vertex is from the viewer, the smaller it will appear on screen.
-			 * \param fovy The camera's vertical field of view, or how "wide" is it open from top to bottom.
+			 * \param fovy The camera's vertical field of view. In radians. Use something like 45_degf for automatic radian conversion
 			 * \param aspectRatio The AR is calculated by dividing a viewport's width by its height.
 			 * \param nearVal The coordinate of the near plane (clips polygons too close to the camera)
 			 * \param farVal The coordinate of the far plane (clips polygons too far from the camera)
 			 * \return
 			 */
 			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
-			static Matrix Perspective(Rads<ValT> fovy, ValT aspectRatio, ValT nearVal, ValT farVal)
+			[[nodiscard]] static Matrix Perspective(Rads<ValT> fovy, ValT aspectRatio, ValT nearVal, ValT farVal)
 			{
 				return Matrix(glm::perspective(ValT(fovy), aspectRatio, nearVal, farVal));
 			}
@@ -157,41 +179,58 @@ namespace moe
 			// Member Accessors
 
 
-			ValT*	Ptr()
+			[[nodiscard]] ValT*	Ptr()
 			{
 				return glm::value_ptr(m_mat);
 			}
 
-			const ValT*	Ptr() const
+			[[nodiscard]] const ValT*	Ptr() const
 			{
 				return glm::value_ptr(m_mat);
 			}
 
 
-			ValT&	operator[](int idx)
+			/**
+			 * \brief Returns a Vector reference to the column at index idx in the matrix
+			 * This function is NOT const: the matrix can be modified through the returned reference.
+			 * Using reinterpret_cast trickery because Monocle matrix is only a thin wrapper over GLM.
+			 * It works exactly because of that (Monocle class are just wrapped GLM structs), but it's not very future-proof.
+			 * \param idx The index of the column to return a reference to
+			 * \return A vector reference to the specified matrix column
+			 */
+			[[nodiscard]] Vector<RowsT>&	operator[](int idx)
 			{
-				MOE_DEBUG_ASSERT(idx < ColsT * RowsT);
-				return m_mat[idx];
+				MOE_DEBUG_ASSERT(idx < ColsT);
+				return reinterpret_cast<Vector<RowsT>&>(m_mat[idx]);
 			}
 
-			ValT	operator[](int idx) const
+			/**
+			 * \brief Returns a Vector reference to the column at index idx in the matrix
+			 * This function is NOT const: the matrix cannot be modified through the returned reference.
+			 * Using reinterpret_cast trickery because Monocle matrix is only a thin wrapper over GLM.
+			 * It works exactly because of that (Monocle class are just wrapped GLM structs), but it's not very future-proof.
+			 * \param idx The index of the column to return a reference to
+			 * \return A vector reference to the specified matrix column
+			 */
+			[[nodiscard]] const Vector<RowsT>&	operator[](int idx) const
 			{
-				MOE_DEBUG_ASSERT(idx < ColsT * RowsT);
-				return m_mat[idx];
+				MOE_DEBUG_ASSERT(idx < ColsT);
+				return reinterpret_cast<const Vector<RowsT>&>(m_mat[idx]);
 			}
 
-			bool	operator==(const Matrix& other) const
+
+			[[nodiscard]] bool	operator==(const Matrix& other) const
 			{
 				return m_mat == other.m_mat;
 			}
 
-			bool	operator!=(const Matrix& other) const
+			[[nodiscard]] bool	operator!=(const Matrix& other) const
 			{
 				return m_mat != other.m_mat;
 			}
 
 
-			Matrix operator*(Matrix other) const
+			[[nodiscard]] Matrix operator*(Matrix other) const
 			{
 				return Matrix(m_mat * other.m_mat);
 			}
@@ -203,7 +242,7 @@ namespace moe
 			}
 
 
-			Matrix operator+(Matrix other) const
+			[[nodiscard]] Matrix operator+(Matrix other) const
 			{
 				return Matrix(m_mat + other.m_mat);
 			}
@@ -214,7 +253,7 @@ namespace moe
 				return *this;
 			}
 
-			Matrix operator-(Matrix other) const
+			[[nodiscard]] Matrix operator-(Matrix other) const
 			{
 				return Matrix(m_mat - other.m_mat);
 			}
@@ -225,7 +264,7 @@ namespace moe
 				return *this;
 			}
 
-			Matrix operator/(Matrix other) const
+			[[nodiscard]] Matrix operator/(Matrix other) const
 			{
 				return Matrix(m_mat / other.m_mat);
 			}
@@ -236,9 +275,24 @@ namespace moe
 				return *this;
 			}
 
+
+			/**
+			 * \brief Matrix-vector operation
+			 * As a vector can be seen as a matrix with one row (or column in column-major), we must respect the matrix-matrix multiplication rules:
+			 * For a matrix with ColsT*RowsT dimension, we can only multiply this matrix with a vector of RowsT components (number of rows must match number of columns).
+			 * \param vec The vector to transform with this matrix
+			 * \return The transformed vector
+			 */
+			Vector<RowsT, ValT>	operator*(const Vector<RowsT, ValT>& vec)
+			{
+				return Vector<RowsT, ValT>(m_mat * vec.glmVector());
+			}
+
+
 		private:
 
-			glm::mat<ColsT, RowsT, ValT, glm::defaultp>	m_mat;
+			MatrixType	m_mat;
+
 		};
 
 	}

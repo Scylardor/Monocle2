@@ -4,10 +4,10 @@ set(Monocle_Math_SOURCES
 	./Angles/Angles.cpp
 ./Angles/Angles.h
 ./GLM/Angles_glm.h
-./GLM/Matrix.h
-./GLM/Vector.h
+./GLM/Matrix_glm.h
+./GLM/Vector_glm.h
 ./Math.h
-./Matrix4.h
+./Matrix.h
 ./Vec2.h
 ./Vec3.h
 ./Vec4.h

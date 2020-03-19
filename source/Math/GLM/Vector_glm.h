@@ -23,6 +23,8 @@ namespace moe
 			static_assert(NumT >= 2 && NumT <= 4, "Unsupported number of components for Vector.");
 			static_assert(std::is_arithmetic<ValT>::value, "Unsupported template type for Vector.");
 
+			using VectorType = glm::vec<NumT, ValT, glm::defaultp>;
+
 		public:
 			// Constructors
 
@@ -77,6 +79,16 @@ namespace moe
 			template<typename = std::enable_if_t<NumT == 3>>
 			explicit Vector(const Vector<2, ValT>& xy, ValT z = ValT(0)) :
 				m_vec(xy.x(), xy.y(), z)
+			{}
+
+
+			/**
+			* \brief Builds a Monocle Vector from a GLM one
+			* This is mostly internally convenient to allow to build vectors directly from glm calls.
+			* \param vector The initializer vector
+			*/
+			explicit Vector(const glm::vec<NumT, ValT>& vector) :
+				m_vec(vector)
 			{}
 
 
@@ -157,8 +169,8 @@ namespace moe
 
 
 			/**
-			* \brief Same as Vector::Length. It's just for the convenience if you're used to another naming convention.
-			* \return Same as Vector::Length.
+			* \brief Same as Vector::SquaredLength. It's just for the convenience if you're used to another naming convention.
+			* \return Same as Vector::SquaredLength.
 			*/
 			[[nodiscard]] ValT	SquaredMagnitude() const
 			{
@@ -230,7 +242,7 @@ namespace moe
 			template<typename = std::enable_if_t<NumT >= 3>>
 			Vector	Cross(const Vector& vec) const
 			{
-				return glm::cross(vec);
+				return glm::cross(m_vec, vec.m_vec);
 			}
 
 
@@ -261,6 +273,28 @@ namespace moe
 			{
 				return Perp().Dot(vec2);
 			}
+
+
+			/**
+			 * \brief Returns a reference to the underlying GLM vector
+			 *	It's a kind of code smell but AFAICT it's the easiest way to achieve matrix*vector operations without introducing some kind of odd coupling.
+			 * \return the underlying GLM vector (const)
+			 */
+			const VectorType&	glmVector() const
+			{
+				return m_vec;
+			}
+
+
+			/**
+			 * \brief Yields a zero vector
+			 * \return A vector filled with zeros
+			 */
+			[[nodiscard]] static Vector	ZeroVector()
+			{
+				return Vector(ValT(0));
+			}
+
 
 			// Members Accessors
 
@@ -324,6 +358,8 @@ namespace moe
 			{
 				return m_vec.w;
 			}
+
+
 
 
 			// Relational operators
@@ -416,15 +452,10 @@ namespace moe
 			}
 
 
-			static Vector	ZeroVector()
-			{
-				return Vector(ValT(0));
-			}
 
 
 		private:
-
-			glm::vec<NumT, ValT, glm::defaultp>	m_vec;
+			VectorType	m_vec;
 		};
 
 	}

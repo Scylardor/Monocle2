@@ -5,7 +5,7 @@
 #ifdef MOE_GLM
 
 #include <glm/vec4.hpp>
-#include "GLM/Vector.h"
+#include "GLM/Vector_glm.h"
 
 namespace moe
 {
