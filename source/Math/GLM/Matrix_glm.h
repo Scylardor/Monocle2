@@ -11,8 +11,8 @@
 #include "Vector_glm.h"
 
 #include <glm/gtc/type_ptr.hpp> // value_ptr
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp> // identity, translate, rotate, scale...
+#include <glm/mat4x4.hpp> // glm::mat
+#include <glm/gtx/transform.hpp> // identity, translate, rotate, scale...
 
 namespace moe
 {
@@ -173,6 +173,193 @@ namespace moe
 			[[nodiscard]] static Matrix Perspective(Rads<ValT> fovy, ValT aspectRatio, ValT nearVal, ValT farVal)
 			{
 				return Matrix(glm::perspective(ValT(fovy), aspectRatio, nearVal, farVal));
+			}
+
+
+			/**
+			 * \brief Adds a translation based on the provided vector to the current matrix transformation.
+			 * This function is NOT const : the matrix is affected.
+			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !
+			 * \param translation The translation vector to add
+			 * \return The matrix augmented with this translation transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix& Translate(const Vector<3, ValT>& translation)
+			{
+				m_mat = glm::translate(m_mat, translation.glmVector());
+				return *this;
+			}
+
+
+			/**
+			 * \brief Adds a translation based on the provided translation axis values to the current matrix transformation.
+			 * This function is NOT const : the matrix is affected.
+			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !
+			 * \param x Translation in X axis
+			 * \param y Translation in Y axis
+			 * \param z Translation in Z axis
+			 * \return The matrix augmented with this translation transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix& Translate(ValT x, ValT y, ValT z)
+			{
+				m_mat = glm::translate(m_mat, glm::vec<3, ValT>(x, y, z));
+				return *this;
+			}
+
+
+			/**
+			 * \brief Adds a rotation based on the provided vector for axis and angle to the current matrix transformation.
+			 * GLM builds right-handed rotations by default.
+			 * This function is NOT const : the matrix is affected.
+			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !
+			 * \param angle The angle of rotation expressed in degrees. You can use something like 45_degf
+			 * \param axis The axis you want to rotate about
+			 * \return The matrix augmented with this rotation transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix& Rotate(Degs<ValT> angle, const Vector<3, ValT>& axis)
+			{
+				m_mat = glm::rotate(m_mat, (ValT)angle, axis.glmVector());
+				return *this;
+			}
+
+
+			/**
+			 * \brief  Adds a rotation based on the provided angle and three scalars used as an axis.
+			 * GLM builds right-handed rotations by default.
+			 * This function is NOT const : the matrix is affected.
+			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !
+			 * \param angle The angle of rotation expressed in degrees. You can use something like 45_degf
+			 * \param x The scalar for X axis
+			 * \param y The scalar for Y axis
+			 * \param z The scalar for Z axis
+			 * \return The matrix augmented with this rotation transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix& Rotate(Degs<ValT> angle, ValT x, ValT y, ValT z)
+			{
+				m_mat = glm::rotate(m_mat, (ValT)angle, glm::vec<3, ValT>(x, y, z));
+				return *this;
+			}
+
+
+			/**
+			 * \brief Adds a scale based on the axis vector passed as parameter.
+			 * A scale matrix extends or reduce transformed objects with given coefficients for each axis.
+			 * This function is NOT const : the matrix is affected.
+			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !
+			 * \param axis The scale we want to apply to each axis (X,Y,Z)
+			 * \return The matrix augmented with this scale transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix& Scale(const Vector<3, ValT>& axis)
+			{
+				m_mat = glm::scale(m_mat, axis.glmVector());
+				return *this;
+			}
+
+
+			/**
+			 * \brief Adds a scale based on the three axis values passed as parameters.
+			 * A scale matrix extends or reduce transformed objects with given coefficients for each axis.
+			 * This function is NOT const : the matrix is affected.
+			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !
+			 * \param x Scale to apply in X axis
+			 * \param y Scale to apply in Y axis
+			 * \param z Scale to apply in Z axis
+			 * \return The matrix augmented with this scale transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix& Scale(ValT x, ValT y, ValT z)
+			{
+				m_mat = glm::scale(m_mat, glm::vec<3, ValT>(x, y, z));
+				return *this;
+			}
+
+
+			/**
+			 * \brief Computes a translation matrix based on the provided translation vector.
+			 * A translation matrix will apply the translation to any Vec4 with a w != 0.
+			 * \param translation The translation vector of this matrix
+			 * \return A matrix containing this translation transformation
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix Translation(const Vector<3, ValT>& translation)
+			{
+				return Matrix(glm::translate(translation.glmVector()));
+			}
+
+
+			/**
+			 * \brief Computes a translation matrix based on the provided translation axis values.
+			 * \param x Translation in X axis
+			 * \param y Translation in Y axis
+			 * \param z Translation in Z axis
+			 * \return A matrix containing a translation equal to given components in respective axis
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix Translation(ValT x, ValT y, ValT z)
+			{
+				return Matrix(glm::translate(glm::vec<3, ValT>(x, y, z)));
+			}
+
+
+			/**
+			 * \brief Computes a rotation matrix based on the provided vector for axis, and an angle.
+			 * GLM builds right-handed rotations by default.
+			 * \param angle The angle of rotation expressed in degrees. You can use something like 45_degf
+			 * \param axis The axis you want to rotate about
+			 * \return A rotation matrix encoding the wanted rotation.
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix Rotation(Degs<ValT> angle, const Vector<3, ValT>& axis)
+			{
+				return Matrix(glm::rotate((ValT)angle, axis.glmVector()));
+			}
+
+
+			/**
+			 * \brief Computes a rotation matrix based on the provided angle and three scalars used as an axis.
+			 * GLM builds right-handed rotations by default.
+			 * \param angle The angle of rotation expressed in degrees. You can use something like 45_degf
+			 * \param x The scalar for X axis
+			 * \param y The scalar for Y axis
+			 * \param z The scalar for Z axis
+			 * \return A rotation matrix encoding the wanted rotation.
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix Rotation(Degs<ValT> angle, ValT x, ValT y, ValT z)
+			{
+				return Matrix(glm::rotate((ValT)angle, glm::vec<3, ValT>(x, y, z)));
+			}
+
+
+			/**
+			 * \brief Compute a scale matrix from the axis vector passed as parameter.
+			 * A scale matrix extends or reduce transformed objects with given coefficients for each axis.
+			 * \param axis The scale we want to apply to each axis (X,Y,Z)
+			 * \return A matrix encoding the scale transformation for these axis values
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix Scaling(const Vector<3, ValT>& axis)
+			{
+				return Matrix(glm::scale(axis.glmVector()));
+			}
+
+
+			/**
+			 * \brief Compute a scale matrix from the three axis values passed as parameters.
+			 * A scale matrix extends or reduce transformed objects with given coefficients for each axis.
+			 * \param x Scale to apply in X axis
+			 * \param y Scale to apply in Y axis
+			 * \param z Scale to apply in Z axis
+			 * \return A matrix encoding the scale transformation for these axis values
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix Scaling(ValT x, ValT y, ValT z)
+			{
+				return Matrix(glm::scale(glm::vec<3, ValT>(x, y, z)));
 			}
 
 

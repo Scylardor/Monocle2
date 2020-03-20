@@ -35,37 +35,37 @@ namespace moe
 			{}
 
 			template<typename = std::enable_if_t<NumT == 2>>
-			explicit Vector(ValT x, ValT y) :
+			Vector(ValT x, ValT y) :
 				m_vec(x, y)
 			{}
 
 			template<typename = std::enable_if_t<NumT == 3>>
-			explicit Vector(ValT x, ValT y, ValT z = ValT(0)) :
+			Vector(ValT x, ValT y, ValT z = ValT(0)) :
 				m_vec(x, y, z)
 			{}
 
 			template<typename = std::enable_if_t<NumT == 4>>
-			explicit Vector(ValT x, ValT y, ValT z, ValT w = ValT(0)) :
+			Vector(ValT x, ValT y, ValT z, ValT w = ValT(0)) :
 				m_vec(x, y, z, w)
 			{}
 
 			template<typename = std::enable_if_t<NumT == 1>>
-			explicit Vector(ValT(&valArray)[1]) :
+			Vector(ValT(&valArray)[1]) :
 				m_vec(glm::make_vec1(valArray))
 			{}
 
 			template<typename = std::enable_if_t<NumT == 2>>
-			explicit Vector(ValT(&valArray)[2]) :
+			Vector(ValT(&valArray)[2]) :
 				m_vec(glm::make_vec2(valArray))
 			{}
 
 			template<typename = std::enable_if_t<NumT == 3>>
-			explicit Vector(ValT(&valArray)[3]) :
+			Vector(ValT(&valArray)[3]) :
 				m_vec(glm::make_vec3(valArray))
 			{}
 
 			template<typename = std::enable_if_t<NumT == 4>>
-			explicit Vector(ValT(&valArray)[4]) :
+			Vector(ValT(&valArray)[4]) :
 				m_vec(glm::make_vec4(valArray))
 			{}
 
@@ -321,13 +321,13 @@ namespace moe
 			}
 
 
-			template<typename = std::enable_if_t<NumT >= 3>>
+			template<typename = std::enable_if_t<NumT >= 2>>
 			ValT&	y()
 			{
 				return m_vec.y;
 			}
 
-			template<typename = std::enable_if_t<NumT >= 3>>
+			template<typename = std::enable_if_t<NumT >= 2>>
 			ValT	y() const
 			{
 				return m_vec.y;
@@ -359,6 +359,12 @@ namespace moe
 				return m_vec.w;
 			}
 
+
+			template<typename = std::enable_if_t<NumT >= 4>>
+			Vector<3, ValT>	xyz() const
+			{
+				return Vector<3, ValT>(m_vec.x, m_vec.y, m_vec.z);
+			}
 
 
 
