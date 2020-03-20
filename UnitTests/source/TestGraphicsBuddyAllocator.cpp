@@ -4,8 +4,9 @@
 
 #include <Graphics/GraphicsAllocator/OpenGL/GLGraphicsAllocator.h>
 
-
-TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics]")
+// TODO : This test is disabled for now because it needs a working backing rendering context
+// (basically it needs a running application)
+TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 {
 	SECTION("Allocate leaf block + immediate free")
 	{
