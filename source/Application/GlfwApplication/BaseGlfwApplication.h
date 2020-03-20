@@ -20,7 +20,7 @@ namespace moe
 	{
 	public:
 		BaseGlfwApplication();
-		~BaseGlfwApplication();
+		virtual ~BaseGlfwApplication();
 
 	protected:
 

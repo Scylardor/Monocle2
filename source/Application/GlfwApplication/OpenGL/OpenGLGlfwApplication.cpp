@@ -23,16 +23,21 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 		GLFWwindow* myWindow = CreateGlfwWindow(appDesc);
-		if (myWindow != nullptr)
+		m_initialized = (myWindow != nullptr);
+
+		if (m_initialized)
 		{
 			glfwMakeContextCurrent(myWindow);
 
-			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+			m_initialized = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+			if (false == m_initialized)
 			{
 				MOE_ERROR(moe::ChanWindowing, "Failed to initialize GLAD OpenGL loader.");
-
-				m_initialized = false;
 			}
+		}
+		else
+		{
+			MOE_ERROR(moe::ChanWindowing, "Failed to create GLFW window.");
 		}
 	}
 }

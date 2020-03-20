@@ -19,6 +19,8 @@ moe::BaseGlfwApplication::BaseGlfwApplication()
 
 moe::BaseGlfwApplication::~BaseGlfwApplication()
 {
+	glfwDestroyWindow(m_window);
+
 	glfwTerminate();
 }
 
