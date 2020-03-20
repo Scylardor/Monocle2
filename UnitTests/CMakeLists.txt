@@ -11,6 +11,7 @@ set(${UNIT_TESTS_TARGET}_SOURCES
 	"${SOURCE_DIR}/TestInput.cpp"
 	"${SOURCE_DIR}/TestLog.cpp"
 	"${SOURCE_DIR}/Testmain.cpp"
+	"${SOURCE_DIR}/TestMath.cpp"
 	"${SOURCE_DIR}/TestStringFormat.cpp"
 	"${SOURCE_DIR}/TestGraphicsBuddyAllocator.cpp"
 )
@@ -29,4 +30,5 @@ target_link_libraries(${UNIT_TESTS_TARGET}
 	PUBLIC ${PROJECT_NAME}_Graphics
 	PUBLIC ${PROJECT_NAME}_GameFramework
 	PUBLIC ${PROJECT_NAME}_Input
+	PUBLIC ${PROJECT_NAME}_Math
 	PRIVATE ${PROJECT_NAME} )  # Linking with project's Interface Library allows us to reuse PCH's.
