@@ -32,6 +32,13 @@ namespace moe
 			NamedType(glm::degrees((T)rads))
 		{}
 
+
+		Degs&	operator=(Rads<T> rads)
+		{
+			m_value = glm::degrees((T)rads);
+			return *this;
+		}
+
 	};
 
 
@@ -55,6 +62,13 @@ namespace moe
 		Rads(Degs<T> degs) :
 			NamedType(glm::radians((T)degs))
 		{}
+
+
+		Rads&	operator=(Degs<T> degs)
+		{
+			m_value = glm::radians((T)degs);
+			return *this;
+		}
 	};
 
 	using Degs_f = Degs<float>;

@@ -37,7 +37,7 @@ namespace moe
             return (m_value == other.m_value);
         }
 
-    private:
+    protected:
         T   m_value;
     };
 
