@@ -6,6 +6,8 @@
 #include "Input/InputHandler/InputHandler.h"
 #include <memory> // unique ptr
 
+#include "Graphics/Renderer/Renderer.h"
+
 namespace moe
 {
 	/*	Application is an abstract class meant to serve as a base for all our application types (Glfw, Sdl, Win32, etc.)
@@ -32,8 +34,17 @@ namespace moe
 			MOE_DEBUG_ASSERT(m_inputHandler != nullptr);
 		}
 
-		std::unique_ptr<InputHandler>		m_inputHandler;
 
-		bool								m_initialized = false;
+		bool	SetInitialized(bool init)
+		{
+			m_initialized = init;
+			return m_initialized;
+		}
+
+
+		std::unique_ptr<InputHandler>		m_inputHandler{ nullptr };
+		std::unique_ptr<IGraphicsRenderer>	m_renderer{ nullptr };
+
+		bool	m_initialized = false;
 	};
 }

@@ -22,6 +22,7 @@ target_include_directories(${APPS_TARGET} PRIVATE ${PROJECT_SOURCE_DIR}/source)
 target_link_libraries(${APPS_TARGET} PUBLIC
 	${PROJECT_NAME}_Core
 	${PROJECT_NAME}_Input
+	${PROJECT_NAME}_Graphics
 	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
 # If using GLFW, integrate it in the build

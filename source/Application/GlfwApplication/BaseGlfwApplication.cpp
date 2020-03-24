@@ -13,7 +13,7 @@ moe::BaseGlfwApplication::BaseGlfwApplication()
 {
 	InitInput<moe::GlfwInputHandler>();
 
-	m_initialized = glfwInit() && (m_inputHandler != nullptr);
+	SetInitialized(glfwInit() && (m_inputHandler != nullptr));
 }
 
 
@@ -32,7 +32,7 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 		return nullptr;
 	}
 
-	glfwWindowHint(GLFW_RESIZABLE, appDesc.m_windowResizable);
+	glfwWindowHint(GLFW_RESIZABLE, appDesc.m_resizableWindow);
 
 	m_window = glfwCreateWindow(appDesc.m_windowWidth, appDesc.m_windowHeight, appDesc.m_windowTitle, nullptr, nullptr);
 	if (m_window == nullptr)

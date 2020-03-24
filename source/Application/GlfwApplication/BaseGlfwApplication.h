@@ -34,8 +34,15 @@ namespace moe
 		 */
 		GLFWwindow*	CreateGlfwWindow(const struct AppDescriptor& appDesc);
 
-	private:
 
+		GLFWwindow*	GetGlfwWindow()
+		{
+			MOE_DEBUG_ASSERT(m_window != nullptr);
+			return m_window;
+		}
+
+
+	private:
 
 		/**
 		 * \brief The handle to our current window. Must be set with a call to CreateGlfwWindow.

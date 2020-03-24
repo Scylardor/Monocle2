@@ -14,13 +14,13 @@ namespace moe
 	struct AppDescriptor
 	{
 
-		AppDescriptor(Width_t w, Height_t h, const char* windowTitle = "Monocle Application", const char* iconPath = nullptr);
+		AppDescriptor(Width_t w, Height_t h, const char* windowTitle = "Monocle Application", const char* iconPath = nullptr, bool resizableWin = false);
 
 		Width_t				m_windowWidth;
 		Height_t			m_windowHeight;
 		const char*			m_windowTitle = nullptr;
 		const char*			m_windowIcon = nullptr;
-		bool				m_windowResizable = false;
+		bool				m_resizableWindow = false;
 
 	};
 
