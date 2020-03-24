@@ -1,7 +1,15 @@
 
 
 set(Monocle_Graphics_SOURCES
-	./DeviceBuffer/BufferDescription.h
+	./BlendState/BlendEquation.h
+./BlendState/BlendFactor.h
+./BlendState/BlendStateDescriptor.cpp
+./BlendState/BlendStateDescriptor.h
+./BlendState/OpenGL/OpenGLBlendEquation.cpp
+./BlendState/OpenGL/OpenGLBlendEquation.h
+./BlendState/OpenGL/OpenGLBlendFactor.cpp
+./BlendState/OpenGL/OpenGLBlendFactor.h
+./DeviceBuffer/BufferDescription.h
 ./DeviceBuffer/BufferUsage.cpp
 ./DeviceBuffer/BufferUsage.h
 ./DeviceBuffer/DeviceBuffer.cpp
@@ -14,7 +22,12 @@ set(Monocle_Graphics_SOURCES
 ./GraphicsDevice/OpenGLGraphicsDevice.cpp
 ./GraphicsDevice/OpenGLGraphicsDevice.h
 ./Mesh/Mesh.h
+./Pipeline/OpenGL/OpenGLPipeline.cpp
+./Pipeline/OpenGL/OpenGLPipeline.h
+./Pipeline/PipelineDescriptor.h
+./Renderer/OpenGL/OpenGLRenderer.h
 ./Renderer/Renderer.h
+./Renderer/RendererDescriptor.h
 ./ResourceFactory/OpenGLResourceFactory/OpenGLResourceFactory.cpp
 ./ResourceFactory/OpenGLResourceFactory/OpenGLResourceFactory.h
 ./ResourceFactory/ResourceFactory.h
