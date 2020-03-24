@@ -11,7 +11,7 @@ namespace moe
 	 * The usual blending equation looks something like : FinalColor = (SourceColor * SourceBlendFactor) + (DestinationColor * DestinationBlendFactor)
 	 * So most of the time you will want Add (+), but other operations exist.
 	 */
-	enum class BlendEquation
+	enum class BlendEquation : std::uint8_t
 	{
 		Add = 0,	// the default, adds both colors to each other, result = Src + Dst
 		Sub,		// subtracts both colors from each other,  result = Src - Dst

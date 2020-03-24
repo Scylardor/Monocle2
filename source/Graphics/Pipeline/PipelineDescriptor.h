@@ -4,7 +4,7 @@
 
 
 #include "Graphics/BlendState/BlendStateDescriptor.h"
-
+#include "Graphics/DepthStencilState/DepthStencilDescriptor.h"
 
 namespace moe
 {
@@ -15,7 +15,8 @@ namespace moe
 	 */
 	struct PipelineDescriptor
 	{
-		BlendStateDescriptor	m_blendStateDesc;
+		BlendStateDescriptor		m_blendStateDesc;
+		DepthStencilStateDescriptor	m_depthStencilStateDesc;
 	};
 
 }
