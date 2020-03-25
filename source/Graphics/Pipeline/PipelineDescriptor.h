@@ -5,6 +5,7 @@
 #include "Graphics/BlendState/BlendStateDescriptor.h"
 #include "Graphics/DepthStencilState/DepthStencilStateDescriptor.h"
 #include "Graphics/RasterizerState/RasterizerStateDescriptor.h"
+#include "Graphics/Topology/PrimitiveTopology.h"
 
 namespace moe
 {
@@ -18,6 +19,7 @@ namespace moe
 		BlendStateDescriptor		m_blendStateDesc;
 		DepthStencilStateDescriptor	m_depthStencilStateDesc;
 		RasterizerStateDescriptor	m_rasterizerStateDesc;
+		PrimitiveTopology			m_topology{ PrimitiveTopology::TriangleStrip };
 	};
 
 }

@@ -41,6 +41,7 @@ set(Monocle_Graphics_SOURCES
 ./Texture/TextureDescription.h
 ./Texture/TextureView.h
 ./Texture/TextureViewDescription.h
+./Topology/PrimitiveTopology.h
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.cpp
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.h
 ./VertexBuffer/VertexBuffer.cpp
