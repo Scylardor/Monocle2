@@ -30,6 +30,7 @@ set(Monocle_Graphics_SOURCES
 ./Pipeline/OpenGL/OpenGLPipeline.cpp
 ./Pipeline/OpenGL/OpenGLPipeline.h
 ./Pipeline/PipelineDescriptor.h
+./RasterizerState/RasterizerStateDescriptor.h
 ./Renderer/OpenGL/OpenGLRenderer.h
 ./Renderer/Renderer.h
 ./Renderer/RendererDescriptor.h

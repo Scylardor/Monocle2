@@ -1,6 +1,6 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#include "DepthStencilDescriptor.h"
+#include "DepthStencilStateDescriptor.h"
 
 namespace moe
 {

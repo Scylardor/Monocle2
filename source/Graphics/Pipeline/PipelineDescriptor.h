@@ -2,9 +2,9 @@
 
 #pragma once
 
-
 #include "Graphics/BlendState/BlendStateDescriptor.h"
-#include "Graphics/DepthStencilState/DepthStencilDescriptor.h"
+#include "Graphics/DepthStencilState/DepthStencilStateDescriptor.h"
+#include "Graphics/RasterizerState/RasterizerStateDescriptor.h"
 
 namespace moe
 {
@@ -17,6 +17,7 @@ namespace moe
 	{
 		BlendStateDescriptor		m_blendStateDesc;
 		DepthStencilStateDescriptor	m_depthStencilStateDesc;
+		RasterizerStateDescriptor	m_rasterizerStateDesc;
 	};
 
 }
