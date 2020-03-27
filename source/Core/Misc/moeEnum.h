@@ -18,6 +18,7 @@
 
 	- Better Enums doesn't support the "trailing comma syntax" standard enums provide (i.e. ending the enum list with a comma).
 
+	- To be able to use operators, you need to prefix the operand enum values with "+" (it is a Better Enum feature).
 
 	Note : if you read the http://blog.bitwigglers.org post you'll realize I didn't implement the SFINAE for bitflags enums.
 	It's because I thought it was too much added complexity for not a lot of gained value.

@@ -42,13 +42,16 @@ set(Monocle_Core_SOURCES
 ./Misc/moeEnum.h
 ./Misc/moeError.h
 ./Misc/moeFalse.h
+./Misc/moeFile.h
 ./Misc/moeNamedType.h
 ./Misc/moeTypeList.h
 ./Misc/Private/moeAbort.cpp
+./Misc/Private/moeFile.cpp
 ./Misc/Types.h
 ./Patterns/moeSingleton.h
 ./Preprocessor/moeAssert.h
 ./Preprocessor/moeDebug.h
+./Preprocessor/moeDiscard.h
 ./Preprocessor/moeDLLVisibility.h
 ./Preprocessor/moeJoin.h
 ./Preprocessor/moeLikely.h
