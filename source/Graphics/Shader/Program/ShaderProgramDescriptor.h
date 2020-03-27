@@ -12,6 +12,10 @@ namespace moe
 {
 
 
+	/**
+	 * \brief A graphics-API agnostic descriptor of a shader program.
+	 * It basically encapsulates an array of individual shader module descriptors.
+	 */
 	struct ShaderProgramDescriptor
 	{
 		using ShaderModuleVec = Vector<ShaderModuleDescriptor>;
