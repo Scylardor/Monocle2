@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <Graphics/Shader/Program/ShaderProgramDescriptor.h>
+
 namespace moe
 {
 	/*
@@ -13,8 +15,9 @@ namespace moe
 	public:
 		virtual ~IGraphicsRenderer() = default;
 
-	private:
-		std::unique_ptr<GraphicsDevice>	m_device = nullptr;
+		virtual void	CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc) = 0;
+		virtual void	CreateShaderProgramFromBinary(const ShaderProgramDescriptor& shaProDesc) = 0;
+
 
 	};
 

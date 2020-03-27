@@ -1,5 +1,9 @@
 // Monocle Game Engine source files - Alexandre Baron
 
+
+#ifdef MOE_OPENGL
+
+
 #include "OpenGLBlendFactor.h"
 
 
@@ -41,3 +45,5 @@ GLenum moe::GetOpenGLBlendFactor(BlendFactor factor)
 		return GL_ZERO;
 	}
 }
+
+#endif // #ifdef MOE_OPENGL

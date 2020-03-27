@@ -1,5 +1,8 @@
 // Monocle Game Engine source files - Alexandre Baron
 
+#ifdef MOE_OPENGL
+
+
 #include "OpenGLBlendEquation.h"
 
 
@@ -23,3 +26,5 @@ GLenum	moe::GetOpenGLBlendEquation(BlendEquation blEq)
 		return GL_FUNC_ADD;
 	}
 }
+
+#endif // #ifdef MOE_OPENGL

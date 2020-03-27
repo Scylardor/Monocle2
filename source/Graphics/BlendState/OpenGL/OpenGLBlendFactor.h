@@ -2,6 +2,7 @@
 
 #pragma once
 
+#ifdef MOE_OPENGL
 
 #include "Graphics/BlendState/BlendFactor.h"
 
@@ -17,5 +18,6 @@ namespace moe
 	 */
 	GLenum	GetOpenGLBlendFactor(BlendFactor factor);
 
-
 }
+
+#endif // #ifdef MOE_OPENGL

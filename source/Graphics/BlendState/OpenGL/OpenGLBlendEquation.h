@@ -2,6 +2,7 @@
 
 #pragma once
 
+#ifdef MOE_OPENGL
 
 #include "Graphics/BlendState/BlendEquation.h"
 
@@ -17,5 +18,6 @@ namespace moe
 	 */
 	GLenum	GetOpenGLBlendEquation(BlendEquation blEq);
 
-
 }
+
+#endif // #ifdef MOE_OPENGL
