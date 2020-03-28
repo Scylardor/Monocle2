@@ -9,6 +9,8 @@
 namespace moe
 {
 
+
+
 	/**
 	 * \brief A thin wrapper over an OpenGL shader program in RAII-fashion that automatically deletes itself when going out of scope.
 	 * It is handy to avoid forgetting to delete them.
@@ -68,9 +70,22 @@ namespace moe
 		}
 
 
+		/**
+		 * \brief Comparison operator needed to put programs in std::set for example
+		 * \param other The other compared shader program
+		 * \return
+		 */
+		bool operator<(const OpenGLShaderProgram & other) const
+		{
+			return m_program < other.m_program;
+		}
+
+
 	private:
 		GLuint	m_program{ ms_nullProgram };
 	};
+
+
 }
 
 #endif // #ifdef MOE_OPENGL
