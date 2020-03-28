@@ -24,6 +24,10 @@ namespace moe
 		}
 
 
+		virtual const IGraphicsRenderer&	GetRenderer() const = 0;
+		virtual IGraphicsRenderer&			MutRenderer() = 0;
+
+
 	protected:
 
 		template <typename TInput, typename... Args>
@@ -43,7 +47,6 @@ namespace moe
 
 
 		std::unique_ptr<InputHandler>		m_inputHandler{ nullptr };
-		std::unique_ptr<IGraphicsRenderer>	m_renderer{ nullptr };
 
 		bool	m_initialized = false;
 	};

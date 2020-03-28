@@ -2,14 +2,15 @@
 
 #pragma once
 
-#ifdef MOE_GLFW
+#if defined(MOE_GLFW) && defined(MOE_OPENGL)
 
 #include "Core/Preprocessor/moeDLLVisibility.h"
+
+#include "Graphics/Renderer/OpenGL/OpenGLRenderer.h"
 
 #include "Application/GlfwApplication/BaseGlfwApplication.h"
 
 #include "Application/GlfwApplication/OpenGL/OpenGLGlfwAppDescriptor.h"
-
 
 namespace moe
 {
@@ -22,7 +23,21 @@ namespace moe
 	public:
 		OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
 		~OpenGLGlfwApplication() = default;
+
+
+		const IGraphicsRenderer&	GetRenderer() const override
+		{
+			return m_renderer;
+		}
+		IGraphicsRenderer&			MutRenderer() override
+		{
+			return m_renderer;
+		}
+
+	protected:
+
+		OpenGLRenderer	m_renderer;
 	};
 }
 
-#endif // MOE_GLFW
+#endif // defined(MOE_GLFW) && defined(MOE_OPENGL)
