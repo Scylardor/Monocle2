@@ -25,13 +25,13 @@ namespace moe
 		/**
 		 * \brief The actual code of the shader. This can be either source code compiled at runtime or a precompiled binary format.
 		 */
-		std::string	m_shaderCode{ nullptr };
+		std::string	m_shaderCode{ "" };
 
 
 		/**
 		 * \brief Used only for binary code. Will specify the entry point of the shader. If it's null, the string "main" will be used.
 		 */
-		std::string	m_entryPoint{ nullptr };
+		std::string	m_entryPoint{ "main" };
 	};
 
 }
