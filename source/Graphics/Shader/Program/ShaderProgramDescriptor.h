@@ -20,6 +20,17 @@ namespace moe
 	{
 		using ShaderModuleVec = Vector<ShaderModuleDescriptor>;
 
+		ShaderProgramDescriptor() = default;
+		ShaderProgramDescriptor(ShaderModuleVec::SizeType reserved)
+		{
+			m_modules.Reserve(reserved);
+		}
+
+		ShaderProgramDescriptor(std::initializer_list< ShaderModuleDescriptor > il) :
+			m_modules(il)
+		{}
+
+
 		ShaderModuleVec::SizeType	Count() const
 		{
 			return m_modules.Size();
