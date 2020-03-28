@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include <bits.h>
 
 namespace moe
 {
@@ -192,7 +191,7 @@ namespace moe
 		if (level == 0) // "root" block (at level 0) is the only one without a buddy
 			return 0;
 
-		uint32_t buddyBitIdx = (1 << (level - 1) + blockIdxInLevel);
+		uint32_t buddyBitIdx = (1 << (level - 1)) + blockIdxInLevel;
 		return buddyBitIdx;
 	}
 

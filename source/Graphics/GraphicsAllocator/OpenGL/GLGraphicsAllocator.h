@@ -4,9 +4,6 @@
 
 #include "Core/Misc/Types.h"
 
-#include "Core/Containers/Array/Array.h"
-#include "Core/Containers/Vector/Vector.h"
-
 #include <glad/glad.h>
 
 #include <bitset>
