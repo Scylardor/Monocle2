@@ -5,6 +5,8 @@
 #include "moeNamedType.h"
 #include "Types.h"
 
+#include "Core/Preprocessor/moeDLLVisibility.h"
+
 namespace moe
 {
 	struct WidthParam {};
@@ -15,6 +17,6 @@ namespace moe
 
 }
 
-moe::Width_t operator "" _width(unsigned long long val);
+moe::Width_t MOE_DLL_API operator "" _width(unsigned long long val);
 
-moe::Height_t operator "" _height(unsigned long long val);
+moe::Height_t MOE_DLL_API operator "" _height(unsigned long long val);

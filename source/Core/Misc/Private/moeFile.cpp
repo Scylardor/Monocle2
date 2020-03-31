@@ -13,30 +13,22 @@ namespace moe
 	std::optional<std::string> ReadFile(const std::string_view fileName, bool binary)
 	{
 		// std::ios_base::in inputFile always set for ifstream
-		std::ifstream inputFile(fileName.data(), (binary ? std::ifstream::binary : std::ios_base::in));
+		const std::ios_base::openmode mode = (binary ? std::ios::binary : std::ios::in);
+		std::ifstream inputFile(fileName.data(), mode);
 
-		if (false == inputFile.is_open())
+		if (inputFile)
 		{
-			MOE_ERROR(ChanDefault, "ReadFile failed to read file %s.", fileName.data());
-			return std::nullopt;
+			std::string contents;
+
+			inputFile.seekg(0, std::ios::end);
+			contents.resize(inputFile.tellg());
+			inputFile.seekg(0, std::ios::beg);
+
+			inputFile.read(&contents[0], contents.size());
+
+			return std::optional<std::string>{contents};
 		}
 
-		// get length of file:
-		inputFile.seekg(0, inputFile.end); // go to the file end
-		const int fileLength = inputFile.tellg(); // Note the length we walked
-		inputFile.seekg(0, inputFile.beg); // rewind to the beginning
-
-		std::string buf;
-		buf.resize(fileLength);
-		// read data as a block:
-		inputFile.read(buf.data(), fileLength);
-
-		if (!inputFile)
-		{
-			MOE_ERROR(ChanDefault, "Reading file %s failed: need to read %d characters, could only read %d.", fileName.data(), fileLength, inputFile.gcount());
-			return std::nullopt;
-		}
-
-		return std::optional<std::string>{buf};
+		return std::nullopt;
 	}
 }

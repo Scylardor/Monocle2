@@ -34,16 +34,16 @@ namespace moe
 	{
 		ShaderProgramDescriptor programDesc(fileList.Size());
 
-		for (auto stageFilePair : fileList)
+		for (const auto & [shaderStage, fileName] : fileList)
 		{
-			auto shaderCodeOpt = moe::ReadFile(stageFilePair.second);
+			auto shaderCodeOpt = moe::ReadFile(fileName);
 			if (shaderCodeOpt.has_value())
 			{
-				programDesc.m_modules.PushBack({ stageFilePair.first, shaderCodeOpt.value() });
+				programDesc.m_modules.PushBack({ shaderStage, shaderCodeOpt.value() });
 			}
 			else
 			{
-				MOE_ERROR(ChanGraphics, "Graphics Renderer unable to read shader %s module file %s.", stageFilePair.first._to_string(), stageFilePair.second.data());
+				MOE_ERROR(ChanGraphics, "Graphics Renderer unable to read shader %d module file %s.", shaderStage, fileName.data()); // TODO use magic enums
 				return std::nullopt;
 			}
 		}

@@ -8,9 +8,10 @@ set(SOURCE_DIR .)
 include(CMake/CMakeLists_sources.cmake)
 
 if(${PROJECT_NAME}_BUILD_SHARED_LIB)
-add_library(${INPUT_TARGET} SHARED ${${INPUT_TARGET}_SOURCES} )
+	add_definitions(-DMOE_DLL_EXPORT)
+	add_library(${INPUT_TARGET} SHARED ${${INPUT_TARGET}_SOURCES} )
 else()
-add_library(${INPUT_TARGET} STATIC ${${INPUT_TARGET}_SOURCES} )
+	add_library(${INPUT_TARGET} STATIC ${${INPUT_TARGET}_SOURCES} )
 endif()
 
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR

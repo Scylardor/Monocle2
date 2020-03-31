@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Core/Preprocessor/moeDLLVisibility.h"
+
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 
 #include "Graphics/Shader/Program/OpenGL/OpenGLShaderProgram.h"
@@ -25,10 +27,16 @@ namespace moe
 	 * When you register a new shader, it hands you out a shader handle that you can reuse to get back to that shader.
 	 * It technically takes ownership of your shader program. When the manager is destroyed, all the shader programs inside get destroyed.
 	 */
-	class OpenGLShaderManager
+	class MOE_DLL_API OpenGLShaderManager
 	{
 
 	public:
+
+		OpenGLShaderManager() = default;
+
+		// Delete those functions because OpenGLShaderManager contains ShaderPrograms that cannot be copied
+		OpenGLShaderManager(const OpenGLShaderManager&) = delete;
+		OpenGLShaderManager& operator=(const OpenGLShaderManager&) = delete;
 
 		/**
 		* \brief Creates an OpenGL shader program compiled at runtime, from a descriptor containing GLSL source code.

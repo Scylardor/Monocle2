@@ -51,6 +51,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_definitions($<$<CONFIG:Debug>:MOE_DEBUG>)
 
+if(${PROJECT_NAME}_BUILD_SHARED_LIB)
+	add_definitions(-DMOE_USE_DLL)
+endif()
 if(${PROJECT_NAME}_USE_STL)
 	add_definitions(-DMOE_STD_SUPPORT)
 endif()
@@ -65,6 +68,14 @@ if(${PROJECT_NAME}_USE_GLM)
 endif()
 if(${PROJECT_NAME}_USE_OPENGL)
 	add_definitions(-DMOE_OPENGL)
+	
+	# GLAD
+	set(GLAD_DIR ${VENDOR_DIR}/glad45)
+	set(GLAD_SOURCE ${GLAD_DIR}/src/glad.c)
+	add_library(GLAD EXCLUDE_FROM_ALL ${GLAD_SOURCE})
+	# Make the glad.c file a "C++ file" or it just won't be compiled (because the project is marked C++)
+	set_source_files_properties( ${GLAD_SOURCE} PROPERTIES LANGUAGE CXX )
+	target_include_directories(GLAD PUBLIC "${GLAD_DIR}/include")
 endif()
 
 if (WIN32)

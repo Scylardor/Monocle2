@@ -4,10 +4,12 @@
 
 #include "Input/InputHandler/InputHandler.h"
 
+#include "Core/Preprocessor/moeDLLVisibility.h"
+
 
 namespace moe
 {
-	class GlfwInputHandler : public InputHandler
+	class MOE_DLL_API GlfwInputHandler : public InputHandler
 	{
 	public:
 		GlfwInputHandler() = default;

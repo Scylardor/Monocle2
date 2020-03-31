@@ -6,6 +6,10 @@
 #include "../GLM/Angles_glm.h"
 #endif // MOE_GLM
 
+
+#include "Core/Preprocessor/moeDLLVisibility.h"
+
+
 namespace moe
 {
 	using Degs_f = Degs<float>;
@@ -18,7 +22,7 @@ namespace moe
  * \param degs The number of degrees
  * \return Float Degrees struct containing this number of degrees
  */
-moe::Degs_f operator "" _degf(long double degs);
+MOE_DLL_API moe::Degs_f operator "" _degf(long double degs);
 
 
 /**
@@ -26,7 +30,7 @@ moe::Degs_f operator "" _degf(long double degs);
  * \param degs The number of degrees
  * \return Float Degrees struct containing this number of degrees
  */
-moe::Degs_f operator "" _degf(unsigned long long degs);
+MOE_DLL_API moe::Degs_f operator "" _degf(unsigned long long degs);
 
 
 /**
@@ -34,7 +38,7 @@ moe::Degs_f operator "" _degf(unsigned long long degs);
  * \param degs The number of radians
  * \return Float Radians struct containing this number of radians
  */
-moe::Rads_f operator "" _radf(long double rads);
+MOE_DLL_API moe::Rads_f operator "" _radf(long double rads);
 
 
 /**
@@ -42,4 +46,4 @@ moe::Rads_f operator "" _radf(long double rads);
  * \param degs The number of radians
  * \return Float Radians struct containing this number of radians
  */
-moe::Rads_f operator "" _radf(unsigned long long rads);
+MOE_DLL_API moe::Rads_f operator "" _radf(unsigned long long rads);

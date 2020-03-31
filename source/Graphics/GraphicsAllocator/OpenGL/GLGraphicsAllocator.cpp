@@ -1,3 +1,7 @@
+// Monocle Game Engine source files - Alexandre Baron
+
+#ifdef MOE_OPENGL
+
 #include "GLGraphicsAllocator.h"
 
 #include "Core/Preprocessor/moeAssert.h"
@@ -295,3 +299,5 @@ namespace moe
 	}
 
 }
+
+#endif // MOE_OPENGL

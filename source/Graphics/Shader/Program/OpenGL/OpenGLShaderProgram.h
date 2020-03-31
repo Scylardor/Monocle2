@@ -25,6 +25,10 @@ namespace moe
 			m_program(shaderProgram)
 		{}
 
+		// Delete those functions because OpenGLShaderProgram cannot be copied (avoids duplicate glDeleteProgram's)
+		OpenGLShaderProgram(const OpenGLShaderProgram &) = delete;
+		OpenGLShaderProgram & operator=(const OpenGLShaderProgram &) = delete; // assignment op
+
 		OpenGLShaderProgram(OpenGLShaderProgram&& other)
 		{
 			m_program = other.m_program;

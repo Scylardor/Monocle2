@@ -12,5 +12,5 @@
 
 namespace moe
 {
-	[[nodiscard]]  std::optional<std::string>	ReadFile(const std::string_view fileName, bool binary = false);
+	[[nodiscard]]  std::optional<std::string>	MOE_DLL_API ReadFile(const std::string_view fileName, bool binary = false);
 }

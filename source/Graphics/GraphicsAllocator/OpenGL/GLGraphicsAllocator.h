@@ -2,13 +2,19 @@
 
 #pragma once
 
+#ifdef MOE_OPENGL
+
 #include "Core/Misc/Types.h"
+#include "Core/Preprocessor/moeDLLVisibility.h"
 
 #include <glad/glad.h>
 
-#include <bitset>
-#include <optional>
-#include <set>
+#ifdef MOE_STD_SUPPORT
+	#include <bitset>
+	#include <optional>
+	#include <set>
+#endif
+
 
 namespace moe
 {
@@ -22,13 +28,13 @@ namespace moe
 
 	public:
 
-		GLGraphicsAllocator(uint32_t bufferHandle);
+		MOE_DLL_API				GLGraphicsAllocator(uint32_t bufferHandle);
 
-		void	ReservePoolMemory(GLenum target, GLbitfield flags);
+		MOE_DLL_API void		ReservePoolMemory(GLenum target, GLbitfield flags);
 
-		uint32_t	Allocate(const void* data, uint32_t size);
+		MOE_DLL_API uint32_t	Allocate(const void* data, uint32_t size);
 
-		void		Free(uint32_t offset);
+		MOE_DLL_API void		Free(uint32_t offset);
 
 	private:
 
@@ -84,3 +90,5 @@ namespace moe
 	};
 
 }
+
+#endif // MOE_OPENGL

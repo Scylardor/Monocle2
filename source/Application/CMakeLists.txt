@@ -8,9 +8,10 @@ set(SOURCE_DIR .)
 include(CMake/CMakeLists_sources.cmake)
 
 if(${PROJECT_NAME}_BUILD_SHARED_LIB)
-add_library(${APPS_TARGET} SHARED ${${APPS_TARGET}_SOURCES} )
+	add_definitions(-DMOE_DLL_EXPORT)
+	add_library(${APPS_TARGET} SHARED ${${APPS_TARGET}_SOURCES} )
 else()
-add_library(${APPS_TARGET} STATIC ${${APPS_TARGET}_SOURCES} )
+	add_library(${APPS_TARGET} STATIC ${${APPS_TARGET}_SOURCES} )
 endif()
 
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR
@@ -29,22 +30,7 @@ target_link_libraries(${APPS_TARGET} PUBLIC
 
 if(${PROJECT_NAME}_USE_GLFW)
 	set(GLFW_DIR ${PROJECT_SOURCE_DIR}/vendor/glfw)
-
 	target_include_directories(${APPS_TARGET} PUBLIC "${GLFW_DIR}/include")
-
 	target_link_directories(${APPS_TARGET} PUBLIC ${GLFW_DIR})
-
 	target_link_libraries(${APPS_TARGET} PUBLIC glfw3)
 endif()
-
-# Also integrate GLAD function pointer loader if we're using OpenGL because we need it to load OpenGL.
-if(${PROJECT_NAME}_USE_OPENGL)
-	set(GLAD_DIR ${PROJECT_SOURCE_DIR}/vendor/glad45)
-	set(GLAD_SOURCE ${GLAD_DIR}/src/glad.c)
-
-	target_include_directories(${APPS_TARGET} PUBLIC "${GLAD_DIR}/include")
-
-	target_sources(${APPS_TARGET} PUBLIC ${GLAD_SOURCE})
-	set_source_files_properties( ${GLAD_SOURCE} PROPERTIES LANGUAGE CXX )
-endif()
-

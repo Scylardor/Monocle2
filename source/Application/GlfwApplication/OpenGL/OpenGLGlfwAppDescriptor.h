@@ -17,7 +17,7 @@ namespace moe
 	 * \brief A descriptor for a GLFW application OpenGL context.
 	 * Can be parameterized about major/minor OpenGL versions and needed OpenGL profile type (core/compat).
 	 */
-	struct MOE_DLL_API OpenGLGlfwAppDescriptor : public AppDescriptor
+	struct OpenGLGlfwAppDescriptor : public AppDescriptor
 	{
 	public:
 		using AppDescriptor::AppDescriptor;

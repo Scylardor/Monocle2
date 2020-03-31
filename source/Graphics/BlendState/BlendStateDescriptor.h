@@ -15,7 +15,7 @@ namespace moe
 	 * The usual blending equation looks something like : FinalColor = (SourceColor * SourceBlendFactor) + (DestinationColor * DestinationBlendFactor).
 	 * Also includes often used presets made easy to use (BlendAlpha is the most usual formula, but Additive is also be popular).
 	 */
-	struct MOE_DLL_API BlendStateDescriptor
+	struct BlendStateDescriptor
 	{
 
 		/**
@@ -44,13 +44,13 @@ namespace moe
 		/**
 		 * \brief This Blend State always overrides the destination pixel with the source pixel color.
 		 */
-		static const BlendStateDescriptor	ms_Override;
+		MOE_DLL_API static const BlendStateDescriptor	ms_Override;
 
 
 		/**
 		 * \brief This blend state will give you a blend equation where output_color = 1 * source_color + 1 * destination_color.
 		 */
-		static const BlendStateDescriptor	ms_Additive;
+		MOE_DLL_API static const BlendStateDescriptor	ms_Additive;
 
 
 		/**
@@ -60,7 +60,7 @@ namespace moe
 		 * You just have to disable depth writing.
 		 * See for example https://docs.microsoft.com/en-us/archive/blogs/etayrien/alpha-blending-part-3
 		 */
-		static const BlendStateDescriptor	ms_AdditiveAlpha;
+		MOE_DLL_API static const BlendStateDescriptor	ms_AdditiveAlpha;
 
 		/**
 		* \brief This blend state will give you a blend equation where output_color = source_alpha * source_color + (1 - source_alpha) * destination_color.
@@ -68,13 +68,13 @@ namespace moe
 		* you must deal with disabling depth writing (to make sure transparent objects do not obscure each other because of depth test)
 		* and you must sort transparent objects back-to-front to ensure the computed color is right.
 		*/
-		static const BlendStateDescriptor	ms_BlendAlpha;
+		MOE_DLL_API static const BlendStateDescriptor	ms_BlendAlpha;
 
 
 		/**
 		 * \brief This blend state will keep blending disabled.
 		 */
-		static const BlendStateDescriptor	ms_Disabled;
+		MOE_DLL_API static const BlendStateDescriptor	ms_Disabled;
 	};
 
 }

@@ -9,9 +9,10 @@ include(CMake/CMakeLists_sources.cmake)
 
 # So far, Math is a header-only library, so make it an Interface. Maybe that will change someday.
 if(${PROJECT_NAME}_BUILD_SHARED_LIB)
-add_library(${MATH_TARGET} SHARED ${${MATH_TARGET}_SOURCES})
+	add_definitions(-DMOE_DLL_EXPORT)
+	add_library(${MATH_TARGET} SHARED ${${MATH_TARGET}_SOURCES})
 else()
-add_library(${MATH_TARGET} STATIC ${${MATH_TARGET}_SOURCES} )
+	add_library(${MATH_TARGET} STATIC ${${MATH_TARGET}_SOURCES} )
 endif()
 
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR

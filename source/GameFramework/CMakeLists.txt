@@ -8,9 +8,10 @@ set(SOURCE_DIR .)
 include(CMake/CMakeLists_sources.cmake)
 
 if(${PROJECT_NAME}_BUILD_SHARED_LIB)
-add_library(${GAMEFRAMEWORK_TARGET} SHARED ${${GAMEFRAMEWORK_TARGET}_SOURCES} )
+	add_definitions(-DMOE_DLL_EXPORT)
+	add_library(${GAMEFRAMEWORK_TARGET} SHARED ${${GAMEFRAMEWORK_TARGET}_SOURCES} )
 else()
-add_library(${GAMEFRAMEWORK_TARGET} STATIC ${${GAMEFRAMEWORK_TARGET}_SOURCES} )
+	add_library(${GAMEFRAMEWORK_TARGET} STATIC ${${GAMEFRAMEWORK_TARGET}_SOURCES} )
 endif()
 
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR

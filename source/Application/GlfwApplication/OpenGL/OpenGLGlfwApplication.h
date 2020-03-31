@@ -18,11 +18,13 @@ namespace moe
 	 * \brief Application class that uses an OpenGL context.
 	 * Can be parameterized about major/minor OpenGL versions and needed OpenGL profile type (core/compat).
 	 */
-	class MOE_DLL_API OpenGLGlfwApplication : public BaseGlfwApplication
+	class OpenGLGlfwApplication : public BaseGlfwApplication
 	{
 	public:
-		OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
-		~OpenGLGlfwApplication() = default;
+		MOE_DLL_API OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
+		virtual ~OpenGLGlfwApplication() = default;
+
+		OpenGLGlfwApplication(const OpenGLGlfwApplication&) = delete;
 
 
 		const IGraphicsRenderer&	GetRenderer() const override
