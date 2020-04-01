@@ -4,7 +4,11 @@
 
 #include "Core/Misc/moeNamedType.h"
 
+// Use pragmas to disable warnings coming from GLM.
+#pragma warning(push, 0)
+#include <glm/glm/vec2.hpp>
 #include <glm/glm.hpp> // glm::radians, glm::degrees
+#pragma warning(pop)
 
 namespace moe
 {

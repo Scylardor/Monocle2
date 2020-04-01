@@ -6,7 +6,7 @@
 
 namespace moe
 {
-	VertexBuffer::VertexBuffer(const BufferStorageDescription& bufferDesc) :
+	VertexBuffer::VertexBuffer(const BufferStorageDescription&) :
 		DeviceBuffer(BufferUsage::VertexBuffer)
 	{}
 

@@ -1,5 +1,6 @@
 // Monocle Game Engine source files - Alexandre Baron
 
+#if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)
 #include "Input/RawInput/Windows/RawInputHandler_Win32.h"
 
 #include "Core/Misc/Windows/GetLastErrorAsString.h"
@@ -230,3 +231,4 @@ namespace moe
 	}
 	#endif
 }
+#endif // #if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)

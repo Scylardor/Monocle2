@@ -12,7 +12,6 @@ option(${PROJECT_NAME}_USE_ASSERTS "If ON, Monocle asserts will be defined. Othe
 option(${PROJECT_NAME}_USE_STL "If ON, Monocle containers will use STL containers under the hood." ON)
 option(${PROJECT_NAME}_USE_GLM "If ON, Monocle will use GLM as underlying Math library." ON)
 
-
 # Windowing APIs
 option(${PROJECT_NAME}_USE_GLFW "If ON, Monocle will compile with the GLFW library." ON)
 option(${PROJECT_NAME}_USE_WIN32 "If ON, Monocle will compile with the Win32 windowing and input library." OFF)
@@ -21,7 +20,6 @@ option(${PROJECT_NAME}_USE_WIN32 "If ON, Monocle will compile with the Win32 win
 option(${PROJECT_NAME}_USE_OPENGL "If ON, Monocle will compile OpenGL dependencies (RenderContext, applications, etc)." ON)
 option(${PROJECT_NAME}_USE_VULKAN "If ON, Monocle will compile Vulkan dependencies (RenderContext, applications, etc)." OFF)
 option(${PROJECT_NAME}_USE_DIRECTX "If ON, Monocle will compile Direct3D dependencies (RenderContext, applications , etc)." OFF)
-
 
 # Monocle libraries to build
 option(${PROJECT_NAME}_BUILD_SHARED_LIB "If ON, Monocle will build shared libraries instead of static libraries." OFF)
@@ -35,15 +33,13 @@ option(${PROJECT_NAME}_BUILD_MATH "If ON, Monocle will build the Math library." 
 
 # Monocle support projects to build
 option(${PROJECT_NAME}_BUILD_UNIT_TESTS "If ON, Monocle will build the Unit Tests project." OFF)
-
 option(${PROJECT_NAME}_BUILD_SANDBOX "If ON, Monocle will build a test project." ON)
 
 
 # End of options
 
 # C++17 features used :
-# std::optional
-# [[nodiscard]]
+# std::optional, [[nodiscard]], structured bindings
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -51,6 +47,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_definitions($<$<CONFIG:Debug>:MOE_DEBUG>)
 
+if(${PROJECT_NAME}_USE_ASSERTS)
+	add_definitions(-DMOE_USE_ASSERTS)
+endif()
 if(${PROJECT_NAME}_BUILD_SHARED_LIB)
 	add_definitions(-DMOE_USE_DLL)
 endif()
@@ -63,18 +62,29 @@ endif()
 if(${PROJECT_NAME}_USE_GLFW)
 	add_definitions(-DMOE_GLFW)
 endif()
+
 if(${PROJECT_NAME}_USE_GLM)
 	add_definitions(-DMOE_GLM)
+	
+	# Add GLM library project
+	set(GLM_DIR "${VENDOR_DIR}/glm")
+	file(GLOB_RECURSE GLM_FILES "${GLM_DIR}/*.hpp" "${GLM_DIR}/*.inl")
+	add_library(GLM INTERFACE) # GLM is header-only: make it an interface
+	#add_custom_target(GLM_ SOURCES ${GLM_FILES})
+	target_sources(GLM INTERFACE "${GLM_FILES}")
+	#set_target_properties(GLM PROPERTIES LINKER_LANGUAGE CXX) # Fixes "can not determine linker language" CMake error 
+	target_include_directories(GLM INTERFACE "${GLM_DIR}")
 endif()
+
 if(${PROJECT_NAME}_USE_OPENGL)
 	add_definitions(-DMOE_OPENGL)
 	
-	# GLAD
-	set(GLAD_DIR ${VENDOR_DIR}/glad45)
-	set(GLAD_SOURCE ${GLAD_DIR}/src/glad.c)
-	add_library(GLAD EXCLUDE_FROM_ALL ${GLAD_SOURCE})
+	# Add GLAD project
+	set(GLAD_DIR "${VENDOR_DIR}/glad45")
+	set(GLAD_SOURCE "${GLAD_DIR}/src/glad.c")
+	add_library(GLAD EXCLUDE_FROM_ALL "${GLAD_SOURCE}") # Do not recompile Glad when rebuilding ALL
 	# Make the glad.c file a "C++ file" or it just won't be compiled (because the project is marked C++)
-	set_source_files_properties( ${GLAD_SOURCE} PROPERTIES LANGUAGE CXX )
+	set_source_files_properties( "${GLAD_SOURCE}" PROPERTIES LANGUAGE CXX )
 	target_include_directories(GLAD PUBLIC "${GLAD_DIR}/include")
 endif()
 
@@ -86,9 +96,6 @@ elseif(UNIX)
 	add_definitions(-DMOE_LINUX)
 endif()
 
-if(${PROJECT_NAME}_USE_ASSERTS)
-	add_definitions(-DMOE_USE_ASSERTS)
-endif()
 
 # Definitions tweaking End
 
@@ -97,19 +104,19 @@ endif()
 add_library(${PROJECT_NAME} INTERFACE)
 # Add here all the headers that should be in precompiled header file.
 if(${PROJECT_NAME}_USE_STL)
-target_precompile_headers(${PROJECT_NAME}
-  INTERFACE
-    "${SOURCE_DIR}/pch.h"
-  INTERFACE
-    <unordered_map>
-	<string>
-	<cstddef>
-	<functional>
-	<utility>
-	<algorithm>
-	<cstdio>
-	<iostream>
-	<memory>
+	target_precompile_headers(${PROJECT_NAME}
+	INTERFACE
+		"${SOURCE_DIR}/pch.h"
+	INTERFACE
+		<unordered_map>
+		<string>
+		<cstddef>
+		<functional>
+		<utility>
+		<algorithm>
+		<cstdio>
+		<iostream>
+		<memory>
 )
 else()
 target_precompile_headers(${PROJECT_NAME}
@@ -119,6 +126,8 @@ target_precompile_headers(${PROJECT_NAME}
 )
 endif()
 
+# Include our utility functions for all submodules to have them too
+include(CMake/MonocleFunctions.cmake)
 
 if(${PROJECT_NAME}_BUILD_CORE)
 	add_subdirectory(${SOURCE_DIR}/Core)
@@ -133,11 +142,11 @@ if(${PROJECT_NAME}_BUILD_APPLICATION)
 endif()
 
 if(${PROJECT_NAME}_BUILD_GRAPHICS)
-	add_subdirectory(${SOURCE_DIR}/Graphics)
+	add_subdirectory("${SOURCE_DIR}/Graphics")
 endif()
 
 if(${PROJECT_NAME}_BUILD_GAMEFRAMEWORK)
-	add_subdirectory(${SOURCE_DIR}/GameFramework)
+	add_subdirectory("${SOURCE_DIR}/GameFramework")
 endif()
 
 if(${PROJECT_NAME}_BUILD_MATH)
@@ -155,5 +164,5 @@ endif()
 # I think adding the CMakeLists in glm helps the natvis to work ?...
 # Fixed a hard to repro natvis bug because of that.
 if(${PROJECT_NAME}_USE_GLM)
-	add_subdirectory("${VENDOR_DIR}/glm")
+	add_subdirectory("${GLM_DIR}")
 endif()

@@ -95,7 +95,7 @@ namespace moe
 			const GLuint newShader = glCreateShader(shaderStageEnum);
 
 			// Provide shader SPIRV code and specialize it with our entry point
-			glShaderBinary(1, &newShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, shaderModDesc.m_shaderCode.data(), shaderModDesc.m_shaderCode.size());
+			glShaderBinary(1, &newShader, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, shaderModDesc.m_shaderCode.data(), (GLsizei)shaderModDesc.m_shaderCode.size());
 
 			// We don't support specialization constants for now.
 			glSpecializeShaderARB(newShader, shaderModDesc.m_entryPoint.c_str(), 0, nullptr, nullptr);

@@ -34,3 +34,6 @@ if(${PROJECT_NAME}_USE_GLFW)
 
 	target_link_libraries(${INPUT_TARGET} PUBLIC glfw3)
 endif()
+
+# Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
+monocle_target_compile_config(${INPUT_TARGET})

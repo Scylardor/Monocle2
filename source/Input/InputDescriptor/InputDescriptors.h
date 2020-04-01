@@ -2,6 +2,9 @@
 
 #pragma once
 
+// TODO Fix compilation for now because missing raw input handler, but this has to be redone properly.
+#if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)
+
 #include "Input/RawInput/RawInputHandler.h"
 #include "Input/Keyboard/MonocleKeyboardMap.h"
 #include "Input/Mouse/MonocleMouse.h"
@@ -83,3 +86,5 @@ namespace moe
 	};
 
 }
+
+#endif // defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)

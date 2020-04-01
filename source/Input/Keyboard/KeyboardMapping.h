@@ -2,6 +2,8 @@
 
 #pragma once
 
+// TODO Fix compilation for now because missing raw input handler, but this has to be redone properly.
+#if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)
 #include <cstdint> // std::uint8_t
 #include "Core/Misc/moeEnum.h"
 #include "Core/Containers/Vector/Vector.h"
@@ -9,6 +11,7 @@
 
 #include "Input/Input.h"
 #include "Input/InputDescriptor/InputDescriptors.h"
+#include "Input/Keyboard/MonocleKeyboardMap.h"
 
 
 namespace moe
@@ -68,3 +71,5 @@ namespace moe
 
 
 }
+
+#endif // #if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)

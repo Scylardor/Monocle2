@@ -2,6 +2,9 @@
 
 #pragma once
 
+// TODO Fix compilation for now because missing raw input handler, but this has to be redone properly.
+#if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)
+.
 #include "Core/Preprocessor/moeDLLVisibility.h"
 #include "Core/Containers/HashMap/HashMap.h"
 #include "Core/Containers/Vector/Vector.h"
@@ -111,3 +114,5 @@ namespace moe
 
 	};
 }
+
+#endif // defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)

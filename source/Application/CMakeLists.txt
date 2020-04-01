@@ -27,10 +27,13 @@ target_link_libraries(${APPS_TARGET} PUBLIC
 	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
 # If using GLFW, integrate it in the build
-
 if(${PROJECT_NAME}_USE_GLFW)
 	set(GLFW_DIR ${PROJECT_SOURCE_DIR}/vendor/glfw)
 	target_include_directories(${APPS_TARGET} PUBLIC "${GLFW_DIR}/include")
 	target_link_directories(${APPS_TARGET} PUBLIC ${GLFW_DIR})
 	target_link_libraries(${APPS_TARGET} PUBLIC glfw3)
 endif()
+
+
+# Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
+monocle_target_compile_config(${APPS_TARGET})

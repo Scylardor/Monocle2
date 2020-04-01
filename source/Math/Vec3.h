@@ -4,7 +4,11 @@
 
 #ifdef MOE_GLM
 
+// Use pragmas to disable warnings coming from GLM.
+#pragma warning(push, 0)
 #include <glm/vec3.hpp>
+#pragma warning(pop)
+
 #include "GLM/Vector_glm.h"
 
 namespace moe

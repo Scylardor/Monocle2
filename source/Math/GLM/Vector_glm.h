@@ -4,8 +4,11 @@
 
 #include <Core/Preprocessor/moeAssert.h>
 
+// Use pragmas to disable warnings coming from GLM.
+#pragma warning(push, 0)
 #include <glm/gtc/type_ptr.hpp> // value_ptr
 #include <glm/gtx/norm.hpp> // length2, distance2
+#pragma warning(pop)
 
 namespace moe
 {

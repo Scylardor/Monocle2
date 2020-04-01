@@ -2,10 +2,6 @@
 
 #pragma once
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
-#include "Input/InputHandler/InputHandler.h"
-#include <memory> // unique ptr
-
 #include "Graphics/Renderer/Renderer.h"
 
 namespace moe
@@ -30,23 +26,12 @@ namespace moe
 
 	protected:
 
-		template <typename TInput, typename... Args>
-		void	InitInput(Args&&... args)
-		{
-			static_assert(std::is_base_of<InputHandler, TInput>::value, "Input must inherit from InputHandler");
-			m_inputHandler = std::make_unique<TInput>(std::forward<Args>(args)...);
-			MOE_DEBUG_ASSERT(m_inputHandler != nullptr);
-		}
-
 
 		bool	SetInitialized(bool init)
 		{
 			m_initialized = init;
 			return m_initialized;
 		}
-
-
-		std::unique_ptr<InputHandler>		m_inputHandler{ nullptr };
 
 		bool	m_initialized = false;
 	};

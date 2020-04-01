@@ -44,9 +44,9 @@ TEST_CASE("Maths", "[Math]")
 
 
 		// TODO ...
-		float dist = zero.Distance(test2);
+//		float dist = zero.Distance(test2);
 
-		float dot = test2.Dot(test3);
+	//	float dot = test2.Dot(test3);
 	}
 
 

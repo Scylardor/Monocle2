@@ -31,7 +31,7 @@ void moe::DeviceBuffer::RemoveUsage(BufferUsage usage)
 	VerifyUsage();
 }
 
-void moe::DeviceBuffer::UpdateData(const BufferStorageDescription& desc)
+void moe::DeviceBuffer::UpdateData(const BufferStorageDescription& )
 {
 }
 

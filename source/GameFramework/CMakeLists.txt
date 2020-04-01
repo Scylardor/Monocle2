@@ -22,3 +22,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${GAMEFRAMEWORK_TARGET}_SO
 target_link_libraries(${GAMEFRAMEWORK_TARGET}
 	PUBLIC ${PROJECT_NAME}_Core
 	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
+	
+# Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
+monocle_target_compile_config(${GAMEFRAMEWORK_TARGET})

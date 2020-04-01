@@ -9,12 +9,12 @@
 
 namespace moe
 {
-	class MOE_DLL_API GlfwInputHandler : public InputHandler
+	class MOE_DLL_API GlfwInputHandler
 	{
 	public:
 		GlfwInputHandler() = default;
 
-		virtual bool	PumpEvents() override;
+		virtual bool	PumpEvents();
 
 	};
 }

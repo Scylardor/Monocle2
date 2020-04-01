@@ -5,15 +5,12 @@
 #include "BaseGlfwApplication.h"
 #include "Application/AppDescriptor/AppDescriptor.h"
 
-#include "Input/GLFW/GlfwInputHandler/GlfwInputHandler.h"
-
 
 
 moe::BaseGlfwApplication::BaseGlfwApplication()
 {
-	InitInput<moe::GlfwInputHandler>();
 
-	SetInitialized(glfwInit() && (m_inputHandler != nullptr));
+	SetInitialized(glfwInit());
 }
 
 

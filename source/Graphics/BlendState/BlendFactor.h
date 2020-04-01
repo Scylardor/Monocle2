@@ -11,7 +11,7 @@ namespace moe
 	 * for both the source pixel (the new pixel being drawn) and the destination pixel (the pixel already drawn at that position).
 	 * Such as the usual blending equation looks something like : FinalColor = (SourceColor * SourceBlendFactor) + (DestinationColor * DestinationBlendFactor)
 	 */
-	enum class BlendFactor
+	enum class BlendFactor : unsigned char
 	{
 		Zero = 0,				// Factor is equal to 0
 		One,					// Factor is equal to 1

@@ -32,14 +32,15 @@ namespace moe
 		BlendStateDescriptor(ms_Disabled)
 		{}
 
-		BlendStateDescriptor(BlendFactor srcFactor, BlendFactor dstFactor, BlendEquation blendEq, State enabled = State::Disabled) :
-			m_srcFactor(srcFactor), m_destFactor(dstFactor), m_enabled(enabled)
+		BlendStateDescriptor(BlendFactor srcFactor, BlendFactor dstFactor, BlendEquation blendEq = BlendEquation::Add, State enabled = State::Disabled) :
+			m_srcFactor(srcFactor), m_destFactor(dstFactor), m_equation(blendEq), m_enabled(enabled)
 		{}
 
 
-		BlendFactor	m_srcFactor{ BlendFactor::SourceAlpha };
-		BlendFactor	m_destFactor{ BlendFactor::OneMinusSourceAlpha };
-		State		m_enabled{ State::Disabled };
+		BlendFactor		m_srcFactor{ BlendFactor::SourceAlpha };
+		BlendFactor		m_destFactor{ BlendFactor::OneMinusSourceAlpha };
+		BlendEquation	m_equation{ BlendEquation::Add};
+		State			m_enabled{ State::Disabled };
 
 		/**
 		 * \brief This Blend State always overrides the destination pixel with the source pixel color.

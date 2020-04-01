@@ -16,8 +16,7 @@ set(${UNIT_TESTS_TARGET}_SOURCES
 	"${SOURCE_DIR}/TestGraphicsBuddyAllocator.cpp"
 )
 
-
-add_executable(${UNIT_TESTS_TARGET} ${${UNIT_TESTS_TARGET}_SOURCES} )
+add_executable(${UNIT_TESTS_TARGET} EXCLUDE_FROM_ALL ${${UNIT_TESTS_TARGET}_SOURCES} )
 
 target_include_directories(${UNIT_TESTS_TARGET} PRIVATE
 	${PROJECT_SOURCE_DIR}/source
@@ -32,3 +31,6 @@ target_link_libraries(${UNIT_TESTS_TARGET}
 	PUBLIC ${PROJECT_NAME}_Input
 	PUBLIC ${PROJECT_NAME}_Math
 	PRIVATE ${PROJECT_NAME} )  # Linking with project's Interface Library allows us to reuse PCH's.
+
+# Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
+monocle_target_compile_config(${UNIT_TESTS_TARGET})

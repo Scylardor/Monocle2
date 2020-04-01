@@ -18,7 +18,7 @@ namespace moe
 	{}
 
 
-	void GLGraphicsAllocator::ReservePoolMemory(GLenum target, GLbitfield flags)
+	void GLGraphicsAllocator::ReservePoolMemory(GLenum, GLbitfield flags)
 	{
 		MOE_DEBUG_ASSERT(m_buffer != ms_UNINITIALIZED);
 
@@ -31,7 +31,7 @@ namespace moe
 	}
 
 
-	uint32_t GLGraphicsAllocator::Allocate(const void* data, uint32_t size)
+	uint32_t GLGraphicsAllocator::Allocate(const void*, uint32_t size)
 	{
 		// Find in which level we should search a free block
 		int wantedLevel = GetDataBlockLevel(size);
