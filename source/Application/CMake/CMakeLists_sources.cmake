@@ -6,6 +6,7 @@ set(Monocle_Application_SOURCES
 ./Application.h
 ./GlfwApplication/BaseGlfwApplication.cpp
 ./GlfwApplication/BaseGlfwApplication.h
+./GlfwApplication/OpenGL/OpenGLGlfwAppDescriptor.cpp
 ./GlfwApplication/OpenGL/OpenGLGlfwAppDescriptor.h
 ./GlfwApplication/OpenGL/OpenGLGlfwApplication.cpp
 ./GlfwApplication/OpenGL/OpenGLGlfwApplication.h

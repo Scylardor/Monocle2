@@ -16,7 +16,7 @@ namespace moe
 	struct MOE_DLL_API AppDescriptor
 	{
 
-		AppDescriptor(Width_t w, Height_t h, const char* windowTitle = "Monocle Application", const char* iconPath = nullptr, bool resizableWin = false);
+		AppDescriptor(Width_t w, Height_t h, const char* windowTitle, const char* iconPath, bool resizableWin);
 
 		Width_t				m_windowWidth;
 		Height_t			m_windowHeight;

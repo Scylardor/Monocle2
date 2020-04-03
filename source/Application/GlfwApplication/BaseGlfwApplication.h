@@ -8,7 +8,7 @@
 
 #include "Application/Application.h"
 
-#include <GLFW/glfw3.h> // GLFWwindow
+struct GLFWwindow;
 
 namespace moe
 {

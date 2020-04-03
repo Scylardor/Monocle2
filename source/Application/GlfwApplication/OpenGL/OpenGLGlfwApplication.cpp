@@ -1,12 +1,12 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#ifdef MOE_GLFW
-
-#include <glad/glad.h> // Keep on top to avoid glad/glfw conflicts (glad always wants to be first header included)
+#if defined(MOE_GLFW) && defined(MOE_OPENGL)
 
 #include "OpenGLGlfwApplication.h"
 
 #include "Application/GlfwApplication/OpenGL/OpenGLGlfwAppDescriptor.h"
+
+#include <GLFW/glfw3.h>
 
 
 
@@ -48,3 +48,5 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 
 
 #endif // MOE_GLFW
+
+#endif // defined(MOE_GLFW) && defined(MOE_OPENGL)

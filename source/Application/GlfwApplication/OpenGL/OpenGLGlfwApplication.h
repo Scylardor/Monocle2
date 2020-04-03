@@ -22,7 +22,7 @@ namespace moe
 	{
 	public:
 		MOE_DLL_API OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
-		virtual ~OpenGLGlfwApplication() = default;
+		MOE_DLL_API virtual ~OpenGLGlfwApplication() override;
 
 		OpenGLGlfwApplication(const OpenGLGlfwApplication&) = delete;
 

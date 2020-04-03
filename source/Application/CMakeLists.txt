@@ -28,10 +28,7 @@ target_link_libraries(${APPS_TARGET} PUBLIC
 
 # If using GLFW, integrate it in the build
 if(${PROJECT_NAME}_USE_GLFW)
-	set(GLFW_DIR ${PROJECT_SOURCE_DIR}/vendor/glfw)
-	target_include_directories(${APPS_TARGET} PUBLIC "${GLFW_DIR}/include")
-	target_link_directories(${APPS_TARGET} PUBLIC ${GLFW_DIR})
-	target_link_libraries(${APPS_TARGET} PUBLIC glfw3)
+	monocle_include_GLFW3(${APPS_TARGET})
 endif()
 
 

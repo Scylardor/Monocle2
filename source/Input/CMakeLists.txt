@@ -26,13 +26,7 @@ target_link_libraries(${INPUT_TARGET}
 
 # If using GLFW, integrate it in the build
 if(${PROJECT_NAME}_USE_GLFW)
-	set(GLFW_DIR ${PROJECT_SOURCE_DIR}/vendor/glfw)
-
-	target_include_directories(${INPUT_TARGET} PUBLIC "${GLFW_DIR}/include")
-
-	target_link_directories(${INPUT_TARGET} PUBLIC ${GLFW_DIR})
-
-	target_link_libraries(${INPUT_TARGET} PUBLIC glfw3)
+	monocle_include_GLFW3(${INPUT_TARGET})
 endif()
 
 # Setup boilerplate Monocle target configurations (warning level, LTCG etc.)

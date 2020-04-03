@@ -2,14 +2,11 @@
 
 #pragma once
 
-#ifdef MOE_GLFW
+#if defined(MOE_GLFW) && defined(MOE_OPENGL)
 
 #include "Core/Preprocessor/moeDLLVisibility.h"
 
 #include "Application/AppDescriptor/AppDescriptor.h"
-
-#include <GLFW/glfw3.h> // GLFW_OPENGL_CORE_PROFILE
-
 
 namespace moe
 {
@@ -17,18 +14,17 @@ namespace moe
 	 * \brief A descriptor for a GLFW application OpenGL context.
 	 * Can be parameterized about major/minor OpenGL versions and needed OpenGL profile type (core/compat).
 	 */
-	struct OpenGLGlfwAppDescriptor : public AppDescriptor
+	struct MOE_DLL_API OpenGLGlfwAppDescriptor : public AppDescriptor
 	{
 	public:
-		using AppDescriptor::AppDescriptor;
+		OpenGLGlfwAppDescriptor(Width_t w, Height_t h, const char* windowTitle = "Monocle Application", const char* iconPath = nullptr, bool resizableWin = false);
 
-		OpenGLGlfwAppDescriptor() = default;
 		~OpenGLGlfwAppDescriptor() = default;
 
 		int	m_contextVersionMajor = 4;
 		int	m_contextVersionMinor = 5;
-		int	m_openGLProfile = GLFW_OPENGL_CORE_PROFILE;
+		int	m_openGLProfile;
 	};
 }
 
-#endif // MOE_GLFW
+#endif // defined(MOE_GLFW) && defined(MOE_OPENGL)

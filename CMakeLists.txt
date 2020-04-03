@@ -129,6 +129,9 @@ endif()
 # Include our utility functions for all submodules to have them too
 include(CMake/MonocleFunctions.cmake)
 
+message(STATUS "project cmake bin dir in ${CMAKE_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 if(${PROJECT_NAME}_BUILD_CORE)
 	add_subdirectory(${SOURCE_DIR}/Core)
 endif()

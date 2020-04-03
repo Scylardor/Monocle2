@@ -8,6 +8,8 @@
 #endif
 
 #include "Core/Containers/Vector/Vector.h"
+#include "Core/Preprocessor/moeDLLVisibility.h"
+
 #include "Graphics/Shader/Handle/ShaderHandle.h"
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 
@@ -22,7 +24,7 @@ namespace moe
 	 *	Acts like a Facade to the rest of the world, hiding the underlying HAL rendering system.
 	 *	https://en.wikipedia.org/wiki/Facade_pattern
 	 */
-	class IGraphicsRenderer
+	class MOE_DLL_API IGraphicsRenderer
 	{
 	public:
 

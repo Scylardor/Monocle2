@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Core/Preprocessor/moeDLLVisibility.h"
+
 #include "Graphics/Renderer/Renderer.h"
 
 namespace moe
@@ -9,7 +11,7 @@ namespace moe
 	/*	Application is an abstract class meant to serve as a base for all our application types (Glfw, Sdl, Win32, etc.)
 		All applications share at least three components : a window, an input handler, and a graphics context bound to the window.
 	*/
-	class Application
+	class MOE_DLL_API Application
 	{
 	public:
 		virtual ~Application() {}

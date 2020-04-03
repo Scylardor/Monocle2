@@ -5,6 +5,7 @@
 #include "BaseGlfwApplication.h"
 #include "Application/AppDescriptor/AppDescriptor.h"
 
+#include <GLFW/glfw3.h>
 
 
 moe::BaseGlfwApplication::BaseGlfwApplication()
