@@ -20,6 +20,6 @@ namespace moe
 		Compute					= 1 << 5
 	);
 
-	DECLARE_MOE_ENUM_OPERATORS(ShaderStage);
+	//DECLARE_MOE_ENUM_OPERATORS(ShaderStage);
 
 }

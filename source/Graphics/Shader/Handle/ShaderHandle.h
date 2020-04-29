@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Monocle_Graphics_Export.h"
+
 #include "Core/Misc/Types.h"
 
 #include "Graphics/Handle/ObjectHandle.h"

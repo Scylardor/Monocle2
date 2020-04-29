@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "Monocle_Graphics_Export.h"
-
 namespace moe
 {
 

@@ -53,6 +53,15 @@ namespace moe
 			m_vtxElemFmts(il) {}
 
 
+		bool	operator==(const VertexLayoutDescriptor& rhs) const
+		{
+			if (&rhs != this)
+			{
+				return (m_vtxElemFmts == rhs.m_vtxElemFmts && m_type == rhs.m_type);
+			}
+			return true;
+		}
+
 		//C++11 range for interface implementation
 
 		VertexElementVector::Iterator	begin()

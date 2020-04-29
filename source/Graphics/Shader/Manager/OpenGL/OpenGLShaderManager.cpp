@@ -127,10 +127,10 @@ namespace moe
 
 	ShaderProgramHandle OpenGLShaderManager::RegisterProgram(OpenGLShaderProgram&& shader)
 	{
-		m_programs.insert(std::move(shader));
+		auto [programIt, alreadyIn] = m_programs.insert(std::move(shader));
 
 		// we can take advantage of the fact that shader programs are unique OpenGL Ids anyway !
-		ShaderProgramHandle handle{ GLuint(shader) };
+		ShaderProgramHandle handle{ GLuint(*programIt) };
 
 		return handle;
 	}

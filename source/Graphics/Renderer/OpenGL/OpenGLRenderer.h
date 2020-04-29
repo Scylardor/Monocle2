@@ -6,11 +6,10 @@
 
 #include "Graphics/Renderer/AbstractRenderer/AbstractRenderer.h"
 
-#include "Graphics/Shader/Manager/OpenGL/OpenGLShaderManager.h"
+#include "Graphics/Device/OpenGL/OpenGLGraphicsDevice.h"
 
 #include "Monocle_Graphics_Export.h"
 
-#include "Monocle_Graphics_Export.h"
 
 namespace moe
 {
@@ -46,7 +45,7 @@ namespace moe
 		 */
 		Monocle_Graphics_API ShaderProgramHandle	CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc) override
 		{
-			return m_shaderManager.CreateShaderProgramFromSource(shaProDesc);
+			return m_device.CreateShaderProgramFromSource(shaProDesc);
 		}
 
 
@@ -57,28 +56,32 @@ namespace moe
 		 */
 		Monocle_Graphics_API ShaderProgramHandle	CreateShaderProgramFromBinary(const ShaderProgramDescriptor& shaProDesc) override
 		{
-			return m_shaderManager.CreateShaderProgramFromBinary(shaProDesc);
+			return m_device.CreateShaderProgramFromBinary(shaProDesc);
 		}
 
 
 		/**
-		 * \brief Removes a shader program from our
+		 * \brief Removes a shader program from our graphics device
 		 * \param programHandle
 		 * \return
 		 */
 		Monocle_Graphics_API bool	RemoveShaderProgram(ShaderProgramHandle programHandle) override
 		{
-			return m_shaderManager.DestroyProgram(programHandle);
+			return m_device.RemoveShaderProgram(programHandle);
 		}
 
 
-		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) override;
+		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) override
+		{
+			return m_device.CreateVertexLayout(vertexLayoutDesc);
+		}
 
 
 		Monocle_Graphics_API bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) override;
 
 	private:
-		OpenGLShaderManager	m_shaderManager;
+
+		OpenGLGraphicsDevice	m_device;
 	};
 
 }

@@ -24,6 +24,15 @@ namespace moe
 			m_semantic(semantic), m_format(format)
 		{}
 
+		bool operator==(const VertexElementDescriptor& rhs) const
+		{
+			if (&rhs != this)
+			{
+				return (m_semantic == rhs.m_semantic && m_format == rhs.m_format);
+			}
+			return true;
+		}
+
 		std::string			m_semantic;
 		VertexElementFormat	m_format;
 	};

@@ -14,6 +14,9 @@ set(Monocle_Graphics_SOURCES
 ./DepthStencilState/DepthStencilStateDescriptor.h
 ./DepthStencilState/StencilOps.h
 ./DepthStencilState/StencilOpsDescriptor.h
+./Device/GraphicsDevice.h
+./Device/OpenGL/OpenGLGraphicsDevice.cpp
+./Device/OpenGL/OpenGLGraphicsDevice.h
 ./DeviceBuffer/BufferDescription.h
 ./DeviceBuffer/BufferUsage.cpp
 ./DeviceBuffer/BufferUsage.h
@@ -64,8 +67,11 @@ set(Monocle_Graphics_SOURCES
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.h
 ./VertexBuffer/VertexBuffer.cpp
 ./VertexBuffer/VertexBuffer.h
+./VertexLayout/OpenGL/OpenGLVertexFormat.h
+./VertexLayout/OpenGL/OpenGLVertexLayout.h
 ./VertexLayout/VertexElementDescriptor.h
 ./VertexLayout/VertexElementFormat.h
+./VertexLayout/VertexLayout.h
 ./VertexLayout/VertexLayoutDescriptor.h
 ./VertexLayout/VertexLayoutHandle.h
 	)

@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "Monocle_Graphics_Export.h"
-
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 
 #include "Graphics/Shader/Program/OpenGL/OpenGLShaderProgram.h"
@@ -11,6 +9,8 @@
 #include "Graphics/Shader/Handle/ShaderHandle.h"
 
 #include "Graphics/Shader/Program/OpenGL/OpenGLShaderProgramComparator.h" // for std::set
+
+#include "Monocle_Graphics_Export.h"
 
 #ifdef MOE_STD_SUPPORT
 	#include <set>
@@ -78,7 +78,15 @@ namespace moe
 		 * \return A pointer to the referenced OpenGL shader program, or null if this handle didn't match any existing program
 		 */
 		const OpenGLShaderProgram*	GetProgram(ShaderProgramHandle handle) const;
-		void	OpenGLShaderManager::Clear();
+
+
+
+		/**
+		 * \brief Destroys all stored shader programs.
+		 */
+		Monocle_Graphics_API void	Clear();
+
+
 	private:
 		// TODO: I suspect OpenGL always hands you shader program IDs starting from 0,
 		// so we could maybe use a more optimized data structure like a freelist to speed things up.
