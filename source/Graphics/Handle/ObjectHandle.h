@@ -15,6 +15,8 @@ namespace moe
 	{
 		ValT	m_handle{ 0 };
 
+		ValT	Get() const { return m_handle; }
+
 		static RenderObjectHandle	Null() { return RenderObjectHandle{0}; }
 	};
 

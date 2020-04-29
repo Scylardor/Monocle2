@@ -68,6 +68,8 @@ namespace moe
 
 		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) override;
 
+		Monocle_Graphics_API[[nodiscard]] const OpenGLVertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const;
+
 	private:
 
 		OpenGLShaderManager	m_shaderManager;

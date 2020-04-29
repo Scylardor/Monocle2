@@ -92,6 +92,12 @@ namespace moe
 		}
 
 
+		void	SetType(LayoutType type)
+		{
+			m_type = type;
+		}
+
+
 	private:
 		VertexElementVector	m_vtxElemFmts;
 		LayoutType	m_type{LayoutType::Interleaved};

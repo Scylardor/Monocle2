@@ -154,6 +154,21 @@ namespace moe
 
 		return handle;
 	}
+
+
+	const OpenGLVertexLayout* OpenGLGraphicsDevice::GetVertexLayout(VertexLayoutHandle handle) const
+	{
+		// Kind of a trick : we rely on the fact all valid VAO IDs will always start at 1 and increment by one.
+		// So, a valid handle is simply at index (VAO id - 1) in the array.
+		// NOTE: this assumption won't stand if we add the ability to remove vertex layouts. So far, a vertex layout gets created "forever" (you cannot delete them).
+
+		if (MOE_ASSERT(handle.Get() <= m_layouts.Size()))
+		{
+			return &m_layouts[handle.Get() - 1];
+		}
+
+		return nullptr;
+	}
 }
 
 #endif
