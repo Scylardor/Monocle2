@@ -2,7 +2,8 @@
 //
 //#pragma once
 //
-//#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_GameFramework_Export.h"
+
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Containers/HashMap/HashMap.h"
 #include "Core/Containers/Array/Array.h"
@@ -136,27 +137,27 @@ namespace moe
 
 	public:
 
-		MOE_DLL_API bool	HasState(StateID id) const;
+		Monocle_GameFramework_API bool	HasState(StateID id) const;
 
 
-		MOE_DLL_API void 	StartState(moe::FSM::StateID id);
+		Monocle_GameFramework_API void 	StartState(moe::FSM::StateID id);
 
 
 		/*	A state removal is somewhat heavy since it removes the state from the states hash map but also parses other states' transition data
 			to eliminate all transitions pointing to the removed state. Use carefully. */
-		MOE_DLL_API void 	RemoveState(moe::FSM::StateID removedId);
+		Monocle_GameFramework_API void 	RemoveState(moe::FSM::StateID removedId);
 
 
-		MOE_DLL_API TransitionNumber 	RemoveStateTransition(FSM::StateID stateId, FSM::TransitionID transId);
+		Monocle_GameFramework_API TransitionNumber 	RemoveStateTransition(FSM::StateID stateId, FSM::TransitionID transId);
 
 
-		MOE_DLL_API TransitionNumber 	GetStateNumberOfTransitions(moe::FSM::StateID id) const;
+		Monocle_GameFramework_API TransitionNumber 	GetStateNumberOfTransitions(moe::FSM::StateID id) const;
 
 
-		MOE_DLL_API void 	StopFSM();
+		Monocle_GameFramework_API void 	StopFSM();
 
 
-		MOE_DLL_API void 	Clear();
+		Monocle_GameFramework_API void 	Clear();
 
 
 		bool	IsRunning() const

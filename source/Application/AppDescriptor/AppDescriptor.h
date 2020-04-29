@@ -4,7 +4,7 @@
 
 #include "Core/Misc/Literals.h" // width and height
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Application_Export.h"
 
 namespace moe
 {
@@ -13,10 +13,10 @@ namespace moe
 	 * \brief AppDescriptor
 	 * A small structure containing all you need to specify how to create your application
 	 */
-	struct MOE_DLL_API AppDescriptor
+	struct  AppDescriptor
 	{
 
-		AppDescriptor(Width_t w, Height_t h, const char* windowTitle, const char* iconPath, bool resizableWin);
+		Monocle_Application_API AppDescriptor(Width_t w, Height_t h, const char* windowTitle, const char* iconPath, bool resizableWin);
 
 		Width_t				m_windowWidth;
 		Height_t			m_windowHeight;

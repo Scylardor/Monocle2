@@ -8,7 +8,7 @@
 // cf. this warning:
 // warning C4251: 'moe::CaptureWritePolicy::m_captured': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'moe::CaptureWritePolicy'
 // it should be OK if we build linking exe and linked DLL with the same compiler, but ultimately we can't use std for this.
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 #ifdef MOE_STD_SUPPORT
 #include <string>
@@ -20,12 +20,12 @@ namespace moe
 	public:
 		CaptureWritePolicy() {}
 
-		MOE_DLL_API void	Write(const std::string& message);
+		Monocle_Core_API void	Write(const std::string& message);
 
-		MOE_DLL_API void    Clear();
+		Monocle_Core_API void    Clear();
 
 		// Not the best interface. Wish we could return const std::string&. But not across a DLL boundary
-		MOE_DLL_API const char* GetCapturedOutput() const;
+		Monocle_Core_API const char* GetCapturedOutput() const;
 
 	private:
 		std::string m_captured;

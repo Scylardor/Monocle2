@@ -8,9 +8,6 @@
 
 namespace moe
 {
-
-
-
 	/**
 	 * \brief A thin wrapper over an OpenGL shader program in RAII-fashion that automatically deletes itself when going out of scope.
 	 * It is handy to avoid forgetting to delete them.

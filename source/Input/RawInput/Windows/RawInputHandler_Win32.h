@@ -35,7 +35,7 @@ namespace moe
 		Will listen for keyboards, mice.
 		Additional features may come later.
 	*/
-	class MOE_DLL_API Win32RawInputHandler : public IRawInputHandler<Win32RawInputHandler>
+	class Monocle_Input_API Win32RawInputHandler : public IRawInputHandler<Win32RawInputHandler>
 	{
 	public:
 

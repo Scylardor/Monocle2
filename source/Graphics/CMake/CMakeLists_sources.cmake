@@ -26,6 +26,7 @@ set(Monocle_Graphics_SOURCES
 ./GraphicsDevice/GraphicsDevice.h
 ./GraphicsDevice/OpenGLGraphicsDevice.cpp
 ./GraphicsDevice/OpenGLGraphicsDevice.h
+./Handle/ObjectHandle.h
 ./Mesh/Mesh.h
 ./OpenGL/moeOpenGL.h
 ./Pipeline/OpenGL/OpenGLPipeline.cpp
@@ -43,7 +44,6 @@ set(Monocle_Graphics_SOURCES
 ./ResourceFactory/ResourceFactory.h
 ./Resources/shaders/OpenGL/basic.frag
 ./Resources/shaders/OpenGL/basic.vert
-./Shader/Handle/ShaderHandle.cpp
 ./Shader/Handle/ShaderHandle.h
 ./Shader/Manager/OpenGL/OpenGLShaderManager.cpp
 ./Shader/Manager/OpenGL/OpenGLShaderManager.h
@@ -64,31 +64,35 @@ set(Monocle_Graphics_SOURCES
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.h
 ./VertexBuffer/VertexBuffer.cpp
 ./VertexBuffer/VertexBuffer.h
+./VertexLayout/VertexElementDescriptor.h
+./VertexLayout/VertexElementFormat.h
+./VertexLayout/VertexLayoutDescriptor.h
+./VertexLayout/VertexLayoutHandle.h
 	)
-	
+
 if(WIN32)
 	set(Monocle_Graphics_SOURCES
-	
-	${Monocle_Graphics_SOURCES} 
-	
+
+	${Monocle_Graphics_SOURCES}
+
 	
 	)
-	
+
 elseif(APPLE)
 	set(Monocle_Graphics_SOURCES
-	
-	${Monocle_Graphics_SOURCES} 
-	
+
+	${Monocle_Graphics_SOURCES}
+
 	
 	)
-	
+
 elseif(UNIX)
 	set(Monocle_Graphics_SOURCES
-	
-	${Monocle_Graphics_SOURCES} 
-	
+
+	${Monocle_Graphics_SOURCES}
+
 	
 	)
-	
-	
+
+
 endif()

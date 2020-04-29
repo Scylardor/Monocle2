@@ -2,12 +2,12 @@
 #define MOE_SEVERITY_FILTER_POLICY_H_
 
 // A logging filter-policy that filters on a given minimum severity.
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 #include "Core/Log/LogUtils.h"
 
 namespace moe
 {
-    class MOE_DLL_API SeverityFilterPolicy
+    class Monocle_Core_API SeverityFilterPolicy
     {
     public:
         SeverityFilterPolicy(LogSeverity filterSeverity = LogSeverity::SevInfo);

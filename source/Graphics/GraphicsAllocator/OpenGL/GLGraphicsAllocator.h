@@ -5,7 +5,7 @@
 #ifdef MOE_OPENGL
 
 #include "Core/Misc/Types.h"
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Graphics_Export.h"
 
 #include <glad/glad.h>
 
@@ -28,13 +28,13 @@ namespace moe
 
 	public:
 
-		MOE_DLL_API				GLGraphicsAllocator(uint32_t bufferHandle);
+		Monocle_Graphics_API				GLGraphicsAllocator(uint32_t bufferHandle);
 
-		MOE_DLL_API void		ReservePoolMemory(GLenum target, GLbitfield flags);
+		Monocle_Graphics_API void		ReservePoolMemory(GLenum target, GLbitfield flags);
 
-		MOE_DLL_API uint32_t	Allocate(const void* data, uint32_t size);
+		Monocle_Graphics_API uint32_t	Allocate(const void* data, uint32_t size);
 
-		MOE_DLL_API void		Free(uint32_t offset);
+		Monocle_Graphics_API void		Free(uint32_t offset);
 
 	private:
 

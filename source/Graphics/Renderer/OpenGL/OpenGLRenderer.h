@@ -8,14 +8,34 @@
 
 #include "Graphics/Shader/Manager/OpenGL/OpenGLShaderManager.h"
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Graphics_Export.h"
+
+#include "Monocle_Graphics_Export.h"
 
 namespace moe
 {
 
-	class MOE_DLL_API OpenGLRenderer final : public AbstractRenderer
+	class OpenGLRenderer final : public AbstractRenderer
 	{
 	public:
+
+		OpenGLRenderer() = default;
+		virtual ~OpenGLRenderer() = default;
+
+
+		// Delete those functions because OpenGLShaderProgram cannot be copied (avoids duplicate glDeleteProgram's)
+		OpenGLRenderer(const OpenGLRenderer&) = delete;
+
+		OpenGLRenderer& operator=(const OpenGLRenderer&) = delete;
+
+
+		/**
+		 * \brief Shutdown method to destroy all renderer-owned OpenGL resources
+		 * This was added partially because of an unexplainable crash in a destructor at app exit
+		 * because GLAD pointers seem to become NULL before the destruction of OpenGL context.
+		 * Shutdown must be called by the user app before the context destruction.
+		 */
+		Monocle_Graphics_API void	Shutdown() override;
 
 
 		/**
@@ -24,7 +44,7 @@ namespace moe
 		 * \param shaProDesc a collection of shader module descriptions
 		 * \return True if the shader program was successfully created
 		 */
-		ShaderProgramHandle	CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc) override
+		Monocle_Graphics_API ShaderProgramHandle	CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc) override
 		{
 			return m_shaderManager.CreateShaderProgramFromSource(shaProDesc);
 		}
@@ -35,17 +55,27 @@ namespace moe
 		 * Functions involved : glShaderBinary, glSpecializeShader
 		 * \param shaProDesc a collection of shader module descriptions
 		 */
-		ShaderProgramHandle	CreateShaderProgramFromBinary(const ShaderProgramDescriptor& shaProDesc) override
+		Monocle_Graphics_API ShaderProgramHandle	CreateShaderProgramFromBinary(const ShaderProgramDescriptor& shaProDesc) override
 		{
 			return m_shaderManager.CreateShaderProgramFromBinary(shaProDesc);
 		}
 
 
-		bool	RemoveShaderProgram(ShaderProgramHandle programHandle) override
+		/**
+		 * \brief Removes a shader program from our
+		 * \param programHandle
+		 * \return
+		 */
+		Monocle_Graphics_API bool	RemoveShaderProgram(ShaderProgramHandle programHandle) override
 		{
 			return m_shaderManager.DestroyProgram(programHandle);
 		}
 
+
+		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) override;
+
+
+		Monocle_Graphics_API bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) override;
 
 	private:
 		OpenGLShaderManager	m_shaderManager;

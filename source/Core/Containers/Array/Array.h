@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 #include "Core/Preprocessor/moeAssert.h"
 
 #include <array>
@@ -21,8 +21,8 @@ namespace moe
 		typedef	typename std::array<Data, N>::value_type		ValueType;
 		typedef	typename std::array<Data, N>::size_type			SizeType;
 
-		MOE_DLL_API Array() = default;
-		MOE_DLL_API ~Array() = default;
+		Monocle_Core_API Array() = default;
+		Monocle_Core_API ~Array() = default;
 
 		Array(std::initializer_list<Data> il)
 		{

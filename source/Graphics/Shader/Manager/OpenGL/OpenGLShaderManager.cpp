@@ -157,4 +157,13 @@ namespace moe
 
 		return programPtr;
 	}
+
+
+	/**
+	 * \brief Deletes all stored shader programs. Uses glDeleteProgram.
+	 */
+	void	OpenGLShaderManager::Clear()
+	{
+		m_programs.clear();
+	}
 }

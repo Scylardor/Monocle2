@@ -22,7 +22,7 @@ option(${PROJECT_NAME}_USE_VULKAN "If ON, Monocle will compile Vulkan dependenci
 option(${PROJECT_NAME}_USE_DIRECTX "If ON, Monocle will compile Direct3D dependencies (RenderContext, applications , etc)." OFF)
 
 # Monocle libraries to build
-option(${PROJECT_NAME}_BUILD_SHARED_LIB "If ON, Monocle will build shared libraries instead of static libraries." OFF)
+option(${PROJECT_NAME}_BUILD_SHARED_LIBS "If ON, Monocle will build shared libraries instead of static libraries." OFF)
 
 option(${PROJECT_NAME}_BUILD_CORE "If ON, Monocle will build the Core library." ON)
 option(${PROJECT_NAME}_BUILD_INPUT "If ON, Monocle will build the Input library." ON)
@@ -30,6 +30,7 @@ option(${PROJECT_NAME}_BUILD_APPLICATION "If ON, Monocle will build the Applicat
 option(${PROJECT_NAME}_BUILD_GRAPHICS "If ON, Monocle will build the Graphics library." ON)
 option(${PROJECT_NAME}_BUILD_GAMEFRAMEWORK "If ON, Monocle will build the GameFramework library." ON)
 option(${PROJECT_NAME}_BUILD_MATH "If ON, Monocle will build the Math library." ON)
+option(${PROJECT_NAME}_BUILD_PHYSICS "If ON, Monocle will build the Physics library." ON)
 
 # Monocle support projects to build
 option(${PROJECT_NAME}_BUILD_UNIT_TESTS "If ON, Monocle will build the Unit Tests project." OFF)
@@ -50,7 +51,7 @@ add_compile_definitions($<$<CONFIG:Debug>:MOE_DEBUG>)
 if(${PROJECT_NAME}_USE_ASSERTS)
 	add_definitions(-DMOE_USE_ASSERTS)
 endif()
-if(${PROJECT_NAME}_BUILD_SHARED_LIB)
+if(${PROJECT_NAME}_BUILD_SHARED_LIBS)
 	add_definitions(-DMOE_USE_DLL)
 endif()
 if(${PROJECT_NAME}_USE_STL)
@@ -82,11 +83,16 @@ if(${PROJECT_NAME}_USE_OPENGL)
 	# Add GLAD project
 	set(GLAD_DIR "${VENDOR_DIR}/glad45")
 	set(GLAD_SOURCE "${GLAD_DIR}/src/glad.c")
-	add_library(GLAD EXCLUDE_FROM_ALL "${GLAD_SOURCE}") # Do not recompile Glad when rebuilding ALL
+	
+	# Do not recompile Glad when rebuilding ALL
+	add_library(GLAD EXCLUDE_FROM_ALL "${GLAD_SOURCE}")
+	
 	# Make the glad.c file a "C++ file" or it just won't be compiled (because the project is marked C++)
 	set_source_files_properties( "${GLAD_SOURCE}" PROPERTIES LANGUAGE CXX )
+	
 	target_include_directories(GLAD PUBLIC "${GLAD_DIR}/include")
 endif()
+
 
 if (WIN32)
 	add_definitions(-DMOE_WINDOWS)
@@ -95,6 +101,9 @@ elseif(APPLE)
 elseif(UNIX)
 	add_definitions(-DMOE_LINUX)
 endif()
+
+
+
 
 
 # Definitions tweaking End
@@ -129,8 +138,14 @@ endif()
 # Include our utility functions for all submodules to have them too
 include(CMake/MonocleFunctions.cmake)
 
-message(STATUS "project cmake bin dir in ${CMAKE_BINARY_DIR}")
+# Put all our generated binaries and DLLs in the same folder so that built executables find the library DLLs.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# Set the appropriate lib type (courtesy of https://gitlab.kitware.com/cmake/community/-/wikis/doc/tutorials/BuildingWinDLL)
+set(MONOCLE_LIB_TYPE STATIC)
+if(${PROJECT_NAME}_BUILD_SHARED_LIBS)
+  set(MONOCLE_LIB_TYPE SHARED)
+endif()
 
 if(${PROJECT_NAME}_BUILD_CORE)
 	add_subdirectory(${SOURCE_DIR}/Core)
@@ -155,6 +170,10 @@ endif()
 if(${PROJECT_NAME}_BUILD_MATH)
 	add_subdirectory("${SOURCE_DIR}/Math")
 endif()
+
+# if(${PROJECT_NAME}_BUILD_PHYSICS)
+	# add_subdirectory("${SOURCE_DIR}/Physics")
+# endif()
 
 if(${PROJECT_NAME}_BUILD_UNIT_TESTS)
 	add_subdirectory(UnitTests)

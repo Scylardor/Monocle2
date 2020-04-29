@@ -38,7 +38,7 @@ namespace moe
 		Put all the platform-specific code inside children classes.
 	*/
 	template <class DerivedT>
-	class MOE_DLL_API IRawInputHandler
+	class Monocle_Input_API IRawInputHandler
 	{
 	public:
 		using HandlerTraits			= typename RawInputHandlerTraits<DerivedT>;

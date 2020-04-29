@@ -3,14 +3,14 @@
 
 #ifndef MOE_SHIPPING
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 namespace moe
 {
     bool                IsDebuggerPresent();
 
     // DebugBreak returns false only so ASSERT can be used in an if...
-    bool    MOE_DLL_API DebugBreak();
+    bool    Monocle_Core_API DebugBreak();
 }
 
 #endif // MOE_SHIPPING

@@ -5,7 +5,7 @@
 // TODO Fix compilation for now because missing raw input handler, but this has to be redone properly.
 #if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)
 .
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Input_Export.h"
 #include "Core/Containers/HashMap/HashMap.h"
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/HashString/HashString.h"
@@ -18,7 +18,7 @@
 namespace moe
 {
 	/* Pure interface for the InputHandler class. */
-	class MOE_DLL_API InputHandler
+	class Monocle_Input_API InputHandler
 	{
 	public:
 		virtual ~InputHandler() {}
@@ -28,7 +28,7 @@ namespace moe
 	};
 
 
-	class MOE_DLL_API IInputHandler
+	class Monocle_Input_API IInputHandler
 	{
 	public:
 

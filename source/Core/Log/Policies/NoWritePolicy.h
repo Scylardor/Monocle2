@@ -4,12 +4,12 @@
 #ifdef MOE_STD_SUPPORT
 #include <string>
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 // A write policy that does nothing.
 namespace moe
 {
-	class MOE_DLL_API NoWritePolicy
+	class Monocle_Core_API NoWritePolicy
 	{
 	public:
 		NoWritePolicy() {}

@@ -23,7 +23,7 @@ namespace moe
 	- a keycode
 	- whether it's meant to be fired on key pressed, repeated, or released
 	*/
-	struct MOE_DLL_API KeyboardEventDesc
+	struct Monocle_Input_API KeyboardEventDesc
 	{
 		KeyboardEventDesc() = default;
 
@@ -36,7 +36,7 @@ namespace moe
 	};
 
 
-	struct MOE_DLL_API MouseButtonEventDesc
+	struct Monocle_Input_API MouseButtonEventDesc
 	{
 		MouseButtonEventDesc() = default;
 
@@ -48,7 +48,7 @@ namespace moe
 	};
 
 
-	struct MOE_DLL_API MouseAxisEventDesc
+	struct Monocle_Input_API MouseAxisEventDesc
 	{
 		MouseAxisEventDesc() = default;
 
@@ -61,7 +61,7 @@ namespace moe
 	};
 
 
-	struct MOE_DLL_API DeviceArrivalDesc
+	struct Monocle_Input_API DeviceArrivalDesc
 	{
 		DeviceArrivalDesc() = default;
 
@@ -74,7 +74,7 @@ namespace moe
 	};
 
 
-	struct MOE_DLL_API DeviceRemovalDesc
+	struct Monocle_Input_API DeviceRemovalDesc
 	{
 		DeviceRemovalDesc() = default;
 

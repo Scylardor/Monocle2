@@ -4,12 +4,13 @@
 
 #include "Input/InputHandler/InputHandler.h"
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Input_Export.h"
 
+#include "Monocle_Input_Export.h"
 
 namespace moe
 {
-	class MOE_DLL_API GlfwInputHandler
+	class Monocle_Input_API GlfwInputHandler
 	{
 	public:
 		GlfwInputHandler() = default;

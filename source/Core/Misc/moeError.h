@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 #include <cstdint>
 
@@ -28,7 +28,7 @@ namespace moe
 		An empty, default-initialized Error is considered as "absence of error".
 		The string is stripped in Shipping builds, leaving only the error ID.
 	*/
-	class MOE_DLL_API Error
+	class Monocle_Core_API Error
 	{
 	public:
 		typedef std::uint32_t	Code;

@@ -34,19 +34,21 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 	{
 		glfwMakeContextCurrent(GetGlfwWindow());
 
-		m_initialized = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		m_initialized = m_renderer.SetupGraphicsContext((IGraphicsRenderer::GraphicsContextSetup)glfwGetProcAddress);
 		if (false == m_initialized)
 		{
 			MOE_ERROR(moe::ChanWindowing, "Failed to initialize GLAD OpenGL loader.");
-		}
-		else
-		{
-
 		}
 	}
 }
 
 
-#endif // MOE_GLFW
+moe::OpenGLGlfwApplication::~OpenGLGlfwApplication()
+{
+	// This was added partially because of an unexplainable crash in a destructor at app exit
+	// because GLAD pointers seem to become NULL before the destruction of OpenGL context.
+	m_renderer.Shutdown();
+}
+
 
 #endif // defined(MOE_GLFW) && defined(MOE_OPENGL)

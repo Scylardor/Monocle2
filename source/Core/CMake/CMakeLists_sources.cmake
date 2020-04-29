@@ -52,7 +52,6 @@ set(Monocle_Core_SOURCES
 ./Preprocessor/moeAssert.h
 ./Preprocessor/moeDebug.h
 ./Preprocessor/moeDiscard.h
-./Preprocessor/moeDLLVisibility.h
 ./Preprocessor/moeJoin.h
 ./Preprocessor/moeLikely.h
 ./Preprocessor/moeStringize.h

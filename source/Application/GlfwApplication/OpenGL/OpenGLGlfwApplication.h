@@ -4,7 +4,7 @@
 
 #if defined(MOE_GLFW) && defined(MOE_OPENGL)
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Application_Export.h"
 
 #include "Graphics/Renderer/OpenGL/OpenGLRenderer.h"
 
@@ -21,8 +21,8 @@ namespace moe
 	class OpenGLGlfwApplication : public BaseGlfwApplication
 	{
 	public:
-		MOE_DLL_API OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
-		MOE_DLL_API virtual ~OpenGLGlfwApplication() override;
+		Monocle_Application_API OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
+		Monocle_Application_API virtual ~OpenGLGlfwApplication() override;
 
 		OpenGLGlfwApplication(const OpenGLGlfwApplication&) = delete;
 

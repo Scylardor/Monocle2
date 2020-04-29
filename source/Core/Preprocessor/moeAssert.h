@@ -13,12 +13,12 @@
 #if defined(MOE_USE_ASSERTS)
     #include "Core/Debugger/moeDebugger.h"
     #include "Core/Preprocessor/moeStringize.h"
-    #include "Core/Preprocessor/moeDLLVisibility.h"
+    #include "Monocle_Core_Export.h"
 
 namespace moe
 {
     // A dummy wrapper function whose only purpose is to print an error within MOE_ASSERT.
-    MOE_DLL_API bool    AssertError(const char* const file, int line, const char* msg);
+    Monocle_Core_API bool    AssertError(const char* const file, int line, const char* msg);
 }
 
 #define MOE_BREAK(expr) (moe::AssertError(__FILE__, __LINE__, MOE_STRINGIZE(expr) ": ASSERT FAILED!") && moe::DebugBreak())

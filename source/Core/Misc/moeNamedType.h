@@ -1,6 +1,3 @@
-#ifndef MOE_NAMED_TYPE_H_
-#define MOE_NAMED_TYPE_H_
-
 #pragma once
 
 // A slightly modified Jonathan Boccara named type implementation.
@@ -14,6 +11,7 @@ namespace moe
         explicit NamedType(const T& val) :
             m_value(val)
         {}
+
         explicit NamedType(T&& val) :
             m_value(val)
         {}
@@ -42,6 +40,3 @@ namespace moe
     };
 
 }
-
-
-#endif // MOE_NAMED_TYPE_H_

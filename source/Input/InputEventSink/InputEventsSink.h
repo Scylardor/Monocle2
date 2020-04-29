@@ -5,7 +5,7 @@
 // TODO Fix compilation for now because missing raw input handler, but this has to be redone properly.
 #if defined(MOE_WINDOWS) && defined(MOE_USE_WIN32)
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Input_Export.h"
 #include "Input/InputDescriptor/InputDescriptors.h"
 #include "Input/Keyboard/MonocleKeyboardMap.h"
 
@@ -17,7 +17,7 @@
 namespace moe
 {
 
-	class MOE_DLL_API InputEventSink
+	class Monocle_Input_API InputEventSink
 	{
 	public:
 

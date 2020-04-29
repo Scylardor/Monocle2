@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Graphics_Export.h"
 
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 
@@ -27,12 +27,13 @@ namespace moe
 	 * When you register a new shader, it hands you out a shader handle that you can reuse to get back to that shader.
 	 * It technically takes ownership of your shader program. When the manager is destroyed, all the shader programs inside get destroyed.
 	 */
-	class MOE_DLL_API OpenGLShaderManager
+	class OpenGLShaderManager
 	{
 
 	public:
 
 		OpenGLShaderManager() = default;
+		~OpenGLShaderManager() = default;
 
 		// Delete those functions because OpenGLShaderManager contains ShaderPrograms that cannot be copied
 		OpenGLShaderManager(const OpenGLShaderManager&) = delete;
@@ -77,7 +78,7 @@ namespace moe
 		 * \return A pointer to the referenced OpenGL shader program, or null if this handle didn't match any existing program
 		 */
 		const OpenGLShaderProgram*	GetProgram(ShaderProgramHandle handle) const;
-
+		void	OpenGLShaderManager::Clear();
 	private:
 		// TODO: I suspect OpenGL always hands you shader program IDs starting from 0,
 		// so we could maybe use a more optimized data structure like a freelist to speed things up.

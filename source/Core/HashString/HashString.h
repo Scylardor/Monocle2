@@ -18,7 +18,7 @@ namespace moe
 			return (Hash(str.c_str()));
 		}
 
-		static HashID	Hash(const char* cstr)
+		static constexpr HashID	Hash(const char* cstr)
 		{
 			std::size_t hash = s_offset;
 

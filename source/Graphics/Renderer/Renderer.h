@@ -8,10 +8,13 @@
 #endif
 
 #include "Core/Containers/Vector/Vector.h"
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Graphics_Export.h"
 
 #include "Graphics/Shader/Handle/ShaderHandle.h"
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
+
+#include "Graphics/VertexLayout/VertexLayoutHandle.h"
+#include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 
 
 namespace moe
@@ -24,7 +27,7 @@ namespace moe
 	 *	Acts like a Facade to the rest of the world, hiding the underlying HAL rendering system.
 	 *	https://en.wikipedia.org/wiki/Facade_pattern
 	 */
-	class MOE_DLL_API IGraphicsRenderer
+	class Monocle_Graphics_API IGraphicsRenderer
 	{
 	public:
 
@@ -32,13 +35,21 @@ namespace moe
 
 		virtual ~IGraphicsRenderer() = default;
 
+		virtual void	Shutdown() = 0;
+
 		[[nodiscard]] virtual ShaderProgramHandle	CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc) = 0;
 		[[nodiscard]] virtual ShaderProgramHandle	CreateShaderProgramFromBinary(const ShaderProgramDescriptor& shaProDesc) = 0;
 
 		[[nodiscard]] virtual ShaderProgramHandle	CreateShaderProgramFromSourceFiles(const ShaderFileList& fileList) = 0;
 		[[nodiscard]] virtual ShaderProgramHandle	CreateShaderProgramFromBinaryFiles(const ShaderFileList& fileList) = 0;
 
-		virtual bool				RemoveShaderProgram(ShaderProgramHandle programHandle) = 0;
+		virtual bool								RemoveShaderProgram(ShaderProgramHandle programHandle) = 0;
+
+
+		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) = 0;
+
+		typedef void* (*GraphicsContextSetup)(const char *name);
+		virtual	bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) = 0;
 
 	};
 

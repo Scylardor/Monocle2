@@ -5,7 +5,7 @@
 #include "moeNamedType.h"
 #include "Types.h"
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 namespace moe
 {
@@ -17,6 +17,6 @@ namespace moe
 
 }
 
-moe::Width_t MOE_DLL_API operator "" _width(unsigned long long val);
+moe::Width_t Monocle_Core_API operator "" _width(unsigned long long val);
 
-moe::Height_t MOE_DLL_API operator "" _height(unsigned long long val);
+moe::Height_t Monocle_Core_API operator "" _height(unsigned long long val);

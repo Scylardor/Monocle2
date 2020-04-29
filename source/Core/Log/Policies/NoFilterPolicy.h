@@ -3,13 +3,13 @@
 
 // A logging filter-policy that, as its name says, doesn't filter anything.
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 namespace moe
 {
     struct LogInfo;
 
-    class MOE_DLL_API NoFilterPolicy
+    class Monocle_Core_API NoFilterPolicy
     {
     public:
         NoFilterPolicy();

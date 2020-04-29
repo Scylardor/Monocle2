@@ -4,7 +4,7 @@
 #ifdef MOE_STD_SUPPORT
 #include <iostream>
 #include <string>
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 // A logging write policy that writes using an output std IO stream.
 namespace moe
@@ -12,10 +12,10 @@ namespace moe
     class OutStreamWritePolicy
     {
     public:
-        MOE_DLL_API OutStreamWritePolicy(std::ostream& outStream = std::cout);
-        MOE_DLL_API ~OutStreamWritePolicy();
+        Monocle_Core_API OutStreamWritePolicy(std::ostream& outStream = std::cout);
+        Monocle_Core_API ~OutStreamWritePolicy();
 
-        MOE_DLL_API void    Write(const std::string& message);
+        Monocle_Core_API void    Write(const std::string& message);
 
     private:
         std::ostream&   m_ostream;

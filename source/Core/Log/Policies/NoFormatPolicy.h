@@ -7,13 +7,13 @@
 #include <string>
 #endif // MOE_STD_SUPPORT
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 
 namespace moe
 {
     struct LogInfo;
 
-    class MOE_DLL_API NoFormatPolicy
+    class Monocle_Core_API NoFormatPolicy
     {
 	public:
         static const std::string& Format(std::string& buffer, const LogInfo& logInfo);

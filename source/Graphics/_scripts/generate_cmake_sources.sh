@@ -25,30 +25,30 @@ echo "
 set($SOURCES_VAR
 	$CROSSPLATFORM_SOURCES
 	)
-	
+
 if(WIN32)
 	set($SOURCES_VAR
-	
-	\${$SOURCES_VAR} 
-	
+
+	\${$SOURCES_VAR}
+
 	$WIN32_SOURCES
 	)
-	
+
 elseif(APPLE)
 	set($SOURCES_VAR
-	
-	\${$SOURCES_VAR} 
-	
+
+	\${$SOURCES_VAR}
+
 	$MACOS_SOURCES
 	)
-	
+
 elseif(UNIX)
 	set($SOURCES_VAR
-	
-	\${$SOURCES_VAR} 
-	
+
+	\${$SOURCES_VAR}
+
 	$LINUX_SOURCES
 	)
-	
-	
+
+
 endif()" > CMake/CMakeLists_sources.cmake

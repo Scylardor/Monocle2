@@ -5,7 +5,7 @@
 
 #include <string>
 #include "Core/Containers/IntrusiveListNode.h"
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 #include "Core/Log/LogUtils.h"
 
 namespace moe
@@ -28,7 +28,7 @@ namespace moe
     };
 
 
-    MOE_DLL_API LoggerBase&  GetLogChainSingleton();
+    Monocle_Core_API LoggerBase&  GetLogChainSingleton();
 }
 
 #include "Core/Log/Private/moeLoggerBase.internal.hpp"

@@ -4,7 +4,7 @@
 
 #ifdef MOE_GLFW
 
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Application_Export.h"
 
 #include "Application/Application.h"
 
@@ -16,7 +16,7 @@ namespace moe
 	 * \brief Base class used for all generic GLFW operations (window creation, etc.).
 	 * Specific graphics API logic (OpenGL, Vulkan) is to be done in child classes.
 	*/
-	class MOE_DLL_API BaseGlfwApplication : public Application
+	class Monocle_Application_API BaseGlfwApplication : public Application
 	{
 	public:
 		BaseGlfwApplication();

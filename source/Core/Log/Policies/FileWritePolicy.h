@@ -8,13 +8,13 @@
 // cf. this warning:
 //warning C4251: 'moe::FileWritePolicy::m_stream': class 'std::basic_ofstream<char,std::char_traits<char>>' needs to have dll-interface to be used by clients of class 'moe::FileWritePolicy'
 // it should be OK if we build linking exe and linked DLL with the same compiler, but ultimately we can't use fstream for this.
-#include "Core/Preprocessor/moeDLLVisibility.h"
+#include "Monocle_Core_Export.h"
 #ifdef MOE_STD_SUPPORT
 #include <string>
 
 namespace moe
 {
-    class MOE_DLL_API FileWritePolicy
+    class Monocle_Core_API FileWritePolicy
     {
     public:
         FileWritePolicy();
