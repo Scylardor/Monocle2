@@ -9,6 +9,7 @@ set(Monocle_Graphics_SOURCES
 ./BlendState/OpenGL/OpenGLBlendEquation.h
 ./BlendState/OpenGL/OpenGLBlendFactor.cpp
 ./BlendState/OpenGL/OpenGLBlendFactor.h
+./Color/Color.h
 ./DepthStencilState/DepthStencilComparisonFunc.h
 ./DepthStencilState/DepthStencilStateDescriptor.cpp
 ./DepthStencilState/DepthStencilStateDescriptor.h
