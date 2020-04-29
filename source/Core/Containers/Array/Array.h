@@ -11,20 +11,20 @@ namespace moe
 {
 	// Implementation of an array
 	// Currently relying on the standard library.
-	template <class Data, std::size_t N >
+	template <class DataType, std::size_t N >
 	class Array
 	{
 	public:
 
-		typedef	typename std::array<Data, N>::iterator			Iterator;
-		typedef	typename std::array<Data, N>::const_iterator	ConstIterator;
-		typedef	typename std::array<Data, N>::value_type		ValueType;
-		typedef	typename std::array<Data, N>::size_type			SizeType;
+		typedef	typename std::array<DataType, N>::iterator			Iterator;
+		typedef	typename std::array<DataType, N>::const_iterator	ConstIterator;
+		typedef	typename std::array<DataType, N>::value_type		ValueType;
+		typedef	typename std::array<DataType, N>::size_type			SizeType;
 
 		Monocle_Core_API Array() = default;
 		Monocle_Core_API ~Array() = default;
 
-		Array(std::initializer_list<Data> il)
+		Array(std::initializer_list<DataType> il)
 		{
 			for (auto elemIt = il.begin(); elemIt != il.end(); ++elemIt)
 			{
@@ -36,6 +36,8 @@ namespace moe
 
 		void	Fill(const ValueType& val) { m_array.fill(val); }
 
+		const DataType*	Data() const { return m_array.data(); }
+
 		Iterator		Begin() noexcept		{ return m_array.begin(); }
 		ConstIterator	Begin() const noexcept	{ return m_array.begin(); }
 
@@ -43,13 +45,13 @@ namespace moe
 		ConstIterator	End() const noexcept	{ return m_array.end(); }
 
 
-		Data&		operator[](SizeType idx)
+		DataType&		operator[](SizeType idx)
 		{
 			MOE_DEBUG_ASSERT(idx < N);
 			return m_array[idx];
 		}
 
-		const Data&	operator[](SizeType idx) const
+		const DataType&	operator[](SizeType idx) const
 		{
 			MOE_DEBUG_ASSERT(idx < N);
 			return m_array[idx];
@@ -66,7 +68,7 @@ namespace moe
 
 
 	private:
-		std::array<Data, N>	m_array;
+		std::array<DataType, N>	m_array;
 
 
 	public:
