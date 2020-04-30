@@ -18,23 +18,37 @@
 
 namespace moe
 {
-	/*
-		An allocator used to manage the memory of an OpenGL data buffer.
+	/**
+	 * \brief An allocator used to manage the memory of an OpenGL data buffer.
 		The Allocator makes no assumption about what actually is in the buffer: it's just raw data.
 		Implementation inspired by the buddy allocator system.
-	*/
-	class GLGraphicsAllocator
+	 */
+	class OpenGLBuddyAllocator
 	{
 
 	public:
 
-		Monocle_Graphics_API				GLGraphicsAllocator(uint32_t bufferHandle);
+		OpenGLBuddyAllocator() = default;
 
-		Monocle_Graphics_API void		ReservePoolMemory(GLenum target, GLbitfield flags);
+		Monocle_Graphics_API OpenGLBuddyAllocator(GLbitfield flags);
 
-		Monocle_Graphics_API uint32_t	Allocate(const void* data, uint32_t size);
+		Monocle_Graphics_API ~OpenGLBuddyAllocator();
+
+		Monocle_Graphics_API void		ReservePoolMemory(GLbitfield flags);
+
+		Monocle_Graphics_API [[nodiscard]] uint32_t	Allocate(const void* data, uint32_t size);
 
 		Monocle_Graphics_API void		Free(uint32_t offset);
+
+		/**
+		 * \brief Will completely reset the internal variables and free the allocated memory.
+		 */
+		void	DeleteMemory();
+
+		GLuint	GetBufferHandle() const { return m_buffer; }
+
+
+		static const uint32_t	ms_INVALID_OFFSET = (uint32_t)-1;
 
 	private:
 
@@ -42,8 +56,7 @@ namespace moe
 		static const uint32_t	ms_LEAF_SIZE = 4096; // The size of the smallest possible block allocated.
 		static const uint32_t	ms_MAX_LEVELS = 5; // The maximum number of levels the buddy allocator can subdivide into.
 
-
-		uint32_t	GetDataBlockLevel(uint32_t dataBlockSize) const;
+		static uint32_t	GetDataBlockLevel(uint32_t dataBlockSize);
 
 		void		AddFreeBlock(uint32_t uniqueBlockIdx);
 
@@ -79,7 +92,7 @@ namespace moe
 		uint32_t	m_allocatedSize = 0;
 
 		// The actual buffer handle containing the memory
-		uint32_t	m_buffer = ms_UNINITIALIZED;
+		GLuint		m_buffer = ms_UNINITIALIZED;
 
 		std::bitset<1 << (ms_MAX_LEVELS - 1)>	m_buddyIndex;
 

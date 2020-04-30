@@ -2,7 +2,7 @@
 
 #include "catch.hpp"
 
-#include <Graphics/GraphicsAllocator/OpenGL/GLGraphicsAllocator.h>
+#include <Graphics/GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h>
 
 // TODO : This test is disabled for now because it needs a working backing rendering context
 // (basically it needs a running application)
@@ -10,8 +10,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 {
 	SECTION("Allocate leaf block + immediate free")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		test.Free(offset1);
 	}
@@ -19,8 +19,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate leaf block + immediate free + realloc leaf block")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		test.Free(offset1);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
@@ -30,8 +30,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate two leaf blocks next to another then free 2 and 1")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
 		test.Free(offset2);
@@ -41,8 +41,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate two leaf blocks next to another then free 1 and 2")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
 		test.Free(offset1);
@@ -52,8 +52,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate two leaf blocks next to another, free 1, reallocate one in its place, then free both")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
 		test.Free(offset1);
@@ -65,8 +65,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate two leaf blocks, then another on bigger level and free 2,1,3")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
 		uint32_t offset3 = test.Allocate(nullptr, 8000);
@@ -78,8 +78,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate two leaf blocks, then two bigger ones and free 4,2,1,3")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
 		uint32_t offset3 = test.Allocate(nullptr, 8000);
@@ -93,8 +93,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate two leaf blocks, then three bigger ones and free 4,2,1,5,3")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 12);
 		uint32_t offset2 = test.Allocate(nullptr, 12);
 		uint32_t offset3 = test.Allocate(nullptr, 8000);
@@ -110,8 +110,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("allocate all memory block in one go")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 65535);
 		test.Free(offset1);
 		offset1 = test.Allocate(nullptr, 65535);
@@ -121,8 +121,8 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 
 	SECTION("try to allocate with exhausted memory")
 	{
-		moe::GLGraphicsAllocator test(1);
-		test.ReservePoolMemory(0, 0);
+		moe::OpenGLBuddyAllocator test(1);
+		test.ReservePoolMemory(0);
 		uint32_t offset1 = test.Allocate(nullptr, 65535);
 		test.Free(offset1);
 		offset1 = test.Allocate(nullptr, 65535);
