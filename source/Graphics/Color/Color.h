@@ -79,16 +79,43 @@ namespace moe
 			}
 		}
 
-		[[nodiscard]] Val	Red() const { return Rgba[0]; }
+		[[nodiscard]] Val	R() const { return Rgba[0]; }
 
 		template<typename = std::enable_if_t<NumChannels >= 2>>
-		[[nodiscard]] Val	Green() const { return Rgba[1]; }
+		[[nodiscard]] Val	G() const { return Rgba[1]; }
 
 		template<typename = std::enable_if_t<NumChannels >= 3>>
-		[[nodiscard]] Val	Blue() const { return Rgba[2]; }
+		[[nodiscard]] Val	B() const { return Rgba[2]; }
 
 		template<typename = std::enable_if_t<NumChannels == 4>>
-		[[nodiscard]] Val	Alpha() const { return Rgba[3]; }
+		[[nodiscard]] Val	A() const { return Rgba[3]; }
+
+
+		static	Color	Red()
+		{
+			return Color(255);
+		}
+
+		static	Color	Green()
+		{
+			return Color(0, 255);
+		}
+
+		static	Color	Blue()
+		{
+			return Color(0, 0, 255);
+		}
+
+		static	Color	White()
+		{
+			return Color(255, 255, 255);
+		}
+
+		static	Color	Black()
+		{
+			return Color(0);
+		}
+
 
 	private:
 
