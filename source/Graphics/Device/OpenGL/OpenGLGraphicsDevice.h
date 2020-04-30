@@ -14,6 +14,7 @@
 
 #include "Graphics/VertexLayout/OpenGL/OpenGLVertexLayout.h"
 
+#include "Graphics/GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h"
 
 #include "Monocle_Graphics_Export.h"
 
@@ -31,7 +32,12 @@ namespace moe
 
 	public:
 
-		Monocle_Graphics_API void Destroy() override;
+		Monocle_Graphics_API OpenGLGraphicsDevice() = default;
+
+		Monocle_Graphics_API void	Initialize() override;
+
+		Monocle_Graphics_API void	Destroy() override;
+
 
 		/**
 		 * \brief Creates an OpenGL shader program compiled at runtime, from a descriptor containing GLSL source code.
@@ -44,7 +50,6 @@ namespace moe
 			return m_shaderManager.CreateShaderProgramFromSource(shaProDesc);
 		}
 
-
 		/**
 		 * \brief Creates a precompiled OpenGL shader program, from a descriptor containing SPIRV binary code.
 		 * Functions involved : glShaderBinary, glSpecializeShader
@@ -54,7 +59,6 @@ namespace moe
 		{
 			return m_shaderManager.CreateShaderProgramFromBinary(shaProDesc);
 		}
-
 
 		/**
 		 * \brief Removes a shader program from our graphics device
@@ -66,15 +70,28 @@ namespace moe
 			return m_shaderManager.DestroyProgram(programHandle);
 		}
 
+
 		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) override;
 
-		Monocle_Graphics_API[[nodiscard]] const OpenGLVertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const;
+		Monocle_Graphics_API [[nodiscard]] const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const override;
+
+
+		Monocle_Graphics_API [[nodiscard]] VertexBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) override;
+		void	DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle) override;
+
+		[[nodiscard]] IndexBufferHandle	CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) override;
+
 
 	private:
 
-		OpenGLShaderManager	m_shaderManager;
+		OpenGLBuddyAllocator		m_vertexBufferPool;
+		OpenGLBuddyAllocator		m_indexBufferPool;
+
+		OpenGLShaderManager			m_shaderManager;
 
 		Vector<OpenGLVertexLayout>	m_layouts;
+
+		Vector<GLuint>				m_indexBuffers;
 	};
 }
 

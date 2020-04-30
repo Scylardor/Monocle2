@@ -35,6 +35,7 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 		glfwMakeContextCurrent(GetGlfwWindow());
 
 		m_initialized = m_renderer.SetupGraphicsContext((IGraphicsRenderer::GraphicsContextSetup)glfwGetProcAddress);
+		m_renderer.Initialize();
 		if (false == m_initialized)
 		{
 			MOE_ERROR(moe::ChanWindowing, "Failed to initialize GLAD OpenGL loader.");

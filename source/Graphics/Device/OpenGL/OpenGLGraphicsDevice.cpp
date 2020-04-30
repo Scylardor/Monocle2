@@ -11,6 +11,14 @@
 
 namespace moe
 {
+
+	void OpenGLGraphicsDevice::Initialize()
+	{
+		m_vertexBufferPool.ReservePoolMemory(GL_DYNAMIC_STORAGE_BIT);
+		m_indexBufferPool.ReservePoolMemory(GL_DYNAMIC_STORAGE_BIT);
+	}
+
+
 	void OpenGLGraphicsDevice::Destroy()
 	{
 		m_shaderManager.Clear();
@@ -18,9 +26,11 @@ namespace moe
 		// Destroy all VAOs at the same time.
 		Vector<GLuint> vaoIDs(m_layouts.Size());
 
+		int iLayout = 0;
 		for (const auto& layout : m_layouts)
 		{
-			vaoIDs.PushBack(layout);
+			vaoIDs[iLayout] = layout;
+			iLayout++;
 		}
 
 		glDeleteVertexArrays((GLsizei)vaoIDs.Size(), vaoIDs.Data());
@@ -56,8 +66,6 @@ namespace moe
 		{
 			case VertexLayoutDescriptor::Interleaved:
 			{
-
-
 				int iAttrib = 0;
 
 				for (const VertexElementDescriptor& desc : vertexLayoutDesc)
@@ -156,7 +164,7 @@ namespace moe
 	}
 
 
-	const OpenGLVertexLayout* OpenGLGraphicsDevice::GetVertexLayout(VertexLayoutHandle handle) const
+	const VertexLayout* OpenGLGraphicsDevice::GetVertexLayout(VertexLayoutHandle handle) const
 	{
 		// Kind of a trick : we rely on the fact all valid VAO IDs will always start at 1 and increment by one.
 		// So, a valid handle is simply at index (VAO id - 1) in the array.
@@ -168,6 +176,53 @@ namespace moe
 		}
 
 		return nullptr;
+	}
+
+
+	VertexBufferHandle OpenGLGraphicsDevice::CreateStaticVertexBuffer(const void* data, size_t byteSize)
+	{
+		const uint32_t meshOffset = m_vertexBufferPool.Allocate(data, (uint32_t)byteSize);
+		if (meshOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
+		{
+			return VertexBufferHandle::Null();
+		}
+		else
+		{
+			// Encode the VBO ID and the offset in the handle.
+			// The handle looks like : | VBO ID (32 bits) | offset in VBO (32 bits) |
+			uint64_t handleValue = (uint64_t)m_vertexBufferPool.GetBufferHandle() << 32;
+			handleValue |= meshOffset;
+			return VertexBufferHandle{handleValue};
+		}
+	}
+
+
+	void OpenGLGraphicsDevice::DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle)
+	{
+		// Right now, the pool only needs the offset (we use a single VBO).
+
+		// Controlled narrowing conversion to only keep the 32 least-significant bits (containing the offset value)
+		uint32_t offset = (uint32_t)vtxHandle.Get();
+
+		m_vertexBufferPool.Free(offset);
+	}
+
+
+	IndexBufferHandle OpenGLGraphicsDevice::CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes)
+	{
+		const uint32_t indexOffset = m_indexBufferPool.Allocate(indexData, (uint32_t)indexDataSizeBytes);
+		if (indexOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
+		{
+			return IndexBufferHandle::Null();
+		}
+		else
+		{
+			// Encode the VBO ID and the offset in the handle.
+			// The handle looks like : | VBO ID (32 bits) | offset in VBO (32 bits) |
+			uint64_t handleValue = (uint64_t)m_indexBufferPool.GetBufferHandle() << 32;
+			handleValue |= indexOffset;
+			return IndexBufferHandle{ handleValue };
+		}
 	}
 }
 

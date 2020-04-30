@@ -5,10 +5,13 @@
 
 #include "Graphics/Shader/Handle/ShaderHandle.h"
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
+#include "Graphics/VertexLayout/OpenGL/OpenGLVertexLayout.h"
 
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 
 #include "Graphics/VertexLayout/VertexLayoutHandle.h"
+#include "Graphics/DeviceBuffer/VertexBufferHandle.h"
+#include "Graphics/DeviceBuffer/IndexBufferHandle.h"
 
 namespace moe
 {
@@ -25,6 +28,8 @@ namespace moe
 
 		virtual ~IGraphicsDevice() = default;
 
+		virtual void	Initialize() = 0;
+
 		virtual void	Destroy() = 0;
 
 		[[nodiscard]] virtual ShaderProgramHandle	CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc) = 0;
@@ -32,5 +37,12 @@ namespace moe
 		virtual bool	RemoveShaderProgram(ShaderProgramHandle programHandle) = 0;
 
 		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) = 0;
+		[[nodiscard]] virtual const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const = 0;
+
+		[[nodiscard]] virtual VertexBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) = 0;
+
+		virtual void	DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle) = 0;
+
+		[[nodiscard]] virtual IndexBufferHandle		CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) = 0;
 	};
 }

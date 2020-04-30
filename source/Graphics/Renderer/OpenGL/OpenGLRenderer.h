@@ -8,7 +8,13 @@
 
 #include "Graphics/Device/OpenGL/OpenGLGraphicsDevice.h"
 
+#include "Graphics/Mesh/Mesh.h"
+
 #include "Monocle_Graphics_Export.h"
+
+#ifdef MOE_STD_SUPPORT
+#include <set>
+#endif
 
 
 namespace moe
@@ -27,6 +33,11 @@ namespace moe
 
 		OpenGLRenderer& operator=(const OpenGLRenderer&) = delete;
 
+
+		/**
+		 * \brief Renderer initialization method
+		 */
+		Monocle_Graphics_API void	Initialize() override;
 
 		/**
 		 * \brief Shutdown method to destroy all renderer-owned OpenGL resources
@@ -76,12 +87,17 @@ namespace moe
 			return m_device.CreateVertexLayout(vertexLayoutDesc);
 		}
 
+		Monocle_Graphics_API [[nodiscard]] MeshHandle	CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData) override;
+
+
 
 		Monocle_Graphics_API bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) override;
 
 	private:
 
 		OpenGLGraphicsDevice	m_device;
+
+		std::set<Mesh>	m_meshStorage;
 	};
 
 }

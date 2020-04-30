@@ -25,7 +25,6 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
 	} \
 }
 
-
 namespace moe
 {
 

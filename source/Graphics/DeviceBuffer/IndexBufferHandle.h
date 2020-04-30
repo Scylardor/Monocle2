@@ -9,7 +9,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API IndexBufferHandle : RenderObjectHandle<std::uint32_t>
+	struct Monocle_Graphics_API IndexBufferHandle : RenderObjectHandle<std::uint64_t>
 	{
 		static IndexBufferHandle	Null() { return IndexBufferHandle{ 0 }; }
 
