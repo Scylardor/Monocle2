@@ -26,6 +26,7 @@ set(Monocle_Graphics_SOURCES
 ./DeviceBuffer/IndexBufferHandle.h
 ./DeviceBuffer/OpenGL/OpenGLDeviceBuffer.cpp
 ./DeviceBuffer/OpenGL/OpenGLDeviceBuffer.h
+./DeviceBuffer/OpenGL/OpenGLDeviceBufferRange.h
 ./DeviceBuffer/VertexBufferHandle.h
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
@@ -33,6 +34,8 @@ set(Monocle_Graphics_SOURCES
 ./Mesh/Mesh.h
 ./Mesh/MeshDataDescriptor.h
 ./Mesh/MeshHandle.h
+./Mesh/OpenGL/OpenGLMesh.h
+./Mesh/OpenGL/OpenGLMeshComparator.h
 ./OpenGL/moeOpenGL.h
 ./Pipeline/OpenGL/OpenGLPipeline.cpp
 ./Pipeline/OpenGL/OpenGLPipeline.h

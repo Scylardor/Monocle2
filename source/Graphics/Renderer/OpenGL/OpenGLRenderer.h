@@ -89,15 +89,21 @@ namespace moe
 
 		Monocle_Graphics_API [[nodiscard]] MeshHandle	CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData) override;
 
+		Monocle_Graphics_API void	DeleteStaticMesh(MeshHandle handle) override;
 
 
 		Monocle_Graphics_API bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) override;
 
 	private:
 
+		Mesh&	MutMesh(MeshHandle handle)
+		{
+			return m_meshStorage[handle.Get()-1];
+		}
+
 		OpenGLGraphicsDevice	m_device;
 
-		std::set<Mesh>	m_meshStorage;
+		Vector<Mesh>	m_meshStorage;
 	};
 
 }

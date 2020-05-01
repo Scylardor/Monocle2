@@ -44,5 +44,8 @@ namespace moe
 		virtual void	DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle) = 0;
 
 		[[nodiscard]] virtual IndexBufferHandle		CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) = 0;
+
+		virtual void	DeleteIndexBuffer(IndexBufferHandle idxHandle) = 0;
+
 	};
 }

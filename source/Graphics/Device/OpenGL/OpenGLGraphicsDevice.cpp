@@ -199,6 +199,11 @@ namespace moe
 
 	void OpenGLGraphicsDevice::DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle)
 	{
+		if (!MOE_ASSERT(vtxHandle.IsNotNull()))
+		{
+			return ; // not supposed to happen
+		}
+
 		// Right now, the pool only needs the offset (we use a single VBO).
 
 		// Controlled narrowing conversion to only keep the 32 least-significant bits (containing the offset value)
@@ -223,6 +228,22 @@ namespace moe
 			handleValue |= indexOffset;
 			return IndexBufferHandle{ handleValue };
 		}
+	}
+
+
+	void OpenGLGraphicsDevice::DeleteIndexBuffer(IndexBufferHandle idxHandle)
+	{
+		if (!MOE_ASSERT(idxHandle.IsNotNull()))
+		{
+			return; // not supposed to happen
+		}
+
+		// Right now, the pool only needs the offset (we use a single EBO).
+
+		// Controlled narrowing conversion to only keep the 32 least-significant bits (containing the offset value)
+		uint32_t offset = (uint32_t)idxHandle.Get();
+
+		m_indexBufferPool.Free(offset);
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "Core/Misc/Types.h"
 
 #include "Graphics/DeviceBuffer/VertexBufferHandle.h"
+#include "Graphics/DeviceBuffer/IndexBufferHandle.h"
 
 namespace moe
 {
@@ -29,17 +30,8 @@ namespace moe
 			m_numIndices(numIndices)
 		{}
 
-
-
-		/**
-		 * \brief Relational operator between meshes. Does not make sense per se but necessary to insert Mesh in std::set.
-		 * \param rhs The right-hand Mesh
-		 * \return (mesh1 < mesh2) returns true if mesh1 handle value is less than mesh2's.
-		 */
-		bool operator <(const Mesh& rhs) const
-		{
-			return m_vertexHandle.Get() < rhs.m_vertexHandle.Get();
-		}
+		[[nodiscard]] VertexBufferHandle	GetVertexBufferHandle() const { return m_vertexHandle; }
+		[[nodiscard]] IndexBufferHandle		GetIndexBufferHandle() const { return m_indexHandle; }
 
 	private:
 

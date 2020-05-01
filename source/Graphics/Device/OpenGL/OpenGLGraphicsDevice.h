@@ -81,6 +81,7 @@ namespace moe
 
 		[[nodiscard]] IndexBufferHandle	CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) override;
 
+		virtual void	DeleteIndexBuffer(IndexBufferHandle idxHandle) override;
 
 	private:
 

@@ -29,7 +29,7 @@ namespace moe
 		}
 
 		VertexBufferHandle vertexHandle = m_device.CreateStaticVertexBuffer(vertexData.m_dataBuffer, vertexData.m_bufferSizeBytes);
-		if (false == MOE_ASSERT(!vertexHandle.IsNull()))
+		if (false == MOE_ASSERT(vertexHandle.IsNotNull()))
 		{
 			return MeshHandle::Null();
 		}
@@ -39,7 +39,7 @@ namespace moe
 		if (false == indexData.IsNull())
 		{
 			indexHandle = m_device.CreateIndexBuffer(indexData.m_dataBuffer, indexData.m_bufferSizeBytes);
-			if (false == MOE_ASSERT(!indexHandle.IsNull()))
+			if (false == MOE_ASSERT(indexHandle.IsNotNull()))
 			{
 				// If creating the index buffer failed, don't forget to destroy the vertex buffer or it will go dangling
 				m_device.DeleteStaticVertexBuffer(vertexHandle);
@@ -47,10 +47,32 @@ namespace moe
 			}
 		}
 
-		auto meshIt = m_meshStorage.insert(Mesh{ vertexHandle, vertexData.m_bufferNumElems, indexHandle, indexData.m_bufferNumElems });
-		MOE_ASSERT(meshIt.second); // We don't expect being able to insert twice the same mesh !
+		m_meshStorage.EmplaceBack(vertexHandle, vertexData.m_bufferNumElems, indexHandle, indexData.m_bufferNumElems);
 
-		return MeshHandle{(uint32_t)m_meshStorage.size()-1};
+
+		return MeshHandle{(uint32_t)m_meshStorage.Size()};
+	}
+
+
+	void OpenGLRenderer::DeleteStaticMesh(MeshHandle handle)
+	{
+		MOE_DEBUG_ASSERT(handle.IsNotNull()); // you're not supposed to pass null handles to this function
+		if (handle.IsNull())
+			return;
+
+		if (!MOE_ASSERT(handle.Get() <= m_meshStorage.Size())) // Handle is invalid : not supposed to happen
+		{
+			return;
+		}
+
+		Mesh& mesh = MutMesh(handle);
+
+		m_device.DeleteStaticVertexBuffer(mesh.GetVertexBufferHandle());
+
+		if (mesh.GetIndexBufferHandle().IsNotNull())
+		{
+			m_device.DeleteIndexBuffer(mesh.GetIndexBufferHandle());
+		}
 	}
 
 

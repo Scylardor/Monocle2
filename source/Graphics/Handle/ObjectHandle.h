@@ -18,6 +18,7 @@ namespace moe
 		ValT	Get() const { return m_handle; }
 
 		bool	IsNull() const { return m_handle == 0; }
+		bool	IsNotNull() const { return !IsNull(); }
 
 		static RenderObjectHandle	Null() { return RenderObjectHandle{0}; }
 	};

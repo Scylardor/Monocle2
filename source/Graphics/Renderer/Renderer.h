@@ -67,6 +67,14 @@ namespace moe
 		 */
 		[[nodiscard]] virtual MeshHandle	CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData) = 0;
 
+
+		/**
+		 * \brief Will delete any graphics resources associated to this mesh handle (vertex buffer, index buffer...).
+		 * \param handle The handle of mesh to destroy
+		 */
+		virtual void	DeleteStaticMesh(MeshHandle handle) = 0;
+
+
 		/**
 		 * \brief This is a helper function to make CreateStaticMeshFromBuffer easier to use.
 		 * \tparam VertexType The user-provided vertex data type
@@ -76,7 +84,11 @@ namespace moe
 		 */
 		template <typename VertexType, size_t N, size_t IndN = 0>
 		MeshHandle	CreateStaticMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
+
+
+
 	};
+
 
 
 	template <typename VertexType, size_t N, size_t IndN>
