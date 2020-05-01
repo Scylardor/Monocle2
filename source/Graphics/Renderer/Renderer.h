@@ -36,11 +36,12 @@ namespace moe
 	{
 	public:
 
+		using GraphicsContextSetup = void* (*)(const char *name);
 		using ShaderFileList = Vector<std::pair<ShaderStage, std::string_view>>;
 
 		virtual ~IGraphicsRenderer() = default;
 
-		virtual void	Initialize() = 0;
+		virtual bool	Initialize(IGraphicsRenderer::GraphicsContextSetup setupFunction) = 0;
 
 		virtual void	Shutdown() = 0;
 
@@ -54,9 +55,6 @@ namespace moe
 
 
 		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) = 0;
-
-		typedef void* (*GraphicsContextSetup)(const char *name);
-		virtual	bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) = 0;
 
 
 		/**

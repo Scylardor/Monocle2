@@ -12,11 +12,6 @@
 
 #include "Monocle_Graphics_Export.h"
 
-#ifdef MOE_STD_SUPPORT
-#include <set>
-#endif
-
-
 namespace moe
 {
 
@@ -37,7 +32,7 @@ namespace moe
 		/**
 		 * \brief Renderer initialization method
 		 */
-		Monocle_Graphics_API void	Initialize() override;
+		Monocle_Graphics_API bool	Initialize(IGraphicsRenderer::GraphicsContextSetup setupFunction) override;
 
 		/**
 		 * \brief Shutdown method to destroy all renderer-owned OpenGL resources
@@ -92,9 +87,9 @@ namespace moe
 		Monocle_Graphics_API void	DeleteStaticMesh(MeshHandle handle) override;
 
 
-		Monocle_Graphics_API bool	SetupGraphicsContext(GraphicsContextSetup setupFunc) override;
-
 	private:
+
+		static	void	OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 
 		Mesh&	MutMesh(MeshHandle handle)
 		{

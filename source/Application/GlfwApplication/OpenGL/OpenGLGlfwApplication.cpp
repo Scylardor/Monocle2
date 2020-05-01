@@ -19,6 +19,10 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, appDesc.m_contextVersionMinor);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, appDesc.m_openGLProfile);
 
+		#ifdef MOE_DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+		#endif
+
 		//TODO: uncomment on Mac OS
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -34,8 +38,7 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 	{
 		glfwMakeContextCurrent(GetGlfwWindow());
 
-		m_initialized = m_renderer.SetupGraphicsContext((IGraphicsRenderer::GraphicsContextSetup)glfwGetProcAddress);
-		m_renderer.Initialize();
+		m_initialized = m_renderer.Initialize((IGraphicsRenderer::GraphicsContextSetup)glfwGetProcAddress);
 		if (false == m_initialized)
 		{
 			MOE_ERROR(moe::ChanWindowing, "Failed to initialize GLAD OpenGL loader.");
