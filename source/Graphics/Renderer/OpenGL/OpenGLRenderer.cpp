@@ -67,23 +67,18 @@ namespace moe
 			}
 		}
 
-		m_meshStorage.EmplaceBack(vertexHandle, vertexData.m_bufferNumElems, indexHandle, indexData.m_bufferNumElems);
+		FreelistID newMeshID = m_meshFreelist.Add(vertexHandle, vertexData.m_bufferNumElems, indexHandle, indexData.m_bufferNumElems);
 
-
-		return MeshHandle{(uint32_t)m_meshStorage.Size()};
+		return MeshHandle{ newMeshID.Index() + 1 }; // +1 to avoid forming a null handle !
 	}
 
 
 	void OpenGLRenderer::DeleteStaticMesh(MeshHandle handle)
 	{
+
 		MOE_DEBUG_ASSERT(handle.IsNotNull()); // you're not supposed to pass null handles to this function
 		if (handle.IsNull())
 			return;
-
-		if (!MOE_ASSERT(handle.Get() <= m_meshStorage.Size())) // Handle is invalid : not supposed to happen
-		{
-			return;
-		}
 
 		Mesh& mesh = MutMesh(handle);
 
@@ -93,6 +88,8 @@ namespace moe
 		{
 			m_device.DeleteIndexBuffer(mesh.GetIndexBufferHandle());
 		}
+
+		m_meshFreelist.Remove(handle.Get() - 1); // - 1 to get back the original index !
 	}
 
 

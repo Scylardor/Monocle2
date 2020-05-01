@@ -10,6 +10,8 @@
 
 #include "Graphics/Mesh/Mesh.h"
 
+#include "Core/Containers/FreeList/Freelist.h"
+
 #include "Monocle_Graphics_Export.h"
 
 namespace moe
@@ -93,12 +95,12 @@ namespace moe
 
 		Mesh&	MutMesh(MeshHandle handle)
 		{
-			return m_meshStorage[handle.Get()-1];
+			return m_meshFreelist.Lookup(handle.Get() - 1); // - 1 to get back the original index !
 		}
 
 		OpenGLGraphicsDevice	m_device;
 
-		Vector<Mesh>	m_meshStorage;
+		Freelist<Mesh>	m_meshFreelist;
 	};
 
 }

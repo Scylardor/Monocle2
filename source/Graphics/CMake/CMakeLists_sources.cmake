@@ -35,7 +35,6 @@ set(Monocle_Graphics_SOURCES
 ./Mesh/MeshDataDescriptor.h
 ./Mesh/MeshHandle.h
 ./Mesh/OpenGL/OpenGLMesh.h
-./Mesh/OpenGL/OpenGLMeshComparator.h
 ./OpenGL/moeOpenGL.h
 ./Pipeline/OpenGL/OpenGLPipeline.cpp
 ./Pipeline/OpenGL/OpenGLPipeline.h
