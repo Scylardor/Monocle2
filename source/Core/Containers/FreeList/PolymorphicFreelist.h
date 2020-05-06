@@ -4,21 +4,23 @@
 
 #include "Core/Containers/Vector/Vector.h"
 
-
 #include "detail/FreeListObject.h"
+
 
 namespace moe
 {
+
 
 	/**
 	 * \brief Implementation of a "lightweight" free list, using a vector to keep objects contiguous.
 	 * It uses vector data to store indexes to the next free slot in the list.
 	 * It does not use any kind of "generation" ID, so extra care should be taken to not keep old dangling IDs
 	 * (or an old ID referring to a deleted object could address a new, different object now living at the same index).
+	 * This is a variant of free list that stores base class pointers and can dynamically allocate new derived types of this base class.
 	 * \tparam Object the type of object stored in the free list
 	 */
-	template <class Object>
-	class Freelist
+	template <typename BaseType>
+	class PolymorphicFreelist
 	{
 	private:
 
@@ -29,28 +31,23 @@ namespace moe
 	 */
 	union ObjectStorage
 	{
-		~ObjectStorage()
-		{
-			m_obj.~Object();
-		}
+		~ObjectStorage() = default;
 
-		// Variadic template constructor is needed for ObjectStorage to work with EmplaceBack and all kinds of objects.
-		template <typename... Args>
-		ObjectStorage(Args&&... args) :
-			m_obj(std::forward<Args>(args)...)
+		ObjectStorage(BaseType* baseObj) :
+			m_obj(baseObj)
 		{}
 
 		// Doesn't compile if I don't add this conversion operator.
-		operator Object() { return m_obj; }
+		operator BaseType*() { return m_obj; }
 
-		Object	m_obj;	// The stored object
-		uint32_t m_nextSlot{ UINT32_MAX };	// The previous value of next freelist slot when this slot gets freed
+		BaseType*	m_obj;	// The stored object
+		uint32_t	m_nextSlot{ UINT32_MAX };	// The previous value of next freelist slot when this slot gets freed
 	};
 
 	public:
-		Freelist() = default;
+		PolymorphicFreelist() = default;
 
-		Freelist(uint32_t numReserved)
+		PolymorphicFreelist(uint32_t numReserved)
 		{
 			Reserve(numReserved);
 		}
@@ -62,11 +59,11 @@ namespace moe
 
 		void Clear();
 
-		Object& Lookup(FreelistID id);
+		BaseType& Lookup(FreelistID id);
 
-		const Object& Lookup(FreelistID id) const;
+		const BaseType& Lookup(FreelistID id) const;
 
-		template <typename... Args>
+		template <typename Derived, typename... Args>
 		FreelistID Add(Args&&... args);
 
 		void Remove(FreelistID removedId);
@@ -78,4 +75,4 @@ namespace moe
 	};
 }
 
-#include "Freelist.hpp"
+#include "PolymorphicFreelist.hpp"

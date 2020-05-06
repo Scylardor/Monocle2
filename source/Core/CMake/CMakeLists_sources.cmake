@@ -2,8 +2,11 @@
 
 set(Monocle_Core_SOURCES
 	./Containers/Array/Array.h
+./Containers/FreeList/detail/FreeListObject.h
 ./Containers/FreeList/Freelist.h
 ./Containers/FreeList/Freelist.hpp
+./Containers/FreeList/PolymorphicFreelist.h
+./Containers/FreeList/PolymorphicFreelist.hpp
 ./Containers/HashMap/HashMap.h
 ./Containers/IntrusiveListNode.h
 ./Containers/Private/IntrusiveListNode.internal.hpp
