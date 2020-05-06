@@ -9,6 +9,15 @@ set(Monocle_Graphics_SOURCES
 ./BlendState/OpenGL/OpenGLBlendEquation.h
 ./BlendState/OpenGL/OpenGLBlendFactor.cpp
 ./BlendState/OpenGL/OpenGLBlendFactor.h
+./Camera/Camera.cpp
+./Camera/Camera.h
+./Camera/CameraHandle.h
+./Camera/CameraManager.cpp
+./Camera/CameraManager.h
+./Camera/OpenGL/OpenGLCamera.h
+./Camera/Viewport.h
+./Camera/ViewportDescriptor.h
+./Camera/ViewportHandle.h
 ./Color/Color.h
 ./DepthStencilState/DepthStencilComparisonFunc.h
 ./DepthStencilState/DepthStencilStateDescriptor.cpp

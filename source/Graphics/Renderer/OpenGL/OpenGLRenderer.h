@@ -89,6 +89,19 @@ namespace moe
 		Monocle_Graphics_API void	DeleteStaticMesh(MeshHandle handle) override;
 
 
+
+	protected:
+
+		[[nodiscard]] const IGraphicsDevice&	GetDevice() const override
+		{
+			return m_device;
+		}
+
+		[[nodiscard]] IGraphicsDevice&	MutDevice() override
+		{
+			return m_device;
+		}
+
 	private:
 
 		static	void	OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
@@ -101,6 +114,8 @@ namespace moe
 		OpenGLGraphicsDevice	m_device;
 
 		Freelist<Mesh>	m_meshFreelist;
+
+
 	};
 
 }

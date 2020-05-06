@@ -9,6 +9,7 @@
 
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Containers/Array/Array.h"
+#include "Graphics/Camera/CameraHandle.h"
 
 #include "Monocle_Graphics_Export.h"
 
@@ -20,6 +21,13 @@
 
 #include "Graphics/Mesh/MeshHandle.h"
 #include "Graphics/Mesh/MeshDataDescriptor.h"
+
+#include "Graphics/Camera/CameraHandle.h"
+#include "Graphics/Camera/ViewportHandle.h"
+#include "Graphics/Camera/ViewportDescriptor.h"
+#include "Graphics/Camera/Camera.h"
+#include "Graphics/Camera/CameraManager.h"
+
 
 namespace moe
 {
@@ -83,8 +91,14 @@ namespace moe
 		template <typename VertexType, size_t N, size_t IndN = 0>
 		MeshHandle	CreateStaticMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
 
+		[[nodiscard]] virtual CameraHandle	CreateCamera(const OrthographicCameraDesc& orthoDesc, const ViewportDescriptor& vpDesc) = 0;
+		[[nodiscard]] virtual CameraHandle	CreateCamera(const PerspectiveCameraDesc& perspDesc, const ViewportDescriptor& vpDesc) = 0;
 
+		[[nodiscard]] virtual CameraHandle	CreateCamera(const OrthographicCameraDesc& orthoDesc, ViewportHandle vpHandle) = 0;
+		[[nodiscard]] virtual CameraHandle	CreateCamera(const PerspectiveCameraDesc& perspDesc, ViewportHandle vpHandle) = 0;
 
+		[[nodiscard]] virtual const CameraManager&	GetCameraManager() const = 0;
+		[[nodiscard]] virtual CameraManager&		MutCameraManager() = 0;
 	};
 
 

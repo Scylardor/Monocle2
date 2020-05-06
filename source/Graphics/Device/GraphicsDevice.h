@@ -13,6 +13,9 @@
 #include "Graphics/DeviceBuffer/VertexBufferHandle.h"
 #include "Graphics/DeviceBuffer/IndexBufferHandle.h"
 
+#include "Graphics/Camera/ViewportHandle.h"
+#include "Graphics/Camera/ViewportDescriptor.h"
+
 namespace moe
 {
 
@@ -46,6 +49,8 @@ namespace moe
 		[[nodiscard]] virtual IndexBufferHandle		CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) = 0;
 
 		virtual void	DeleteIndexBuffer(IndexBufferHandle idxHandle) = 0;
+
+		[[nodiscard]] virtual ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) = 0;
 
 	};
 }

@@ -245,6 +245,13 @@ namespace moe
 
 		m_indexBufferPool.Free(offset);
 	}
+
+
+	ViewportHandle OpenGLGraphicsDevice::CreateViewport(const ViewportDescriptor& vpDesc)
+	{
+		FreelistID newVpId = m_viewports.Add(vpDesc);
+		return newVpId.ToHandle<ViewportHandle>();
+	}
 }
 
 #endif

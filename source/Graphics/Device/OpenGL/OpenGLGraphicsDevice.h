@@ -5,6 +5,7 @@
 #ifdef MOE_OPENGL
 
 #include "Core/Containers/Vector/Vector.h"
+#include "Core/Containers/FreeList/Freelist.h"
 
 #include "Graphics/Device/GraphicsDevice.h"
 
@@ -15,6 +16,10 @@
 #include "Graphics/VertexLayout/OpenGL/OpenGLVertexLayout.h"
 
 #include "Graphics/GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h"
+
+#include "Graphics/Camera/ViewportHandle.h"
+#include "Graphics/Camera/ViewportDescriptor.h"
+
 
 #include "Monocle_Graphics_Export.h"
 
@@ -80,19 +85,24 @@ namespace moe
 		void	DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle) override;
 
 		[[nodiscard]] IndexBufferHandle	CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) override;
+		void							DeleteIndexBuffer(IndexBufferHandle idxHandle) override;
 
-		virtual void	DeleteIndexBuffer(IndexBufferHandle idxHandle) override;
+		[[nodiscard]] ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) override;
+
 
 	private:
 
-		OpenGLBuddyAllocator		m_vertexBufferPool;
-		OpenGLBuddyAllocator		m_indexBufferPool;
+		OpenGLBuddyAllocator			m_vertexBufferPool;
+		OpenGLBuddyAllocator			m_indexBufferPool;
 
-		OpenGLShaderManager			m_shaderManager;
+		OpenGLShaderManager				m_shaderManager;
 
-		Vector<OpenGLVertexLayout>	m_layouts;
+		Vector<OpenGLVertexLayout>		m_layouts;
 
-		Vector<GLuint>				m_indexBuffers;
+		Vector<GLuint>					m_indexBuffers;
+
+		// Unlike Vulkan or D3D11 for example, OpenGL does not have any concept of "viewport object". So our viewport objects are just descriptors.
+		Freelist<ViewportDescriptor>	m_viewports;
 	};
 }
 

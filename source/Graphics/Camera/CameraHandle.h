@@ -8,13 +8,12 @@
 
 #include "Monocle_Graphics_Export.h"
 
-
 namespace moe
 {
 
-	struct Monocle_Graphics_API IndexBufferHandle : RenderObjectHandle<std::uint64_t>
+	struct Monocle_Graphics_API CameraHandle : RenderObjectHandle<std::uint8_t>
 	{
-		static IndexBufferHandle	Null() { return IndexBufferHandle{ 0 }; }
+		static CameraHandle	Null() { return CameraHandle{ 0 }; }
 
 	};
 
