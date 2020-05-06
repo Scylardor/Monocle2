@@ -100,7 +100,9 @@ namespace moe
 			template<typename = std::enable_if_t<ColsT == RowsT>>
 			Matrix&	Invert()
 			{
-				m_mat = glm::inverse(m_mat);
+				if (*this != Identity())
+					m_mat = glm::inverse(m_mat);
+
 				return *this;
 			}
 
@@ -116,6 +118,9 @@ namespace moe
 			template<typename = std::enable_if_t<ColsT == RowsT>>
 			[[nodiscard]] Matrix	GetInverse() const
 			{
+				if (*this == Identity())
+					return Matrix(m_mat);
+
 				return Matrix(glm::inverse(m_mat));
 			}
 

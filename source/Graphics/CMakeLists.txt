@@ -12,9 +12,10 @@ monocle_add_library(${MONOCLE_LIB_TYPE} ${GRAPHICS_TARGET} "${${GRAPHICS_TARGET}
 # to recreate the folder tree with filters within Visual Studio for example.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${GRAPHICS_TARGET}_SOURCES})
 
-# This library uses Core
+# Libraries used by this target
 target_link_libraries(${GRAPHICS_TARGET}
-	PUBLIC ${PROJECT_NAME}_Core
+	PUBLIC	${PROJECT_NAME}_Core
+			${PROJECT_NAME}_Math
 	PRIVATE ${PROJECT_NAME}) # Linking with project's Interface Library allows us to reuse PCH's.
 
 # Integrate GLAD OpenGL function pointer loader into Graphics library if we wanna use OpenGL.

@@ -13,12 +13,25 @@ namespace moe
 	template <typename ValT>
 	struct RenderObjectHandle
 	{
+		typedef ValT	Underlying;
+
+
 		ValT	m_handle{ 0 };
 
-		ValT	Get() const { return m_handle; }
+		[[nodiscard]] ValT	Get() const { return m_handle; }
 
-		bool	IsNull() const { return m_handle == 0; }
-		bool	IsNotNull() const { return !IsNull(); }
+		[[nodiscard]] bool	IsNull() const { return m_handle == 0; }
+		[[nodiscard]] bool	IsNotNull() const { return !IsNull(); }
+
+		bool operator==(const RenderObjectHandle& rhs) const
+		{
+			return m_handle == rhs.m_handle;
+		}
+
+		bool operator!=(const RenderObjectHandle& rhs) const
+		{
+			return !(*this == rhs);
+		}
 
 		static RenderObjectHandle	Null() { return RenderObjectHandle{0}; }
 	};

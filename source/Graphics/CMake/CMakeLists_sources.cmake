@@ -51,6 +51,12 @@ set(Monocle_Graphics_SOURCES
 ./ResourceFactory/ResourceFactory.h
 ./Resources/shaders/OpenGL/basic.frag
 ./Resources/shaders/OpenGL/basic.vert
+./SceneGraph/SceneGraph.cpp
+./SceneGraph/SceneGraph.h
+./SceneGraph/SceneGraphHandle.h
+./SceneGraph/SceneNode.cpp
+./SceneGraph/SceneNode.h
+./SceneGraph/SceneNodeHandle.h
 ./Shader/Handle/ShaderHandle.h
 ./Shader/Manager/OpenGL/OpenGLShaderManager.cpp
 ./Shader/Manager/OpenGL/OpenGLShaderManager.h
@@ -67,6 +73,7 @@ set(Monocle_Graphics_SOURCES
 ./Texture/TextureView.h
 ./Texture/TextureViewDescription.h
 ./Topology/PrimitiveTopology.h
+./Transform/Transform.h
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.cpp
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.h
 ./VertexBuffer/VertexBuffer.cpp
