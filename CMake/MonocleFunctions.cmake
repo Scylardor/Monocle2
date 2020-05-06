@@ -43,10 +43,28 @@ function(MONOCLE_INCLUDE_GLFW3 TARGET_NAME)
 	# We expect the DLL file to be next to the import library file.
 	# Next, we copy the DLL next to the executables.
 	string(REPLACE ".lib" ".dll" GLFW_DLL ${GLFW3_LIBRARY})
- 
-	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD        
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different  
+
+	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		${GLFW_DLL}
 		$<TARGET_FILE_DIR:${TARGET_NAME}>)
 
+endfunction()
+
+
+function(MONOCLE_ADD_LIBRARY LIB_TYPE TARGET_NAME LIB_SOURCES)
+	add_library(${TARGET_NAME} ${LIB_TYPE} ${LIB_SOURCES})
+
+	include(GenerateExportHeader)
+	generate_export_header( ${TARGET_NAME}
+             BASE_NAME			${TARGET_NAME}
+             EXPORT_MACRO_NAME	${TARGET_NAME}_API
+             EXPORT_FILE_NAME	${TARGET_NAME}_Export.h
+             STATIC_DEFINE		${TARGET_NAME}_STATIC
+	)
+
+	# Add CMAKE_CURRENT_BINARY_DIR to include directories so that xxx_Export.h file is easily included.
+	target_include_directories( ${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+	
 endfunction()
