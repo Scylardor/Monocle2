@@ -42,6 +42,7 @@ namespace moe
 		else
 		{
 			newObjIdx = m_nextFreeListSlot;
+			new (&m_objects[newObjIdx]) Object(std::forward<Args>(args)...);
 			m_nextFreeListSlot = m_objects[m_nextFreeListSlot].m_nextSlot;
 		}
 
