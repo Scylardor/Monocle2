@@ -21,7 +21,7 @@ namespace moe
 	class OpenGLGlfwApplication : public BaseGlfwApplication
 	{
 	public:
-		Monocle_Application_API OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc);
+		Monocle_Application_API OpenGLGlfwApplication(const OpenGLGlfwAppDescriptor& appDesc);
 		Monocle_Application_API virtual ~OpenGLGlfwApplication() override;
 
 		OpenGLGlfwApplication(const OpenGLGlfwApplication&) = delete;
@@ -36,9 +36,21 @@ namespace moe
 			return m_renderer;
 		}
 
+		[[nodiscard]] Width_t	GetWindowWidth() const final override
+		{
+			return m_description.m_windowWidth;
+		}
+
+		[[nodiscard]] Height_t	GetWindowHeight() const final override
+		{
+			return m_description.m_windowHeight;
+		}
+
 	protected:
 
 		OpenGLRenderer	m_renderer;
+
+		OpenGLGlfwAppDescriptor	m_description;
 	};
 }
 

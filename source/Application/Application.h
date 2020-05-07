@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Core/Misc/Literals.h" // width and height
+
 #include "Monocle_Application_Export.h"
 
 #include "Graphics/Renderer/Renderer.h"
@@ -25,6 +27,9 @@ namespace moe
 		virtual const IGraphicsRenderer&	GetRenderer() const = 0;
 		virtual IGraphicsRenderer&			MutRenderer() = 0;
 
+
+		[[nodiscard]] virtual Width_t	GetWindowWidth() const = 0;
+		[[nodiscard]] virtual Height_t GetWindowHeight() const = 0;
 
 	protected:
 

@@ -10,7 +10,6 @@
 
 moe::BaseGlfwApplication::BaseGlfwApplication()
 {
-
 	SetInitialized(glfwInit());
 }
 
@@ -39,6 +38,22 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 	}
 
 	return m_window;
+}
+
+void moe::BaseGlfwApplication::PollInputEvents()
+{
+	glfwPollEvents();
+}
+
+void moe::BaseGlfwApplication::SwapBuffers()
+{
+	glfwSwapBuffers(m_window);
+}
+
+
+bool moe::BaseGlfwApplication::WindowIsOpened() const
+{
+	return !glfwWindowShouldClose(m_window);
 }
 
 

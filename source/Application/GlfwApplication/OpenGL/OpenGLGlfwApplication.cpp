@@ -10,14 +10,15 @@
 
 
 
-moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDescriptor& appDesc) :
-	BaseGlfwApplication()
+moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const  OpenGLGlfwAppDescriptor& appDesc) :
+	BaseGlfwApplication(),
+	m_description(appDesc)
 {
 	if (m_initialized)
 	{
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, appDesc.m_contextVersionMajor);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, appDesc.m_contextVersionMinor);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, appDesc.m_openGLProfile);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, m_description.m_contextVersionMajor);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, m_description.m_contextVersionMinor);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, m_description.m_openGLProfile);
 
 		#ifdef MOE_DEBUG
 		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
@@ -26,7 +27,7 @@ moe::OpenGLGlfwApplication::OpenGLGlfwApplication(const struct OpenGLGlfwAppDesc
 		//TODO: uncomment on Mac OS
 		//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-		GLFWwindow* myWindow = CreateGlfwWindow(appDesc);
+		GLFWwindow* myWindow = CreateGlfwWindow(m_description);
 		m_initialized = (myWindow != nullptr);
 	}
 

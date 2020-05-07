@@ -8,6 +8,9 @@
 
 #include "Application/Application.h"
 
+#include "Application/AppDescriptor/AppDescriptor.h"
+
+
 struct GLFWwindow;
 
 namespace moe
@@ -16,11 +19,11 @@ namespace moe
 	 * \brief Base class used for all generic GLFW operations (window creation, etc.).
 	 * Specific graphics API logic (OpenGL, Vulkan) is to be done in child classes.
 	*/
-	class Monocle_Application_API BaseGlfwApplication : public Application
+	class BaseGlfwApplication : public Application
 	{
 	public:
-		BaseGlfwApplication();
-		virtual ~BaseGlfwApplication();
+		Monocle_Application_API BaseGlfwApplication();
+		Monocle_Application_API virtual ~BaseGlfwApplication();
 
 	protected:
 
@@ -32,7 +35,7 @@ namespace moe
 		 * \param appDesc : the description to use to create the window (width, height, title etc.)
 		 * \return The created window or nullptr if the window creation has failed.
 		 */
-		GLFWwindow*	CreateGlfwWindow(const struct AppDescriptor& appDesc);
+		GLFWwindow*	CreateGlfwWindow(const AppDescriptor& appDesc);
 
 
 		GLFWwindow*	GetGlfwWindow()
@@ -42,12 +45,20 @@ namespace moe
 		}
 
 
+		Monocle_Application_API void	PollInputEvents();
+
+		Monocle_Application_API void	SwapBuffers();
+
+		Monocle_Application_API bool	WindowIsOpened() const;
+
 	private:
 
 		/**
 		 * \brief The handle to our current window. Must be set with a call to CreateGlfwWindow.
 		 */
 		GLFWwindow* m_window = nullptr;
+
+		AppDescriptor	m_description;
 	};
 }
 
