@@ -89,6 +89,13 @@ namespace moe
 		Monocle_Graphics_API void	DeleteStaticMesh(MeshHandle handle) override;
 
 
+		Monocle_Graphics_API void	UseCamera(CameraHandle camHandle) override;
+
+		Monocle_Graphics_API void	Clear(const ColorRGBAf& clearColor) override;
+
+		Monocle_Graphics_API void	UseMaterial(ShaderProgramHandle progHandle) override;
+
+		Monocle_Graphics_API void	DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle) override;
 
 	protected:
 

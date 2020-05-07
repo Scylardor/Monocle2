@@ -6,6 +6,9 @@
 
 #include <glad/glad.h>
 
+#include "Graphics/VertexLayout/OpenGL/OpenGLVertexFormat.h"
+
+
 namespace moe
 {
 	bool OpenGLRenderer::Initialize(IGraphicsRenderer::GraphicsContextSetup setupFunction)
@@ -90,6 +93,85 @@ namespace moe
 		}
 
 		m_meshFreelist.Remove(handle.Get() - 1); // - 1 to get back the original index !
+	}
+
+
+	void OpenGLRenderer::UseCamera(CameraHandle camHandle)
+	{
+		// First fetch associated viewport
+		const ACamera& cam = m_cameraManager.GetCamera(camHandle);
+
+		auto vpHandle = cam.GetViewportHandle();
+
+		m_device.UseViewport(vpHandle);
+
+		// For now, the camera is actually not used...
+	}
+
+
+	void OpenGLRenderer::Clear(const ColorRGBAf& clearColor)
+	{
+		glClearColor(clearColor.R(), clearColor.G(), clearColor.B(), clearColor.A());
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+
+	void OpenGLRenderer::UseMaterial(ShaderProgramHandle progHandle)
+	{
+		m_device.UseShaderProgram(progHandle);
+
+	}
+
+
+	void OpenGLRenderer::DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle)
+	{
+
+		Mesh& drawnMesh = MutMesh(meshHandle);
+
+		const OpenGLVertexLayout* vtxLayout = m_device.UseVertexLayout(layoutHandle);
+		if (vtxLayout == nullptr)
+		{
+			return; // TODO : add log
+		}
+
+		auto [vbo, vboOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(drawnMesh.GetVertexBufferHandle());
+
+		if (vtxLayout->IsInterleaved())
+		{
+			glVertexArrayVertexBuffer(vtxLayout->VAO(), 0, vbo, vboOffset, vtxLayout->GetStrideBytes());
+		}
+		else
+		{
+			// In packed mode, set the bindings one by one.
+
+			const VertexLayoutDescriptor& layoutDesc = vtxLayout->ReadDescriptor();
+
+			uint32_t bindingIdx = 0;
+			size_t elemBufferOffset = vboOffset;
+
+			for (const VertexElementDescriptor& elemDesc : layoutDesc)
+			{
+				auto oglElemFormat = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
+				auto typeSize = OpenGLVertexElementFormat::FindTypeSize(oglElemFormat.value().m_numCpnts, oglElemFormat.value().m_type);
+				glVertexArrayVertexBuffer(vtxLayout->VAO(), bindingIdx, vbo, elemBufferOffset, typeSize.value());
+
+				elemBufferOffset += drawnMesh.NumVertices() * typeSize.value();
+				bindingIdx++;
+			}
+		}
+
+		if (drawnMesh.IsIndexed())
+		{
+			auto[ebo, eboOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(drawnMesh.GetIndexBufferHandle());
+
+			glVertexArrayElementBuffer(vtxLayout->VAO(), ebo);
+
+			glDrawElements(GL_TRIANGLES, (GLsizei)drawnMesh.NumIndices(), GL_UNSIGNED_INT, (const void*)((uint64_t)eboOffset));
+		}
+		else
+		{
+			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)drawnMesh.NumVertices());
+		}
 	}
 
 

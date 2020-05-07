@@ -28,6 +28,8 @@
 #include "Graphics/Camera/Camera.h"
 #include "Graphics/Camera/CameraManager.h"
 
+#include "Graphics/Color/Color.h"
+
 
 namespace moe
 {
@@ -99,6 +101,15 @@ namespace moe
 
 		[[nodiscard]] virtual const CameraManager&	GetCameraManager() const = 0;
 		[[nodiscard]] virtual CameraManager&		MutCameraManager() = 0;
+
+
+		virtual void	UseCamera(CameraHandle camHandle) = 0;
+
+		virtual void	Clear(const ColorRGBAf& clearColor) = 0;
+
+		virtual void	UseMaterial(ShaderProgramHandle progHandle) = 0;
+
+		virtual void	DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle) = 0;
 	};
 
 

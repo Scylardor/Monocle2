@@ -4,6 +4,10 @@
 
 #ifdef MOE_OPENGL
 
+#ifdef MOE_STD_SUPPORT
+#include <utility> // std::pair
+#endif
+
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Containers/FreeList/Freelist.h"
 
@@ -76,9 +80,14 @@ namespace moe
 		}
 
 
+		void	UseShaderProgram(ShaderProgramHandle programHandle);
+
+
 		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) override;
 
 		Monocle_Graphics_API [[nodiscard]] const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const override;
+
+		const OpenGLVertexLayout*	UseVertexLayout(VertexLayoutHandle layoutHandle);
 
 
 		Monocle_Graphics_API [[nodiscard]] VertexBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) override;
@@ -89,6 +98,16 @@ namespace moe
 
 		[[nodiscard]] ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) override;
 
+		void	UseViewport(ViewportHandle vpHandle) override;
+
+
+		static std::pair<unsigned int, unsigned int> DecodeBufferHandle(const RenderObjectHandle<std::uint64_t>& handle)
+		{
+			uint64_t handleVal = handle.Get();
+			uint32_t bufferID = handleVal >> 32;
+			uint32_t bufferOffset = (uint32_t)handleVal;
+			return { bufferID, bufferOffset };
+		}
 
 	private:
 

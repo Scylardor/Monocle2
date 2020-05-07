@@ -51,6 +51,7 @@ namespace moe
 		virtual void	DeleteIndexBuffer(IndexBufferHandle idxHandle) = 0;
 
 		[[nodiscard]] virtual ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) = 0;
+		virtual void	UseViewport(ViewportHandle vpHandle) = 0;
 
 	};
 }

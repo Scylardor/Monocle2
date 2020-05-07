@@ -39,6 +39,22 @@ namespace moe
 	}
 
 
+	void OpenGLGraphicsDevice::UseShaderProgram(ShaderProgramHandle programHandle)
+	{
+		const OpenGLShaderProgram* programPtr = m_shaderManager.GetProgram(programHandle);
+
+		if (MOE_ASSERT(programPtr != nullptr))
+		{
+			GLuint shaderProgramID = (GLuint)(*programPtr);
+			glUseProgram(shaderProgramID);
+		}
+		else
+		{
+			MOE_ERROR(ChanGraphics, "UseShaderProgram: requested an invalid shader program handle.");
+		}
+	}
+
+
 	VertexLayoutHandle OpenGLGraphicsDevice::CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc)
 	{
 		// First and foremost, check that we do not have an existing vertex layout that could fit this description...
@@ -70,7 +86,7 @@ namespace moe
 
 				for (const VertexElementDescriptor& desc : vertexLayoutDesc)
 				{
-					auto OpenGLInfoOpt = TranslateOpenGLVertexElementFormat(desc.m_format);
+					auto OpenGLInfoOpt = OpenGLVertexElementFormat::TranslateFormat(desc.m_format);
 					if (false == OpenGLInfoOpt.has_value())
 					{
 						MOE_ERROR(ChanGraphics, "Failed to translate following OpenGL format : %u", desc.m_format);
@@ -89,7 +105,7 @@ namespace moe
 					// We can bind all attributes to same binding index because data is interleaved.
 					glVertexArrayAttribBinding(vaoID, iAttrib, 0);
 
-					auto sizeOpt = FindOpenGLTypeSize(glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
+					auto sizeOpt = OpenGLVertexElementFormat::FindTypeSize(glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
 					if (false == sizeOpt.has_value())
 					{
 						MOE_ERROR(ChanGraphics, "Failed to find the OpenGL type size of following combination : %u %i", glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
@@ -111,7 +127,7 @@ namespace moe
 
 				for (const VertexElementDescriptor& desc : vertexLayoutDesc)
 				{
-					auto OpenGLInfoOpt = TranslateOpenGLVertexElementFormat(desc.m_format);
+					auto OpenGLInfoOpt = OpenGLVertexElementFormat::TranslateFormat(desc.m_format);
 					if (false == OpenGLInfoOpt.has_value())
 					{
 						MOE_ERROR(ChanGraphics, "Failed to translate following OpenGL format : %u", desc.m_format);
@@ -121,7 +137,7 @@ namespace moe
 					const auto& glVertexElemFmt = OpenGLInfoOpt.value();
 
 					// More of a safety measure because we actually don't need the total size in packed mode.
-					auto sizeOpt = FindOpenGLTypeSize(glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
+					auto sizeOpt = OpenGLVertexElementFormat::FindTypeSize(glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
 					if (false == sizeOpt.has_value())
 					{
 						MOE_ERROR(ChanGraphics, "Failed to find the OpenGL type size of following combination : %u %i", glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
@@ -176,6 +192,23 @@ namespace moe
 		}
 
 		return nullptr;
+	}
+
+
+	const OpenGLVertexLayout* OpenGLGraphicsDevice::UseVertexLayout(VertexLayoutHandle layoutHandle)
+	{
+		const OpenGLVertexLayout* layout = static_cast<const OpenGLVertexLayout*>(GetVertexLayout(layoutHandle));
+
+		if (MOE_ASSERT(layout != nullptr))
+		{
+			glBindVertexArray((GLuint)*layout);
+		}
+		else
+		{
+			MOE_ERROR(ChanGraphics, "UseVertexLayout was passed an invalid layout handle.");
+		}
+
+		return layout;
 	}
 
 
@@ -251,6 +284,14 @@ namespace moe
 	{
 		FreelistID newVpId = m_viewports.Add(vpDesc);
 		return newVpId.ToHandle<ViewportHandle>();
+	}
+
+
+	void OpenGLGraphicsDevice::UseViewport(ViewportHandle vpHandle)
+	{
+		const ViewportDescriptor& desc = m_viewports.Lookup(vpHandle.Get() - 1);
+
+		glViewport((GLint)desc.m_x, (GLint)desc.m_y, (GLsizei)desc.m_width, (GLsizei)desc.m_height);
 	}
 }
 
