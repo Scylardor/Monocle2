@@ -12,7 +12,7 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
  * \param shaderObj The GL handle of the shader to check
  * \param status The status checked ( GL_COMPILE_STATUS, etc...)
  */
-#define GL_SHADER_CHECK_MESSAGE(shaderObj, status, ...) \
+#define GL_SHADER_CHECK_MESSAGE(shaderObj, status, format, ...) \
 { \
 	int success; \
 	glGetShaderiv(shaderObj, status, &success); \
@@ -20,7 +20,7 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
 	{ \
 		char infoLog[ms_INFOLOG_BUF_SIZE]; \
 		glGetShaderInfoLog(shaderObj, ms_INFOLOG_BUF_SIZE, nullptr, infoLog); \
-		MOE_ERROR(ChanGraphics, ##__VA_ARGS__); \
+		MOE_ERROR(ChanGraphics, format, infoLog, ##__VA_ARGS__); \
 		return ShaderProgramHandle::Null(); \
 	} \
 }
@@ -31,7 +31,7 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
  * \param programObj The GL handle of the program to check
  * \param status The status checked ( GL_LINK_STATUS, etc...)
  */
-#define GL_PROGRAM_CHECK_MESSAGE(programObj, status, ...) \
+#define GL_PROGRAM_CHECK_MESSAGE(programObj, status, format, ...) \
 { \
 	int success; \
 	glGetProgramiv(programObj, status, &success); \
@@ -39,7 +39,7 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
 	{ \
 		char infoLog[ms_INFOLOG_BUF_SIZE]; \
 		glGetProgramInfoLog(programObj, ms_INFOLOG_BUF_SIZE, nullptr, infoLog); \
-		MOE_ERROR(ChanGraphics, ##__VA_ARGS__); \
+		MOE_ERROR(ChanGraphics, infoLog, ##__VA_ARGS__); \
 		return ShaderProgramHandle::Null(); \
 	} \
 }
@@ -74,7 +74,7 @@ namespace moe
 			glCompileShader(newShader);
 
 			GL_SHADER_CHECK_MESSAGE(newShader, GL_COMPILE_STATUS,
-				"Compilation failed for shader stage '%s'. Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
+				"Shader compilation failed : '%s' (at shader stage '%s'). Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
 
 			program.Attach(newShader);
 
@@ -89,7 +89,7 @@ namespace moe
 
 		// Check for linking errors
 		GL_PROGRAM_CHECK_MESSAGE(program, GL_LINK_STATUS,
-			"Linking failed for shader program '%u'. Aborting shader program creation.", (GLuint)program);
+			"Linking failed for shader program : '%s' (program ID : '%u'). Aborting shader program creation.", (GLuint)program);
 
 		return RegisterProgram(std::move(program));
 	}
@@ -123,7 +123,7 @@ namespace moe
 			glCompileShader(newShader);
 
 			GL_SHADER_CHECK_MESSAGE(newShader, GL_COMPILE_STATUS,
-				"Compilation failed for shader stage '%s'. Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
+				"Shader compilation failed : '%s' (at shader stage '%s'). Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
 
 			program.Attach(newShader);
 
@@ -138,7 +138,7 @@ namespace moe
 
 		// Check for linking errors
 		GL_PROGRAM_CHECK_MESSAGE(program, GL_LINK_STATUS,
-			"Linking failed for shader program '%u'. Aborting shader program creation.", (GLuint)program);
+			"Linking failed for shader program : '%s' (program ID : '%u'). Aborting shader program creation.", (GLuint)program);
 
 		return RegisterProgram(std::move(program));
 	}
