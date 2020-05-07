@@ -35,7 +35,7 @@ namespace moe
 
 		bool operator()(const OpenGLShaderProgram & program, ShaderProgramHandle handle) const
 		{
-			return (GLuint)handle.m_handle < (GLuint)program;
+			return (GLuint)program < (GLuint)handle.m_handle;
 		}
 	};
 }
