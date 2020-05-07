@@ -2,8 +2,11 @@
 
 #pragma once
 
+
 #include "Graphics/VertexBuffer/VertexBuffer.h"
 #include "Graphics/DeviceBuffer/BufferDescription.h"
+
+#include "Graphics/DeviceBuffer/VertexBufferHandle.h"
 
 namespace moe
 {
@@ -14,7 +17,6 @@ namespace moe
 		OpenGLVertexBuffer(const BufferStorageDescription& storageDesc);
 
 		void	Create();
-
 	private:
 		unsigned int m_name{ 0 }; // OpenGL ID of this buffer
 	};

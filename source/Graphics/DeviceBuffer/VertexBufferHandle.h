@@ -6,6 +6,8 @@
 
 #include "Graphics/Handle/ObjectHandle.h"
 
+#include "Monocle_Graphics_Export.h"
+
 namespace moe
 {
 

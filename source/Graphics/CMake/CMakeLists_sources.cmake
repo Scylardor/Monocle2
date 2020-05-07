@@ -18,6 +18,7 @@ set(Monocle_Graphics_SOURCES
 ./Camera/Viewport.h
 ./Camera/ViewportDescriptor.h
 ./Camera/ViewportHandle.h
+./Color/Color.cpp
 ./Color/Color.h
 ./DepthStencilState/DepthStencilComparisonFunc.h
 ./DepthStencilState/DepthStencilStateDescriptor.cpp
@@ -87,6 +88,7 @@ set(Monocle_Graphics_SOURCES
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.h
 ./VertexBuffer/VertexBuffer.cpp
 ./VertexBuffer/VertexBuffer.h
+./VertexLayout/OpenGL/OpenGLVertexFormat.cpp
 ./VertexLayout/OpenGL/OpenGLVertexFormat.h
 ./VertexLayout/OpenGL/OpenGLVertexLayout.h
 ./VertexLayout/VertexElementDescriptor.h

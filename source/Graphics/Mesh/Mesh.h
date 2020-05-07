@@ -33,6 +33,23 @@ namespace moe
 		[[nodiscard]] VertexBufferHandle	GetVertexBufferHandle() const { return m_vertexHandle; }
 		[[nodiscard]] IndexBufferHandle		GetIndexBufferHandle() const { return m_indexHandle; }
 
+
+		size_t	NumVertices() const
+		{
+			return m_numVertices;
+		}
+
+
+		size_t	NumIndices() const
+		{
+			return m_numIndices;
+		}
+
+		bool	IsIndexed() const
+		{
+			return m_indexHandle.IsNotNull();
+		}
+
 	private:
 
 		VertexBufferHandle	m_vertexHandle{0};

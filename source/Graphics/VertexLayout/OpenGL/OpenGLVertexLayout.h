@@ -25,30 +25,32 @@ namespace moe
 		OpenGLVertexLayout(const VertexLayoutDescriptor& desc, GLuint vaoID, uint32_t totalSizeBytes) :
 		VertexLayout(desc),
 		m_vaoId(vaoID),
-		m_totalBytesSize(totalSizeBytes)
+		m_strideInBytes(totalSizeBytes)
 		{}
 
 
 		~OpenGLVertexLayout() = default;
 
 
-		operator GLuint() const
-		{
-			return m_vaoId;
-		}
+		operator GLuint() const { return m_vaoId; }
 
 
-		void	SetTotalSizeInBytes(uint32_t size)
+		GLuint	VAO() const { return m_vaoId; }
+
+
+		void	SetStrideBytes(uint32_t size)
 		{
-			m_totalBytesSize = size;
+			m_strideInBytes = size;
 		}
+
+		uint32_t	GetStrideBytes() const { return m_strideInBytes; }
 
 
 	private:
 		GLuint	m_vaoId{ms_nullVao};
 
 		// Only really useful for Interleaved layouts, but it's a reasonable overhead even if unused.
-		uint32_t	m_totalBytesSize = 0;
+		uint32_t	m_strideInBytes = 0;
 
 	};
 }

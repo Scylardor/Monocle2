@@ -90,6 +90,8 @@ namespace moe
 
 		[[nodiscard]] const Mat4&	GetViewProjectionMatrix() const { return m_modelViewMatrix; }
 
+		[[nodiscard]] ViewportHandle	GetViewportHandle() const { return m_viewportHandle; }
+
 
 	protected:
 

@@ -27,6 +27,12 @@ namespace moe
 			return m_desc;
 		}
 
+		bool	IsInterleaved() const
+		{
+			return m_desc.Type() == VertexLayoutDescriptor::Interleaved;
+		}
+
+
 	private:
 		VertexLayoutDescriptor	m_desc;
 		uint32_t	m_totalBytesSize = 0;
