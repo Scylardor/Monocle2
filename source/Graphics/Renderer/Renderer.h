@@ -22,7 +22,6 @@
 #include "Graphics/Mesh/MeshHandle.h"
 #include "Graphics/Mesh/MeshDataDescriptor.h"
 
-#include "Graphics/Camera/CameraHandle.h"
 #include "Graphics/Camera/ViewportHandle.h"
 #include "Graphics/Camera/ViewportDescriptor.h"
 #include "Graphics/Camera/Camera.h"
@@ -30,6 +29,15 @@
 
 #include "Graphics/Color/Color.h"
 
+#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+
+#include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
+#include "Graphics/Resources/ResourceSet/ResourceSetDescriptor.h"
+
+#include "Graphics/Resources/ResourceLayout/ResourceLayoutHandle.h"
+#include "Graphics/Resources/ResourceLayout/ResourceLayoutDescriptor.h"
+
+#include "Graphics/Device/GraphicsDevice.h"
 
 namespace moe
 {
@@ -93,21 +101,104 @@ namespace moe
 		template <typename VertexType, size_t N, size_t IndN = 0>
 		MeshHandle	CreateStaticMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
 
+
+		/**
+		 * \brief Creates an orthographic camera and a new viewport associated to it.
+		 * \param orthoDesc The description of the orthographic camera
+		 * \param vpDesc The description of the viewport to create
+		 * \return A handle to the created camera
+		 */
 		[[nodiscard]] virtual CameraHandle	CreateCamera(const OrthographicCameraDesc& orthoDesc, const ViewportDescriptor& vpDesc) = 0;
+
+		/**
+		 * \brief Creates a perspective camera and a new viewport associated to it.
+		 * \param perspDesc The description of the perspective camera
+		 * \param vpDesc The description of the viewport to create
+		 * \return A handle to the created camera
+		 */
 		[[nodiscard]] virtual CameraHandle	CreateCamera(const PerspectiveCameraDesc& perspDesc, const ViewportDescriptor& vpDesc) = 0;
 
+
+		/**
+		 * \brief Creates an orthographic camera bound to the referenced viewport handle. Handy when you created the viewport separately from the camera.
+		 * \param orthoDesc The description of the orthographic camera
+		 * \param vpHandle The handle of the referenced viewport
+		 * \return A handle to the created camera
+		 */
 		[[nodiscard]] virtual CameraHandle	CreateCamera(const OrthographicCameraDesc& orthoDesc, ViewportHandle vpHandle) = 0;
+
+
+		/**
+		 * \brief Creates a perspective camera bound to the referenced viewport handle. Handy when you created the viewport separately from the camera.
+		 * \param perspDesc The description of the perspective camera
+		 * \param vpHandle The handle of the referenced viewport
+		 * \return A handle to the created camera
+		 */
 		[[nodiscard]] virtual CameraHandle	CreateCamera(const PerspectiveCameraDesc& perspDesc, ViewportHandle vpHandle) = 0;
 
 		[[nodiscard]] virtual const CameraManager&	GetCameraManager() const = 0;
 		[[nodiscard]] virtual CameraManager&		MutCameraManager() = 0;
 
 
+		/**
+		 * \brief Creates an uniform (or constant) buffer using the provided data and data size.
+		 * WARNING : using OpenGL, this data buffer should respect the rules of STD 140 GLSL layout, or it won't upload properly to the GPU
+		 * (see https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)#Memory_layout for example).
+		 * \param data The data buffer uploaded to the GPU
+		 * \param dataSizeBytes The size of the buffer
+		 * \return A handle to the created uniform buffer
+		 */
+		[[nodiscard]] virtual UniformBufferHandle		CreateUniformBuffer(const void* data, uint32_t dataSizeBytes) = 0;
+
+
+		/**
+		 * \brief Convenience helper function that creates an uniform buffer from the data you give it
+		 * WARNING : using OpenGL, this data should respect the rules of STD 140 GLSL layout, or it won't upload properly to the GPU
+		 * (see https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)#Memory_layout for example).
+		 * \tparam T The user data type
+		 * \param data The data to send to the GPU.
+		 * \return
+		 */
+		template <typename T>
+		[[nodiscard]] UniformBufferHandle	CreateUniformBufferFrom(const T& data);
+
+
+
+
+
+
+
+		/**
+		 * \brief Generates a new resource layout from the description.
+		 * Note : in OpenGL, there's no such thing as a resource layout : they're just stored in the device for convenience.
+		 * \param desc The description of the resource layout to create
+		 * \return A handle to the new resource layout
+		 */
+		[[nodiscard]] virtual ResourceLayoutHandle	CreateResourceLayout(const ResourceLayoutDescriptor& desc) = 0;
+
+		/**
+		 * \brief Generates a new resource set from the description.
+		 * Note: in OpenGL, there's no such thing as a resource set : they're just stored in the device for convenience.
+		 * \param desc The description of the resource set to create
+		 * \return A handle to the new resource set
+		 */
+		[[nodiscard]] virtual ResourceSetHandle		CreateResourceSet(const ResourceSetDescriptor& desc) = 0;
+
+
+		[[nodiscard]] virtual const IGraphicsDevice&	GetGraphicsDevice() const = 0;
+
+
+		[[nodiscard]] virtual IGraphicsDevice&	MutGraphicsDevice() = 0;
+
+
+
+
+		/* TODO: Test mini-framework, should be temporary and removed later */
 		virtual void	UseCamera(CameraHandle camHandle) = 0;
 
 		virtual void	Clear(const ColorRGBAf& clearColor) = 0;
 
-		virtual void	UseMaterial(ShaderProgramHandle progHandle) = 0;
+		virtual void	UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle) = 0;
 
 		virtual void	DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle) = 0;
 	};
@@ -121,5 +212,11 @@ namespace moe
 			MeshDataDescriptor{ vertexData.Data(), vertexData.Size() * sizeof(VertexType), N},
 			MeshDataDescriptor{ indexData.Data(), indexData.Size() * sizeof(uint32_t), IndN }
 		);
+	}
+
+	template <typename T>
+	UniformBufferHandle IGraphicsRenderer::CreateUniformBufferFrom(const T& data)
+	{
+		return CreateUniformBuffer(&data, sizeof(T));
 	}
 }

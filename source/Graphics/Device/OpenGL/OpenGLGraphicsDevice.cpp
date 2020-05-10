@@ -1,4 +1,4 @@
-// Monocle Game Engine source files - Alexandre Baron
+﻿// Monocle Game Engine source files - Alexandre Baron
 
 
 #ifdef MOE_OPENGL
@@ -9,6 +9,11 @@
 
 #include "Graphics/VertexLayout/OpenGL/OpenGLVertexFormat.h"
 
+#include "Graphics/Texture/OpenGL/OpenGLTextureFormat.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <STB/stb_image.h>
+
 namespace moe
 {
 
@@ -16,6 +21,12 @@ namespace moe
 	{
 		m_vertexBufferPool.ReservePoolMemory(GL_DYNAMIC_STORAGE_BIT);
 		m_indexBufferPool.ReservePoolMemory(GL_DYNAMIC_STORAGE_BIT);
+		m_uniformBufferPool.ReservePoolMemory(GL_DYNAMIC_STORAGE_BIT);
+
+		// Because OpenGL expects the 0.0 coordinate on the y-axis to be on the bottom-side of the image,
+		// most images will appear vertically reversed in OpenGL since images usually have 0.0 at the top of the y-axis.
+		// Luckily for us, stb_image.h can flip the y-axis during image loading :
+		stbi_set_flip_vertically_on_load(true);
 	}
 
 
@@ -24,10 +35,10 @@ namespace moe
 		m_shaderManager.Clear();
 
 		// Destroy all VAOs at the same time.
-		Vector<GLuint> vaoIDs(m_layouts.Size());
+		Vector<GLuint> vaoIDs(m_vertexLayouts.Size());
 
 		int iLayout = 0;
-		for (const auto& layout : m_layouts)
+		for (const auto& layout : m_vertexLayouts)
 		{
 			vaoIDs[iLayout] = layout;
 			iLayout++;
@@ -35,11 +46,11 @@ namespace moe
 
 		glDeleteVertexArrays((GLsizei)vaoIDs.Size(), vaoIDs.Data());
 
-		m_layouts.Clear();
+		m_vertexLayouts.Clear();
 	}
 
 
-	void OpenGLGraphicsDevice::UseShaderProgram(ShaderProgramHandle programHandle)
+	GLuint OpenGLGraphicsDevice::UseShaderProgram(ShaderProgramHandle programHandle)
 	{
 		const OpenGLShaderProgram* programPtr = m_shaderManager.GetProgram(programHandle);
 
@@ -47,10 +58,12 @@ namespace moe
 		{
 			GLuint shaderProgramID = (GLuint)(*programPtr);
 			glUseProgram(shaderProgramID);
+			return shaderProgramID;
 		}
 		else
 		{
 			MOE_ERROR(ChanGraphics, "UseShaderProgram: requested an invalid shader program handle.");
+			return 0;
 		}
 	}
 
@@ -59,12 +72,12 @@ namespace moe
 	{
 		// First and foremost, check that we do not have an existing vertex layout that could fit this description...
 		// It's ok to linear search we don't expect a lot of existing vertex layouts anyway
-		auto vtxLayoutIt = std::find_if(m_layouts.Begin(), m_layouts.End(), [&vertexLayoutDesc](const OpenGLVertexLayout& oglVtxLayout)
+		auto vtxLayoutIt = std::find_if(m_vertexLayouts.Begin(), m_vertexLayouts.End(), [&vertexLayoutDesc](const OpenGLVertexLayout& oglVtxLayout)
 		{
 			return (oglVtxLayout.ReadDescriptor() == vertexLayoutDesc);
 		});
 
-		if (vtxLayoutIt != m_layouts.End())
+		if (vtxLayoutIt != m_vertexLayouts.End())
 		{
 			// we found a matching one : don't bother recreating a new one and give out a handle
 			return VertexLayoutHandle{*vtxLayoutIt};
@@ -173,7 +186,7 @@ namespace moe
 		else
 		{
 			// The VAO was successfully initialized : we store our vertex layout
-			m_layouts.EmplaceBack(vertexLayoutDesc, vaoID, totalStride);
+			m_vertexLayouts.EmplaceBack(vertexLayoutDesc, vaoID, totalStride);
 		}
 
 		return handle;
@@ -186,9 +199,9 @@ namespace moe
 		// So, a valid handle is simply at index (VAO id - 1) in the array.
 		// NOTE: this assumption won't stand if we add the ability to remove vertex layouts. So far, a vertex layout gets created "forever" (you cannot delete them).
 
-		if (MOE_ASSERT(handle.Get() <= m_layouts.Size()))
+		if (MOE_ASSERT(handle.Get() <= m_vertexLayouts.Size()))
 		{
-			return &m_layouts[handle.Get() - 1];
+			return &m_vertexLayouts[handle.Get() - 1];
 		}
 
 		return nullptr;
@@ -255,8 +268,8 @@ namespace moe
 		}
 		else
 		{
-			// Encode the VBO ID and the offset in the handle.
-			// The handle looks like : | VBO ID (32 bits) | offset in VBO (32 bits) |
+			// Encode the EBO ID and the offset in the handle.
+			// The handle looks like : | EBO ID (32 bits) | offset in EBO (32 bits) |
 			uint64_t handleValue = (uint64_t)m_indexBufferPool.GetBufferHandle() << 32;
 			handleValue |= indexOffset;
 			return IndexBufferHandle{ handleValue };
@@ -292,6 +305,205 @@ namespace moe
 		const ViewportDescriptor& desc = m_viewports.Lookup(vpHandle.Get() - 1);
 
 		glViewport((GLint)desc.m_x, (GLint)desc.m_y, (GLsizei)desc.m_width, (GLsizei)desc.m_height);
+	}
+
+
+	UniformBufferHandle OpenGLGraphicsDevice::CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes)
+	{
+		const uint32_t uboOffset = m_uniformBufferPool.Allocate(uniformData, (uint32_t)uniformDataSizeBytes);
+		if (uboOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
+		{
+			return UniformBufferHandle::Null();
+		}
+		else
+		{
+			// Encode the UBO ID and the offset in the handle.
+			// The handle looks like : | UBO ID (32 bits) | offset in UBO (32 bits) |
+			uint64_t handleValue = (uint64_t)m_uniformBufferPool.GetBufferHandle() << 32;
+			handleValue |= uboOffset;
+
+			UniformBufferHandle newBufferHandle{handleValue};
+
+			// Don't forget to store the size, it will be useful when using the buffer.
+			m_uniformBufferSizes[newBufferHandle] = (uint32_t)uniformDataSizeBytes;
+
+			return newBufferHandle;
+		}
+	}
+
+
+	ResourceLayoutHandle OpenGLGraphicsDevice::CreateResourceLayout(const ResourceLayoutDescriptor& newDesc)
+	{
+		FreelistID newLayoutID = m_resourceLayouts.Add(newDesc);
+		return newLayoutID.ToHandle<ResourceLayoutHandle>();
+	}
+
+
+	ResourceSetHandle OpenGLGraphicsDevice::CreateResourceSet(const ResourceSetDescriptor& newDesc)
+	{
+		FreelistID newSetID = m_resourceSets.Add(newDesc);
+		return newSetID.ToHandle<ResourceSetHandle>();
+	}
+
+
+	Texture2DHandle OpenGLGraphicsDevice::CreateTexture2D(const Texture2DDescriptor& tex2DDesc)
+	{
+		// First ensure the target texture format is valid - don't bother going further if not
+		const GLuint textureFormat = TranslateToOpenGLSizedFormat(tex2DDesc.m_targetFormat);
+		if (textureFormat == 0)
+		{
+			return Texture2DHandle::Null();
+		}
+
+		// we have the data: upload to GPU
+		GLuint textureID;
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+		glTextureStorage2D(textureID, tex2DDesc.m_wantedMipmapLevels, textureFormat, tex2DDesc.m_width, tex2DDesc.m_height);
+
+		glTextureSubImage2D(textureID, 0, 0, 0, tex2DDesc.m_width, tex2DDesc.m_height, GL_RGBA, GL_UNSIGNED_BYTE, tex2DDesc.m_imageData);
+
+		if (tex2DDesc.m_wantedMipmapLevels != 0)
+		{
+			glGenerateTextureMipmap(textureID);
+		}
+
+		return Texture2DHandle{textureID};
+	}
+
+
+	Texture2DHandle OpenGLGraphicsDevice::CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc)
+	{
+		// First ensure the target texture format is valid - don't bother going further if not
+		const GLuint textureFormat = TranslateToOpenGLSizedFormat(tex2DFileDesc.m_targetFormat);
+		if (textureFormat == 0)
+		{
+			return Texture2DHandle::Null();
+		}
+
+		// Now read the file, taking into account required number of components.
+		const std::uint32_t requiredCompNum = GetTextureFormatChannelsNumber(tex2DFileDesc.m_requiredFormat);
+
+		int width, height, nrChannels;
+		unsigned char * const imageData = stbi_load(tex2DFileDesc.m_filename.c_str(), &width, &height, &nrChannels, requiredCompNum);
+
+		if (imageData == nullptr)
+		{
+			MOE_ERROR(ChanGraphics, "Image file %s could not be read.", tex2DFileDesc.m_filename);
+			return Texture2DHandle::Null();
+		}
+
+		// we have the data: upload to GPU
+
+		// Determine what could be a good base format
+		const GLuint inputBaseFormat = TranslateToOpenGLBaseFormat(nrChannels);
+
+		GLuint textureID;
+
+		glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+		glTextureStorage2D(textureID, tex2DFileDesc.m_wantedMipmapLevels, textureFormat, width, height);
+		glTextureSubImage2D(textureID, 0, 0, 0, width, height, inputBaseFormat, GL_UNSIGNED_BYTE, imageData);
+
+		if (tex2DFileDesc.m_wantedMipmapLevels != 0)
+		{
+			glGenerateTextureMipmap(textureID);
+		}
+
+		// we don't need to keep the image data
+		stbi_image_free(imageData);
+
+		return Texture2DHandle{ textureID };
+	}
+
+
+	void OpenGLGraphicsDevice::DestroyTexture2D(Texture2DHandle texHandle)
+	{
+		GLuint texID{texHandle.Get()};
+		glDeleteTextures(1, &texID);
+	}
+
+
+	void OpenGLGraphicsDevice::BindProgramUniformBlock(GLuint shaderProgramID, const char* uniformBlockName, int uniformBlockBinding, UniformBufferHandle ubHandle)
+	{
+		// First retrieve the size of our uniform buffer or early exit...
+		auto sizeIt = m_uniformBufferSizes.Find(ubHandle);
+		if (!MOE_ASSERT(sizeIt != m_uniformBufferSizes.End()))
+		{
+			return;
+		}
+
+		auto [ubo, uboOffset] = DecodeBufferHandle(ubHandle);
+
+		const unsigned int uniformBlockProgramIndex = glGetUniformBlockIndex(shaderProgramID, uniformBlockName);
+
+		glUniformBlockBinding(shaderProgramID, uniformBlockProgramIndex, uniformBlockBinding);
+
+
+
+		GLint numBlocks = 0;
+		glGetProgramInterfaceiv(shaderProgramID, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &numBlocks);
+		const GLenum blockProperties[1] = { GL_NUM_ACTIVE_VARIABLES };
+		const GLenum activeUnifProp[1] = { GL_ACTIVE_VARIABLES };
+		const GLenum unifProperties[3] = { GL_NAME_LENGTH, GL_TYPE, GL_LOCATION };
+
+		for (int blockIx = 0; blockIx < numBlocks; ++blockIx)
+		{
+
+			GLint numActiveUnifs = 0;
+			glGetProgramResourceiv(shaderProgramID, GL_UNIFORM_BLOCK, blockIx, 1, blockProperties, 1, NULL, &numActiveUnifs);
+
+			if (!numActiveUnifs)
+				continue;
+
+			std::vector<GLint> blockUnifs(numActiveUnifs);
+			glGetProgramResourceiv(shaderProgramID, GL_UNIFORM_BLOCK, blockIx, 1, activeUnifProp, numActiveUnifs, NULL, &blockUnifs[0]);
+
+			for (int unifIx = 0; unifIx < numActiveUnifs; ++unifIx)
+			{
+				GLint values[3];
+				glGetProgramResourceiv(shaderProgramID, GL_UNIFORM, blockUnifs[unifIx], 3, unifProperties, 3, NULL, values);
+
+				// Get the name. Must use a std::vector rather than a std::string for C++03 standards issues.
+				// C++11 would let you use a std::string directly.
+				std::vector<char> nameData(values[0]);
+				glGetProgramResourceName(shaderProgramID, GL_UNIFORM, blockUnifs[unifIx], (GLsizei)nameData.size(), NULL, &nameData[0]);
+				std::string name(nameData.begin(), nameData.end() - 1);
+				const char* nameStr = name.c_str();
+				unsigned int indices[1];
+				GLint offsets[1];
+
+				glGetUniformIndices(shaderProgramID, 1, &nameStr, indices);
+				glGetActiveUniformsiv(shaderProgramID, 1, indices, GL_UNIFORM_OFFSET, offsets);
+
+			}
+		}
+
+		glBindBufferRange(GL_UNIFORM_BUFFER, uniformBlockBinding, ubo, uboOffset, sizeIt->second);
+	}
+
+
+	void OpenGLGraphicsDevice::UpdateUniformBuffer(UniformBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset)
+	{
+		auto[ubo, uboOffset] = DecodeBufferHandle(ubHandle);
+
+		glNamedBufferSubData(ubo, uboOffset + relativeOffset, dataSizeBytes, data);
+	}
+
+
+	void OpenGLGraphicsDevice::BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, Texture2DHandle texHandle, const char* uniformName)
+	{
+		glBindTextureUnit(textureUnitIndex, texHandle.Get());
+		glProgramUniform1i(shaderProgramID, glGetUniformLocation(shaderProgramID, uniformName), textureUnitIndex);
+	}
+
+
+	std::pair<unsigned, unsigned> OpenGLGraphicsDevice::DecodeBufferHandle(
+		const RenderObjectHandle<std::uint64_t>& handle)
+	{
+		uint64_t handleVal = handle.Get();
+		uint32_t bufferID = handleVal >> 32;
+		uint32_t bufferOffset = (uint32_t)handleVal;
+		return {bufferID, bufferOffset};
 	}
 }
 

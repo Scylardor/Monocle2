@@ -33,6 +33,7 @@ namespace moe
 
 	protected:
 
+		virtual float	GetApplicationTimeSeconds() const = 0;
 
 		bool	SetInitialized(bool init)
 		{

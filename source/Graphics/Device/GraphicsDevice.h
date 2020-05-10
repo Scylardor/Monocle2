@@ -12,12 +12,21 @@
 #include "Graphics/VertexLayout/VertexLayoutHandle.h"
 #include "Graphics/DeviceBuffer/VertexBufferHandle.h"
 #include "Graphics/DeviceBuffer/IndexBufferHandle.h"
+#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+#include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
+#include "Graphics/Resources/ResourceLayout/ResourceLayoutHandle.h"
 
 #include "Graphics/Camera/ViewportHandle.h"
 #include "Graphics/Camera/ViewportDescriptor.h"
 
+#include "Graphics/Texture/Texture2DHandle.h"
+#include "Graphics/Texture/TextureDescription.h"
+
+
 namespace moe
 {
+	class ResourceLayoutDescriptor;
+	class ResourceSetDescriptor;
 
 
 	/**
@@ -52,6 +61,22 @@ namespace moe
 
 		[[nodiscard]] virtual ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) = 0;
 		virtual void	UseViewport(ViewportHandle vpHandle) = 0;
+
+		[[nodiscard]] virtual UniformBufferHandle	CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes) = 0;
+
+		[[nodiscard]] virtual ResourceLayoutHandle	CreateResourceLayout(const ResourceLayoutDescriptor& newDesc) = 0;
+
+		[[nodiscard]] virtual ResourceSetHandle		CreateResourceSet(const ResourceSetDescriptor& newDesc) = 0;
+
+		[[nodiscard]] virtual const ResourceLayoutDescriptor&	GetResourceLayoutDescriptor(ResourceLayoutHandle layoutHandle) const = 0;
+
+		[[nodiscard]] virtual const ResourceSetDescriptor&		GetResourceSetDescriptor(ResourceSetHandle setHandle) const = 0;
+
+		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DDescriptor& tex2DDesc) = 0;
+		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc) = 0;
+
+		virtual void	DestroyTexture2D(Texture2DHandle textureHandle) = 0;
+
 
 	};
 }

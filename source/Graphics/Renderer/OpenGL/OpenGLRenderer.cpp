@@ -96,6 +96,12 @@ namespace moe
 	}
 
 
+	UniformBufferHandle OpenGLRenderer::CreateUniformBuffer(const void* data, uint32_t dataSizeBytes)
+	{
+		return m_device.CreateUniformBuffer(data, dataSizeBytes);
+	}
+
+
 	void OpenGLRenderer::UseCamera(CameraHandle camHandle)
 	{
 		// First fetch associated viewport
@@ -116,10 +122,50 @@ namespace moe
 	}
 
 
-	void OpenGLRenderer::UseMaterial(ShaderProgramHandle progHandle)
+	void OpenGLRenderer::UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle)
 	{
-		m_device.UseShaderProgram(progHandle);
+		const GLuint shaderProgramID = m_device.UseShaderProgram(progHandle);
 
+		if (rscSetHandle.IsNull())
+			return;
+
+		const auto& rscSetDesc = m_device.GetResourceSetDescriptor(rscSetHandle);
+
+		const auto& rscLayoutDesc = m_device.GetResourceLayoutDescriptor(rscSetDesc.GetResourceLayoutHandle());
+
+		int iBinding = 0;
+
+		int	uniformBlockBinding = 0;
+		int	textureUnitIndex = 0;
+		for (const ResourceLayoutBindingDescriptor& rscBindingDesc : rscLayoutDesc)
+		{
+			switch (rscBindingDesc.m_kind)
+			{
+			case ResourceKind::UniformBuffer:
+				{
+					UniformBufferHandle ubHandle = rscSetDesc.Get<UniformBufferHandle>(iBinding);
+					m_device.BindProgramUniformBlock(shaderProgramID, rscBindingDesc.m_name.c_str(), uniformBlockBinding, ubHandle);
+					uniformBlockBinding++;
+				}
+				break;
+			case ResourceKind::TextureReadOnly:
+				{
+					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
+					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
+					textureUnitIndex++;
+				}
+
+				break;
+			case ResourceKind::Sampler:
+
+				break;
+			default:
+				MOE_ASSERT(false);
+				MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");
+			}
+
+			iBinding++;
+		}
 	}
 
 

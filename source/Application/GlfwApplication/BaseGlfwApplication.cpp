@@ -57,4 +57,10 @@ bool moe::BaseGlfwApplication::WindowIsOpened() const
 }
 
 
+float moe::BaseGlfwApplication::GetApplicationTimeSeconds() const
+{
+	return (float)glfwGetTime();
+}
+
+
 #endif // MOE_GLFW

@@ -51,6 +51,8 @@ namespace moe
 
 		Monocle_Application_API bool	WindowIsOpened() const;
 
+		Monocle_Application_API float	GetApplicationTimeSeconds() const override;
+
 	private:
 
 		/**

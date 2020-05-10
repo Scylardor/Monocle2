@@ -24,7 +24,7 @@ namespace moe
 		class Vector
 		{
 			static_assert(NumT >= 2 && NumT <= 4, "Unsupported number of components for Vector.");
-			static_assert(std::is_arithmetic<ValT>::value, "Unsupported template type for Vector.");
+			static_assert(std::is_arithmetic_v<ValT>, "Unsupported template type for Vector.");
 
 			using VectorType = glm::vec<NumT, ValT, glm::defaultp>;
 

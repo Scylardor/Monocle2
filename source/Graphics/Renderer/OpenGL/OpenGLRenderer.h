@@ -89,11 +89,54 @@ namespace moe
 		Monocle_Graphics_API void	DeleteStaticMesh(MeshHandle handle) override;
 
 
+		Monocle_Graphics_API [[nodiscard]] UniformBufferHandle		CreateUniformBuffer(const void* data, uint32_t dataSizeBytes) override;
+
+
+		Monocle_Graphics_API [[nodiscard]] ResourceLayoutHandle		CreateResourceLayout(const ResourceLayoutDescriptor& desc) override
+		{
+			return m_device.CreateResourceLayout(desc);
+		}
+
+		Monocle_Graphics_API [[nodiscard]] ResourceSetHandle		CreateResourceSet(const ResourceSetDescriptor& desc) override
+		{
+			return m_device.CreateResourceSet(desc);
+		}
+
+		void	UpdateUniformBuffer(UniformBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset = 0)
+		{
+			m_device.UpdateUniformBuffer(ubHandle, data, dataSizeBytes, relativeOffset);
+		}
+
+
+		template <typename T>
+		void	UpdateUniformBufferFrom(UniformBufferHandle ubHandle, const T& data)
+		{
+			m_device.UpdateUniformBuffer(ubHandle, &data, sizeof(T), 0);
+		}
+
+
+
+
+		[[nodiscard]] const IGraphicsDevice&	GetGraphicsDevice() const override final
+		{
+			return m_device;
+		}
+
+
+		[[nodiscard]] IGraphicsDevice&	MutGraphicsDevice() override
+		{
+			return m_device;
+		}
+
+
+
+		/* TODO : quick and dirty test framework, to remove later */
+
 		Monocle_Graphics_API void	UseCamera(CameraHandle camHandle) override;
 
 		Monocle_Graphics_API void	Clear(const ColorRGBAf& clearColor) override;
 
-		Monocle_Graphics_API void	UseMaterial(ShaderProgramHandle progHandle) override;
+		Monocle_Graphics_API void	UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle) override;
 
 		Monocle_Graphics_API void	DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle) override;
 

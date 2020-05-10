@@ -37,6 +37,7 @@ set(Monocle_Graphics_SOURCES
 ./DeviceBuffer/OpenGL/OpenGLDeviceBuffer.cpp
 ./DeviceBuffer/OpenGL/OpenGLDeviceBuffer.h
 ./DeviceBuffer/OpenGL/OpenGLDeviceBufferRange.h
+./DeviceBuffer/UniformBufferHandle.h
 ./DeviceBuffer/VertexBufferHandle.h
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
@@ -59,6 +60,13 @@ set(Monocle_Graphics_SOURCES
 ./ResourceFactory/OpenGLResourceFactory/OpenGLResourceFactory.cpp
 ./ResourceFactory/OpenGLResourceFactory/OpenGLResourceFactory.h
 ./ResourceFactory/ResourceFactory.h
+./Resources/ResourceLayout/ResourceKind.h
+./Resources/ResourceLayout/ResourceLayoutBindingDescriptor.h
+./Resources/ResourceLayout/ResourceLayoutDescriptor.h
+./Resources/ResourceLayout/ResourceLayoutHandle.h
+./Resources/ResourceSet/ResourceHandle.h
+./Resources/ResourceSet/ResourceSetDescriptor.h
+./Resources/ResourceSet/ResourceSetHandle.h
 ./Resources/shaders/OpenGL/basic.frag
 ./Resources/shaders/OpenGL/basic.vert
 ./SceneGraph/SceneGraph.cpp
@@ -78,8 +86,13 @@ set(Monocle_Graphics_SOURCES
 ./Shader/ShaderStage/OpenGL/OpenGLShaderStage.h
 ./Shader/ShaderStage/ShaderStage.cpp
 ./Shader/ShaderStage/ShaderStage.h
+./Texture/OpenGL/OpenGLTextureFormat.cpp
+./Texture/OpenGL/OpenGLTextureFormat.h
 ./Texture/Texture.h
+./Texture/Texture2DHandle.h
 ./Texture/TextureDescription.h
+./Texture/TextureFormat.cpp
+./Texture/TextureFormat.h
 ./Texture/TextureView.h
 ./Texture/TextureViewDescription.h
 ./Topology/PrimitiveTopology.h
