@@ -59,6 +59,16 @@ namespace moe
 			{}
 
 
+			/**
+			 * \brief Build a Mat3 out from a Mat4. The Mat3 will contain the upper-left 3x3 section of the Mat4.
+			 * \param mat4 The source 4x4 matrix
+			 */
+			template<typename = std::enable_if_t<ColsT == 3 && RowsT == 3>>
+			explicit Matrix(const Matrix<4, 4, ValT> & mat4) :
+				m_mat(glm::mat3(mat4.m_mat))
+			{}
+
+
 			// Math Functions
 
 
@@ -485,9 +495,13 @@ namespace moe
 
 			MatrixType	m_mat;
 
+			friend Matrix<3, 3, ValT>; // Needed otherwise the Mat3 from Mat4 constructor doesn't work !
 		};
 
 	}
+
+	template <unsigned ColsT, unsigned RowsT, typename ValT>
+	using Matrix = GLM::Matrix<ColsT, RowsT, ValT>;
 }
 
 

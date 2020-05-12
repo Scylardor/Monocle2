@@ -52,19 +52,25 @@ namespace moe
 
 	GLuint OpenGLGraphicsDevice::UseShaderProgram(ShaderProgramHandle programHandle)
 	{
+		GLuint programID = GetShaderProgramID(programHandle);
+		glUseProgram(programID);
+
+		return programID;
+	}
+
+
+	GLuint OpenGLGraphicsDevice::GetShaderProgramID(ShaderProgramHandle programHandle)
+	{
 		const OpenGLShaderProgram* programPtr = m_shaderManager.GetProgram(programHandle);
 
 		if (MOE_ASSERT(programPtr != nullptr))
 		{
 			GLuint shaderProgramID = (GLuint)(*programPtr);
-			glUseProgram(shaderProgramID);
 			return shaderProgramID;
 		}
-		else
-		{
-			MOE_ERROR(ChanGraphics, "UseShaderProgram: requested an invalid shader program handle.");
-			return 0;
-		}
+
+		MOE_ERROR(ChanGraphics, "UseShaderProgram: requested an invalid shader program handle.");
+		return 0;
 	}
 
 
@@ -225,12 +231,12 @@ namespace moe
 	}
 
 
-	VertexBufferHandle OpenGLGraphicsDevice::CreateStaticVertexBuffer(const void* data, size_t byteSize)
+	DeviceBufferHandle OpenGLGraphicsDevice::CreateStaticVertexBuffer(const void* data, size_t byteSize)
 	{
 		const uint32_t meshOffset = m_vertexBufferPool.Allocate(data, (uint32_t)byteSize);
 		if (meshOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
 		{
-			return VertexBufferHandle::Null();
+			return DeviceBufferHandle::Null();
 		}
 		else
 		{
@@ -238,12 +244,12 @@ namespace moe
 			// The handle looks like : | VBO ID (32 bits) | offset in VBO (32 bits) |
 			uint64_t handleValue = (uint64_t)m_vertexBufferPool.GetBufferHandle() << 32;
 			handleValue |= meshOffset;
-			return VertexBufferHandle{handleValue};
+			return DeviceBufferHandle{handleValue};
 		}
 	}
 
 
-	void OpenGLGraphicsDevice::DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle)
+	void OpenGLGraphicsDevice::DeleteStaticVertexBuffer(DeviceBufferHandle vtxHandle)
 	{
 		if (!MOE_ASSERT(vtxHandle.IsNotNull()))
 		{
@@ -259,12 +265,12 @@ namespace moe
 	}
 
 
-	IndexBufferHandle OpenGLGraphicsDevice::CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes)
+	DeviceBufferHandle OpenGLGraphicsDevice::CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes)
 	{
 		const uint32_t indexOffset = m_indexBufferPool.Allocate(indexData, (uint32_t)indexDataSizeBytes);
 		if (indexOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
 		{
-			return IndexBufferHandle::Null();
+			return DeviceBufferHandle::Null();
 		}
 		else
 		{
@@ -272,12 +278,12 @@ namespace moe
 			// The handle looks like : | EBO ID (32 bits) | offset in EBO (32 bits) |
 			uint64_t handleValue = (uint64_t)m_indexBufferPool.GetBufferHandle() << 32;
 			handleValue |= indexOffset;
-			return IndexBufferHandle{ handleValue };
+			return DeviceBufferHandle{ handleValue };
 		}
 	}
 
 
-	void OpenGLGraphicsDevice::DeleteIndexBuffer(IndexBufferHandle idxHandle)
+	void OpenGLGraphicsDevice::DeleteIndexBuffer(DeviceBufferHandle idxHandle)
 	{
 		if (!MOE_ASSERT(idxHandle.IsNotNull()))
 		{
@@ -291,6 +297,65 @@ namespace moe
 
 		m_indexBufferPool.Free(offset);
 	}
+
+
+	void OpenGLGraphicsDevice::DrawVertexBuffer(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
+		DeviceBufferHandle idxBufHandle, size_t numIndices)
+	{
+		const OpenGLVertexLayout* vtxLayout = UseVertexLayout(vtxLayoutHandle);
+		if (vtxLayout == nullptr)
+		{
+			return;
+		}
+
+		auto[vbo, vboOffset] = DecodeBufferHandle(vtxBufHandle);
+
+		if (vtxLayout->IsInterleaved())
+		{
+			glVertexArrayVertexBuffer(vtxLayout->VAO(), 0, vbo, vboOffset, vtxLayout->GetStrideBytes());
+		}
+		else
+		{
+			// In packed mode, set the bindings one by one.
+
+			const VertexLayoutDescriptor& layoutDesc = vtxLayout->ReadDescriptor();
+
+			uint32_t bindingIdx = 0;
+			size_t elemBufferOffset = vboOffset;
+
+			for (const VertexElementDescriptor& elemDesc : layoutDesc)
+			{
+				auto oglElemFormat = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
+				auto typeSize = OpenGLVertexElementFormat::FindTypeSize(oglElemFormat.value().m_numCpnts, oglElemFormat.value().m_type);
+				glVertexArrayVertexBuffer(vtxLayout->VAO(), bindingIdx, vbo, elemBufferOffset, typeSize.value());
+
+				elemBufferOffset += numVertices * typeSize.value();
+				bindingIdx++;
+			}
+		}
+
+		if (idxBufHandle.IsNotNull())
+		{
+			auto[ebo, eboOffset] = DecodeBufferHandle(idxBufHandle);
+
+			glVertexArrayElementBuffer(vtxLayout->VAO(), ebo);
+
+			glDrawElements(GL_TRIANGLES, (GLsizei)numIndices, GL_UNSIGNED_INT, (const void*)((uint64_t)eboOffset));
+		}
+		else
+		{
+			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)numVertices);
+		}
+	}
+
+
+	void OpenGLGraphicsDevice::UpdateBuffer(DeviceBufferHandle bufferHandle, const void* data, size_t dataSize) const
+	{
+		auto [ubo, uboOffset] = DecodeBufferHandle(bufferHandle);
+
+		glNamedBufferSubData(ubo, uboOffset, dataSize, data);
+	}
+
 
 
 	ViewportHandle OpenGLGraphicsDevice::CreateViewport(const ViewportDescriptor& vpDesc)
@@ -308,12 +373,12 @@ namespace moe
 	}
 
 
-	UniformBufferHandle OpenGLGraphicsDevice::CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes)
+	DeviceBufferHandle OpenGLGraphicsDevice::CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes)
 	{
 		const uint32_t uboOffset = m_uniformBufferPool.Allocate(uniformData, (uint32_t)uniformDataSizeBytes);
 		if (uboOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
 		{
-			return UniformBufferHandle::Null();
+			return DeviceBufferHandle::Null();
 		}
 		else
 		{
@@ -322,7 +387,7 @@ namespace moe
 			uint64_t handleValue = (uint64_t)m_uniformBufferPool.GetBufferHandle() << 32;
 			handleValue |= uboOffset;
 
-			UniformBufferHandle newBufferHandle{handleValue};
+			DeviceBufferHandle newBufferHandle{handleValue};
 
 			// Don't forget to store the size, it will be useful when using the buffer.
 			m_uniformBufferSizes[newBufferHandle] = (uint32_t)uniformDataSizeBytes;
@@ -423,22 +488,16 @@ namespace moe
 	}
 
 
-	void OpenGLGraphicsDevice::BindProgramUniformBlock(GLuint shaderProgramID, const char* uniformBlockName, int uniformBlockBinding, UniformBufferHandle ubHandle)
+	uint32_t OpenGLGraphicsDevice::GetShaderProgramUniformBlockSize(ShaderProgramHandle shaderHandle, const std::string& /*uniformBlockName*/)
 	{
-		// First retrieve the size of our uniform buffer or early exit...
-		auto sizeIt = m_uniformBufferSizes.Find(ubHandle);
-		if (!MOE_ASSERT(sizeIt != m_uniformBufferSizes.End()))
+		const OpenGLShaderProgram* programPtr = m_shaderManager.GetProgram(shaderHandle);
+
+		if (!MOE_ASSERT(programPtr != nullptr))
 		{
-			return;
+			return UINT32_MAX;
 		}
 
-		auto [ubo, uboOffset] = DecodeBufferHandle(ubHandle);
-
-		const unsigned int uniformBlockProgramIndex = glGetUniformBlockIndex(shaderProgramID, uniformBlockName);
-
-		glUniformBlockBinding(shaderProgramID, uniformBlockProgramIndex, uniformBlockBinding);
-
-
+		GLuint shaderProgramID = (GLuint)(*programPtr);
 
 		GLint numBlocks = 0;
 		glGetProgramInterfaceiv(shaderProgramID, GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES, &numBlocks);
@@ -478,11 +537,103 @@ namespace moe
 			}
 		}
 
-		glBindBufferRange(GL_UNIFORM_BUFFER, uniformBlockBinding, ubo, uboOffset, sizeIt->second);
+		return 0;
 	}
 
 
-	void OpenGLGraphicsDevice::UpdateUniformBuffer(UniformBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset)
+	bool OpenGLGraphicsDevice::IsPartOfUniformBlock(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName, const std::string& uniformMemberName) const
+	{
+		const OpenGLShaderProgram* programPtr = m_shaderManager.GetProgram(shaderHandle);
+
+		if (!MOE_ASSERT(programPtr != nullptr))
+		{
+			return false;
+		}
+
+		GLuint shaderProgramID = (GLuint)(*programPtr);
+
+		GLint numBlocks;
+		glGetProgramiv(shaderProgramID, GL_ACTIVE_UNIFORM_BLOCKS, &numBlocks);
+
+
+		std::vector<std::string> nameList;
+		nameList.reserve(numBlocks);
+
+		for (int blockIx = 0; blockIx < numBlocks; ++blockIx)
+		{
+			GLint nameLen;
+			glGetActiveUniformBlockiv(shaderProgramID, blockIx, GL_UNIFORM_BLOCK_NAME_LENGTH, &nameLen);
+
+			std::string blockName;
+			blockName.resize(nameLen);
+			glGetActiveUniformBlockName(shaderProgramID, blockIx, nameLen, nullptr, &blockName[0]);
+
+			if (blockName != uniformBlockName)
+				continue;
+
+			const GLenum blockProperties[1] = { GL_NUM_ACTIVE_VARIABLES };
+			const GLenum activeUnifProp[1] = { GL_ACTIVE_VARIABLES };
+			const GLenum unifProperties[1] = { GL_NAME_LENGTH };
+
+			for (int blockVarIdx = 0; blockVarIdx < numBlocks; ++blockVarIdx)
+			{
+				GLint numActiveUnifs = 0;
+				glGetProgramResourceiv(shaderProgramID, GL_UNIFORM_BLOCK, blockVarIdx, 1, blockProperties, 1, NULL, &numActiveUnifs);
+
+				if (!numActiveUnifs)
+					continue;
+
+				std::vector<GLint> blockUnifs(numActiveUnifs);
+				glGetProgramResourceiv(shaderProgramID, GL_UNIFORM_BLOCK, blockVarIdx, 1, activeUnifProp, numActiveUnifs, NULL, &blockUnifs[0]);
+
+				for (int unifIx = 0; unifIx < numActiveUnifs; ++unifIx)
+				{
+					GLint values[1];
+					glGetProgramResourceiv(shaderProgramID, GL_UNIFORM, blockUnifs[unifIx], 1, unifProperties, 1, NULL, values);
+
+					// Get the name. Must use a std::vector rather than a std::string for C++03 standards issues.
+					// C++11 would let you use a std::string directly.
+					std::vector<char> nameData(values[0]);
+					glGetProgramResourceName(shaderProgramID, GL_UNIFORM, blockUnifs[unifIx], (GLsizei)nameData.size(), NULL, &nameData[0]);
+					std::string name(nameData.begin(), nameData.end() - 1);
+
+					if (name == uniformMemberName)
+						return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+
+	void OpenGLGraphicsDevice::BindProgramUniformBlock(GLuint shaderProgramID, const char* uniformBlockName, int uniformBlockBinding, DeviceBufferHandle ubHandle)
+	{
+		// First retrieve the size of our uniform buffer or early exit...
+		auto sizeIt = m_uniformBufferSizes.Find(ubHandle);
+		if (!MOE_ASSERT(sizeIt != m_uniformBufferSizes.End()))
+		{
+			return;
+		}
+
+		auto [ubo, uboOffset] = DecodeBufferHandle(ubHandle);
+
+		const unsigned int uniformBlockProgramIndex = glGetUniformBlockIndex(shaderProgramID, uniformBlockName);
+
+		if (uniformBlockProgramIndex != UINT32_MAX)
+		{
+			glUniformBlockBinding(shaderProgramID, uniformBlockProgramIndex, uniformBlockBinding);
+			glBindBufferRange(GL_UNIFORM_BUFFER, uniformBlockBinding, ubo, uboOffset, sizeIt->second);
+		}
+		else
+		{
+			MOE_ASSERT(false);
+			MOE_ERROR(ChanGraphics, "Tried to use block %s in shader program %u but this block was not found inside the shader.", uniformBlockName, shaderProgramID);
+		}
+	}
+
+
+	void OpenGLGraphicsDevice::UpdateUniformBuffer(DeviceBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset)
 	{
 		auto[ubo, uboOffset] = DecodeBufferHandle(ubHandle);
 
@@ -497,6 +648,14 @@ namespace moe
 	}
 
 
+	DeviceBufferHandle OpenGLGraphicsDevice::EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset)
+	{
+		uint64_t handleValue = (uint64_t)bufferID << 32;
+		handleValue |= bufferOffset;
+		return DeviceBufferHandle{ handleValue };
+	}
+
+
 	std::pair<unsigned, unsigned> OpenGLGraphicsDevice::DecodeBufferHandle(
 		const RenderObjectHandle<std::uint64_t>& handle)
 	{
@@ -505,6 +664,8 @@ namespace moe
 		uint32_t bufferOffset = (uint32_t)handleVal;
 		return {bufferID, bufferOffset};
 	}
+
+
 }
 
 #endif

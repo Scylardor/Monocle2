@@ -4,13 +4,17 @@
 
 #ifdef MOE_OPENGL
 
+#ifdef MOE_STD_SUPPORT
+#include <string>
+#endif
+
+#include "Core/Containers/HashMap/HashMap.h"
+
 #include "Graphics/Renderer/AbstractRenderer/AbstractRenderer.h"
 
 #include "Graphics/Device/OpenGL/OpenGLGraphicsDevice.h"
 
-#include "Graphics/Mesh/Mesh.h"
-
-#include "Core/Containers/FreeList/Freelist.h"
+#include "Graphics/Shader/UniformDataKind.h"
 
 #include "Monocle_Graphics_Export.h"
 
@@ -84,12 +88,8 @@ namespace moe
 			return m_device.CreateVertexLayout(vertexLayoutDesc);
 		}
 
-		Monocle_Graphics_API [[nodiscard]] MeshHandle	CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData) override;
 
-		Monocle_Graphics_API void	DeleteStaticMesh(MeshHandle handle) override;
-
-
-		Monocle_Graphics_API [[nodiscard]] UniformBufferHandle		CreateUniformBuffer(const void* data, uint32_t dataSizeBytes) override;
+		Monocle_Graphics_API [[nodiscard]] DeviceBufferHandle		CreateUniformBuffer(const void* data, uint32_t dataSizeBytes) override;
 
 
 		Monocle_Graphics_API [[nodiscard]] ResourceLayoutHandle		CreateResourceLayout(const ResourceLayoutDescriptor& desc) override
@@ -102,19 +102,17 @@ namespace moe
 			return m_device.CreateResourceSet(desc);
 		}
 
-		void	UpdateUniformBuffer(UniformBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset = 0)
+		void	UpdateUniformBuffer(DeviceBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset = 0)
 		{
 			m_device.UpdateUniformBuffer(ubHandle, data, dataSizeBytes, relativeOffset);
 		}
 
 
 		template <typename T>
-		void	UpdateUniformBufferFrom(UniformBufferHandle ubHandle, const T& data)
+		void	UpdateUniformBufferFrom(DeviceBufferHandle ubHandle, const T& data)
 		{
 			m_device.UpdateUniformBuffer(ubHandle, &data, sizeof(T), 0);
 		}
-
-
 
 
 		[[nodiscard]] const IGraphicsDevice&	GetGraphicsDevice() const override final
@@ -129,16 +127,32 @@ namespace moe
 		}
 
 
+		UniformResourceKind	GetUniformResourceKind(const std::string& uniformBlockName) const;
+
+		void	SetUniformResourceKind(const std::string& uniformBlockName, UniformResourceKind resourceKind);
+
 
 		/* TODO : quick and dirty test framework, to remove later */
-
-		Monocle_Graphics_API void	UseCamera(CameraHandle camHandle) override;
 
 		Monocle_Graphics_API void	Clear(const ColorRGBAf& clearColor) override;
 
 		Monocle_Graphics_API void	UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle) override;
 
-		Monocle_Graphics_API void	DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle) override;
+		Monocle_Graphics_API void	UseMaterial(Material* material) override;
+
+		Monocle_Graphics_API void	UseMaterialPerObject(Material* material, AGraphicObject& object) override;
+
+
+		Monocle_Graphics_API [[nodiscard]] RenderWorld&	CreateRenderWorld() override;
+
+
+		Monocle_Graphics_API [[nodiscard]] DeviceBufferHandle	AllocateObjectMemory(const uint32_t size) override final;
+		Monocle_Graphics_API void								CopyObjectMemory(DeviceBufferHandle from, uint32_t fromSizeBytes, DeviceBufferHandle to) override final;
+		Monocle_Graphics_API void								ReleaseObjectMemory(DeviceBufferHandle freedHandle) override final;
+
+		Monocle_Graphics_API GraphicObjectData					ReallocObjectUniformGraphicData(const GraphicObjectData& oldData, uint32_t newNeededSize) override;
+
+		Monocle_Graphics_API void	UpdateSubBufferRange(DeviceBufferHandle handle, uint32_t offset, void* data, uint32_t dataSize) override;
 
 	protected:
 
@@ -156,15 +170,11 @@ namespace moe
 
 		static	void	OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
 
-		Mesh&	MutMesh(MeshHandle handle)
-		{
-			return m_meshFreelist.Lookup(handle.Get() - 1); // - 1 to get back the original index !
-		}
-
 		OpenGLGraphicsDevice	m_device;
 
-		Freelist<Mesh>	m_meshFreelist;
+		OpenGLBuddyAllocator	m_renderWorldMemory;
 
+		HashMap<std::string, UniformResourceKind>	m_uniformResourceKinds;
 
 	};
 

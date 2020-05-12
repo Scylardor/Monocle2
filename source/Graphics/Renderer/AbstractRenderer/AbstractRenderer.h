@@ -12,7 +12,7 @@
 
 #include "Graphics/Device/GraphicsDevice.h"
 
-#include "Graphics/Camera/CameraManager.h"
+#include "Graphics/RenderWorld/RenderWorld.h"
 
 #include "Monocle_Graphics_Export.h"
 
@@ -36,22 +36,23 @@ namespace moe
 
 		Monocle_Graphics_API [[nodiscard]] ShaderProgramHandle	CreateShaderProgramFromBinaryFiles(const ShaderFileList& fileList) final override;
 
-		Monocle_Graphics_API [[nodiscard]] CameraHandle	CreateCamera(const OrthographicCameraDesc& orthoDesc, const ViewportDescriptor& vpDesc) override;
-		Monocle_Graphics_API [[nodiscard]] CameraHandle	CreateCamera(const PerspectiveCameraDesc& perspDesc, const ViewportDescriptor& vpDesc) override;
 
-		Monocle_Graphics_API [[nodiscard]] CameraHandle	CreateCamera(const OrthographicCameraDesc& orthoDesc, ViewportHandle vpHandle) override;
-		Monocle_Graphics_API [[nodiscard]] CameraHandle	CreateCamera(const PerspectiveCameraDesc& perspDesc, ViewportHandle vpHandle) override;
+		Monocle_Graphics_API [[nodiscard]] RenderWorld&	CreateRenderWorld() override
+		{
+			auto renderWorldID = m_renderWorlds.Add(*this);
+			return m_renderWorlds.Lookup(renderWorldID);
+		}
 
-		[[nodiscard]] const CameraManager&	GetCameraManager() const override	{ return m_cameraManager; }
-		[[nodiscard]] CameraManager&		MutCameraManager() override			{ return m_cameraManager; }
 
 	protected:
 		[[nodiscard]] virtual const IGraphicsDevice&	GetDevice() const = 0;
 		[[nodiscard]] virtual IGraphicsDevice&			MutDevice() = 0;
 
-		CameraManager	m_cameraManager;
+
 
 	private:
+
+		Freelist<RenderWorld>	m_renderWorlds;
 
 		static std::optional<ShaderProgramDescriptor>	BuildProgramDescriptorFromFileList(const ShaderFileList& fileList);
 

@@ -29,7 +29,7 @@ namespace moe
 		}
 
 
-		[[nodiscard]] Transform&	operator*=(const Transform& rhs)
+		Transform&	operator*=(const Transform& rhs)
 		{
 			m_matrix *= rhs.m_matrix;
 			return *this;

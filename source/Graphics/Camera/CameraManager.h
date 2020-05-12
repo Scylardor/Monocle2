@@ -6,25 +6,31 @@
 
 #include "Camera.h"
 
-#include "CameraHandle.h"
-
-
 namespace moe
 {
 	class CameraManager
 	{
 
 	public:
-		Monocle_Graphics_API CameraHandle	AddCamera(ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc);
-		Monocle_Graphics_API CameraHandle	AddCamera(ViewportHandle vpHandle, const PerspectiveCameraDesc& persDesc);
+		using CameraID = FreelistID;
 
-		[[nodiscard]] const ACamera&	GetCamera(CameraHandle camHandle) const
+		Monocle_Graphics_API CameraID	AddCamera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc);
+		Monocle_Graphics_API CameraID	AddCamera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const PerspectiveCameraDesc& persDesc);
+
+		[[nodiscard]] const Camera&	GetCamera(CameraID camID) const
 		{
-			return m_cameras.Lookup(camHandle.Get() - 1);
+			return m_cameras.Lookup(camID);
 		}
 
+
+		[[nodiscard]] Camera&	MutCamera(CameraID camID)
+		{
+			return m_cameras.Lookup(camID);
+		}
+
+
 	private:
-		Freelist<ACamera>	m_cameras;
+		Freelist<Camera>	m_cameras;
 	};
 
 }

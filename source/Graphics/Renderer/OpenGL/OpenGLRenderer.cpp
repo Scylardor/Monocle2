@@ -43,75 +43,28 @@ namespace moe
 	}
 
 
-	MeshHandle OpenGLRenderer::CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData)
-	{
-		if (vertexData.IsNull())
-		{
-			// No mesh data to process
-			return MeshHandle::Null();
-		}
-
-		VertexBufferHandle vertexHandle = m_device.CreateStaticVertexBuffer(vertexData.m_dataBuffer, vertexData.m_bufferSizeBytes);
-		if (false == MOE_ASSERT(vertexHandle.IsNotNull()))
-		{
-			return MeshHandle::Null();
-		}
-
-		IndexBufferHandle indexHandle = IndexBufferHandle::Null();
-
-		if (false == indexData.IsNull())
-		{
-			indexHandle = m_device.CreateIndexBuffer(indexData.m_dataBuffer, indexData.m_bufferSizeBytes);
-			if (false == MOE_ASSERT(indexHandle.IsNotNull()))
-			{
-				// If creating the index buffer failed, don't forget to destroy the vertex buffer or it will go dangling
-				m_device.DeleteStaticVertexBuffer(vertexHandle);
-				return MeshHandle::Null();
-			}
-		}
-
-		FreelistID newMeshID = m_meshFreelist.Add(vertexHandle, vertexData.m_bufferNumElems, indexHandle, indexData.m_bufferNumElems);
-
-		return MeshHandle{ newMeshID.Index() + 1 }; // +1 to avoid forming a null handle !
-	}
-
-
-	void OpenGLRenderer::DeleteStaticMesh(MeshHandle handle)
-	{
-
-		MOE_DEBUG_ASSERT(handle.IsNotNull()); // you're not supposed to pass null handles to this function
-		if (handle.IsNull())
-			return;
-
-		Mesh& mesh = MutMesh(handle);
-
-		m_device.DeleteStaticVertexBuffer(mesh.GetVertexBufferHandle());
-
-		if (mesh.GetIndexBufferHandle().IsNotNull())
-		{
-			m_device.DeleteIndexBuffer(mesh.GetIndexBufferHandle());
-		}
-
-		m_meshFreelist.Remove(handle.Get() - 1); // - 1 to get back the original index !
-	}
-
-
-	UniformBufferHandle OpenGLRenderer::CreateUniformBuffer(const void* data, uint32_t dataSizeBytes)
+	DeviceBufferHandle OpenGLRenderer::CreateUniformBuffer(const void* data, uint32_t dataSizeBytes)
 	{
 		return m_device.CreateUniformBuffer(data, dataSizeBytes);
 	}
 
 
-	void OpenGLRenderer::UseCamera(CameraHandle camHandle)
+	UniformResourceKind OpenGLRenderer::GetUniformResourceKind(const std::string& uniformBlockName) const
 	{
-		// First fetch associated viewport
-		const ACamera& cam = m_cameraManager.GetCamera(camHandle);
+		const auto kindIt = m_uniformResourceKinds.Find(uniformBlockName);
+		if (kindIt != m_uniformResourceKinds.End())
+		{
+			return kindIt->second;
+		}
 
-		auto vpHandle = cam.GetViewportHandle();
+		MOE_ASSERT(false); // should not happen...
+		return UniformResourceKind::None;
+	}
 
-		m_device.UseViewport(vpHandle);
 
-		// For now, the camera is actually not used...
+	void OpenGLRenderer::SetUniformResourceKind(const std::string& uniformBlockName, UniformResourceKind resourceKind)
+	{
+		m_uniformResourceKinds.Insert({uniformBlockName, resourceKind});
 	}
 
 
@@ -143,7 +96,7 @@ namespace moe
 			{
 			case ResourceKind::UniformBuffer:
 				{
-					UniformBufferHandle ubHandle = rscSetDesc.Get<UniformBufferHandle>(iBinding);
+					DeviceBufferHandle ubHandle = rscSetDesc.Get<DeviceBufferHandle>(iBinding);
 					m_device.BindProgramUniformBlock(shaderProgramID, rscBindingDesc.m_name.c_str(), uniformBlockBinding, ubHandle);
 					uniformBlockBinding++;
 				}
@@ -169,55 +122,206 @@ namespace moe
 	}
 
 
-	void OpenGLRenderer::DrawMesh(MeshHandle meshHandle, VertexLayoutHandle layoutHandle)
+	void OpenGLRenderer::UseMaterial(Material* material)
 	{
+		if (material == nullptr)
+			return;
 
-		Mesh& drawnMesh = MutMesh(meshHandle);
+		material->ResetFrameUniformBlockCounter();
 
-		const OpenGLVertexLayout* vtxLayout = m_device.UseVertexLayout(layoutHandle);
-		if (vtxLayout == nullptr)
+		// Process per-material resource sets.
+		const GLuint shaderProgramID = m_device.UseShaderProgram(material->GetShaderProgramHandle());
+
+		int	uniformBlockBinding = 0;
+
+		for (ResourceSetHandle rscSetHandle : material->GetPerMaterialResourceSets())
 		{
-			return; // TODO : add log
-		}
+			if (rscSetHandle.IsNull())
+				return;
 
-		auto [vbo, vboOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(drawnMesh.GetVertexBufferHandle());
+			const auto& rscSetDesc = m_device.GetResourceSetDescriptor(rscSetHandle);
 
-		if (vtxLayout->IsInterleaved())
-		{
-			glVertexArrayVertexBuffer(vtxLayout->VAO(), 0, vbo, vboOffset, vtxLayout->GetStrideBytes());
-		}
-		else
-		{
-			// In packed mode, set the bindings one by one.
+			const auto& rscLayoutDesc = m_device.GetResourceLayoutDescriptor(rscSetDesc.GetResourceLayoutHandle());
 
-			const VertexLayoutDescriptor& layoutDesc = vtxLayout->ReadDescriptor();
+			int iBinding = 0;
 
-			uint32_t bindingIdx = 0;
-			size_t elemBufferOffset = vboOffset;
 
-			for (const VertexElementDescriptor& elemDesc : layoutDesc)
+			int	textureUnitIndex = 0;
+			for (const ResourceLayoutBindingDescriptor& rscBindingDesc : rscLayoutDesc)
 			{
-				auto oglElemFormat = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
-				auto typeSize = OpenGLVertexElementFormat::FindTypeSize(oglElemFormat.value().m_numCpnts, oglElemFormat.value().m_type);
-				glVertexArrayVertexBuffer(vtxLayout->VAO(), bindingIdx, vbo, elemBufferOffset, typeSize.value());
+				switch (rscBindingDesc.m_kind)
+				{
+				case ResourceKind::UniformBuffer:
+				{
+					DeviceBufferHandle ubHandle = rscSetDesc.Get<DeviceBufferHandle>(iBinding);
+					m_device.BindProgramUniformBlock(shaderProgramID, rscBindingDesc.m_name.c_str(), uniformBlockBinding, ubHandle);
+					uniformBlockBinding++;
+				}
+				break;
+				case ResourceKind::TextureReadOnly:
+				{
+					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
+					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
+					textureUnitIndex++;
+				}
 
-				elemBufferOffset += drawnMesh.NumVertices() * typeSize.value();
-				bindingIdx++;
+				break;
+				case ResourceKind::Sampler:
+
+					break;
+				default:
+					MOE_ASSERT(false);
+					MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");
+				}
+
+				iBinding++;
 			}
 		}
 
-		if (drawnMesh.IsIndexed())
-		{
-			auto[ebo, eboOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(drawnMesh.GetIndexBufferHandle());
+		material->SetFrameUniformBlockCounter(uniformBlockBinding);
+	}
 
-			glVertexArrayElementBuffer(vtxLayout->VAO(), ebo);
 
-			glDrawElements(GL_TRIANGLES, (GLsizei)drawnMesh.NumIndices(), GL_UNSIGNED_INT, (const void*)((uint64_t)eboOffset));
-		}
-		else
+	void OpenGLRenderer::UseMaterialPerObject(Material* material, AGraphicObject& object)
+	{
+		if (material == nullptr)
+			return;
+
+		// As we may have already set up per-material uniform blocks, start the uniform block binding counting at the block counter for this frame.
+		int	uniformBlockBinding = material->GetFrameUniformBlockCounter();
+
+		const GLuint shaderProgramID = m_device.GetShaderProgramID(material->GetShaderProgramHandle());
+
+		for (ResourceSetHandle rscSetHandle : material->GetPerObjectResourceSets())
 		{
-			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)drawnMesh.NumVertices());
+			if (rscSetHandle.IsNull())
+				return;
+
+			const auto& rscSetDesc = m_device.GetResourceSetDescriptor(rscSetHandle);
+
+			const auto& rscLayoutDesc = m_device.GetResourceLayoutDescriptor(rscSetDesc.GetResourceLayoutHandle());
+
+			int iBinding = 0;
+
+			int	textureUnitIndex = 0;
+			for (const ResourceLayoutBindingDescriptor& rscBindingDesc : rscLayoutDesc)
+			{
+				switch (rscBindingDesc.m_kind)
+				{
+				case ResourceKind::UniformBuffer:
+				{
+					DeviceBufferHandle ubHandle = rscSetDesc.Get<DeviceBufferHandle>(iBinding);
+
+					if (rscBindingDesc.m_name == "ObjectMatrices")
+					{
+						Material::UpdateObjectMatrices(object, ubHandle);
+					}
+
+					m_device.BindProgramUniformBlock(shaderProgramID, rscBindingDesc.m_name.c_str(), uniformBlockBinding, ubHandle);
+
+					uniformBlockBinding++;
+				}
+				break;
+				case ResourceKind::TextureReadOnly:
+				{
+					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
+					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
+					textureUnitIndex++;
+				}
+
+				break;
+				case ResourceKind::Sampler:
+
+					break;
+				default:
+					MOE_ASSERT(false);
+					MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");
+				}
+
+				iBinding++;
+			}
 		}
+	}
+
+
+	RenderWorld& OpenGLRenderer::CreateRenderWorld()
+	{
+		RenderWorld& newRw = AbstractRenderer::CreateRenderWorld();
+
+		// Allocate memory for this render world
+		m_renderWorldMemory.ReservePoolMemory(GL_DYNAMIC_STORAGE_BIT);
+
+		return newRw;
+	}
+
+
+	DeviceBufferHandle OpenGLRenderer::AllocateObjectMemory(const uint32_t size)
+	{
+		uint32_t offset = m_renderWorldMemory.Allocate(nullptr, size);
+
+		DeviceBufferHandle bufferHandle = m_device.EncodeBufferHandle(m_renderWorldMemory.GetBufferHandle(), offset);
+
+		return bufferHandle;
+	}
+
+
+	void OpenGLRenderer::CopyObjectMemory(DeviceBufferHandle from, uint32_t fromSizeBytes, DeviceBufferHandle to)
+	{
+		auto[frombuf, fromOffset] = m_device.DecodeBufferHandle(from);
+		auto[tobuf, toOffset] = m_device.DecodeBufferHandle(to);
+		m_renderWorldMemory.Copy(fromOffset, fromSizeBytes, toOffset);
+	}
+
+
+	void OpenGLRenderer::ReleaseObjectMemory(DeviceBufferHandle freedHandle)
+	{
+		auto [buf, bufOffset] = m_device.DecodeBufferHandle(freedHandle);
+		m_renderWorldMemory.Free(bufOffset);
+	}
+
+
+	GraphicObjectData	OpenGLRenderer::ReallocObjectUniformGraphicData(const GraphicObjectData& oldData, uint32_t newNeededSize)
+	{
+		// First, get a block of the wanted size
+		DeviceBufferHandle newMemHandle = AllocateObjectMemory(newNeededSize);
+
+		// Now, copy the old region into the new region.
+		// Reallocating uniform data is easy, we just extend the end of the buffer...
+		CopyObjectMemory(oldData.m_objectDataHandle, oldData.TotalGraphicSize(), newMemHandle);
+
+		// We don't need the old memory block now
+		ReleaseObjectMemory(oldData.m_objectDataHandle);
+
+		// Finally, we need to point the handles to the new data block.
+		// Fortunately, OpenGL device buffer handles are just a buffer ID and an offset.
+		// So we just have to update the offset...
+		auto [newBuf, newBufOffset] = m_device.DecodeBufferHandle(newMemHandle);
+
+		GraphicObjectData newData = oldData;
+
+		auto[oldbuf, oldBufOffset] = m_device.DecodeBufferHandle(oldData.m_objectDataHandle);
+		auto[vtxbuf, vtxBufOffset] = m_device.DecodeBufferHandle(oldData.m_vtxDataHandle);
+		auto[idxbuf, idxBufOffset] = m_device.DecodeBufferHandle(oldData.m_idxDataHandle);
+		auto[unibuf, uniBufOffset] = m_device.DecodeBufferHandle(oldData.m_uniformDataHandle);
+
+		newData.m_objectDataHandle = newMemHandle;
+		newData.m_vtxDataHandle = m_device.EncodeBufferHandle(newBuf, newBufOffset + (vtxBufOffset - oldBufOffset));
+		newData.m_idxDataHandle = m_device.EncodeBufferHandle(newBuf, newBufOffset + (idxBufOffset - oldBufOffset));
+		newData.m_uniformDataHandle = m_device.EncodeBufferHandle(newBuf, newBufOffset + (uniBufOffset - oldBufOffset));
+
+		// We reallocated uniform buffer data, so only uniform data has been resized. The new uniform size is thus the difference between new and old total size.
+		newData.m_uniformDataSize += (newNeededSize - newData.TotalGraphicSize());
+
+		return newData;
+	}
+
+
+	void OpenGLRenderer::UpdateSubBufferRange(DeviceBufferHandle handle, uint32_t offset, void* data, uint32_t dataSize)
+	{
+		auto [bufID, bufOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(handle);
+		DeviceBufferHandle offsetHandle = OpenGLGraphicsDevice::EncodeBufferHandle(bufID, bufOffset + offset);
+
+		MutGraphicsDevice().UpdateBuffer(offsetHandle, data, dataSize);
 	}
 
 

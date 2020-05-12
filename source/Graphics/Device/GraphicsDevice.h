@@ -13,6 +13,7 @@
 #include "Graphics/DeviceBuffer/VertexBufferHandle.h"
 #include "Graphics/DeviceBuffer/IndexBufferHandle.h"
 #include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+#include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
 #include "Graphics/Resources/ResourceLayout/ResourceLayoutHandle.h"
 
@@ -48,21 +49,32 @@ namespace moe
 		[[nodiscard]] virtual ShaderProgramHandle	CreateShaderProgramFromBinary(const ShaderProgramDescriptor& shaProDesc) = 0;
 		virtual bool	RemoveShaderProgram(ShaderProgramHandle programHandle) = 0;
 
+		[[nodiscard]] virtual uint32_t	GetShaderProgramUniformBlockSize(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName) = 0;
+		[[nodiscard]] virtual bool	IsPartOfUniformBlock(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName, const std::string& uniformMemberName) const = 0;
+
+
 		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) = 0;
 		[[nodiscard]] virtual const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const = 0;
 
-		[[nodiscard]] virtual VertexBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) = 0;
+		[[nodiscard]] virtual DeviceBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) = 0;
 
-		virtual void	DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle) = 0;
+		virtual void	DeleteStaticVertexBuffer(DeviceBufferHandle vtxHandle) = 0;
 
-		[[nodiscard]] virtual IndexBufferHandle		CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) = 0;
+		[[nodiscard]] virtual DeviceBufferHandle		CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) = 0;
 
-		virtual void	DeleteIndexBuffer(IndexBufferHandle idxHandle) = 0;
+		virtual void	DeleteIndexBuffer(DeviceBufferHandle idxHandle) = 0;
+
+		virtual void	DrawVertexBuffer(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
+			DeviceBufferHandle idxBufHandle, size_t numIndices) = 0;
+
+		virtual void	UpdateBuffer(DeviceBufferHandle bufferHandle, const void* data, size_t dataSize) const = 0;
+
+
 
 		[[nodiscard]] virtual ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) = 0;
 		virtual void	UseViewport(ViewportHandle vpHandle) = 0;
 
-		[[nodiscard]] virtual UniformBufferHandle	CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes) = 0;
+		[[nodiscard]] virtual DeviceBufferHandle	CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes) = 0;
 
 		[[nodiscard]] virtual ResourceLayoutHandle	CreateResourceLayout(const ResourceLayoutDescriptor& newDesc) = 0;
 

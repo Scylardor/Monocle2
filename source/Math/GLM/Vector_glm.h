@@ -37,18 +37,18 @@ namespace moe
 				m_vec(xyzw)
 			{}
 
-			template<typename = std::enable_if_t<NumT == 2>>
+			template<typename = std::enable_if_t<NumT >= 2>>
 			Vector(ValT x, ValT y) :
 				m_vec(x, y)
 			{}
 
-			template<typename = std::enable_if_t<NumT == 3>>
-			Vector(ValT x, ValT y, ValT z = ValT(0)) :
+			template<typename = std::enable_if_t<NumT >= 3>>
+			Vector(ValT x, ValT y, ValT z) :
 				m_vec(x, y, z)
 			{}
 
 			template<typename = std::enable_if_t<NumT == 4>>
-			Vector(ValT x, ValT y, ValT z, ValT w = ValT(0)) :
+			Vector(ValT x, ValT y, ValT z, ValT w) :
 				m_vec(x, y, z, w)
 			{}
 
@@ -98,13 +98,12 @@ namespace moe
 			/**
 			* \brief Constructor to initialize X and Y from a vec2. Takes an optional Z value.
 			* Usable only by Vector4.
-			* \param xy Vec2 that contains values to set for x and y.
-			* \param z Optional value for z. Defaults to 0
+			* \param xyz Vec3 that contains values to set for x, y and z.
 			* \param w Optional value for w. Defaults to 0
 			*/
 			template<typename = std::enable_if_t<NumT == 4>>
-			explicit Vector(const Vector<3, ValT>& xyz, ValT z = ValT(0), ValT w = ValT(0)) :
-				m_vec(xy.x(), xy.y(), xyz.z(), w)
+			explicit Vector(const Vector<3, ValT>& xyz, ValT w = ValT(0)) :
+				m_vec(xyz.x(), xyz.y(), xyz.z(), w)
 			{}
 
 			// Math Functions
@@ -469,4 +468,6 @@ namespace moe
 
 	}
 
+	template <size_t N, typename T>
+	using Vec = GLM::Vector<N, T>;
 }

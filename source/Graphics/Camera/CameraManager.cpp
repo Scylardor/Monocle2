@@ -4,16 +4,14 @@
 
 namespace moe
 {
-	CameraHandle CameraManager::AddCamera(ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc)
+	CameraManager::CameraID CameraManager::AddCamera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc)
 	{
-		FreelistID newCamId = m_cameras.Add(vpHandle, orthoDesc);
-		return newCamId.ToHandle<CameraHandle>();
+		return m_cameras.Add(world, data, vpHandle, orthoDesc);
 	}
 
 
-	CameraHandle CameraManager::AddCamera(ViewportHandle vpHandle, const PerspectiveCameraDesc& persDesc)
+	CameraManager::CameraID CameraManager::AddCamera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const PerspectiveCameraDesc& persDesc)
 	{
-		FreelistID newCamId = m_cameras.Add(vpHandle, persDesc);
-		return newCamId.ToHandle<CameraHandle>();
+		return m_cameras.Add(world, data, vpHandle, persDesc);
 	}
 }

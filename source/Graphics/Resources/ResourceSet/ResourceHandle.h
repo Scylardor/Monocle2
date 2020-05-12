@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+#include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/Texture/Texture2DHandle.h"
 
 
@@ -14,7 +14,7 @@ namespace moe
 	 */
 	union ResourceHandle
 	{
-		ResourceHandle(UniformBufferHandle bufferHandle) :
+		ResourceHandle(DeviceBufferHandle bufferHandle) :
 			m_ubHandle(bufferHandle)
 		{}
 
@@ -26,13 +26,13 @@ namespace moe
 		auto	Get() const;
 
 
-		UniformBufferHandle	m_ubHandle;
+		DeviceBufferHandle	m_ubHandle;
 		Texture2DHandle		m_tex2DHandle;
 	};
 
 
 	template <>
-	inline auto ResourceHandle::Get<UniformBufferHandle>() const
+	inline auto ResourceHandle::Get<DeviceBufferHandle>() const
 	{
 		return m_ubHandle;
 	}

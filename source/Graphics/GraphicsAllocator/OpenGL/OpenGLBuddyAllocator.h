@@ -40,6 +40,8 @@ namespace moe
 
 		Monocle_Graphics_API void		Free(uint32_t offset);
 
+		void	Copy(uint32_t fromOffset, uint32_t copySizeBytes, uint32_t toOffset);
+
 		/**
 		 * \brief Will completely reset the internal variables and free the allocated memory.
 		 */

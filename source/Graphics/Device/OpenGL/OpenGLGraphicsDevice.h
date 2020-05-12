@@ -28,6 +28,8 @@
 #include "Graphics/Resources/ResourceLayout/ResourceLayoutDescriptor.h"
 #include "Graphics/Resources/ResourceSet/ResourceSetDescriptor.h"
 
+#include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
+
 #include "Monocle_Graphics_Export.h"
 
 namespace moe
@@ -85,6 +87,8 @@ namespace moe
 
 		GLuint	UseShaderProgram(ShaderProgramHandle programHandle);
 
+		GLuint	GetShaderProgramID(ShaderProgramHandle programHandle);
+
 
 		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) override;
 
@@ -93,19 +97,26 @@ namespace moe
 		const OpenGLVertexLayout*	UseVertexLayout(VertexLayoutHandle layoutHandle);
 
 
-		Monocle_Graphics_API [[nodiscard]] VertexBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) override;
+		Monocle_Graphics_API [[nodiscard]] DeviceBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) override;
 
-		void	DeleteStaticVertexBuffer(VertexBufferHandle vtxHandle) override;
+		void	DeleteStaticVertexBuffer(DeviceBufferHandle vtxHandle) override;
 
-		[[nodiscard]] IndexBufferHandle	CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) override;
-		void							DeleteIndexBuffer(IndexBufferHandle idxHandle) override;
+		[[nodiscard]] DeviceBufferHandle	CreateIndexBuffer(const void* indexData, size_t indexDataSizeBytes) override;
+		void							DeleteIndexBuffer(DeviceBufferHandle idxHandle) override;
+
+
+		void	DrawVertexBuffer(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
+								DeviceBufferHandle idxBufHandle, size_t numIndices) override;
+
+		void	UpdateBuffer(DeviceBufferHandle bufferHandle, const void* data, size_t dataSize) const override;
+
 
 		[[nodiscard]] ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) override;
 
 		void	UseViewport(ViewportHandle vpHandle) override;
 
 
-		[[nodiscard]] UniformBufferHandle	CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes) override;
+		[[nodiscard]] DeviceBufferHandle	CreateUniformBuffer(const void* uniformData, size_t uniformDataSizeBytes) override;
 
 		[[nodiscard]] ResourceLayoutHandle	CreateResourceLayout(const ResourceLayoutDescriptor& newDesc) override;
 
@@ -146,13 +157,17 @@ namespace moe
 		[[nodiscard]] void	DestroyTexture2D(Texture2DHandle texHandle) override;
 
 
+		[[nodiscard]] uint32_t	GetShaderProgramUniformBlockSize(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName) override;
 
-		void	BindProgramUniformBlock(GLuint shaderProgramID, const char* uniformBlockName, int uniformBlockBinding, UniformBufferHandle ubHandle);
+		[[nodiscard]] bool	IsPartOfUniformBlock(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName, const std::string& uniformMemberName) const override;
 
-		Monocle_Graphics_API void	UpdateUniformBuffer(UniformBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset = 0);
+
+		void	BindProgramUniformBlock(GLuint shaderProgramID, const char* uniformBlockName, int uniformBlockBinding, DeviceBufferHandle ubHandle);
+
+		Monocle_Graphics_API void	UpdateUniformBuffer(DeviceBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset = 0);
 
 		template <typename T>
-		void	UpdateUniformBufferFrom(UniformBufferHandle ubHandle, const T& data)
+		void	UpdateUniformBufferFrom(DeviceBufferHandle ubHandle, const T& data)
 		{
 			UpdateUniformBuffer(ubHandle, &data, sizeof(T));
 		}
@@ -161,14 +176,18 @@ namespace moe
 		void	BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, Texture2DHandle texHandle, const char* uniformName);
 
 
+		static DeviceBufferHandle						EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset);
+
 		static std::pair<unsigned int, unsigned int>	DecodeBufferHandle(const RenderObjectHandle<std::uint64_t>& handle);
+
+
 
 	private:
 
 		OpenGLBuddyAllocator			m_vertexBufferPool;
 		OpenGLBuddyAllocator			m_indexBufferPool;
 		OpenGLBuddyAllocator			m_uniformBufferPool;
-		HashMap<UniformBufferHandle, std::uint32_t> m_uniformBufferSizes;
+		HashMap<DeviceBufferHandle, std::uint32_t> m_uniformBufferSizes;
 
 		OpenGLShaderManager				m_shaderManager;
 

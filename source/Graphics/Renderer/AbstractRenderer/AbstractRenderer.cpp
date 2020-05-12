@@ -30,32 +30,6 @@ namespace moe
 	}
 
 
-	CameraHandle AbstractRenderer::CreateCamera(const OrthographicCameraDesc& orthoDesc, const ViewportDescriptor& vpDesc)
-	{
-		ViewportHandle vpHandle = MutDevice().CreateViewport(vpDesc);
-		return CreateCamera(orthoDesc, vpHandle);
-	}
-
-
-	CameraHandle AbstractRenderer::CreateCamera(const PerspectiveCameraDesc& perspDesc, const ViewportDescriptor& vpDesc)
-	{
-		ViewportHandle vpHandle = MutDevice().CreateViewport(vpDesc);
-		return CreateCamera(perspDesc, vpHandle);
-	}
-
-
-	CameraHandle AbstractRenderer::CreateCamera(const OrthographicCameraDesc& orthoDesc, ViewportHandle vpHandle)
-	{
-		return m_cameraManager.AddCamera(vpHandle, orthoDesc);
-	}
-
-
-	CameraHandle AbstractRenderer::CreateCamera(const PerspectiveCameraDesc& perspDesc, ViewportHandle vpHandle)
-	{
-		return m_cameraManager.AddCamera(vpHandle, perspDesc);
-	}
-
-
 	std::optional<ShaderProgramDescriptor> AbstractRenderer::BuildProgramDescriptorFromFileList(const ShaderFileList& fileList)
 	{
 		ShaderProgramDescriptor programDesc(fileList.Size());

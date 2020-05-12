@@ -33,6 +33,7 @@ set(Monocle_Graphics_SOURCES
 ./DeviceBuffer/BufferUsage.h
 ./DeviceBuffer/DeviceBuffer.cpp
 ./DeviceBuffer/DeviceBuffer.h
+./DeviceBuffer/DeviceBufferHandle.h
 ./DeviceBuffer/IndexBufferHandle.h
 ./DeviceBuffer/OpenGL/OpenGLDeviceBuffer.cpp
 ./DeviceBuffer/OpenGL/OpenGLDeviceBuffer.h
@@ -42,6 +43,11 @@ set(Monocle_Graphics_SOURCES
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
 ./Handle/ObjectHandle.h
+./Material/Material.cpp
+./Material/Material.h
+./Material/MaterialBlock.h
+./Material/MaterialFrameBlock.h
+./Material/MaterialObjectBlock.h
 ./Mesh/Mesh.h
 ./Mesh/MeshDataDescriptor.h
 ./Mesh/MeshHandle.h
@@ -57,6 +63,12 @@ set(Monocle_Graphics_SOURCES
 ./Renderer/OpenGL/OpenGLRenderer.h
 ./Renderer/Renderer.h
 ./Renderer/RendererDescriptor.h
+./RenderWorld/GraphicsObject.cpp
+./RenderWorld/GraphicsObject.h
+./RenderWorld/GraphicsObjectData.h
+./RenderWorld/RenderWorld.cpp
+./RenderWorld/RenderWorld.h
+./RenderWorld/RenderWorldHandle.h
 ./ResourceFactory/OpenGLResourceFactory/OpenGLResourceFactory.cpp
 ./ResourceFactory/OpenGLResourceFactory/OpenGLResourceFactory.h
 ./ResourceFactory/ResourceFactory.h
@@ -86,6 +98,7 @@ set(Monocle_Graphics_SOURCES
 ./Shader/ShaderStage/OpenGL/OpenGLShaderStage.h
 ./Shader/ShaderStage/ShaderStage.cpp
 ./Shader/ShaderStage/ShaderStage.h
+./Shader/UniformDataKind.h
 ./Texture/OpenGL/OpenGLTextureFormat.cpp
 ./Texture/OpenGL/OpenGLTextureFormat.h
 ./Texture/Texture.h

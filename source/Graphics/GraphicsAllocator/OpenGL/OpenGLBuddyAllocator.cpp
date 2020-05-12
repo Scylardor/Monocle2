@@ -103,7 +103,8 @@ namespace moe
 		}
 
 		// A suitable offset has been found : push the data inside
-		glNamedBufferSubData(m_buffer, offset, size, data);
+		if (data != nullptr)
+			glNamedBufferSubData(m_buffer, offset, size, data);
 
 		return offset;
 	}
@@ -145,6 +146,12 @@ namespace moe
 			level--;
 		} while (level >= 0);
 
+	}
+
+
+	void OpenGLBuddyAllocator::Copy(uint32_t fromOffset, uint32_t copySizeBytes, uint32_t toOffset)
+	{
+		glCopyNamedBufferSubData(m_buffer, m_buffer, fromOffset, toOffset, copySizeBytes);
 	}
 
 

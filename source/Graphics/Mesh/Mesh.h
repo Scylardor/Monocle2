@@ -6,6 +6,11 @@
 
 #include "Graphics/DeviceBuffer/VertexBufferHandle.h"
 #include "Graphics/DeviceBuffer/IndexBufferHandle.h"
+#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+
+#include "Graphics/RenderWorld/GraphicsObject.h"
+
+#include "Core/Containers/FreeList/Freelist.h"
 
 namespace moe
 {
@@ -17,46 +22,30 @@ namespace moe
 	 * Optionally, you can reference an index buffer to make this an indexed mesh.
 	 * Otherwise, it is considered to contain only pure geometry.
 	 */
-	class Mesh
+	class Mesh : public AGraphicObject
 	{
 	public:
 
-		Mesh() = default;
-
-		Mesh(VertexBufferHandle handle, size_t numVerts, IndexBufferHandle indexHandle = IndexBufferHandle::Null(), size_t numIndices = 0) :
-			m_vertexHandle(handle),
-			m_numVertices(numVerts),
-			m_indexHandle(indexHandle),
-			m_numIndices(numIndices)
+		Mesh(RenderWorld* world, const GraphicObjectData& data) :
+			AGraphicObject(world, data)
 		{}
 
-		[[nodiscard]] VertexBufferHandle	GetVertexBufferHandle() const { return m_vertexHandle; }
-		[[nodiscard]] IndexBufferHandle		GetIndexBufferHandle() const { return m_indexHandle; }
 
 
-		size_t	NumVertices() const
+		FreelistID	GetID() const
 		{
-			return m_numVertices;
+			return m_meshID;
 		}
 
-
-		size_t	NumIndices() const
+		void	SetID(FreelistID id)
 		{
-			return m_numIndices;
-		}
-
-		bool	IsIndexed() const
-		{
-			return m_indexHandle.IsNotNull();
+			m_meshID = id;
 		}
 
 	private:
 
-		VertexBufferHandle	m_vertexHandle{0};
-		size_t				m_numVertices{ 0 };
+		FreelistID			m_meshID{0};
 
-		IndexBufferHandle	m_indexHandle{0};
-		size_t				m_numIndices{0};
 	};
 
 }

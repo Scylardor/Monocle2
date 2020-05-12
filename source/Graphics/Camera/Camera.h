@@ -6,11 +6,17 @@
 
 #include "ViewportHandle.h"
 
+#include "Graphics/RenderWorld/GraphicsObject.h"
+
+#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+
 #include "Monocle_Graphics_Export.h"
 
 
 namespace moe
 {
+	class RenderWorld;
+
 	enum class CameraProjection : uint8_t
 	{
 		Orthographic,
@@ -62,19 +68,31 @@ namespace moe
 	};
 
 
+	struct CameraGpuData
+	{
+		CameraGpuData(const Mat4& view = Mat4::Identity(), const Mat4 & proj = Mat4::Identity(), const Mat4& viewProj = Mat4::Identity()) :
+			m_view(view), m_proj(proj), m_viewProj(viewProj)
+		{}
+
+		Mat4	m_view;
+		Mat4	m_proj;
+		Mat4	m_viewProj;
+	};
+
+
 	/**
 	 * \brief A graphics APi-agnostic abstract class for a camera object.
 	 */
-	class ACamera
+	class Camera : public AGraphicObject
 	{
 	public:
-		ACamera() = default;
+		Camera() = default;
 
-		Monocle_Graphics_API ACamera(ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc);
-		Monocle_Graphics_API ACamera(ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc);
+		Monocle_Graphics_API Camera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc, const Transform& transf = Transform::Identity());
+		Monocle_Graphics_API Camera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc, const Transform& transf = Transform::Identity());
 
 
-		void	SetOrtographic(const OrthographicCameraDesc& orthoDesc);
+		void	SetOrthographic(const OrthographicCameraDesc& orthoDesc);
 		void	SetPerspective(const PerspectiveCameraDesc& perspecDesc);
 
 		void	SetFoVY(Degs_f newFovY);
@@ -84,30 +102,46 @@ namespace moe
 		void	SetFar(float zFar);
 
 
-		[[nodiscard]] const Mat4&	GetViewMatrix() const { return m_viewMatrix; }
+		[[nodiscard]] const Mat4&	GetViewMatrix() const { return m_matrices.m_view; }
 
-		[[nodiscard]] const Mat4&	GetProjectionMatrix() const { return m_projectionMatrix; }
+		[[nodiscard]] const Mat4&	GetProjectionMatrix() const { return m_matrices.m_proj; }
 
-		[[nodiscard]] const Mat4&	GetViewProjectionMatrix() const { return m_modelViewMatrix; }
+		[[nodiscard]] const Mat4&	GetViewProjectionMatrix() const { return m_matrices.m_viewProj; }
 
 		[[nodiscard]] ViewportHandle	GetViewportHandle() const { return m_viewportHandle; }
 
 
+		Monocle_Graphics_API void SetTransform(const Transform& transf) override final;
+		Monocle_Graphics_API const Transform& AddTransform(const Transform& transf) override final;
+
+
+		const CameraGpuData&	GetCameraGpuData() const
+		{
+			return m_matrices;
+		}
+
+
+		DeviceBufferHandle	GetCameraGpuHandle() const
+		{
+			return m_graphicData.m_uniformDataHandle;
+		}
+
+
 	protected:
+
+		void	RecomputeViewMatrices();
 
 		void	ComputeProjectionMatrix();
 
 	private:
-
-		CameraProjection	m_projectionType{CameraProjection::Perspective};
+		CameraGpuData	m_matrices;
 
 		CameraData	m_cameraData;
 
-		ViewportHandle	m_viewportHandle{ViewportHandle::Null()};
+		ViewportHandle	m_viewportHandle{0};
 
-		Mat4	m_viewMatrix{Mat4::Identity()};
-		Mat4	m_projectionMatrix{ Mat4::Identity() };
-		Mat4	m_modelViewMatrix{ Mat4::Identity() };
+		CameraProjection	m_projectionType{ CameraProjection::Perspective };
+
 	};
 
 
