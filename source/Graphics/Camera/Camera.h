@@ -68,9 +68,9 @@ namespace moe
 	};
 
 
-	struct CameraGpuData
+	struct CameraMatrices
 	{
-		CameraGpuData(const Mat4& view = Mat4::Identity(), const Mat4 & proj = Mat4::Identity(), const Mat4& viewProj = Mat4::Identity()) :
+		CameraMatrices(const Mat4& view = Mat4::Identity(), const Mat4 & proj = Mat4::Identity(), const Mat4& viewProj = Mat4::Identity()) :
 			m_view(view), m_proj(proj), m_viewProj(viewProj)
 		{}
 
@@ -115,7 +115,27 @@ namespace moe
 		Monocle_Graphics_API const Transform& AddTransform(const Transform& transf) override final;
 
 
-		const CameraGpuData&	GetCameraGpuData() const
+		/**
+		 * \brief Sets the camera transform to the lookat matrix described by provided vectors.
+		 * This version doesn't change position : will use the current transform's one.
+		 * \param lookatPointWorld The point to look at in world space
+		 * \param upWorld The reference up vector in world space
+		 * \return The new camera transform
+		 */
+		Monocle_Graphics_API const Transform& LookAt(const Vec3& lookatPointWorld, const Vec3& upWorld);
+
+
+		/**
+		 * \brief Sets the camera transform to the lookat matrix described by provided vectors.
+		 * \param cameraPosWorld New camera position in world space
+		 * \param lookatPointWorld The point to look at in world space
+		 * \param upWorld The reference up vector in world space
+		 * \return The new camera transform
+		 */
+		Monocle_Graphics_API const Transform& LookAt(const Vec3& cameraPosWorld, const Vec3& lookatPointWorld, const Vec3& upWorld);
+
+
+		const CameraMatrices&	GetCameraMatrices() const
 		{
 			return m_matrices;
 		}
@@ -127,20 +147,31 @@ namespace moe
 		}
 
 
+		[[nodiscard]] const Vec3&	GetFrontVector() const	{ return m_cameraFront; }
+
+		void	SetCameraFront(const Vec3& newFront) { m_cameraFront = newFront; }
+
+		[[nodiscard]] const Vec3&	GetUpVector() const		{ return m_cameraUp; }
+
+
 	protected:
 
+		/* TODO: code smell: camera matrices meant for GPU usage should not be recomputed on each transform update... */
 		void	RecomputeViewMatrices();
 
-		void	ComputeProjectionMatrix();
+		void	ComputeProjectionMatrices();
 
 	private:
-		CameraGpuData	m_matrices;
+		CameraMatrices	m_matrices;
 
 		CameraData	m_cameraData;
 
 		ViewportHandle	m_viewportHandle{0};
 
 		CameraProjection	m_projectionType{ CameraProjection::Perspective };
+
+		Vec3	m_cameraFront{0, 0, -1};
+		Vec3	m_cameraUp{ 0, 1, 0 };
 
 	};
 

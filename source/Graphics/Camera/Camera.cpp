@@ -10,7 +10,7 @@ namespace moe
 		m_viewportHandle(vpHandle),
 		m_projectionType {CameraProjection::Orthographic}
 	{
-		ComputeProjectionMatrix();
+		ComputeProjectionMatrices();
 	}
 
 	Camera::Camera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc, const Transform& transf) :
@@ -19,7 +19,7 @@ namespace moe
 		m_viewportHandle(vpHandle),
 		m_projectionType{ CameraProjection::Perspective }
 	{
-		ComputeProjectionMatrix();
+		ComputeProjectionMatrices();
 	}
 
 
@@ -28,7 +28,7 @@ namespace moe
 		m_projectionType = CameraProjection::Perspective;
 		m_cameraData.m_perspective.m_fovY = newFovY;
 		// Fov has changed - recompute proj matrix
-		ComputeProjectionMatrix();
+		ComputeProjectionMatrices();
 	}
 
 
@@ -37,7 +37,7 @@ namespace moe
 		m_projectionType = CameraProjection::Perspective;
 		m_cameraData.m_perspective.m_aspectRatio = newAspect;
 		// Aspect has changed - recompute proj matrix
-		ComputeProjectionMatrix();
+		ComputeProjectionMatrices();
 	}
 
 
@@ -57,7 +57,7 @@ namespace moe
 		}
 
 		// Near has changed - recompute proj matrix
-		ComputeProjectionMatrix();
+		ComputeProjectionMatrices();
 	}
 
 
@@ -77,7 +77,7 @@ namespace moe
 		}
 
 		// Far has changed - recompute proj matrix
-		ComputeProjectionMatrix();
+		ComputeProjectionMatrices();
 	}
 
 
@@ -100,6 +100,44 @@ namespace moe
 	}
 
 
+	const Transform& Camera::LookAt(const Vec3& lookatPointWorld, const Vec3& upWorld)
+	{
+		/* TODO as it's a bit of a code smell :
+		* to compute camera transform, when using lookat, LookatMatrix actually computes a VIEW matrix !
+		* So the actual transform matrix is the inverse of the matrix returned by LookAt. But RecomputeViewMatrices inverses the transform AGAIN !
+		* There has to be a better way.
+		*/
+		const Vec3 camPos = GetTransform().Matrix().GetTranslation();
+
+		SetTransform(Transform(Mat4::LookAtMatrix(camPos, lookatPointWorld, upWorld)).Matrix().GetInverse());
+
+		RecomputeViewMatrices();
+
+		m_cameraFront = (lookatPointWorld - camPos);
+		m_cameraUp = upWorld;
+
+		return GetTransform();
+	}
+
+
+	const Transform& Camera::LookAt(const Vec3& cameraPosWorld, const Vec3& lookatPointWorld, const Vec3& upWorld)
+	{
+		/* TODO as it's a bit of a code smell :
+		 * to compute camera transform, when using lookat, LookatMatrix actually computes a VIEW matrix !
+		 * So the actual transform matrix is the inverse of the matrix returned by LookAt. But RecomputeViewMatrices inverses the transform AGAIN !
+		 * There has to be a better way.
+		 */
+		SetTransform(Transform(Mat4::LookAtMatrix(cameraPosWorld, lookatPointWorld, upWorld)).Matrix().GetInverse());
+
+		RecomputeViewMatrices();
+
+		m_cameraFront = (lookatPointWorld - cameraPosWorld);
+		m_cameraUp = upWorld;
+
+		return GetTransform();
+	}
+
+
 	void Camera::RecomputeViewMatrices()
 	{
 		m_matrices.m_view = m_transform.Matrix().GetInverse();
@@ -109,7 +147,7 @@ namespace moe
 	}
 
 
-	void Camera::ComputeProjectionMatrix()
+	void Camera::ComputeProjectionMatrices()
 	{
 		switch (m_projectionType)
 		{
@@ -127,6 +165,10 @@ namespace moe
 		default:
 			MOE_ASSERT(false);
 			MOE_ERROR(ChanGraphics, "Unsupported camera projection type");
+			return;
 		}
+
+		// Projection matrix has changed : recompute view proj matrix too
+		m_matrices.m_viewProj = m_matrices.m_proj * m_matrices.m_view;
 	}
 }
