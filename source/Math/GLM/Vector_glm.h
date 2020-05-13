@@ -119,6 +119,7 @@ namespace moe
 			 */
 			Vector&	Normalize()
 			{
+				MOE_DEBUG_ASSERT(*this != Vector::ZeroVector());
 				m_vec = glm::normalize(m_vec);
 				return *this;
 			}
@@ -134,7 +135,8 @@ namespace moe
 			 */
 			[[nodiscard]] Vector	GetNormalized() const
 			{
-				return glm::normalize(m_vec);
+				MOE_DEBUG_ASSERT(*this != Vector::ZeroVector());
+				return Vector(glm::normalize(m_vec));
 			}
 
 
@@ -228,7 +230,7 @@ namespace moe
 			 */
 			[[nodiscard]] ValT	Dot(const Vector& vec) const
 			{
-				return glm::dot(m_vec, vec.m_vec);
+				return Vector(glm::dot(m_vec, vec.m_vec));
 			}
 
 
@@ -244,7 +246,7 @@ namespace moe
 			template<typename = std::enable_if_t<NumT >= 3>>
 			Vector	Cross(const Vector& vec) const
 			{
-				return glm::cross(m_vec, vec.m_vec);
+				return Vector(glm::cross(m_vec, vec.m_vec));
 			}
 
 
@@ -417,7 +419,7 @@ namespace moe
 
 			Vector operator*(ValT val) const
 			{
-				return (m_vec * val);
+				return Vector(m_vec * val);
 			}
 
 			Vector& operator*=(ValT val)
@@ -428,7 +430,12 @@ namespace moe
 
 			Vector operator+(ValT val) const
 			{
-				return (m_vec + val);
+				return Vector(m_vec + val);
+			}
+
+			Vector operator+(const Vector& rhs) const
+			{
+				return Vector(m_vec + rhs.m_vec);
 			}
 
 			Vector& operator+=(ValT val)
@@ -437,9 +444,20 @@ namespace moe
 				return *this;
 			}
 
+			Vector& operator+=(const Vector& rhs)
+			{
+				m_vec += rhs.m_vec;
+				return *this;
+			}
+
 			Vector operator-(ValT val) const
 			{
-				return (m_vec - val);
+				return Vector(m_vec - val);
+			}
+
+			Vector operator-(const Vector& rhs) const
+			{
+				return Vector(m_vec - rhs.m_vec);
 			}
 
 			Vector& operator-=(ValT val)
@@ -448,9 +466,15 @@ namespace moe
 				return *this;
 			}
 
+			Vector& operator-=(const Vector& rhs)
+			{
+				m_vec -= rhs.m_vec;
+				return *this;
+			}
+
 			Vector operator/(ValT val) const
 			{
-				return (m_vec / val);
+				return Vector(m_vec / val);
 			}
 
 			Vector& operator/=(ValT val)
@@ -458,8 +482,6 @@ namespace moe
 				m_vec /= val;
 				return *this;
 			}
-
-
 
 
 		private:
@@ -470,4 +492,19 @@ namespace moe
 
 	template <size_t N, typename T>
 	using Vec = GLM::Vector<N, T>;
+}
+
+
+/**
+ * \brief Operator * to multiply a value by a vector (needed if the value comes first).
+ * \tparam NumT number of vector components
+ * \tparam ValT type of vector value
+ * \param val the value
+ * \param vec the vector
+ * \return the vector multiplied by the value
+ */
+template <unsigned NumT, typename ValT>
+moe::GLM::Vector<NumT, ValT> operator*(ValT val, const moe::GLM::Vector<NumT, ValT>& vec)
+{
+	return vec * val;
 }

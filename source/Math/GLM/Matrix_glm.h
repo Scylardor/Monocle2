@@ -224,6 +224,17 @@ namespace moe
 
 
 			/**
+			 * \brief Returns the translation part of the matrix. In GLM (column-major API), it's easy : it's the last column of the matrix.
+			 * \return A Vec3 containing the (x,y,z) translation of the matrix.
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] Vec<3, ValT>	GetTranslation() const
+			{
+				return Vec<3, ValT>(m_mat[3][0], m_mat[3][1], m_mat[3][2]);
+			}
+
+
+			/**
 			 * \brief Adds a rotation based on the provided vector for axis and angle to the current matrix transformation.
 			 * GLM builds right-handed rotations by default.
 			 * This function is NOT const : the matrix is affected.
@@ -294,6 +305,22 @@ namespace moe
 
 
 			/**
+			 * \brief Computes a lookat matrix transformation.
+			 * This function is NOT const : the matrix is affected.
+			 * \param cameraPosWorld A camera position in world space
+			 * \param lookatPointWorld A point to look at in world space
+			 * \param upWorld A reference up vector in world space
+			 * \return The matrix containing this lookat transformation.
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			Matrix&	LookAt(const Vec<3, ValT>& cameraPosWorld, const Vec<3, ValT>& lookatPointWorld, const Vec<3, ValT>& upWorld)
+			{
+				m_mat = Matrix(glm::lookAt(cameraPosWorld, lookatPointWorld, upWorld));
+				return *this;
+			}
+
+
+			/**
 			 * \brief Computes a translation matrix based on the provided translation vector.
 			 * A translation matrix will apply the translation to any Vec4 with a w != 0.
 			 * \param translation The translation vector of this matrix
@@ -330,7 +357,7 @@ namespace moe
 			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
 			[[nodiscard]] static Matrix Rotation(Degs<ValT> angle, const Vector<3, ValT>& axis)
 			{
-				return Matrix(glm::rotate((ValT)angle, axis.glmVector()));
+				return Matrix(glm::rotate((ValT)Rads<ValT>(angle), axis.glmVector()));
 			}
 
 
@@ -375,6 +402,20 @@ namespace moe
 			[[nodiscard]] static Matrix Scaling(ValT x, ValT y, ValT z)
 			{
 				return Matrix(glm::scale(glm::vec<3, ValT>(x, y, z)));
+			}
+
+
+			/**
+			 * \brief Computes a lookat matrix transformation.
+			 * \param cameraPosWorld A camera position in world space
+			 * \param lookatPointWorld A point to look at in world space
+			 * \param upWorld A reference up vector in world space
+			 * \return A 4x4 matrix of this lookat transformation.
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix	LookAtMatrix(const Vec<3, ValT>& cameraPosWorld, const Vec<3, ValT>& lookatPointWorld, const Vec<3, ValT>& upWorld)
+			{
+				return Matrix(glm::lookAt(cameraPosWorld.glmVector(), lookatPointWorld.glmVector(), upWorld.glmVector()));
 			}
 
 

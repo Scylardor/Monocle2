@@ -43,6 +43,22 @@ namespace moe
 			return *this;
 		}
 
+
+		Degs	operator*(T val)
+		{
+			return Degs(m_value * val);
+		}
+
+
+		/**
+		 * \brief Allows to write things like "-55_degf" without the compiler yelling because Degs constructor is explicit.
+		 * \return The same value, turned negative
+		 */
+		Degs	operator-()
+		{
+			return Degs(-m_value);
+		}
+
 	};
 
 
@@ -72,6 +88,16 @@ namespace moe
 		{
 			m_value = glm::radians((T)degs);
 			return *this;
+		}
+
+
+		/**
+		 * \brief Allows to write things like "-55_radf" without the compiler yelling because Rads constructor is explicit.
+		 * \return The same value, turned negative
+		 */
+		Rads	operator-()
+		{
+			return Rads(-m_value);
 		}
 	};
 
