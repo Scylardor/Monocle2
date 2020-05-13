@@ -8,6 +8,8 @@
 
 #include "Graphics/Renderer/Renderer.h"
 
+#include <utility> // std::pair
+
 namespace moe
 {
 	/*	Application is an abstract class meant to serve as a base for all our application types (Glfw, Sdl, Win32, etc.)
@@ -33,7 +35,15 @@ namespace moe
 
 	protected:
 
+		using InputKeyCallback = std::function<void()>;
+		using InputMouseMoveCallback = std::function<void (double, double)>;
+
 		virtual float	GetApplicationTimeSeconds() const = 0;
+
+		virtual void	SetInputKeyMapping(int key, int action, InputKeyCallback&& callback) = 0;
+		virtual void	SetInputMouseMoveMapping(InputMouseMoveCallback&& callback) = 0;
+
+		virtual std::pair<float, float>	GetMouseCursorPosition() = 0;
 
 		bool	SetInitialized(bool init)
 		{

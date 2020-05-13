@@ -37,6 +37,15 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 		MOE_ERROR(moe::ChanWindowing, "Failed to create GLFW window.");
 	}
 
+	/* TODO : parameterize that with the app descriptor */
+	glfwSetWindowUserPointer(m_window, this);
+
+	glfwSetKeyCallback(m_window, KeyCallback);
+
+	glfwSetCursorPosCallback(m_window, MouseMoveCallback);
+
+	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	return m_window;
 }
 
@@ -60,6 +69,31 @@ bool moe::BaseGlfwApplication::WindowIsOpened() const
 float moe::BaseGlfwApplication::GetApplicationTimeSeconds() const
 {
 	return (float)glfwGetTime();
+}
+
+
+std::pair<float, float> moe::BaseGlfwApplication::GetMouseCursorPosition()
+{
+	double xpos, ypos;
+	glfwGetCursorPos(m_window, &xpos, &ypos);
+
+	return {(float)xpos, (float)ypos};
+}
+
+
+void moe::BaseGlfwApplication::KeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+{
+	BaseGlfwApplication* me = static_cast<BaseGlfwApplication*>(glfwGetWindowUserPointer(window));
+
+	me->m_inputMgr.CallKeyboardInputCallback(key, action);
+}
+
+
+void moe::BaseGlfwApplication::MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	BaseGlfwApplication* me = static_cast<BaseGlfwApplication*>(glfwGetWindowUserPointer(window));
+
+	me->m_inputMgr.CallMouseMoveCallbacks(xpos, ypos);
 }
 
 

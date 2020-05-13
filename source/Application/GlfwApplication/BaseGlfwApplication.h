@@ -4,6 +4,10 @@
 
 #ifdef MOE_GLFW
 
+#include <functional>
+
+#include "Core/Containers/HashMap/HashMap.h"
+
 #include "Monocle_Application_Export.h"
 
 #include "Application/Application.h"
@@ -11,16 +15,73 @@
 #include "Application/AppDescriptor/AppDescriptor.h"
 
 
+
 struct GLFWwindow;
 
 namespace moe
 {
+
 	/**
 	 * \brief Base class used for all generic GLFW operations (window creation, etc.).
 	 * Specific graphics API logic (OpenGL, Vulkan) is to be done in child classes.
 	*/
 	class BaseGlfwApplication : public Application
 	{
+
+		class InputManager
+		{
+		public:
+			using KeyMapping = std::unordered_map<int, InputKeyCallback>;
+
+			void	SetKeyBinding(int key, int action, InputKeyCallback&& callback)
+			{
+				auto actionMappingsIt = m_actionBindings.Find(action);
+				if (actionMappingsIt == m_actionBindings.End())
+				{
+					std::unordered_map<int, Application::InputKeyCallback> newMap{ {key, std::move(callback) }};
+
+					m_actionBindings.Insert({action, std::move(newMap)} );
+				}
+				else
+				{
+					// Do not use insert as it would not replace an already existing mapping; use operator[] here
+					actionMappingsIt->second[key] = std::move(callback);
+				}
+			}
+
+
+			void	SetMouseMoveBinding(InputMouseMoveCallback&& callback)
+			{
+				m_mouseMoveBindings.PushBack(std::move(callback));
+			}
+
+
+			void	CallKeyboardInputCallback(int key, int action)
+			{
+				auto actionMapsIt = m_actionBindings.Find(action);
+				if (actionMapsIt != m_actionBindings.End())
+				{
+					auto callbackIt = actionMapsIt->second.find(key);
+					if (callbackIt != actionMapsIt->second.end())
+						callbackIt->second();
+				}
+			}
+
+
+			void	CallMouseMoveCallbacks(double xpos, double ypos)
+			{
+				for (InputMouseMoveCallback& mmCallback : m_mouseMoveBindings)
+				{
+					mmCallback(xpos, ypos);
+				}
+			}
+
+
+		private:
+			HashMap<int, KeyMapping>		m_actionBindings;
+			Vector<InputMouseMoveCallback>	m_mouseMoveBindings;
+		};
+
 	public:
 		Monocle_Application_API BaseGlfwApplication();
 		Monocle_Application_API virtual ~BaseGlfwApplication();
@@ -44,7 +105,6 @@ namespace moe
 			return m_window;
 		}
 
-
 		Monocle_Application_API void	PollInputEvents();
 
 		Monocle_Application_API void	SwapBuffers();
@@ -52,6 +112,22 @@ namespace moe
 		Monocle_Application_API bool	WindowIsOpened() const;
 
 		Monocle_Application_API float	GetApplicationTimeSeconds() const override;
+
+		void	SetInputKeyMapping(int key, int action, InputKeyCallback&& callback) override
+		{
+			m_inputMgr.SetKeyBinding(key, action, std::move(callback));
+		}
+
+		void	SetInputMouseMoveMapping(InputMouseMoveCallback&& callback) override
+		{
+			m_inputMgr.SetMouseMoveBinding(std::move(callback));
+		}
+
+		Monocle_Application_API	std::pair<float, float> GetMouseCursorPosition() override;
+
+		static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+		static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
+
 
 	private:
 
@@ -61,6 +137,8 @@ namespace moe
 		GLFWwindow* m_window = nullptr;
 
 		AppDescriptor	m_description;
+
+		InputManager	m_inputMgr;
 	};
 }
 
