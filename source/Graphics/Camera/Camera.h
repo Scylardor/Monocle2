@@ -148,11 +148,18 @@ namespace moe
 
 
 		[[nodiscard]] const Vec3&	GetFrontVector() const	{ return m_cameraFront; }
-
-		void	SetCameraFront(const Vec3& newFront) { m_cameraFront = newFront; }
+		void	SetFrontVector(const Vec3& newFront) { m_cameraFront = newFront; }
 
 		[[nodiscard]] const Vec3&	GetUpVector() const		{ return m_cameraUp; }
+		void	SetUpVector(const Vec3& newUp) { m_cameraUp = newUp; }
 
+		[[nodiscard]] const Vec3&	GetRightVector() const { return m_cameraRight; }
+		void	SetRightVector(const Vec3& newRight) { m_cameraRight = newRight; }
+
+		float	GetYaw() const { return m_yaw; }
+		float	GetPitch() const { return m_pitch; }
+
+		Monocle_Graphics_API void	UpdateCameraVectors(float pitch, float yaw);
 
 	protected:
 
@@ -171,8 +178,10 @@ namespace moe
 		CameraProjection	m_projectionType{ CameraProjection::Perspective };
 
 		Vec3	m_cameraFront{0, 0, -1};
+		Vec3	m_cameraRight{ 1, 0, 0 };
 		Vec3	m_cameraUp{ 0, 1, 0 };
-
+		float	m_yaw = 0.f;
+		float	m_pitch = 0.f;
 	};
 
 

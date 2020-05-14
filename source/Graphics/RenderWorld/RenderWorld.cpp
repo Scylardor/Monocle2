@@ -82,8 +82,8 @@ namespace moe
 
 	Camera* RenderWorld::CreateCamera(const OrthographicCameraDesc& orthoDesc, ViewportHandle vpHandle)
 	{
-		auto cameraGpuHandle = m_renderer.CreateUniformBufferFrom(CameraGpuData());
-		GraphicObjectData newCamData{cameraGpuHandle, sizeof(CameraGpuData)};
+		auto cameraGpuHandle = m_renderer.CreateUniformBufferFrom(CameraMatrices());
+		GraphicObjectData newCamData{cameraGpuHandle, sizeof(CameraMatrices)};
 
 		auto cameraID = m_cameraManager.AddCamera(this, newCamData, vpHandle, orthoDesc);
 
@@ -98,8 +98,8 @@ namespace moe
 
 	Camera* RenderWorld::CreateCamera(const PerspectiveCameraDesc& perspDesc, ViewportHandle vpHandle)
 	{
-		auto cameraGpuHandle = m_renderer.CreateUniformBufferFrom(CameraGpuData());
-		GraphicObjectData newCamData{ cameraGpuHandle, sizeof(CameraGpuData) };
+		auto cameraGpuHandle = m_renderer.CreateUniformBufferFrom(CameraMatrices());
+		GraphicObjectData newCamData{ cameraGpuHandle, sizeof(CameraMatrices) };
 
 		auto cameraID = m_cameraManager.AddCamera(this, newCamData, vpHandle, perspDesc);
 
@@ -127,8 +127,8 @@ namespace moe
 		// Then update the camera GPU data if it has changed since last frame
 		if (false == cameraToUse->IsTransformUpToDate())
 		{
-			const CameraGpuData& newCamData = cameraToUse->GetCameraGpuData();
-			m_renderer.MutGraphicsDevice().UpdateBuffer(cameraToUse->GetCameraGpuHandle(), (const void*)&newCamData, sizeof(CameraGpuData));
+			const CameraMatrices& newCamData = cameraToUse->GetCameraMatrices();
+			m_renderer.MutGraphicsDevice().UpdateBuffer(cameraToUse->GetCameraGpuHandle(), (const void*)&newCamData, sizeof(CameraMatrices));
 			cameraToUse->SetTransformUpToDate();
 		}
 

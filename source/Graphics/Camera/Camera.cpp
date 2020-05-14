@@ -138,6 +138,34 @@ namespace moe
 	}
 
 
+	void Camera::UpdateCameraVectors(float pitch, float yaw)
+	{
+		m_pitch = pitch;
+		m_yaw = yaw;
+
+		if (m_pitch > 89.0f)
+			m_pitch = 89.0f;
+		if (m_pitch < -89.0f)
+			m_pitch = -89.0f;
+
+		const Rads_f yawRads{ Degs_f(m_yaw) };
+		const Rads_f pitchRads{ Degs_f(m_pitch) };
+
+		// Calculate the new Front vector
+		m_cameraFront = Vec3{
+			cosf(yawRads) * cosf(pitchRads),
+			sinf(pitchRads),
+			sinf(yawRads) * cosf(pitchRads)
+		}.GetNormalized();
+
+		// Also re-calculate the Right and Up vector
+		// Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		const Vec3 worldUp{0, 1, 0};
+		m_cameraRight = m_cameraFront.Cross(worldUp).GetNormalized();
+		m_cameraUp = m_cameraRight.Cross(m_cameraFront).GetNormalized();
+	}
+
+
 	void Camera::RecomputeViewMatrices()
 	{
 		m_matrices.m_view = m_transform.Matrix().GetInverse();
