@@ -37,11 +37,15 @@ namespace moe
 
 		using InputKeyCallback = std::function<void()>;
 		using InputMouseMoveCallback = std::function<void (double, double)>;
+		using InputMouseScrollCallback = std::function<void(double, double)>;
+
 
 		virtual float	GetApplicationTimeSeconds() const = 0;
 
 		virtual void	SetInputKeyMapping(int key, int action, InputKeyCallback&& callback) = 0;
 		virtual void	SetInputMouseMoveMapping(InputMouseMoveCallback&& callback) = 0;
+		virtual void	SetInputMouseScrollMapping(InputMouseScrollCallback&& callback) = 0;
+
 
 		virtual std::pair<float, float>	GetMouseCursorPosition() = 0;
 

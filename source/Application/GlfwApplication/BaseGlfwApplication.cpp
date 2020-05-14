@@ -44,6 +44,8 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 
 	glfwSetCursorPosCallback(m_window, MouseMoveCallback);
 
+	glfwSetScrollCallback(m_window, MouseScrollCallback);
+
 	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	return m_window;
@@ -95,6 +97,15 @@ void moe::BaseGlfwApplication::MouseMoveCallback(GLFWwindow* window, double xpos
 
 	me->m_inputMgr.CallMouseMoveCallbacks(xpos, ypos);
 }
+
+
+void moe::BaseGlfwApplication::MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	BaseGlfwApplication* me = static_cast<BaseGlfwApplication*>(glfwGetWindowUserPointer(window));
+
+	me->m_inputMgr.CallMouseScrollCallbacks(xoffset, yoffset);
+}
+
 
 
 #endif // MOE_GLFW

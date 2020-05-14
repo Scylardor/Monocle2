@@ -56,6 +56,12 @@ namespace moe
 			}
 
 
+			void	SetMouseScrollBinding(InputMouseScrollCallback&& callback)
+			{
+				m_mouseScrollBindings.PushBack(std::move(callback));
+			}
+
+
 			void	CallKeyboardInputCallback(int key, int action)
 			{
 				auto actionMapsIt = m_actionBindings.Find(action);
@@ -77,9 +83,18 @@ namespace moe
 			}
 
 
+			void	CallMouseScrollCallbacks(double xoffset, double yoffset)
+			{
+				for (InputMouseScrollCallback& mmCallback : m_mouseScrollBindings)
+				{
+					mmCallback(xoffset, yoffset);
+				}
+			}
+
 		private:
-			HashMap<int, KeyMapping>		m_actionBindings;
-			Vector<InputMouseMoveCallback>	m_mouseMoveBindings;
+			HashMap<int, KeyMapping>			m_actionBindings;
+			Vector<InputMouseMoveCallback>		m_mouseMoveBindings;
+			Vector<InputMouseScrollCallback>	m_mouseScrollBindings;
 		};
 
 	public:
@@ -123,10 +138,17 @@ namespace moe
 			m_inputMgr.SetMouseMoveBinding(std::move(callback));
 		}
 
+		void	SetInputMouseScrollMapping(InputMouseScrollCallback&& callback) override
+		{
+			m_inputMgr.SetMouseScrollBinding(std::move(callback));
+		}
+
+
 		Monocle_Application_API	std::pair<float, float> GetMouseCursorPosition() override;
 
 		static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
+		static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 
 	private:
