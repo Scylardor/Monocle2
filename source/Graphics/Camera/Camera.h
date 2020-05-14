@@ -95,7 +95,10 @@ namespace moe
 		void	SetOrthographic(const OrthographicCameraDesc& orthoDesc);
 		void	SetPerspective(const PerspectiveCameraDesc& perspecDesc);
 
-		void	SetFoVY(Degs_f newFovY);
+		Monocle_Graphics_API [[nodiscard]] Degs_f	GetFovY() const;
+		Monocle_Graphics_API void					SetFoVY(Degs_f newFovY);
+		Monocle_Graphics_API void					AddFoVY(Degs_f addedFovY) { SetFoVY(Degs_f(m_cameraData.m_perspective.m_fovY + addedFovY)); }
+
 		void	SetAspectRatio(float newAspect);
 
 		void	SetNear(float zNear);
@@ -180,8 +183,13 @@ namespace moe
 		Vec3	m_cameraFront{0, 0, -1};
 		Vec3	m_cameraRight{ 1, 0, 0 };
 		Vec3	m_cameraUp{ 0, 1, 0 };
-		float	m_yaw = 0.f;
-		float	m_pitch = 0.f;
+		Degs_f	m_yaw{0.f};
+		Degs_f	m_pitch{0.f};
+		Degs_f	m_pitchThreshold{89.f};
+
+		/* Threshold values for Perspective camera type */
+		Degs_f	m_minFoVY{1.f};
+		Degs_f	m_maxFoVY{45.f};
 	};
 
 

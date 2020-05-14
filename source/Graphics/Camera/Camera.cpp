@@ -23,8 +23,25 @@ namespace moe
 	}
 
 
+	Degs_f Camera::GetFovY() const
+	{
+		// It makes no sense querying the vertical FOV of a camera other than perspective ! There might be a logic error somewhere !
+		MOE_DEBUG_ASSERT(m_projectionType == CameraProjection::Perspective);
+
+		return m_cameraData.m_perspective.m_fovY;
+	}
+
+
 	void Camera::SetFoVY(Degs_f newFovY)
 	{
+
+		if (newFovY < m_minFoVY)
+			newFovY = m_minFoVY;
+		else if (newFovY > m_maxFoVY)
+		{
+			newFovY = m_maxFoVY;
+		}
+
 		m_projectionType = CameraProjection::Perspective;
 		m_cameraData.m_perspective.m_fovY = newFovY;
 		// Fov has changed - recompute proj matrix
@@ -140,16 +157,17 @@ namespace moe
 
 	void Camera::UpdateCameraVectors(float pitch, float yaw)
 	{
-		m_pitch = pitch;
-		m_yaw = yaw;
+		m_pitch = Degs_f(pitch);
 
-		if (m_pitch > 89.0f)
-			m_pitch = 89.0f;
-		if (m_pitch < -89.0f)
-			m_pitch = -89.0f;
+		if (m_pitch > m_pitchThreshold)
+			m_pitch = m_pitchThreshold;
+		if (m_pitch < -m_pitchThreshold)
+			m_pitch = -m_pitchThreshold;
 
-		const Rads_f yawRads{ Degs_f(m_yaw) };
-		const Rads_f pitchRads{ Degs_f(m_pitch) };
+		m_yaw = Degs_f(yaw);
+
+		const Rads_f yawRads{ m_yaw };
+		const Rads_f pitchRads{ m_pitch };
 
 		// Calculate the new Front vector
 		m_cameraFront = Vec3{
