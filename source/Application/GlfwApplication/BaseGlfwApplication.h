@@ -31,6 +31,7 @@ namespace moe
 		class InputManager
 		{
 		public:
+
 			using KeyMapping = std::unordered_map<int, InputKeyCallback>;
 
 			void	SetKeyBinding(int key, int action, InputKeyCallback&& callback)
@@ -95,6 +96,7 @@ namespace moe
 			HashMap<int, KeyMapping>			m_actionBindings;
 			Vector<InputMouseMoveCallback>		m_mouseMoveBindings;
 			Vector<InputMouseScrollCallback>	m_mouseScrollBindings;
+
 		};
 
 	public:

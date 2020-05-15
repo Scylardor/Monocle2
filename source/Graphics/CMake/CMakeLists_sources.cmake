@@ -81,6 +81,10 @@ set(Monocle_Graphics_SOURCES
 ./Resources/ResourceSet/ResourceSetHandle.h
 ./Resources/shaders/OpenGL/basic.frag
 ./Resources/shaders/OpenGL/basic.vert
+./Resources/shaders/OpenGL/light.frag
+./Resources/shaders/OpenGL/light.vert
+./Resources/shaders/OpenGL/phong.frag
+./Resources/shaders/OpenGL/phong.vert
 ./SceneGraph/SceneGraph.cpp
 ./SceneGraph/SceneGraph.h
 ./SceneGraph/SceneGraphHandle.h

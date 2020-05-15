@@ -308,6 +308,7 @@ namespace moe
 			return;
 		}
 
+
 		auto[vbo, vboOffset] = DecodeBufferHandle(vtxBufHandle);
 
 		if (vtxLayout->IsInterleaved())

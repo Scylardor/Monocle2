@@ -4,6 +4,12 @@
 
 #include "Core/Misc/Types.h"
 
+/* TODO : Make a generic Vector header... */
+#include "Math/Vec2.h"
+#include "Math/Vec3.h"
+#include "Math/Vec4.h"
+
+
 #include "Monocle_Graphics_Export.h"
 
 
@@ -41,9 +47,9 @@ namespace moe
 	{
 		static_assert(NumChannels > 0 && NumChannels <= 4, "unsupported number of color channels");
 
-		Color(Val value) :
-		Rgba{value}
+		Color(Val value)
 		{
+			std::fill_n(Rgba, NumChannels, value); // array name, size, value
 			Normalize();
 		}
 
@@ -89,6 +95,17 @@ namespace moe
 
 		template<typename = std::enable_if_t<NumChannels == 4>>
 		[[nodiscard]] Val	A() const { return Rgba[3]; }
+
+
+
+		/**
+		 * \brief Convenience function to convert the color to a math vector.
+		 * \return A math vector containing the color values
+		 */
+		[[nodiscard]] Vec<NumChannels, Val>	ToVec() const
+		{
+			return Vec<NumChannels, Val>(Rgba);
+		}
 
 
 		static	Color	Red()

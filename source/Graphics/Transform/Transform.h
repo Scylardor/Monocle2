@@ -41,6 +41,11 @@ namespace moe
 			return Transform(Mat4::Translation(translate));
 		}
 
+		[[nodiscard]] static Transform	Scale(const Vec3 & scale)
+		{
+			return Transform(Mat4::Scaling(scale));
+		}
+
 
 		[[nodiscard]] static Transform	Identity()
 		{
