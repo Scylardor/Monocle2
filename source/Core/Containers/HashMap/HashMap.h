@@ -51,6 +51,8 @@ namespace moe
 
 		void	Clear() { m_hashmap.clear(); }
 
+		void	Reserve(SizeType size) { m_hashmap.reserve(size); }
+
 
 		Iterator		Find(const Key& k)			{ return m_hashmap.find(k); }
 		ConstIterator	Find(const Key& k) const	{ return m_hashmap.find(k); }

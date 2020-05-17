@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp> // value_ptr
 #include <glm/mat4x4.hpp> // glm::mat
 #include <glm/gtx/transform.hpp> // identity, translate, rotate, scale...
+#include <glm/gtc/matrix_inverse.hpp>
 
 namespace moe
 {
@@ -132,6 +133,37 @@ namespace moe
 					return Matrix(m_mat);
 
 				return Matrix(glm::inverse(m_mat));
+			}
+
+
+			/**
+			 * \brief Computes the inverse transpose of the matrix.
+			 * \return The transpose of the inverse of that matrix
+			 */
+			template<typename = std::enable_if_t<ColsT == RowsT>>
+			[[nodiscard]] Matrix	GetInverseTransposed() const
+			{
+				if (*this == Identity())
+					return Matrix(m_mat);
+
+				return Matrix(glm::inverseTranspose(m_mat));
+			}
+
+
+			/**
+			 * \brief Computes the inverse transpose of the matrix.
+			 * This function is NOT const : the matrix is affected.
+			 * For const version, use GetInverseTransposed.
+			 * \return The transpose of the inverse of that matrix
+			 */
+			template<typename = std::enable_if_t<ColsT == RowsT>>
+			[[nodiscard]] Matrix	InvertTranspose() const
+			{
+				if (*this == Identity())
+					return *this;
+
+				m_mat = glm::inverseTranspose(m_mat);
+				return *this;
 			}
 
 
