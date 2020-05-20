@@ -88,7 +88,8 @@ namespace moe
 				const uint32_t levelBlockIdx = GetLevelIndexFromUniqueIdx(iLvl, splitBlockUniqueIdx);
 				FlipBlockBuddyBit(iLvl, levelBlockIdx);
 
-				if (splitBlockUniqueIdx != 0) // "root" block is the only one with no buddy
+				// "root" block is the only one with no buddy. Plus, only odd numbered blocks should set their buddy free, to avoid setting the buddy of someone else free!
+				if (splitBlockUniqueIdx != 0 && (splitBlockUniqueIdx & 1))
 				{
 					AddFreeBlock(splitBlockUniqueIdx + 1); // mark the buddy of the block we just split as a free block
 				}
