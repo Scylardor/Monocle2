@@ -422,6 +422,11 @@ namespace moe
 				return Vector(m_vec * val);
 			}
 
+			Vector operator*(const Vector<NumT, ValT>& rhs) const
+			{
+				return Vector(m_vec * rhs.m_vec);
+			}
+
 			Vector& operator*=(ValT val)
 			{
 				m_vec *= val;

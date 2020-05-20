@@ -91,6 +91,12 @@ namespace moe
 		Monocle_Graphics_API Camera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc, const Transform& transf = Transform::Identity());
 		Monocle_Graphics_API Camera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc, const Transform& transf = Transform::Identity());
 
+		Monocle_Graphics_API Camera(class CameraSystem* parentSystem, ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc, CameraMatrices* matricesMem);
+
+		Monocle_Graphics_API Camera(CameraSystem* parentSystem, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc, CameraMatrices* matricesMem);
+
+		Monocle_Graphics_API Camera(CameraSystem* parentSystem, ViewportHandle vpHandle, const CameraData& camData, CameraProjection projType, CameraMatrices* matricesMem);
+
 
 		void	SetOrthographic(const OrthographicCameraDesc& orthoDesc);
 		void	SetPerspective(const PerspectiveCameraDesc& perspecDesc);
@@ -164,6 +170,10 @@ namespace moe
 
 		Monocle_Graphics_API void	UpdateCameraVectors(float pitch, float yaw);
 
+
+		void		SetCameraIndex(uint32_t cameraIndex)	{ m_camIndex = cameraIndex; };
+		uint32_t	GetCameraIndex() const					{ return m_camIndex; }
+
 	protected:
 
 		/* TODO: code smell: camera matrices meant for GPU usage should not be recomputed on each transform update... */
@@ -172,7 +182,12 @@ namespace moe
 		void	ComputeProjectionMatrices();
 
 	private:
+		CameraSystem*	m_parentSystem = nullptr;
+
+		uint32_t	m_camIndex = 0;
+
 		CameraMatrices	m_matrices;
+		CameraMatrices*	m_matricesDataPtr = nullptr;
 
 		CameraData	m_cameraData;
 

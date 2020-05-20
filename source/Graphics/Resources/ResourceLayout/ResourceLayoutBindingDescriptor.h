@@ -20,7 +20,19 @@ namespace moe
 	 */
 	struct ResourceLayoutBindingDescriptor
 	{
+		ResourceLayoutBindingDescriptor() = default;
+
+		/* TODO: remove this one */
+		ResourceLayoutBindingDescriptor(std::string name, ResourceKind kind, ShaderStage stage) :
+			m_name(std::move(name)), m_kind(kind), m_stageBits(stage)
+		{}
+
+		ResourceLayoutBindingDescriptor(std::string name, uint16_t bindingPoint, ResourceKind kind, ShaderStage stage) :
+			m_name(std::move(name)), m_bindingPoint(bindingPoint), m_kind(kind), m_stageBits(stage)
+		{}
+
 		std::string		m_name{""};	// The name of this resource as referenced in the shaders.
+		std::uint16_t	m_bindingPoint{0};
 		ResourceKind	m_kind;			// The type of this resource (buffer, texture, etc.)
 		ShaderStage		m_stageBits;	// Stages this binding descriptor will be used in. This can be OR'ed to indicate multiple stages.
 	};

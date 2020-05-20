@@ -30,6 +30,52 @@ namespace moe
 	}
 
 
+	void AbstractRenderer::UseResourceSet(const ResourceSetHandle rscSetHandle)
+	{
+		if (rscSetHandle.IsNull())
+			return;
+
+		IGraphicsDevice& device = MutGraphicsDevice();
+
+		const auto& rscSetDesc = device.GetResourceSetDescriptor(rscSetHandle);
+
+		const auto& rscLayoutDesc = device.GetResourceLayoutDescriptor(rscSetDesc.GetResourceLayoutHandle());
+
+		int iBlockBinding = 0;
+		int	iTexUnit = 0;
+
+		for (const ResourceLayoutBindingDescriptor& rscBindingDesc : rscLayoutDesc)
+		{
+			switch (rscBindingDesc.m_kind)
+			{
+			case ResourceKind::UniformBuffer:
+			{
+				DeviceBufferHandle ubHandle = rscSetDesc.Get<DeviceBufferHandle>(iBlockBinding);
+				device.BindUniformBlock(rscBindingDesc.m_bindingPoint, ubHandle);
+				iBlockBinding++;
+			}
+			break;
+			case ResourceKind::TextureReadOnly:
+			{
+				Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iTexUnit);
+				device.BindTextureUnit(rscBindingDesc.m_bindingPoint, tex2DHandle);
+				iTexUnit++;
+			}
+
+			break;
+			case ResourceKind::Sampler:
+
+				break;
+			default:
+				MOE_ASSERT(false);
+				MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");
+			}
+
+			iBlockBinding++;
+		}
+	}
+
+
 	std::optional<ShaderProgramDescriptor> AbstractRenderer::BuildProgramDescriptorFromFileList(const ShaderFileList& fileList)
 	{
 		ShaderProgramDescriptor programDesc(fileList.Size());

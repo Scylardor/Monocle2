@@ -50,6 +50,22 @@ namespace moe
 	}
 
 
+	void OpenGLGraphicsDevice::UpdateUniformBlockVariable(ShaderProgramHandle programHandle,
+		DeviceBufferHandle targetBlockBuffer, const std::string& variableName, const void* data, size_t dataSizeBytes)
+	{
+		const OpenGLShaderProgram* program = m_shaderManager.GetProgram(programHandle);
+		if (!MOE_ASSERT(program != nullptr))
+		{
+			// TODO: log error...
+			return;
+		}
+
+		int variableOffset = program->GetBlockMemberOffset(variableName);
+
+		UpdateUniformBuffer(targetBlockBuffer, data, dataSizeBytes, variableOffset);
+	}
+
+
 	GLuint OpenGLGraphicsDevice::UseShaderProgram(ShaderProgramHandle programHandle)
 	{
 		GLuint programID = GetShaderProgramID(programHandle);
@@ -634,6 +650,26 @@ namespace moe
 	}
 
 
+	void OpenGLGraphicsDevice::BindUniformBlock(unsigned int uniformBlockBinding, DeviceBufferHandle ubHandle, uint32_t bufferSize, uint32_t relativeOffset)
+	{
+		// First retrieve the size of our uniform buffer or early exit...
+		if (bufferSize == 0)
+		{
+			auto sizeIt = m_uniformBufferSizes.Find(ubHandle);
+			if (!MOE_ASSERT(sizeIt != m_uniformBufferSizes.End()))
+			{
+				return;
+			}
+
+			bufferSize = sizeIt->second;
+		}
+
+		auto[ubo, uboOffset] = DecodeBufferHandle(ubHandle);
+
+		glBindBufferRange(GL_UNIFORM_BUFFER, uniformBlockBinding, ubo, uboOffset + relativeOffset, bufferSize);
+	}
+
+
 	void OpenGLGraphicsDevice::UpdateUniformBuffer(DeviceBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset)
 	{
 		auto[ubo, uboOffset] = DecodeBufferHandle(ubHandle);
@@ -646,6 +682,12 @@ namespace moe
 	{
 		glBindTextureUnit(textureUnitIndex, texHandle.Get());
 		glProgramUniform1i(shaderProgramID, glGetUniformLocation(shaderProgramID, uniformName), textureUnitIndex);
+	}
+
+
+	void OpenGLGraphicsDevice::BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)
+	{
+		glBindTextureUnit(textureBindingPoint, texHandle.Get());
 	}
 
 

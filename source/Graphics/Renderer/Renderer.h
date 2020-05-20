@@ -116,6 +116,15 @@ namespace moe
 		[[nodiscard]] virtual ResourceSetHandle		CreateResourceSet(const ResourceSetDescriptor& desc) = 0;
 
 
+
+		/**
+		 * \brief Will bind all resources (uniform buffers, texture units and samplers) contained in the referenced resource set.
+		 * \param rscSetHandle
+		 */
+		virtual void		UseResourceSet(const ResourceSetHandle rscSetHandle) = 0;
+
+
+
 		[[nodiscard]] virtual const IGraphicsDevice&	GetGraphicsDevice() const = 0;
 
 
@@ -138,6 +147,10 @@ namespace moe
 		virtual void	UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle) = 0;
 
 		virtual void	UseMaterial(Material* material) = 0;
+
+		virtual void	UseMaterialInstance(class MaterialInstance* material) = 0;
+
+
 		virtual void	UseMaterialPerObject(Material* material, AGraphicObject& object) = 0;
 
 

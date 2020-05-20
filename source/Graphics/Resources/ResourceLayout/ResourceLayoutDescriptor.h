@@ -44,6 +44,22 @@ namespace moe
 			m_bindings(il) {}
 
 
+		ResourceLayoutDescriptor(size_t reserved)
+		{
+			m_bindings.Reserve(reserved);
+		}
+
+		void	Push(ResourceLayoutBindingDescriptor desc)
+		{
+			m_bindings.PushBack(std::move(desc));
+		}
+
+		template <typename... Args>
+		void	Emplace(Args&&... args)
+		{
+			m_bindings.EmplaceBack(std::forward<Args>(args)...);
+		}
+
 
 		//C++11 range for interface implementation
 		ResourceBindingVector::Iterator	begin()
@@ -67,6 +83,9 @@ namespace moe
 		{
 			return m_bindings.End();
 		}
+
+		ResourceBindingVector::SizeType	NumBindings() const { return m_bindings.Size(); }
+
 
 	private:
 		ResourceBindingVector	m_bindings;

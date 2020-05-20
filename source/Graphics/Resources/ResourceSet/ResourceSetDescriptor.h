@@ -21,6 +21,13 @@ namespace moe
 		using ResourceHandleVector = Vector<ResourceHandle>;
 		template <std::size_t N> using ResourceHandleArray = Array<ResourceHandle, N>;
 
+		ResourceSetDescriptor() = default;
+
+		ResourceSetDescriptor(ResourceLayoutHandle layoutHandle, std::size_t reserve) :
+			m_boundLayout(layoutHandle)
+		{
+			m_rscHandles.Reserve(reserve);
+		}
 
 		ResourceSetDescriptor(ResourceLayoutHandle layoutHandle, ResourceHandleVector rscHandlesVec) :
 			m_boundLayout(layoutHandle), m_rscHandles(std::move(rscHandlesVec))
@@ -75,6 +82,14 @@ namespace moe
 			MOE_ASSERT(rscIndex < m_rscHandles.Size());
 			return m_rscHandles[rscIndex].Get<T>();
 		}
+
+
+		template <typename... Args>
+		void	Emplace(Args&&... args)
+		{
+			m_rscHandles.EmplaceBack(std::forward<Args>(args)...);
+		}
+
 
 	private:
 		ResourceLayoutHandle	m_boundLayout{0};

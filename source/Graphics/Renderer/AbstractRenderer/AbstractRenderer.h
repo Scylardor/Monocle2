@@ -44,6 +44,10 @@ namespace moe
 		}
 
 
+		Monocle_Graphics_API void	UseResourceSet(const ResourceSetHandle rscSetHandle) override;
+
+
+
 	protected:
 		[[nodiscard]] virtual const IGraphicsDevice&	GetDevice() const = 0;
 		[[nodiscard]] virtual IGraphicsDevice&			MutDevice() = 0;

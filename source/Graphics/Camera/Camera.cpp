@@ -2,6 +2,8 @@
 
 #include "Camera.h"
 
+#include "CameraSystem.h"
+
 namespace moe
 {
 	Camera::Camera(RenderWorld* world, const GraphicObjectData& data, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc, const Transform& transf) :
@@ -18,6 +20,43 @@ namespace moe
 		m_cameraData(perspecDesc),
 		m_viewportHandle(vpHandle),
 		m_projectionType{ CameraProjection::Perspective }
+	{
+		ComputeProjectionMatrices();
+	}
+
+
+	Camera::Camera(CameraSystem* parentSystem, ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc, CameraMatrices* matricesMem) :
+		AGraphicObject(nullptr, GraphicObjectData()),
+		m_parentSystem(parentSystem),
+		m_cameraData(perspecDesc),
+		m_viewportHandle(vpHandle),
+		m_projectionType{ CameraProjection::Perspective },
+		m_matricesDataPtr(matricesMem)
+
+	{
+		ComputeProjectionMatrices();
+	}
+
+
+	Camera::Camera(CameraSystem* parentSystem, ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc, CameraMatrices* matricesMem) :
+		AGraphicObject(nullptr, GraphicObjectData()),
+		m_parentSystem(parentSystem),
+		m_cameraData(orthoDesc),
+		m_viewportHandle(vpHandle),
+		m_projectionType{ CameraProjection::Orthographic },
+		m_matricesDataPtr(matricesMem)
+	{
+		ComputeProjectionMatrices();
+	}
+
+
+	Camera::Camera(CameraSystem* parentSystem, ViewportHandle vpHandle, const CameraData& camData, CameraProjection projType, CameraMatrices* matricesMem) :
+		AGraphicObject(nullptr, GraphicObjectData()),
+		m_parentSystem(parentSystem),
+		m_cameraData(camData),
+		m_viewportHandle(vpHandle),
+		m_projectionType{ projType },
+		m_matricesDataPtr(matricesMem)
 	{
 		ComputeProjectionMatrices();
 	}
@@ -189,7 +228,12 @@ namespace moe
 		m_matrices.m_view = m_transform.Matrix().GetInverse();
 		m_matrices.m_viewProj = m_matrices.m_proj * m_matrices.m_view;
 
-		m_transformIsUpToDate = false;
+		m_matricesDataPtr->m_view = m_matrices.m_view; // TODO : cleanup
+
+		m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
+
+		if (m_parentSystem)
+			m_parentSystem->FlagUpdateNeeded();
 	}
 
 
@@ -202,11 +246,15 @@ namespace moe
 				m_cameraData.m_ortho.m_left, m_cameraData.m_ortho.m_right,
 				m_cameraData.m_ortho.m_bottom, m_cameraData.m_ortho.m_top,
 				m_cameraData.m_ortho.m_near, m_cameraData.m_ortho.m_far);
+
+			m_matricesDataPtr->m_proj = m_matrices.m_proj; // TODO : cleanup
 			break;
 		case CameraProjection::Perspective:
 			m_matrices.m_proj = Mat4::Perspective(
 				Rads_f(m_cameraData.m_perspective.m_fovY), m_cameraData.m_perspective.m_aspectRatio,
 				m_cameraData.m_perspective.m_near, m_cameraData.m_perspective.m_far);
+
+			m_matricesDataPtr->m_proj = m_matrices.m_proj; // TODO : cleanup
 			break;
 		default:
 			MOE_ASSERT(false);
@@ -216,5 +264,10 @@ namespace moe
 
 		// Projection matrix has changed : recompute view proj matrix too
 		m_matrices.m_viewProj = m_matrices.m_proj * m_matrices.m_view;
+
+		m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
+
+		if (m_parentSystem)
+			m_parentSystem->FlagUpdateNeeded();
 	}
 }

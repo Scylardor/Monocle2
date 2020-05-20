@@ -6,8 +6,7 @@
 
 #include <glad/glad.h>
 
-#include "Graphics/VertexLayout/OpenGL/OpenGLVertexFormat.h"
-
+#include "Graphics/Material/MaterialInstance.h"
 
 namespace moe
 {
@@ -35,7 +34,7 @@ namespace moe
 
 		/* TODO: remove !! */
 		glEnable(GL_DEPTH_TEST);
-
+		glEnable(GL_CULL_FACE);
 
 		return true;
 	}
@@ -228,7 +227,7 @@ namespace moe
 				break;
 				case ResourceKind::TextureReadOnly:
 				{
-					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
+					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(textureUnitIndex);
 					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
 					textureUnitIndex++;
 				}
@@ -245,6 +244,21 @@ namespace moe
 				iBinding++;
 			}
 		}
+	}
+
+
+	void OpenGLRenderer::UseMaterialInstance(MaterialInstance* material)
+	{
+		if (material == nullptr)
+			return;
+
+		m_device.UseShaderProgram(material->GetShaderHandle());
+
+		// Process the material resource set.
+
+		ResourceSetHandle rscSetHandle = material->GetResourceSetHandle();
+
+		UseResourceSet(rscSetHandle);
 	}
 
 

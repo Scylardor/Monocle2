@@ -16,7 +16,8 @@ namespace moe
 	 */
 	enum class ResourceKind : std::uint8_t
 	{
-		UniformBuffer = 0,
+		None = 0,
+		UniformBuffer,
 		TextureReadOnly,
 		Sampler
 	};

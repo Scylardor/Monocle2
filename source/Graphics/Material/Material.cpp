@@ -24,8 +24,9 @@ namespace moe
 
 		const Mat4& view = cam->GetViewMatrix();
 		const Mat4& vp = cam->GetViewProjectionMatrix();
+		const Mat4 modelView = view * model;
 
-		ObjectMatrices matrices{ model, view * model, vp * model, Mat3(model).GetInverse().GetTransposed() };
+		ObjectMatrices matrices{ model, modelView, vp * model, Mat3(modelView).GetInverseTransposed() };
 
 		objWorld->MutRenderer().UpdateSubBufferRange(ubHandle, 0, &matrices, sizeof ObjectMatrices);
 	}

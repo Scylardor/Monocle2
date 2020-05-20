@@ -19,7 +19,7 @@ namespace moe
 		/**
 		 * \brief The agnostic shader stage of this module
 		 */
-		ShaderStage	m_moduleStage{ ShaderStage::None };
+		ShaderStage	m_moduleStage{ShaderStage::Vertex};
 
 
 		/**

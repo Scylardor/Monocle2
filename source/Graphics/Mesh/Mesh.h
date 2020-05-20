@@ -4,16 +4,16 @@
 
 #include "Core/Misc/Types.h"
 
-#include "Graphics/DeviceBuffer/VertexBufferHandle.h"
-#include "Graphics/DeviceBuffer/IndexBufferHandle.h"
-#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
 
 #include "Graphics/RenderWorld/GraphicsObject.h"
 
 #include "Core/Containers/FreeList/Freelist.h"
 
+#include "Monocle_Graphics_Export.h"
+
 namespace moe
 {
+	class Camera;
 
 
 	/**
@@ -26,10 +26,7 @@ namespace moe
 	{
 	public:
 
-		Mesh(RenderWorld* world, const GraphicObjectData& data) :
-			AGraphicObject(world, data)
-		{}
-
+		Mesh(RenderWorld* world, const GraphicObjectData& data);
 
 
 		FreelistID	GetID() const
@@ -42,10 +39,17 @@ namespace moe
 			m_meshID = id;
 		}
 
+		[[nodiscard]] ResourceSetHandle	GetPerObjectResourceSet() const { return m_perObjectResourceSetHandle; }
+
+		Monocle_Graphics_API void	UpdateObjectMatrices(const Camera& currentCamera);
+
 	private:
 
 		FreelistID			m_meshID{0};
 
+		DeviceBufferHandle	m_perObjectUniformBuffer; // TODO : temporary place !
+
+		ResourceSetHandle	m_perObjectResourceSetHandle;
 	};
 
 }

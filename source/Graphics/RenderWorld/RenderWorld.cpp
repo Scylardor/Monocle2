@@ -146,6 +146,10 @@ namespace moe
 			m_renderer.UseMaterialPerObject(material, *drawnMesh);
 		}
 
+		ResourceSetHandle objectRscSet = drawnMesh->GetPerObjectResourceSet();
+
+		m_renderer.UseResourceSet(objectRscSet);
+
 		DeviceBufferHandle vtxBufHandle = drawnMesh->GetVertexBufferHandle();
 		DeviceBufferHandle idxBufHandle = drawnMesh->GetIndexBufferHandle();
 

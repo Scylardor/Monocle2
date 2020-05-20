@@ -85,6 +85,10 @@ namespace moe
 		}
 
 
+		virtual void	UpdateUniformBlockVariable(ShaderProgramHandle program, DeviceBufferHandle targetBlockBuffer, const std::string& variableName,
+			const void* data, size_t dataSizeBytes) override final;
+
+
 		GLuint	UseShaderProgram(ShaderProgramHandle programHandle);
 
 		GLuint	GetShaderProgramID(ShaderProgramHandle programHandle);
@@ -164,6 +168,8 @@ namespace moe
 
 		void	BindProgramUniformBlock(GLuint shaderProgramID, const char* uniformBlockName, int uniformBlockBinding, DeviceBufferHandle ubHandle);
 
+		void	BindUniformBlock(unsigned int uniformBlockBinding, DeviceBufferHandle ubHandle, uint32_t bufferSize = 0, uint32_t relativeOffset = 0) override;
+
 		Monocle_Graphics_API void	UpdateUniformBuffer(DeviceBufferHandle ubHandle, const void* data, size_t dataSizeBytes, uint32_t relativeOffset = 0);
 
 		template <typename T>
@@ -174,6 +180,8 @@ namespace moe
 
 
 		void	BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, Texture2DHandle texHandle, const char* uniformName);
+
+		void	BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle) override;
 
 
 		static DeviceBufferHandle						EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset);

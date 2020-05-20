@@ -1,8 +1,9 @@
-#version 330 core
+#version 420 core
+// Require version 420 to be able to use "binding = ..." extension.
 
 layout(location = 0) in vec3 position;
 
-layout (std140) uniform ObjectMatrices
+layout (std140, binding = 4) uniform ObjectMatrices
 {
 	mat4 model;
 	mat4 modelView;

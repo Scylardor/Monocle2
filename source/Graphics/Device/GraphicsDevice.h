@@ -52,6 +52,8 @@ namespace moe
 		[[nodiscard]] virtual uint32_t	GetShaderProgramUniformBlockSize(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName) = 0;
 		[[nodiscard]] virtual bool	IsPartOfUniformBlock(ShaderProgramHandle shaderHandle, const std::string& uniformBlockName, const std::string& uniformMemberName) const = 0;
 
+		virtual void	UpdateUniformBlockVariable(ShaderProgramHandle program, DeviceBufferHandle targetBlockBuffer, const std::string& variableName,
+													const void* data, size_t dataSizeBytes) = 0;
 
 		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) = 0;
 		[[nodiscard]] virtual const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const = 0;
@@ -69,7 +71,7 @@ namespace moe
 
 		virtual void	UpdateBuffer(DeviceBufferHandle bufferHandle, const void* data, size_t dataSize) const = 0;
 
-
+		virtual void	BindUniformBlock(unsigned int uniformBlockBinding, DeviceBufferHandle ubHandle, uint32_t bufferSize = 0, uint32_t relativeOffset = 0) = 0;
 
 		[[nodiscard]] virtual ViewportHandle	CreateViewport(const ViewportDescriptor& vpDesc) = 0;
 		virtual void	UseViewport(ViewportHandle vpHandle) = 0;
@@ -88,6 +90,8 @@ namespace moe
 		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc) = 0;
 
 		virtual void	DestroyTexture2D(Texture2DHandle textureHandle) = 0;
+
+		virtual void	BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)  = 0;
 
 
 	};

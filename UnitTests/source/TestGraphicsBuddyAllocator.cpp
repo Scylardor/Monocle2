@@ -154,4 +154,24 @@ TEST_CASE("OpenGL Buffer Buddy Allocator", "[Graphics][.]")
 		test.Free(offset9);
 	}
 
+	SECTION("One big alloc among tiny ones")
+	{
+		moe::OpenGLBuddyAllocator test(GL_DYNAMIC_STORAGE_BIT);
+
+		uint32_t offset1 = test.Allocate(nullptr, 240);
+		uint32_t offset2 = test.Allocate(nullptr, 64);
+		uint32_t offset3 = test.Allocate(nullptr, 192);
+		uint32_t offset4 = test.Allocate(nullptr, 20);
+		uint32_t offset5 = test.Allocate(nullptr, 16384);
+		uint32_t offset6 = test.Allocate(nullptr, 16);
+		uint32_t offset7 = test.Allocate(nullptr, 240);
+		test.Free(offset1);
+		test.Free(offset2);
+		test.Free(offset3);
+		test.Free(offset4);
+		test.Free(offset5);
+		test.Free(offset6);
+		test.Free(offset7);
+	}
+
 }

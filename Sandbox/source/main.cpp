@@ -5,9 +5,12 @@
 
 #include "Core/Misc/Literals.h"
 
+//#include "btBulletCollisionCommon.h"
+
+
 int main()
 {
-	//moe::GraphicsContextDescriptor contextDesc;
+
 	moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
 
 	moe::TestApplication app(appDesc);
@@ -18,5 +21,4 @@ int main()
 	}
 
 	return 0;
-
 }

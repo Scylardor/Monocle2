@@ -4,6 +4,8 @@
 
 #ifdef MOE_OPENGL
 
+#include <Core/Containers/HashMap/HashMap.h>
+
 #include <glad/glad.h>
 
 namespace moe
@@ -26,22 +28,9 @@ namespace moe
 		OpenGLShaderProgram(const OpenGLShaderProgram &) = delete;
 		OpenGLShaderProgram & operator=(const OpenGLShaderProgram &) = delete; // assignment op
 
-		OpenGLShaderProgram(OpenGLShaderProgram&& other)
-		{
-			m_program = other.m_program;
-			other.m_program = ms_nullProgram;
-		}
+		OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept;
 
-		OpenGLShaderProgram&	operator=(OpenGLShaderProgram&& rhs)
-		{
-			if (&rhs != this)
-			{
-				m_program = rhs.m_program;
-				rhs.m_program = ms_nullProgram;
-			}
-
-			return *this;
-		}
+		OpenGLShaderProgram& operator=(OpenGLShaderProgram&& rhs) noexcept;
 
 
 		~OpenGLShaderProgram()
@@ -65,6 +54,16 @@ namespace moe
 		}
 
 
+		/**
+		 * \brief Builds a cache of uniform block binding point -> block index for faster access,
+		 * and also the offset of every variable in uniform blocks to make their modification easier.
+		 */
+		void	BuildUniformBlockAccessCache();
+
+
+		int		GetBlockMemberOffset(const std::string& memberVariableName) const;
+
+
 		operator GLuint() const
 		{
 			return m_program;
@@ -83,6 +82,9 @@ namespace moe
 
 
 	private:
+		HashMap<int, unsigned>	m_blockBindingToBlockIdx;
+		HashMap<std::string, int>	m_blockMemberNameToOffset;
+
 		GLuint	m_program{ ms_nullProgram };
 	};
 

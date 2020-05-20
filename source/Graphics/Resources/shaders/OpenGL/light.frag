@@ -1,11 +1,15 @@
+#version 420 core
+// Require version 420 to be able to use "binding = ..." extension.
 
-#version 330 core
 
-layout (std140) uniform Color { vec4 colorValue; };
+layout (std140, binding = 5) uniform Color
+{
+	vec4 colorValue;
+};
 
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = colorValue;
+	FragColor = colorValue;
 }

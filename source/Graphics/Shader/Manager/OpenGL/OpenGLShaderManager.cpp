@@ -60,7 +60,7 @@ namespace moe
 
 			if (shaderStageEnum == GL_FALSE)
 			{
-				MOE_ERROR(ChanGraphics, "Could not translate shader stage value '%s'. Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
+				MOE_ERROR(ChanGraphics, "Could not translate shader stage value '%u'. Aborting shader program creation.", shaderModDesc.m_moduleStage);
 				return ShaderProgramHandle::Null();
 			}
 
@@ -74,7 +74,7 @@ namespace moe
 			glCompileShader(newShader);
 
 			GL_SHADER_CHECK_MESSAGE(newShader, GL_COMPILE_STATUS,
-				"Shader compilation failed : '%s' (at shader stage '%s'). Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
+				"Shader compilation failed : '%s' (at shader stage '%u'). Aborting shader program creation.", shaderModDesc.m_moduleStage);
 
 			program.Attach(newShader);
 
@@ -107,7 +107,7 @@ namespace moe
 
 			if (shaderStageEnum == GL_FALSE)
 			{
-				MOE_ERROR(ChanGraphics, "Could not translate shader stage value '%s'. Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
+				MOE_ERROR(ChanGraphics, "Could not translate shader stage value '%u'. Aborting shader program creation.", shaderModDesc.m_moduleStage);
 				return ShaderProgramHandle::Null();
 			}
 
@@ -123,7 +123,7 @@ namespace moe
 			glCompileShader(newShader);
 
 			GL_SHADER_CHECK_MESSAGE(newShader, GL_COMPILE_STATUS,
-				"Shader compilation failed : '%s' (at shader stage '%s'). Aborting shader program creation.", shaderModDesc.m_moduleStage._to_string());
+				"Shader compilation failed : '%s' (at shader stage '%u'). Aborting shader program creation.", shaderModDesc.m_moduleStage);
 
 			program.Attach(newShader);
 
@@ -146,6 +146,9 @@ namespace moe
 
 	ShaderProgramHandle OpenGLShaderManager::RegisterProgram(OpenGLShaderProgram&& shader)
 	{
+		// Build shader uniform block cache for fast retrieval
+		shader.BuildUniformBlockAccessCache();
+
 		auto [programIt, alreadyIn] = m_programs.insert(std::move(shader));
 
 		// we can take advantage of the fact that shader programs are unique OpenGL Ids anyway !
