@@ -215,6 +215,7 @@ namespace moe
 			sinf(yawRads) * cosf(pitchRads)
 		}.GetNormalized();
 
+
 		// Also re-calculate the Right and Up vector
 		// Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		const Vec3 worldUp{0, 1, 0};

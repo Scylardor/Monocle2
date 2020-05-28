@@ -8,63 +8,16 @@
 
 #include "MaterialObjectBlock.h"
 #include "MaterialBlock.h"
-#include "MaterialFrameBlock.h"
-
-#include <Core/Containers/Array/Array.h>
 
 #include "Graphics/Resources/ResourceLayout/ResourceLayoutHandle.h"
 
-#include "Math/Matrix.h"
-
 #include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
-#include "Graphics/Resources/ResourceLayout/ResourceLayoutDescriptor.h"
-#include "Graphics/Texture/TextureDescription.h"
 
+#include "Graphics/OpenGL/Std140.h"
 
 namespace moe
 {
 
-	template <size_t N, typename T = float, typename Enable = void>
-	struct Std140Mat;
-
-	template <size_t N, typename T>
-	struct Std140Mat<N, T, typename std::enable_if_t<N == 2>>
-	{
-		Std140Mat(const Matrix<N, N, T>& mat) :
-			m_vec1(mat[0]), m_vec2(mat[1])
-		{}
-
-		alignas(16) Vec<N, T> m_vec1;
-		alignas(16) Vec<N, T> m_vec2;
-	};
-
-//#pragma warning( push )
-//#pragma warning(disable : 4324)
-	template <size_t N, typename T>
-	struct Std140Mat<N, T, typename std::enable_if_t<N == 3>>
-	{
-		Std140Mat(const Matrix<N, N, T>& mat = Matrix<N, N, T>::Identity()) :
-			m_vec1(mat[0]), m_vec2(mat[1]), m_vec3(mat[2])
-		{}
-
-		alignas(16) Vec<4, T> m_vec1;
-		alignas(16) Vec<4, T> m_vec2;
-		alignas(16) Vec<4, T> m_vec3;
-	};
-//#pragma warning( pop )
-
-	template <size_t N, typename T>
-	struct Std140Mat<N, T, typename std::enable_if_t<N == 4>>
-	{
-		Std140Mat(const Matrix<N, N, T>& mat) :
-			m_vec1(mat[0]), m_vec2(mat[1]), m_vec3(mat[2]), m_vec4(mat[3])
-		{}
-
-		alignas(16) Vec<4, T> m_vec1;
-		alignas(16) Vec<4, T> m_vec2;
-		alignas(16) Vec<4, T> m_vec3;
-		alignas(16) Vec<4, T> m_vec4;
-	};
 
 
 	struct ObjectMatrices

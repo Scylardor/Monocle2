@@ -67,6 +67,7 @@ set(Monocle_Graphics_SOURCES
 ./Mesh/MeshHandle.h
 ./Mesh/OpenGL/OpenGLMesh.h
 ./OpenGL/moeOpenGL.h
+./OpenGL/Std140.h
 ./Pipeline/OpenGL/OpenGLPipeline.cpp
 ./Pipeline/OpenGL/OpenGLPipeline.h
 ./Pipeline/PipelineDescriptor.h
@@ -99,6 +100,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/light.vert
 ./Resources/shaders/OpenGL/phong.frag
 ./Resources/shaders/OpenGL/phong.vert
+./Resources/shaders/OpenGL/phong_maps.frag
+./Resources/shaders/OpenGL/phong_maps.vert
 ./SceneGraph/SceneGraph.cpp
 ./SceneGraph/SceneGraph.h
 ./SceneGraph/SceneGraphHandle.h

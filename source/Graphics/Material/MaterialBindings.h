@@ -19,6 +19,7 @@ namespace moe
 		DIFFUSE = 0,
 		NORMAL,
 		SPECULAR,
+		EMISSION,
 		GLOSS,
 		CUSTOM
 	};

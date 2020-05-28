@@ -91,10 +91,11 @@ struct VertexPositionColor
 	Vec4	m_color;
 };
 
-struct VertexPositionNormal
+struct VertexPositionNormalTexture
 {
 	Vec3	m_position;
 	Vec3	m_normal;
+	Vec2	m_texcoords;
 };
 
 struct VertexPosition
@@ -117,51 +118,51 @@ struct HelloTriVertex
 };
 
 
-Array<VertexPositionNormal, 36>	CreateCubePositionNormal(float halfExtent)
+Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent)
 {
 
 	return {
-		{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
-		{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
-		{Vec3{ halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
-		{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
-		{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
-		{Vec3{-halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+		{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f }},
+		{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  1.0f }},
+		{Vec3{ halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  0.0f }},
+		{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  1.0f }},
+		{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f }},
+		{Vec3{-halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  1.0f }},
 
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
-		{Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
+		{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f, 1.0f }, { 0.0f,  0.0f }},
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  0.0f }},
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  1.0f }},
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  1.0f }},
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  1.0f }},
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  0.0f }},
 
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0f}},
-		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0f}},
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0f}},
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0f}},
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0f}},
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0f}},
+		{Vec3{ -halfExtent,  halfExtent,  halfExtent }, { -1.0f,  0.0f,  0.0 }, { 1.0f,  1.0f }},
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}, { 0.0f,  1.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0}, { 1.0f,  0.0f } },
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0}, { 1.0f,  1.0f } },
 
-		{Vec3{ halfExtent,  halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f}},
-		{Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f}},
-		{Vec3{ halfExtent,  halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f}},
-		{Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f}},
-		{Vec3{ halfExtent,  halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f}},
-		{Vec3{ halfExtent, -halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f}},
+		{ Vec3{ halfExtent,  halfExtent,  halfExtent }, { 1.0f,  0.0f,  0.0f }, { 0.0f,  1.0f }},
+		{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f }},
+		{ Vec3{ halfExtent,  halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }, { 1.0f,  1.0f }},
+		{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f }},
+		{ Vec3{ halfExtent,  halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f }, { 0.0f,  1.0f }},
+		{ Vec3{ halfExtent, -halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f }, { 0.0f,  0.0f }},
 
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}},
-		{Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}},
-		{Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}},
-		{Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}},
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}},
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}},
+		{Vec3{ -halfExtent, -halfExtent, -halfExtent }, { 0.0f, -1.0f,  0.0f }, { 0.0f,  1.0f }},
+		{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}, { 1.0f,  0.0f } },
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}, { 1.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}, { 0.0f,  1.0f } },
 
-		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}},
-		{Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}},
-		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}},
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}}
+		{Vec3{ -halfExtent,  halfExtent, -halfExtent }, { 0.0f,  1.0f,  0.0f }, { 0.0f,  0.0f }},
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f } },
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  0.0f }}
 	};
 
 }
@@ -398,15 +399,15 @@ struct PhongMaterial
 	Vec4	m_specularColor{1.f};
 	float	m_shininess{32};
 };
-
-
-struct LightCastersData
-{
-	Vec4	m_ambientColor{ColorRGBAf::White().ToVec()};
-	Vec4	m_diffuseColor{ ColorRGBAf::White().ToVec() };
-	Vec4	m_specularColor{ ColorRGBAf::White().ToVec() };
-	Vec4	m_lightPos{ 0.f };
-};
+//
+//
+//struct LightCastersData
+//{
+//	Vec4	m_ambientColor{ColorRGBAf::White().ToVec()};
+//	Vec4	m_diffuseColor{ ColorRGBAf::White().ToVec() };
+//	Vec4	m_specularColor{ ColorRGBAf::White().ToVec() };
+//	Vec4	m_lightPos{ 0.f };
+//};
 
 
 
@@ -420,17 +421,12 @@ void TestApplication::Run()
 	/* Create phong object shader */
 	IGraphicsRenderer::ShaderFileList phongFileList =
 	{
-		{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/phong.vert" },
-		{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/phong.frag" }
+		{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/phong_maps.vert" },
+		{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/phong_maps.frag" }
 	};
 
 	ShaderProgramHandle phongProgram = renderer.CreateShaderProgramFromSourceFiles(phongFileList);
 
-
-	MaterialDescriptor materialdesc(
-	{
-		{"Material_Phong", ShaderStage::Fragment} }
-	);
 
 
 	MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
@@ -440,13 +436,14 @@ void TestApplication::Run()
 	lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
 	lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+	lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
 
 	lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
 	lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
 	lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
 	lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
-
 	lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
 
 
@@ -505,7 +502,8 @@ void TestApplication::Run()
 	/* Create phong object VAO */
 	VertexLayoutDescriptor phongLayout{
 {{"position", VertexElementFormat::Float3},
-		{"normal", VertexElementFormat::Float3}},
+		{"normal", VertexElementFormat::Float3},
+		{"texCoords", VertexElementFormat::Float2}},
 	VertexLayoutDescriptor::Interleaved
 	};
 
@@ -516,9 +514,36 @@ void TestApplication::Run()
 
 	LightSystem lightsSystem(renderer.MutGraphicsDevice());
 
-	LightObject* newLight = lightsSystem.AddNewLight({ Vec4::ZeroVector(),
-	Vec4(1.f), Vec4(1.f), Vec4(1.f) });
-//	Vec4(0.2f, 0.2f, 0.2f, 1.f), Vec4(0.5f, 0.5f, 0.5f, 1.f), Vec4(1.f) });
+	m_flashLight = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4::ZeroVector(),
+	Vec4(0.0f, 0.0f, 0.0f, 1.f), Vec4(1.f, 1.f, 0.f, 1.f), Vec4(1.f) });
+
+	//newLight->SetDirectionalLight({ -0.2f, -1.0f, -0.3f });
+
+	m_flashLight->SetAttenuationFactors(1.f, 0.09f, 0.032f);
+	m_flashLight->SetSpotInnerCutoff(Degs_f{12.5});
+	m_flashLight->SetSpotOuterCutoff(Degs_f{ 15.F });
+
+	LightObject* pointLight1 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4::ZeroVector(),
+		Vec4(0.05f, 0.05f, 0.05f, 1.f), Vec4(0.8f, 0.8f, 0.8f, 1.f), Vec4(1.f) });
+	pointLight1->SetAttenuationFactors(1.f, 0.09f, 0.032f);
+
+	LightObject* pointLight2 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4::ZeroVector(),
+	Vec4(0.05f, 0.05f, 0.05f, 1.f), Vec4(0.8f, 0.8f, 0.8f, 1.f), Vec4(1.f) });
+	pointLight2->SetAttenuationFactors(1.f, 0.09f, 0.032f);
+
+	LightObject* pointLight3 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4::ZeroVector(),
+	Vec4(0.05f, 0.05f, 0.05f, 1.f), Vec4(0.8f, 0.8f, 0.8f, 1.f), Vec4(1.f) });
+	pointLight3->SetAttenuationFactors(1.f, 0.09f, 0.032f);
+
+	LightObject* pointLight4 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4::ZeroVector(),
+	Vec4(0.05f, 0.05f, 0.05f, 1.f), Vec4(0.8f, 0.8f, 0.8f, 1.f), Vec4(1.f) });
+	pointLight4->SetAttenuationFactors(1.f, 0.09f, 0.032f);
+
+	LightObject* dirLight1 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4{-0.2f, -1.0f, -0.3f, 0.f},
+	Vec4(0.05f, 0.05f, 0.05f, 1.f), Vec4(0.4f, 0.4f, 0.4f, 1.f), Vec4(0.5f, 0.5f, 0.5f, 1.f) });
+
+	(void)dirLight1;
+
 
 	MaterialDescriptor lightMatDesc(
 		{
@@ -555,115 +580,86 @@ void TestApplication::Run()
 
 	newCam->UpdateCameraVectors(0, -90);
 
+	m_flashLight->SetPosition(Vec4(newCam->GetTransform().Matrix().GetTranslation(), 1.F));
+	m_flashLight->SetSpotlightDirection(newCam->GetFrontVector());
 
 	/* Create camera end */
 
 
 	/* Create Phong material buffer */
 
+	MaterialDescriptor materialdesc(
+		{
+			{"Material_Phong", ShaderStage::Fragment},
+			{"Material_DiffuseMap", ShaderStage::Fragment},
+			{"Material_SpecularMap", ShaderStage::Fragment},
+			{"Material_EmissionMap", ShaderStage::Fragment},
+		}
+	);
+
 	MaterialInterface phongInterface = lib.CreateMaterialInterface(phongProgram, materialdesc);
 
-	MaterialInstance emeraldInstance = lib.CreateMaterialInstance(phongInterface);
-	emeraldInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{	ColorRGBAf{0.0215f, 0.1745f, 0.0215f}.ToVec(),
-						ColorRGBAf{0.07568f, 0.61424f, 0.07568f }.ToVec(),
-						ColorRGBAf{0.633f, 0.727811f, 0.633f}.ToVec(),
-						76.8f });
+	MaterialInstance containerInstance = lib.CreateMaterialInstance(phongInterface);
+	containerInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
+		PhongMaterial{	ColorRGBAf::White().ToVec(),
+						ColorRGBAf::White().ToVec(),
+						ColorRGBAf{0.5f}.ToVec(),
+						64 });
 
-	emeraldInstance.CreateMaterialResourceSet();
-
-	MaterialInstance pearlInstance = lib.CreateMaterialInstance(phongInterface);
-	pearlInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.25f, 	0.20725f, 	0.20725f}.ToVec(),
-						ColorRGBAf{1.f, 	0.829f, 	0.829f, }.ToVec(),
-						ColorRGBAf{0.296648f, 	0.296648f, 	0.296648f}.ToVec(),
-						11.264f });
-
-	pearlInstance.CreateMaterialResourceSet();
-
-	MaterialInstance bronzeInstance = lib.CreateMaterialInstance(phongInterface);
-	bronzeInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.2125f, 	0.1275f, 	0.054f}.ToVec(),
-						ColorRGBAf{0.714f, 	0.4284f, 	0.18144f }.ToVec(),
-						ColorRGBAf{0.393548f, 	0.271906f, 	0.166721f}.ToVec(),
-						25.6f });
-
-	bronzeInstance.CreateMaterialResourceSet();
-
-	MaterialInstance goldInstance = lib.CreateMaterialInstance(phongInterface);
-	goldInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.24725f, 	0.1995f, 	0.0745f}.ToVec(),
-						ColorRGBAf{0.75164f, 	0.60648f, 	0.22648f 	 }.ToVec(),
-						ColorRGBAf{0.628281f, 	0.555802f, 	0.366065f}.ToVec(),
-						51.2f });
-
-	goldInstance.CreateMaterialResourceSet();
-
-	MaterialInstance cyanPlastic = lib.CreateMaterialInstance(phongInterface);
-	cyanPlastic.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.0f, 	0.1f, 	0.06f}.ToVec(),
-						ColorRGBAf{0.0f, 	0.50980392f, 	0.50980392f }.ToVec(),
-						ColorRGBAf{0.50196078f}.ToVec(),
-						32.f });
-
-	cyanPlastic.CreateMaterialResourceSet();
-
-	MaterialInstance redPlastic = lib.CreateMaterialInstance(phongInterface);
-	redPlastic.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.f}.ToVec(),
-						ColorRGBAf{ 	0.5f, 	0.0f, 	0.0f }.ToVec(),
-						ColorRGBAf{ 0.7f, 	0.6f, 	0.6f}.ToVec(),
-						32.f});
-
-	redPlastic.CreateMaterialResourceSet();
-
-	MaterialInstance greenRubberInstance  = lib.CreateMaterialInstance(phongInterface);
-	greenRubberInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.0f, 	0.05f, 	0.0f}.ToVec(),
-						ColorRGBAf{0.4f, 	0.5f, 	0.4f }.ToVec(),
-						ColorRGBAf{0.04f, 	0.7f, 	0.04f}.ToVec(),
-						10.f });
-
-	greenRubberInstance.CreateMaterialResourceSet();
+	Texture2DHandle containerImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(Texture2DFileDescriptor{ "Sandbox/assets/container2.png" });
+	Texture2DHandle containerSpecularImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(Texture2DFileDescriptor{ "Sandbox/assets/container2_specular.png" });
+	Texture2DHandle emissionImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(Texture2DFileDescriptor{ "Sandbox/assets/matrix.jpg" });
 
 
-	MaterialInstance yellowRubberInstance = lib.CreateMaterialInstance(phongInterface);
-	yellowRubberInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{ ColorRGBAf{0.05f, 	0.05f, 	0.0f}.ToVec(),
-						ColorRGBAf{0.5f, 	0.5f, 	0.4f }.ToVec(),
-						ColorRGBAf{0.7f, 	0.7f, 	0.04f}.ToVec(),
-						10.f });
+	containerInstance.BindTexture(MaterialTextureBinding::DIFFUSE, containerImg);
+	containerInstance.BindTexture(MaterialTextureBinding::SPECULAR, containerSpecularImg);
+	containerInstance.BindTexture(MaterialTextureBinding::EMISSION, emissionImg);
 
-	yellowRubberInstance.CreateMaterialResourceSet();
+	containerInstance.CreateMaterialResourceSet();
 
 	/* End Phong material buffer */
 
 
-	auto phongCubeGeom = CreateCubePositionNormal(0.5f);
+	auto phongCubeGeom = CreateCubePositionNormalTexture(0.5f);
 	Mesh* phongCube = renderWorld.CreateStaticMesh(phongCubeGeom);
 
 
 	auto lightCubeGeom = CreateCube(0.5f);
 	Mesh* lightCube = renderWorld.CreateStaticMesh(lightCubeGeom);
 
-
-	Vec3 positions[8] = {
-		{-4, 0, 0},
-		{-2, 0, 0},
-		{0, 0, 0},
-		{2, 0, 0},
-		{-4, 2, 0},
-		{-2, 2, 0},
-		{0, 2, 0},
-		{2, 2, 0}
+	Vec3 cubePositions[] = {
+	Vec3(0.0f,  0.0f,  0.0f),
+	Vec3(2.0f,  5.0f, -15.0f),
+	Vec3(-1.5f, -2.2f, -2.5f),
+	Vec3(-3.8f, -2.0f, -12.3f),
+	Vec3(2.4f, -0.4f, -3.5f),
+	Vec3(-1.7f,  3.0f, -7.5f),
+	Vec3(1.3f, -2.0f, -2.5f),
+	Vec3(1.5f,  2.0f, -2.5f),
+	Vec3(1.5f,  0.2f, -1.5f),
+	Vec3(-1.3f,  1.0f, -1.5f)
 	};
-	MaterialInstance* materials[8]
+
+	Vec3 pointLightPositions[] = {
+		Vec3(0.7f,  0.2f,  2.0f),
+		Vec3(2.3f, -3.3f, -4.0f),
+		Vec3(-4.0f,  2.0f, -12.0f),
+		Vec3(0.0f,  0.0f, -3.0f)
+	};
+
+	LightObject* pointLights[] ={
+		pointLight1,
+		pointLight2,
+		pointLight3,
+		pointLight4
+	};
+
+	int iLight = 0;
+	for (auto& lightPos : pointLightPositions)
 	{
-		&emeraldInstance, &pearlInstance, &bronzeInstance, &goldInstance, &cyanPlastic, &redPlastic, &greenRubberInstance, &yellowRubberInstance
-	};
-
-
-
+		pointLights[iLight]->SetPosition(Vec4(lightPos, 1.f));
+		iLight++;
+	}
 
 	while (WindowIsOpened())
 	{
@@ -695,25 +691,28 @@ void TestApplication::Run()
 
 		Transform transf;
 		transf *= Mat4::Rotation(Degs_f(thisFrameTime * 20), Vec3(0.0f, 1.0f, 0.f));
-		transf *= Transform::Translate({ 10.0f, 1.5f, 0.F });
+		transf *= Transform::Translate({ 2.0f, 0.5f, 0.F });
 		transf *= Transform::Scale(Vec3{ 0.2f });
 
 		lightCube->SetTransform(transf);
 
-		Vec3 lightColor(1);
-		lightColor.x() = sinf(thisFrameTime * 2.0f);
-		lightColor.y() = sinf(thisFrameTime * 0.7f);
-		lightColor.z() = sinf(thisFrameTime * 1.3f);
-
-		Vec3 diffuseColor = lightColor * Vec3(0.5f);
-		Vec3 ambientColor = diffuseColor * Vec3(0.2f);
 
 
-		newLight->SetPosition(Vec4(lightCube->GetTransform().Matrix().GetTranslation(), 1.F));
-		newLight->SetDiffuseColor(ColorRGBAf(diffuseColor.x(), diffuseColor.y(), diffuseColor.z()));
-		newLight->SetAmbientColor(ColorRGBAf(ambientColor.x(), ambientColor.y(), ambientColor.z()));
+		//Vec3 lightColor(1);
+		//lightColor.x() = sinf(thisFrameTime * 2.0f);
+		//lightColor.y() = sinf(thisFrameTime * 0.7f);
+		//lightColor.z() = sinf(thisFrameTime * 1.3f);
 
-		lightMatInstance.SetVec4(MATERIAL_COLOR, "Color.colorValue", ColorRGBAf(diffuseColor.x(), diffuseColor.y(), diffuseColor.z()).ToVec());
+		//Vec3 diffuseColor = lightColor * Vec3(0.5f);
+		//Vec3 ambientColor = diffuseColor * Vec3(0.2f);
+
+
+		//pointLight1->SetPosition(Vec4(lightCube->GetTransform().Matrix().GetTranslation(), 1.F));
+
+		//newLight->SetDiffuseColor(ColorRGBAf(diffuseColor.x(), diffuseColor.y(), diffuseColor.z()));
+		//newLight->SetAmbientColor(ColorRGBAf(ambientColor.x(), ambientColor.y(), ambientColor.z()));
+		//
+		//lightMatInstance.SetVec4(MATERIAL_COLOR, "Color.colorValue", ColorRGBAf(diffuseColor.x(), diffuseColor.y(), diffuseColor.z()).ToVec());
 
 
 		renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
@@ -728,18 +727,33 @@ void TestApplication::Run()
 		{
 			camSys.BindCameraBuffer(iCam);
 
-			for (int iObj = 0; iObj < 8; iObj++)
-			{
-				renderer.UseMaterialInstance(materials[iObj]);
+			renderer.UseMaterialInstance(&containerInstance);
 
-				phongCube->SetTransform(Transform::Translate(positions[iObj]));
+			int iCube = 0;
+			for (auto& pos : cubePositions)
+			{
+
+				float angle = 20.0f * iCube;
+
+				phongCube->SetTransform(Transform::Translate(pos));
+				phongCube->AddTransform(Mat4::Rotation(Degs_f(angle), Vec3(1.0f, 0.3f, 0.5f)));
+
 				phongCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
 				renderWorld.DrawMesh(phongCube, phongVao, nullptr);
+
+				iCube++;
 			}
 
 			renderer.UseMaterialInstance(&lightMatInstance);
-			lightCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
-			renderWorld.DrawMesh(lightCube, lightVao, nullptr);
+
+			for (auto& lightPos : pointLightPositions)
+			{
+				lightCube->SetTransform(Transform::Translate(lightPos));
+				lightCube->AddTransform(Transform::Scale(Vec3(0.2f)));
+				lightCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(lightCube, lightVao, nullptr);
+			}
+
 		}
 
 		SwapBuffers();
@@ -1282,6 +1296,11 @@ void TestApplication::Run()
 			camPos += (m_deltaTime * m_cameraSpeed) * m_currentCamera->GetFrontVector();
 
 			m_currentCamera->LookAt(camPos, camPos + m_currentCamera->GetFrontVector(), m_currentCamera->GetUpVector());
+
+			if (m_flashLight)
+			{
+				m_flashLight->SetPosition(Vec4(camPos, 1));
+			}
 		}
 	}
 
@@ -1294,6 +1313,11 @@ void TestApplication::Run()
 			camPos -= (m_deltaTime * m_cameraSpeed) * m_currentCamera->GetFrontVector();
 
 			m_currentCamera->LookAt(camPos, camPos + m_currentCamera->GetFrontVector(), m_currentCamera->GetUpVector());
+
+			if (m_flashLight)
+			{
+				m_flashLight->SetPosition(Vec4(camPos, 1));
+			}
 		}
 	}
 
@@ -1306,6 +1330,11 @@ void TestApplication::Run()
 			camPos -= (m_deltaTime * m_cameraSpeed) * m_currentCamera->GetRightVector();
 
 			m_currentCamera->LookAt(camPos, camPos + m_currentCamera->GetFrontVector(), m_currentCamera->GetUpVector());
+
+			if (m_flashLight)
+			{
+				m_flashLight->SetPosition(Vec4(camPos, 1));
+			}
 		}
 	}
 
@@ -1318,6 +1347,11 @@ void TestApplication::Run()
 			camPos += (m_deltaTime * m_cameraSpeed) * m_currentCamera->GetRightVector();
 
 			m_currentCamera->LookAt(camPos, camPos + m_currentCamera->GetFrontVector(), m_currentCamera->GetUpVector());
+
+			if (m_flashLight)
+			{
+				m_flashLight->SetPosition(Vec4(camPos, 1));
+			}
 		}
 
 	}
@@ -1344,6 +1378,11 @@ void TestApplication::Run()
 		const Vec3 camPos = m_currentCamera->GetTransform().Matrix().GetTranslation();
 
 		m_currentCamera->LookAt(camPos + m_currentCamera->GetFrontVector(), m_currentCamera->GetUpVector());
+
+		if (m_flashLight)
+		{
+			m_flashLight->SetSpotlightDirection(m_currentCamera->GetFrontVector());
+		}
 	}
 
 

@@ -41,8 +41,7 @@ namespace moe
 
 		const auto& rscLayoutDesc = device.GetResourceLayoutDescriptor(rscSetDesc.GetResourceLayoutHandle());
 
-		int iBlockBinding = 0;
-		int	iTexUnit = 0;
+		int iBinding = 0;
 
 		for (const ResourceLayoutBindingDescriptor& rscBindingDesc : rscLayoutDesc)
 		{
@@ -50,16 +49,14 @@ namespace moe
 			{
 			case ResourceKind::UniformBuffer:
 			{
-				DeviceBufferHandle ubHandle = rscSetDesc.Get<DeviceBufferHandle>(iBlockBinding);
+				DeviceBufferHandle ubHandle = rscSetDesc.Get<DeviceBufferHandle>(iBinding);
 				device.BindUniformBlock(rscBindingDesc.m_bindingPoint, ubHandle);
-				iBlockBinding++;
 			}
 			break;
 			case ResourceKind::TextureReadOnly:
 			{
-				Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iTexUnit);
+				Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
 				device.BindTextureUnit(rscBindingDesc.m_bindingPoint, tex2DHandle);
-				iTexUnit++;
 			}
 
 			break;
@@ -71,7 +68,7 @@ namespace moe
 				MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");
 			}
 
-			iBlockBinding++;
+			iBinding++;
 		}
 	}
 

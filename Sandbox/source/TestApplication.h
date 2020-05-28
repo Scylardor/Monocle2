@@ -50,6 +50,8 @@ private:
 	float		m_cameraYaw = -90.f;
 	float		m_cameraPitch = 0.f;
 	const float m_mouseSensitivity = 0.05f;
+
+	class LightObject*	m_flashLight = nullptr;
 };
 
 }
