@@ -30,6 +30,8 @@
 
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 
+#include "Graphics/Pipeline/PipelineHandle.h"
+
 #include "Monocle_Graphics_Export.h"
 
 namespace moe
@@ -183,6 +185,9 @@ namespace moe
 
 		void	BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle) override;
 
+		[[nodiscard]]	PipelineHandle	CreatePipeline(PipelineDescriptor& pipelineDesc) override;
+		void							SetPipeline(PipelineHandle pipeHandle) override;
+
 
 		static DeviceBufferHandle						EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset);
 
@@ -209,6 +214,9 @@ namespace moe
 
 		// Unlike Vulkan or D3D11 for example, OpenGL does not have any concept of "viewport object". So our viewport objects are just descriptors.
 		Freelist<ViewportDescriptor>	m_viewports;
+
+		// Same for pipelines - doesn't exist in OpenGL. Just keep the descriptors.
+		Freelist<PipelineDescriptor>	m_pipelines;
 	};
 }
 

@@ -62,6 +62,9 @@ namespace moe
 		Mesh*	CreateStaticMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
 
 
+		template<typename VertexType, size_t N>
+		Mesh* CreateStaticMesh(VertexType(&vertexData)[N]);
+
 		/**
 		 * \brief Creates an orthographic camera and a new viewport associated to it.
 		 * \param orthoDesc The description of the orthographic camera
@@ -145,4 +148,12 @@ namespace moe
 		);
 	}
 
+	template <typename VertexType, size_t N>
+	Mesh* RenderWorld::CreateStaticMesh(VertexType(& vertexData)[N])
+	{
+		return CreateStaticMeshFromBuffer(
+			MeshDataDescriptor{ vertexData, sizeof(vertexData), N },
+			MeshDataDescriptor {}
+		);
+	}
 }

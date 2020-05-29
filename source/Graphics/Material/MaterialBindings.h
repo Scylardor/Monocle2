@@ -12,6 +12,7 @@ namespace moe
 		MATERIAL_PHONG,
 		OBJECT_MATRICES,
 		MATERIAL_COLOR,
+		VIEW_PROJECTION_PLANES
 	};
 
 	enum  MaterialTextureBinding : uint8_t

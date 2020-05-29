@@ -10,9 +10,6 @@
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 
 #include "Graphics/VertexLayout/VertexLayoutHandle.h"
-#include "Graphics/DeviceBuffer/VertexBufferHandle.h"
-#include "Graphics/DeviceBuffer/IndexBufferHandle.h"
-#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
 #include "Graphics/Resources/ResourceLayout/ResourceLayoutHandle.h"
@@ -23,6 +20,8 @@
 #include "Graphics/Texture/Texture2DHandle.h"
 #include "Graphics/Texture/TextureDescription.h"
 
+#include "Graphics/Pipeline/PipelineDescriptor.h"
+#include "Graphics/Pipeline/PipelineHandle.h"
 
 namespace moe
 {
@@ -92,6 +91,10 @@ namespace moe
 		virtual void	DestroyTexture2D(Texture2DHandle textureHandle) = 0;
 
 		virtual void	BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)  = 0;
+
+		[[nodiscard]]	virtual PipelineHandle	CreatePipeline(PipelineDescriptor& pipelineDesc) = 0;
+
+		virtual void			SetPipeline(PipelineHandle pipeHandle) = 0;
 
 
 	};

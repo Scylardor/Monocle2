@@ -32,7 +32,7 @@ namespace moe
 	 */
 	enum class PolygonMode : char
 	{
-		Points = 0,
+		Points = 0, // TODO : we may have to drop that as D3D11 fill mode does not support it.
 		Wireframe,
 		Fill
 	};

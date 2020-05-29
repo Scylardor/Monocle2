@@ -91,6 +91,13 @@ struct VertexPositionColor
 	Vec4	m_color;
 };
 
+struct VertexPositionTexture
+{
+	Vec3	m_position;
+	Vec2	m_texture;
+};
+
+
 struct VertexPositionNormalTexture
 {
 	Vec3	m_position;
@@ -163,6 +170,54 @@ Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float hal
 		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  1.0f } },
 		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}, { 0.0f,  0.0f } },
 		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  0.0f }}
+	};
+
+}
+
+Array<VertexPositionTexture, 36>	CreateCubePositionTexture(float halfExtent)
+{
+	return {
+		{Vec3{-halfExtent, -halfExtent, -halfExtent}, { 0.0f,  0.0f }},
+		{Vec3{ halfExtent,  halfExtent, -halfExtent}, { 1.0f,  1.0f }},
+		{Vec3{ halfExtent, -halfExtent, -halfExtent}, { 1.0f,  0.0f }},
+		{Vec3{ halfExtent,  halfExtent, -halfExtent}, { 1.0f,  1.0f }},
+		{Vec3{-halfExtent, -halfExtent, -halfExtent}, { 0.0f,  0.0f }},
+		{Vec3{-halfExtent,  halfExtent, -halfExtent}, { 0.0f,  1.0f }},
+
+		{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f }},
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, { 1.0f,  0.0f }},
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, { 1.0f,  1.0f }},
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, { 1.0f,  1.0f }},
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, { 0.0f,  1.0f }},
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, { 0.0f,  0.0f }},
+
+		{Vec3{ -halfExtent,  halfExtent,  halfExtent }, { 1.0f,  1.0f }},
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, { 0.0f,  1.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, { 1.0f,  0.0f } },
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, { 1.0f,  1.0f } },
+
+		{ Vec3{ halfExtent,  halfExtent,  halfExtent }, { 0.0f,  1.0f }},
+		{ Vec3{ halfExtent, -halfExtent, -halfExtent}, { 1.0f,  0.0f }},
+		{ Vec3{ halfExtent,  halfExtent, -halfExtent}, { 1.0f,  1.0f }},
+		{ Vec3{ halfExtent, -halfExtent, -halfExtent}, { 1.0f,  0.0f }},
+		{ Vec3{ halfExtent,  halfExtent,  halfExtent}, { 0.0f,  1.0f }},
+		{ Vec3{ halfExtent, -halfExtent,  halfExtent}, { 0.0f,  0.0f }},
+
+		{Vec3{ -halfExtent, -halfExtent, -halfExtent }, { 0.0f,  1.0f }},
+		{ Vec3{  halfExtent, -halfExtent, -halfExtent}, { 1.0f,  1.0f } },
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, { 1.0f,  0.0f } },
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, { 1.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, { 0.0f,  1.0f } },
+
+		{Vec3{ -halfExtent,  halfExtent, -halfExtent }, { 0.0f,  0.0f }},
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent},{ 1.0f,  1.0f } },
+		{ Vec3{  halfExtent,  halfExtent, -halfExtent},{ 0.0f,  1.0f } },
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent},{ 1.0f,  1.0f } },
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent},{ 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent},{ 1.0f,  0.0f }}
 	};
 
 }
@@ -410,30 +465,23 @@ struct PhongMaterial
 //};
 
 
-
+struct ProjectionPlanes
+{
+	float m_near{0};
+	float m_far{0};
+};
 
 
 void TestApplication::Run()
 {
 	IGraphicsRenderer& renderer = MutRenderer();
 
-
-	/* Create phong object shader */
-	IGraphicsRenderer::ShaderFileList phongFileList =
-	{
-		{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/phong_maps.vert" },
-		{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/phong_maps.frag" }
-	};
-
-	ShaderProgramHandle phongProgram = renderer.CreateShaderProgramFromSourceFiles(phongFileList);
-
-
-
 	MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
 	lib.AddBindingMapping("Object_Matrices", {MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer});
 	lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
 	lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
@@ -442,8 +490,11 @@ void TestApplication::Run()
 
 	lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
 	lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+	lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
+
 	lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
 	lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+	lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
 	lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
 
 
@@ -460,6 +511,220 @@ void TestApplication::Run()
 	SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
 
 	auto [mouseX, mouseY] = GetMouseCursorPosition();
+	m_lastX = mouseX;
+	m_lastY = mouseY;
+
+	SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+	SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+	PipelineDescriptor pipeDesc;
+	// always pass the depth test (same effect as glDisable(GL_DEPTH_TEST))
+	pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less};
+
+	PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+	/* Create cube VAO */
+	VertexLayoutDescriptor cubeLayout{
+		{
+			{"position", VertexElementFormat::Float3},
+			{"texture", VertexElementFormat::Float2}
+		},
+		VertexLayoutDescriptor::Interleaved
+	};
+
+	auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+	/* Create cube shader */
+	IGraphicsRenderer::ShaderFileList cubeFileList =
+	{
+		{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/depth_testing.vert" },
+		{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/depth_testing.frag" }
+	};
+
+	ShaderProgramHandle cubeProgram = renderer.CreateShaderProgramFromSourceFiles(cubeFileList);
+
+
+	// Create cube geometry
+
+	RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+	auto cubeGeom = CreateCubePositionTexture(0.5f);
+	Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+	// Create plane geometry
+	VertexPositionTexture planeVertices[] = {
+		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+		{{ 5.0f, -0.5f,  5.0f },  {2.0f, 0.0f}},
+		{{-5.0f, -0.5f, -5.0f },  {0.0f, 2.0f}},
+		{{-5.0f, -0.5f,  5.0f },  {0.0f, 0.0f}},
+
+		{{ 5.0f, -0.5f,  5.0f},  {2.0f, 0.0f}},
+		{{ 5.0f, -0.5f, -5.0f},  {2.0f, 2.0f}},
+		{{-5.0f, -0.5f, -5.0f},  {0.0f, 2.0f}}
+	};
+
+	Mesh* plane = renderWorld.CreateStaticMesh(planeVertices);
+
+	/* Create materials */
+	MaterialDescriptor materialDesc(
+		{
+			{"View_ProjectionPlanes", ShaderStage::Fragment},
+			{"Material_DiffuseMap", ShaderStage::Fragment}
+		}
+	);
+
+	MaterialInterface matInterface = lib.CreateMaterialInterface(cubeProgram, materialDesc);
+
+	Texture2DHandle marbleTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(Texture2DFileDescriptor{ "Sandbox/assets/marble.jpg" });
+
+	MaterialInstance cubeInstance = lib.CreateMaterialInstance(matInterface);
+	cubeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, marbleTex);
+	cubeInstance.CreateMaterialResourceSet();
+
+	Texture2DHandle metalTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(Texture2DFileDescriptor{ "Sandbox/assets/metal.png" });
+
+	MaterialInstance planeInstance = lib.CreateMaterialInstance(matInterface);
+	planeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, metalTex);
+	planeInstance.CreateMaterialResourceSet();
+
+	/* Create camera */
+	PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+	CameraSystem camSys(renderer.MutGraphicsDevice());
+
+	ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+	Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+	newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+	m_currentCamera = newCam;
+
+	// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+	newCam->UpdateCameraVectors(0, -90);
+
+	/* Create camera end */
+
+	m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+	cubeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+	planeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{0.1f, 100.f});
+
+
+	while (WindowIsOpened())
+	{
+		float thisFrameTime = GetApplicationTimeSeconds();
+		m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+		m_lastFrame = thisFrameTime;
+
+		PollInputEvents();
+
+		if (m_moveForward)
+		{
+			CameraMoveForward();
+		}
+		else if (m_moveBackward)
+		{
+			CameraMoveBackwards();
+		}
+
+		if (m_strafeLeft)
+		{
+			CameraMoveStrafeLeft();
+		}
+		else if (m_strafeRight)
+		{
+			CameraMoveStrafeRight();
+		}
+
+
+		renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+		//lightsSystem.UpdateLights();
+
+		//lightsSystem.BindLightBuffer();
+
+		camSys.UpdateCameras();
+
+		for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+		{
+			camSys.BindCameraBuffer(iCam);
+
+			renderer.UseMaterialInstance(&cubeInstance);
+
+			cube->SetTransform(Transform::Translate({-1.0f, 0.0f, -1.0f}));
+			cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+			renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+			cube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
+			cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+			renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+			renderer.UseMaterialInstance(&planeInstance);
+
+			plane->SetTransform(Transform::Identity());
+			plane->UpdateObjectMatrices(camSys.GetCamera(iCam));
+			renderWorld.DrawMesh(plane, cubeVao, nullptr);
+		}
+
+		SwapBuffers();
+
+	}
+
+}
+
+
+void TestApplication::TestMultiLights()
+{
+	IGraphicsRenderer& renderer = MutRenderer();
+
+
+	/* Create phong object shader */
+	IGraphicsRenderer::ShaderFileList phongFileList =
+	{
+		{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/phong_maps.vert" },
+		{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/phong_maps.frag" }
+	};
+
+	ShaderProgramHandle phongProgram = renderer.CreateShaderProgramFromSourceFiles(phongFileList);
+
+
+
+	MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+	lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+	lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+	lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+	lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+
+	lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+	lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+	lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+	lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+	lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+
+	SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+	SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+	SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+	SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+	SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+	SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+	SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+	SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+	auto[mouseX, mouseY] = GetMouseCursorPosition();
 	m_lastX = mouseX;
 	m_lastY = mouseY;
 
@@ -520,7 +785,7 @@ void TestApplication::Run()
 	//newLight->SetDirectionalLight({ -0.2f, -1.0f, -0.3f });
 
 	m_flashLight->SetAttenuationFactors(1.f, 0.09f, 0.032f);
-	m_flashLight->SetSpotInnerCutoff(Degs_f{12.5});
+	m_flashLight->SetSpotInnerCutoff(Degs_f{ 12.5 });
 	m_flashLight->SetSpotOuterCutoff(Degs_f{ 15.F });
 
 	LightObject* pointLight1 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4::ZeroVector(),
@@ -601,7 +866,7 @@ void TestApplication::Run()
 
 	MaterialInstance containerInstance = lib.CreateMaterialInstance(phongInterface);
 	containerInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-		PhongMaterial{	ColorRGBAf::White().ToVec(),
+		PhongMaterial{ ColorRGBAf::White().ToVec(),
 						ColorRGBAf::White().ToVec(),
 						ColorRGBAf{0.5f}.ToVec(),
 						64 });
@@ -647,7 +912,7 @@ void TestApplication::Run()
 		Vec3(0.0f,  0.0f, -3.0f)
 	};
 
-	LightObject* pointLights[] ={
+	LightObject* pointLights[] = {
 		pointLight1,
 		pointLight2,
 		pointLight3,
@@ -761,7 +1026,6 @@ void TestApplication::Run()
 	}
 
 }
-
 
 	void TestApplication::TestSceneGraph()
 	{

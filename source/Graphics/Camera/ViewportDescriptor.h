@@ -25,6 +25,9 @@ namespace moe
 		float	m_height = 0.f;
 		float	m_minDepthRange = 0.f;
 		float	m_maxDepthRange = 1.f;
+
+		// TODO : Add scissor count and dimensions
+		// cf. https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Fixed_functions#page_Viewports-and-scissors
 	};
 
 }

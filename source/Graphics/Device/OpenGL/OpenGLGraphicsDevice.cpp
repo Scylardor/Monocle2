@@ -11,8 +11,11 @@
 
 #include "Graphics/Texture/OpenGL/OpenGLTextureFormat.h"
 
+#include "Graphics/Pipeline/OpenGL/OpenGLPipeline.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
+
 
 namespace moe
 {
@@ -220,6 +223,7 @@ namespace moe
 		// Kind of a trick : we rely on the fact all valid VAO IDs will always start at 1 and increment by one.
 		// So, a valid handle is simply at index (VAO id - 1) in the array.
 		// NOTE: this assumption won't stand if we add the ability to remove vertex layouts. So far, a vertex layout gets created "forever" (you cannot delete them).
+		// TODO: really have to fix that as it also breaks RenderDoc !
 
 		if (MOE_ASSERT(handle.Get() <= m_vertexLayouts.Size()))
 		{
@@ -688,6 +692,30 @@ namespace moe
 	void OpenGLGraphicsDevice::BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)
 	{
 		glBindTextureUnit(textureBindingPoint, texHandle.Get());
+	}
+
+
+	PipelineHandle OpenGLGraphicsDevice::CreatePipeline(PipelineDescriptor& pipelineDesc)
+	{
+		// TODO: make a move version (or take a PipelineDescriptor without ref and move it)
+		// TODO: we should store a "OpenGLPipelineDescriptor" to avoid having to translate pipeline values on every SetPipeline.
+		FreelistID pipelineID = m_pipelines.Add(pipelineDesc);
+		return pipelineID.ToHandle<PipelineHandle>();
+	}
+
+
+	void OpenGLGraphicsDevice::SetPipeline(PipelineHandle pipeHandle)
+	{
+		const PipelineDescriptor& pipelineDesc = m_pipelines.Lookup(pipeHandle.Get() - 1);
+
+		// Program the OpenGL pipeline to fit the description of the given pipeline.
+		OpenGLPipeline::SetBlendState(pipelineDesc.m_blendStateDesc);
+
+		OpenGLPipeline::SetDepthStencilState(pipelineDesc.m_depthStencilStateDesc);
+
+		OpenGLPipeline::SetRasterizerState(pipelineDesc.m_rasterizerStateDesc);
+
+
 	}
 
 

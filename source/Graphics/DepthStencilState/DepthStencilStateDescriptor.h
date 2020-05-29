@@ -11,24 +11,38 @@
 namespace moe
 {
 
+	/**
+	* \brief Controls whether depth-stencil settings are enabled or not (I find it more expressive than a bool)
+	*/
+	enum class DepthTest : char
+	{
+		Disabled = 0,
+		Enabled
+	};
+
+	enum class DepthWriting : char
+	{
+		Disabled = 0,
+		Enabled
+	};
+
+	enum class StencilTest : char
+	{
+		Disabled = 0,
+		Enabled
+	};
+
+
 
 	/**
 	 * \brief Describes in a graphics API-agnostic way everything needed to know how to configure depth and stencil testing.
 	 */
 	struct DepthStencilStateDescriptor
 	{
-		/**
-		* \brief Controls whether depth-stencil settings are enabled or not (I find it more expressive than a bool)
-		*/
-		enum State : char
-		{
-			Disabled = 0,
-			Enabled
-		};
 
-		State						m_depthTest{ Disabled };
+		DepthTest		m_depthTest{ DepthTest::Enabled };
 
-		State						m_depthWriting{ Enabled };
+		DepthWriting	m_depthWriting{ DepthWriting::Enabled };
 
 
 		/**
@@ -38,7 +52,7 @@ namespace moe
 		 */
 		DepthStencilComparisonFunc	m_depthFunc{ DepthStencilComparisonFunc::Less };
 
-		State			m_stencilTest{ Disabled };
+		StencilTest			m_stencilTest{ StencilTest::Disabled };
 
 
 		/**
@@ -64,13 +78,13 @@ namespace moe
 		/**
 		 * \brief Stencil operations to use for triangles that are front faces
 		 */
-		StencilOpsDescriptor	m_frontFaceOps;
+		StencilOpsDescriptor	m_frontFaceOps{};
 
 
 		/**
 		 * \brief Stencil operations to use for triangles that are back faces
 		 */
-		StencilOpsDescriptor	m_backFaceOps;
+		StencilOpsDescriptor	m_backFaceOps{};
 
 
 		/**

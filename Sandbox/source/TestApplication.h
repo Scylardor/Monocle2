@@ -21,6 +21,8 @@ public:
 
 	void	TestCubeWorld();
 
+	void	TestMultiLights();
+
 	void	CameraMoveForward();
 	void	CameraMoveBackwards();
 	void	CameraMoveStrafeLeft();
