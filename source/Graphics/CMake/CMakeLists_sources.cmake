@@ -97,6 +97,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/ResourceSet/ResourceSetHandle.h
 ./Resources/shaders/OpenGL/basic.frag
 ./Resources/shaders/OpenGL/basic.vert
+./Resources/shaders/OpenGL/blending.frag
+./Resources/shaders/OpenGL/blending.vert
 ./Resources/shaders/OpenGL/depth_testing.frag
 ./Resources/shaders/OpenGL/depth_testing.vert
 ./Resources/shaders/OpenGL/light.frag
@@ -105,6 +107,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/phong.vert
 ./Resources/shaders/OpenGL/phong_maps.frag
 ./Resources/shaders/OpenGL/phong_maps.vert
+./Resources/shaders/OpenGL/stencil_testing.frag
+./Resources/shaders/OpenGL/stencil_testing.vert
 ./SceneGraph/SceneGraph.cpp
 ./SceneGraph/SceneGraph.h
 ./SceneGraph/SceneGraphHandle.h

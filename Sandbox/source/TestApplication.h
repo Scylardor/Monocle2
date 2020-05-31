@@ -15,14 +15,19 @@ public:
 
 	void	Run();
 
+	// Test Basics
 	void	TestSceneGraph();
-
 	void	Test3DPlane();
-
 	void	TestCubeWorld();
-
 	void	TestMultiLights();
 
+	// Test Advanced 1
+	void	TestVisualizeDepthBuffer();
+	void	TestStencilBuffer();
+	void	TestBlending();
+
+
+	// Others
 	void	CameraMoveForward();
 	void	CameraMoveBackwards();
 	void	CameraMoveStrafeLeft();
