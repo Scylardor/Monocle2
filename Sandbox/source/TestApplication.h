@@ -25,7 +25,8 @@ public:
 	void	TestVisualizeDepthBuffer();
 	void	TestStencilBuffer();
 	void	TestBlending();
-
+	void	TestFramebuffer();
+	void	TestCubemap();
 
 	// Others
 	void	CameraMoveForward();

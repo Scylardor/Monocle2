@@ -32,6 +32,8 @@
 
 #include "Graphics/Pipeline/PipelineHandle.h"
 
+#include "Graphics/Swapchain/OpenGL/OpenGLSwapchain.h"
+
 #include "Monocle_Graphics_Export.h"
 
 namespace moe
@@ -188,6 +190,16 @@ namespace moe
 		[[nodiscard]]	PipelineHandle	CreatePipeline(PipelineDescriptor& pipelineDesc) override;
 		void							SetPipeline(PipelineHandle pipeHandle) override;
 
+		Monocle_Graphics_API	[[nodiscard]]	SwapchainHandle	CreateSwapChain(uint32_t renderWidth, uint32_t renderHeight, FramebufferAttachment wantedAttachments) override;
+
+
+		Monocle_Graphics_API	[[nodiscard]]	FramebufferHandle	CreateFramebuffer(const FramebufferDescriptor& fbDesc) override;
+		[[nodiscard]]							AFramebuffer*		MutFramebuffer(FramebufferHandle fbHandle) override
+		{
+			return &m_framebuffers[fbHandle.Get()-1];
+		}
+
+
 
 		static DeviceBufferHandle						EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset);
 
@@ -217,6 +229,10 @@ namespace moe
 
 		// Same for pipelines - doesn't exist in OpenGL. Just keep the descriptors.
 		Freelist<PipelineDescriptor>	m_pipelines;
+
+		OpenGLSwapchain	m_swapChain;
+
+		Vector<OpenGLFramebuffer>	m_framebuffers; // TODO: this is a code smell. Should be a free list but needs to fix compile...
 	};
 }
 

@@ -42,6 +42,12 @@ set(Monocle_Graphics_SOURCES
 ./DeviceBuffer/OpenGL/OpenGLDeviceBufferRange.h
 ./DeviceBuffer/UniformBufferHandle.h
 ./DeviceBuffer/VertexBufferHandle.h
+./Framebuffer/Framebuffer.h
+./Framebuffer/FramebufferAttachments.h
+./Framebuffer/FramebufferDescription.h
+./Framebuffer/FramebufferHandle.h
+./Framebuffer/OpenGL/OpenGLFramebuffer.cpp
+./Framebuffer/OpenGL/OpenGLFramebuffer.h
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
 ./Handle/ObjectHandle.h
@@ -79,6 +85,7 @@ set(Monocle_Graphics_SOURCES
 ./Renderer/OpenGL/OpenGLRenderer.h
 ./Renderer/Renderer.h
 ./Renderer/RendererDescriptor.h
+./RenderTarget/RenderTargetHandle.h
 ./RenderWorld/GraphicsObject.cpp
 ./RenderWorld/GraphicsObject.h
 ./RenderWorld/GraphicsObjectData.h
@@ -101,12 +108,16 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/blending.vert
 ./Resources/shaders/OpenGL/depth_testing.frag
 ./Resources/shaders/OpenGL/depth_testing.vert
+./Resources/shaders/OpenGL/framebuffer.frag
+./Resources/shaders/OpenGL/framebuffer.vert
 ./Resources/shaders/OpenGL/light.frag
 ./Resources/shaders/OpenGL/light.vert
 ./Resources/shaders/OpenGL/phong.frag
 ./Resources/shaders/OpenGL/phong.vert
 ./Resources/shaders/OpenGL/phong_maps.frag
 ./Resources/shaders/OpenGL/phong_maps.vert
+./Resources/shaders/OpenGL/skybox.frag
+./Resources/shaders/OpenGL/skybox.vert
 ./Resources/shaders/OpenGL/stencil_testing.frag
 ./Resources/shaders/OpenGL/stencil_testing.vert
 ./SceneGraph/SceneGraph.cpp
@@ -128,6 +139,10 @@ set(Monocle_Graphics_SOURCES
 ./Shader/ShaderStage/ShaderStage.cpp
 ./Shader/ShaderStage/ShaderStage.h
 ./Shader/UniformDataKind.h
+./Swapchain/OpenGL/OpenGLSwapchain.cpp
+./Swapchain/OpenGL/OpenGLSwapchain.h
+./Swapchain/Swapchain.h
+./Swapchain/SwapchainHandle.h
 ./Texture/OpenGL/OpenGLTextureFormat.cpp
 ./Texture/OpenGL/OpenGLTextureFormat.h
 ./Texture/Texture.h
@@ -135,6 +150,7 @@ set(Monocle_Graphics_SOURCES
 ./Texture/TextureDescription.h
 ./Texture/TextureFormat.cpp
 ./Texture/TextureFormat.h
+./Texture/TextureUsage.h
 ./Texture/TextureView.h
 ./Texture/TextureViewDescription.h
 ./Topology/PrimitiveTopology.h

@@ -23,6 +23,15 @@
 #include "Graphics/Pipeline/PipelineDescriptor.h"
 #include "Graphics/Pipeline/PipelineHandle.h"
 
+#include "Graphics/Swapchain/SwapchainHandle.h"
+
+#include "Graphics/Framebuffer/FramebufferAttachments.h"
+#include "Graphics/Framebuffer/FramebufferHandle.h"
+#include "Graphics/Framebuffer/FramebufferDescription.h"
+#include "Graphics/Framebuffer/Framebuffer.h"
+
+
+
 namespace moe
 {
 	class ResourceLayoutDescriptor;
@@ -96,6 +105,10 @@ namespace moe
 
 		virtual void			SetPipeline(PipelineHandle pipeHandle) = 0;
 
+		[[nodiscard]]	virtual SwapchainHandle	CreateSwapChain(uint32_t renderWidth, uint32_t renderHeight, FramebufferAttachment wantedAttachments) = 0;
+
+		[[nodiscard]]	virtual FramebufferHandle	CreateFramebuffer(const FramebufferDescriptor& fbDesc) = 0;
+		[[nodiscard]]	virtual AFramebuffer*		MutFramebuffer(FramebufferHandle fbHandle) = 0;
 
 	};
 }

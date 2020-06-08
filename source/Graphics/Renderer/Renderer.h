@@ -153,7 +153,8 @@ namespace moe
 
 		virtual void	UseMaterialPerObject(Material* material, AGraphicObject& object) = 0;
 
-
+		virtual void	BindFramebuffer(FramebufferHandle fbHandle) = 0;
+		virtual void	UnbindFramebuffer(FramebufferHandle fbHandle) = 0;
 
 	};
 

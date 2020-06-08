@@ -12,7 +12,8 @@ namespace moe
 		MATERIAL_PHONG,
 		OBJECT_MATRICES,
 		MATERIAL_COLOR,
-		VIEW_PROJECTION_PLANES
+		VIEW_PROJECTION_PLANES,
+		MATERIAL_VIEW_MAT3
 	};
 
 	enum  MaterialTextureBinding : uint8_t
@@ -22,6 +23,7 @@ namespace moe
 		SPECULAR,
 		EMISSION,
 		GLOSS,
+		SKYBOX,
 		CUSTOM
 	};
 

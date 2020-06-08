@@ -156,6 +156,10 @@ namespace moe
 
 		Monocle_Graphics_API void	UpdateSubBufferRange(DeviceBufferHandle handle, uint32_t offset, void* data, uint32_t dataSize) override;
 
+
+		Monocle_Graphics_API void	BindFramebuffer(FramebufferHandle fbHandle)  override;
+		Monocle_Graphics_API void	UnbindFramebuffer(FramebufferHandle fbHandle) override;
+
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice&	GetDevice() const override

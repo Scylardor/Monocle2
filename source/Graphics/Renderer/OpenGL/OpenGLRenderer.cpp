@@ -343,6 +343,26 @@ namespace moe
 	}
 
 
+	void OpenGLRenderer::BindFramebuffer(FramebufferHandle fbHandle)
+	{
+		AFramebuffer* fb = MutGraphicsDevice().MutFramebuffer(fbHandle);
+		if (MOE_ASSERT(fb != nullptr))
+		{
+			fb->Bind();
+		}
+	}
+
+
+	void OpenGLRenderer::UnbindFramebuffer(FramebufferHandle fbHandle)
+	{
+		AFramebuffer* fb = MutGraphicsDevice().MutFramebuffer(fbHandle);
+		if (MOE_ASSERT(fb != nullptr))
+		{
+			fb->Unbind();
+		}
+	}
+
+
 	// Logic mostly courtesy of https://learnopengl.com/In-Practice/Debugging
 	void OpenGLRenderer::OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity,
 		GLsizei /*length*/, const GLchar* message, const void* /*userParam*/)

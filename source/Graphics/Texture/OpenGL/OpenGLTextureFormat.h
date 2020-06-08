@@ -6,6 +6,8 @@
 
 #include "Graphics/Texture/TextureFormat.h"
 
+#include "Graphics/Texture/Texture2DHandle.h"
+
 namespace moe
 {
 	/**
@@ -34,5 +36,10 @@ namespace moe
 	 * \return An OpenGL base enum value matching the requested texture format
 	 */
 	GLenum	TranslateToOpenGLBaseFormat(int channelsNbr);
+
+	// TODO: these should probably be elsewhere
+	Texture2DHandle	EncodeRenderbufferHandle(GLuint renderBufferID);
+	Texture2DHandle	DecodeRenderbufferHandle(Texture2DHandle renderbufferHandle);
+	bool			IsARenderBufferHandle(Texture2DHandle texHandle);
 
 }

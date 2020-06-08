@@ -30,6 +30,8 @@
 
 #include "Graphics/Material/MaterialLibrary.h"
 
+#include "Graphics/Framebuffer/FramebufferDescription.h"
+
 
 namespace moe
 {
@@ -855,5 +857,476 @@ namespace moe
 
 		}
 
+	}
+
+
+	void TestApplication::TestFramebuffer()
+	{
+		IGraphicsRenderer& renderer = MutRenderer();
+
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor cubeLayout{
+			{
+				{"position", VertexElementFormat::Float3},
+				{"texture", VertexElementFormat::Float2}
+			},
+			VertexLayoutDescriptor::Interleaved
+		};
+
+		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+		/* Create cube shader */
+		IGraphicsRenderer::ShaderFileList cubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/depth_testing.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/depth_testing.frag" }
+		};
+
+		ShaderProgramHandle cubeProgram = renderer.CreateShaderProgramFromSourceFiles(cubeFileList);
+
+
+		// Create cube geometry
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+		auto cubeGeom = CreateCubePositionTexture(0.5f);
+		Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+		// Create plane geometry
+		VertexPositionTexture planeVertices[] = {
+			// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+			{{ 5.0f, -0.5f,  5.0f },  {2.0f, 0.0f}},
+			{{-5.0f, -0.5f, -5.0f },  {0.0f, 2.0f}},
+			{{-5.0f, -0.5f,  5.0f },  {0.0f, 0.0f}},
+
+			{{ 5.0f, -0.5f,  5.0f},  {2.0f, 0.0f}},
+			{{ 5.0f, -0.5f, -5.0f},  {2.0f, 2.0f}},
+			{{-5.0f, -0.5f, -5.0f},  {0.0f, 2.0f}}
+		};
+
+		Mesh* plane = renderWorld.CreateStaticMesh(planeVertices);
+
+		/* Create materials */
+		MaterialDescriptor materialDesc(
+			{
+				{"View_ProjectionPlanes", ShaderStage::Fragment},
+				{"Material_DiffuseMap", ShaderStage::Fragment}
+			}
+		);
+
+		MaterialInterface matInterface = lib.CreateMaterialInterface(cubeProgram, materialDesc);
+
+		Texture2DFileDescriptor diffuseTexDesc{ "Sandbox/assets/kitteh.png", TextureFormat::Any, TextureUsage{Sampled}, 4 };
+		Texture2DHandle marbleTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance cubeInstance = lib.CreateMaterialInstance(matInterface);
+		cubeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, marbleTex);
+		cubeInstance.CreateMaterialResourceSet();
+
+		diffuseTexDesc.m_filename = "Sandbox/assets/metal.png";
+		Texture2DHandle metalTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance planeInstance = lib.CreateMaterialInstance(matInterface);
+		planeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, metalTex);
+		planeInstance.CreateMaterialResourceSet();
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+
+		cubeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+		planeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+
+		Texture2DDescriptor colorAttachDesc{nullptr, Width_t(GetWindowWidth()), Height_t(GetWindowHeight()), TextureFormat::RGB32F, TextureUsage{Sampled | RenderTarget}};
+		Texture2DDescriptor depthAttachDesc{ nullptr, Width_t(GetWindowWidth()), Height_t(GetWindowHeight()), TextureFormat::Depth24_Stencil8, TextureUsage{RenderTarget}};
+
+		Texture2DHandle colorAttachTex = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+		Texture2DHandle depthAttachTex = renderer.MutGraphicsDevice().CreateTexture2D(depthAttachDesc);
+
+		FramebufferDescriptor fbDesc{ {colorAttachTex}, depthAttachTex};
+		FramebufferHandle fbHandle = renderer.MutGraphicsDevice().CreateFramebuffer(fbDesc);
+
+		// Create framebuffer "material" (just a shader to draw a fullscreen quad)
+		IGraphicsRenderer::ShaderFileList framebufferShaders =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/framebuffer.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/framebuffer.frag" }
+		};
+
+		ShaderProgramHandle framebufferProgram = renderer.CreateShaderProgramFromSourceFiles(framebufferShaders);
+
+		MaterialDescriptor framebufferMatDesc({{"Material_DiffuseMap", ShaderStage::Fragment}});
+		MaterialInterface fbMatIntf = lib.CreateMaterialInterface(framebufferProgram, framebufferMatDesc);
+		MaterialInstance fbMatInst = lib.CreateMaterialInstance(fbMatIntf);
+		fbMatInst.BindTexture(MaterialTextureBinding::DIFFUSE, colorAttachTex);
+		fbMatInst.CreateMaterialResourceSet();
+
+		Array<VertexPositionTexture, 6> quadVertices{ // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+			// positions   // texCoords
+			{{-1.0f,  1.0f, 0.f},  {0.0f, 1.0f}},
+			{{-1.0f, -1.0f, 0.f},  {0.0f, 0.0f}},
+			{{ 1.0f, -1.0f, 0.f},  {1.0f, 0.0f}},
+
+			{{-1.0f,  1.0f, 0.f},  {0.0f, 1.0f}},
+			{{ 1.0f, -1.0f, 0.f},  {1.0f, 0.0f}},
+			{{ 1.0f,  1.0f, 0.f},  {1.0f, 1.0f}}
+		};
+
+		Mesh* fullscreenQuad = renderWorld.CreateStaticMesh(quadVertices);
+
+
+		PipelineDescriptor fullscreenQuadPipeDesc;
+		fullscreenQuadPipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Disabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle fsqPipe = m_renderer.MutGraphicsDevice().CreatePipeline(fullscreenQuadPipeDesc);
+
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+
+			m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+			// Bind the framebuffer to effectively render-to-texture
+			renderer.BindFramebuffer(fbHandle);
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			//lightsSystem.UpdateLights();
+
+			//lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&cubeInstance);
+
+				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&planeInstance);
+
+				plane->SetTransform(Transform::Identity());
+				plane->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(plane, cubeVao, nullptr);
+			}
+
+			renderer.UnbindFramebuffer(fbHandle);
+
+			// Finally - draw the framebuffer using a fullscreen quad
+
+			renderer.MutGraphicsDevice().SetPipeline(fsqPipe);
+
+			renderer.UseMaterialInstance(&fbMatInst);
+			renderWorld.DrawMesh(fullscreenQuad, cubeVao, nullptr);
+
+			SwapBuffers();
+
+		}
+
+	}
+
+
+	struct SkyboxView
+	{
+		Std140Mat<3>	m_mat;
+	};
+
+
+	void TestApplication::TestCubemap()
+	{
+		IGraphicsRenderer& renderer = MutRenderer();
+
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_Skybox", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_VIEW_MAT3, []() { return sizeof(Std140Mat<3>); });
+
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor cubeLayout{
+			{
+				{"position", VertexElementFormat::Float3},
+				{"texture", VertexElementFormat::Float2}
+			},
+			VertexLayoutDescriptor::Interleaved
+		};
+
+		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+		/* Create cube shader */
+		IGraphicsRenderer::ShaderFileList cubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/depth_testing.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/depth_testing.frag" }
+		};
+
+		ShaderProgramHandle cubeProgram = renderer.CreateShaderProgramFromSourceFiles(cubeFileList);
+
+
+		// Create cube geometry
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+		auto cubeGeom = CreateCubePositionTexture(0.5f);
+		Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+		// Create plane geometry
+		VertexPositionTexture planeVertices[] = {
+			// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+			{{ 5.0f, -0.5f,  5.0f },  {2.0f, 0.0f}},
+			{{-5.0f, -0.5f, -5.0f },  {0.0f, 2.0f}},
+			{{-5.0f, -0.5f,  5.0f },  {0.0f, 0.0f}},
+
+			{{ 5.0f, -0.5f,  5.0f},  {2.0f, 0.0f}},
+			{{ 5.0f, -0.5f, -5.0f},  {2.0f, 2.0f}},
+			{{-5.0f, -0.5f, -5.0f},  {0.0f, 2.0f}}
+		};
+
+		Mesh* plane = renderWorld.CreateStaticMesh(planeVertices);
+
+		/* Create materials */
+		MaterialDescriptor materialDesc(
+			{
+				{"View_ProjectionPlanes", ShaderStage::Fragment},
+				{"Material_DiffuseMap", ShaderStage::Fragment}
+			}
+		);
+
+		MaterialInterface matInterface = lib.CreateMaterialInterface(cubeProgram, materialDesc);
+
+		Texture2DFileDescriptor diffuseTexDesc{ "Sandbox/assets/kitteh.png", TextureFormat::Any, TextureUsage{Sampled}, 4 };
+		Texture2DHandle marbleTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance cubeInstance = lib.CreateMaterialInstance(matInterface);
+		cubeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, marbleTex);
+		cubeInstance.CreateMaterialResourceSet();
+
+		diffuseTexDesc.m_filename = "Sandbox/assets/metal.png";
+		Texture2DHandle metalTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance planeInstance = lib.CreateMaterialInstance(matInterface);
+		planeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, metalTex);
+		planeInstance.CreateMaterialResourceSet();
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+		cubeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+		planeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+			m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			//lightsSystem.UpdateLights();
+
+			//lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&cubeInstance);
+
+				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&planeInstance);
+
+				plane->SetTransform(Transform::Identity());
+				plane->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(plane, cubeVao, nullptr);
+			}
+
+			SwapBuffers();
+
+		}
 	}
 }

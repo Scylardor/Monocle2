@@ -49,8 +49,8 @@ namespace moe
 
 		void	PopBack() { return m_vec.pop_back(); }
 
-		ValueType&			Last() { return m_vec[m_vec.size()-1]; }
-		const ValueType&	Last() const { return m_vec[m_vec.size() - 1]; }
+		ValueType&			Back() { return m_vec.back(); }
+		const ValueType&	Back() const { return m_vec.back(); }
 
 		Iterator	Insert(ConstIterator position, const ValueType& val)					{ return m_vec.insert(position, val); }
 		Iterator	Insert(ConstIterator position, SizeType n, const ValueType& val)		{ return m_vec.insert(position, n, val); }

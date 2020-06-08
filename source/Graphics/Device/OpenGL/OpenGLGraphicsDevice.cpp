@@ -435,8 +435,8 @@ namespace moe
 	Texture2DHandle OpenGLGraphicsDevice::CreateTexture2D(const Texture2DDescriptor& tex2DDesc)
 	{
 		// First ensure the target texture format is valid - don't bother going further if not
-		const GLuint textureFormat = TranslateToOpenGLSizedFormat(tex2DDesc.m_targetFormat);
-		if (textureFormat == 0)
+		const GLuint GLtextureFormat = TranslateToOpenGLSizedFormat(tex2DDesc.m_targetFormat);
+		if (GLtextureFormat == 0)
 		{
 			return Texture2DHandle::Null();
 		}
@@ -444,17 +444,29 @@ namespace moe
 		// we have the data: upload to GPU
 		GLuint textureID;
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
-		glTextureStorage2D(textureID, tex2DDesc.m_wantedMipmapLevels, textureFormat, tex2DDesc.m_width, tex2DDesc.m_height);
-
-		glTextureSubImage2D(textureID, 0, 0, 0, tex2DDesc.m_width, tex2DDesc.m_height, GL_RGBA, GL_UNSIGNED_BYTE, tex2DDesc.m_imageData);
-
-		if (tex2DDesc.m_wantedMipmapLevels != 0)
+		// If the required texture is a write-only (not Sampled) render target, use a renderbuffer object instead.
+		// Renderbuffer objects store all the render data directly into their buffer without any conversions to texture-specific formats.
+		// It makes them faster as a writeable storage medium, as they are write-only objects.
+		if (tex2DDesc.m_texUsage & RenderTarget && (tex2DDesc.m_texUsage & Sampled) == 0)
 		{
-			glGenerateTextureMipmap(textureID);
-		}
+			unsigned int rbo;
+			glCreateRenderbuffers(1, &rbo);
+			glNamedRenderbufferStorage(rbo, GLtextureFormat, tex2DDesc.m_width, tex2DDesc.m_height);
 
-		return Texture2DHandle{textureID};
+			return EncodeRenderbufferHandle(rbo);
+		}
+		else
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+			glTextureStorage2D(textureID, tex2DDesc.m_wantedMipmapLevels, GLtextureFormat, tex2DDesc.m_width, tex2DDesc.m_height);
+			if (tex2DDesc.m_imageData != nullptr)
+			{
+				glTextureSubImage2D(textureID, 0, 0, 0, tex2DDesc.m_width, tex2DDesc.m_height, GL_RGBA, GL_UNSIGNED_BYTE, tex2DDesc.m_imageData);
+			}
+			glGenerateTextureMipmap(textureID);
+
+			return Texture2DHandle{ textureID };
+		}
 	}
 
 
@@ -692,6 +704,7 @@ namespace moe
 	void OpenGLGraphicsDevice::BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)
 	{
 		glBindTextureUnit(textureBindingPoint, texHandle.Get());
+
 	}
 
 
@@ -716,6 +729,21 @@ namespace moe
 		OpenGLPipeline::SetRasterizerState(pipelineDesc.m_rasterizerStateDesc);
 
 
+	}
+
+
+	SwapchainHandle OpenGLGraphicsDevice::CreateSwapChain(uint32_t renderWidth, uint32_t renderHeight, FramebufferAttachment wantedAttachments)
+	{
+		m_swapChain.Create(*this, renderWidth, renderHeight, wantedAttachments);
+
+		return SwapchainHandle{1};
+	}
+
+
+	FramebufferHandle OpenGLGraphicsDevice::CreateFramebuffer(const FramebufferDescriptor& fbDesc)
+	{
+		m_framebuffers.EmplaceBack(fbDesc);
+		return FramebufferHandle{(FramebufferHandle::Underlying) m_framebuffers.Size()};
 	}
 
 
