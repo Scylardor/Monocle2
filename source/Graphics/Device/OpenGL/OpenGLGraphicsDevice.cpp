@@ -358,11 +358,11 @@ namespace moe
 
 			glVertexArrayElementBuffer(vtxLayout->VAO(), ebo);
 
-			glDrawElements(GL_TRIANGLES, (GLsizei)numIndices, GL_UNSIGNED_INT, (const void*)((uint64_t)eboOffset));
+			glDrawElements(m_primitiveTopology, (GLsizei)numIndices, GL_UNSIGNED_INT, (const void*)((uint64_t)eboOffset));
 		}
 		else
 		{
-			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)numVertices);
+			glDrawArrays(m_primitiveTopology, 0, (GLsizei)numVertices);
 		}
 	}
 
@@ -840,7 +840,7 @@ namespace moe
 
 		OpenGLPipeline::SetRasterizerState(pipelineDesc.m_rasterizerStateDesc);
 
-
+		m_primitiveTopology = OpenGLPipeline::GetOpenGLPrimitiveTopology(pipelineDesc.m_topology);
 	}
 
 

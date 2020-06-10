@@ -27,6 +27,9 @@ public:
 	void	TestBlending();
 	void	TestFramebuffer();
 	void	TestCubemap();
+	void	TestGeometryShaderHouses();
+	void	TestGeometryShaderExplode();
+	void	TestGeometryShaderNormals();
 
 	// Others
 	void	CameraMoveForward();

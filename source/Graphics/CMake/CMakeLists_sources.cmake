@@ -112,6 +112,9 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/depth_testing.vert
 ./Resources/shaders/OpenGL/framebuffer.frag
 ./Resources/shaders/OpenGL/framebuffer.vert
+./Resources/shaders/OpenGL/geometry_shader.frag
+./Resources/shaders/OpenGL/geometry_shader.geom
+./Resources/shaders/OpenGL/geometry_shader.vert
 ./Resources/shaders/OpenGL/light.frag
 ./Resources/shaders/OpenGL/light.vert
 ./Resources/shaders/OpenGL/phong.frag

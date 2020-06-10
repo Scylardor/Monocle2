@@ -1536,7 +1536,545 @@ namespace moe
 			}
 
 			SwapBuffers();
-
 		}
 	}
+
+
+	void TestApplication::TestGeometryShaderHouses()
+	{
+		IGraphicsRenderer& renderer = MutRenderer();
+
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("SkyboxViewProjection", { MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, ResourceKind::UniformBuffer });
+
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		pipeDesc.m_topology = PrimitiveTopology::PointList;
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+
+		// Create reflective cube
+
+		// VAO
+		VertexLayoutDescriptor geomLayout{
+			{
+			{"position", VertexElementFormat::Float2},
+			{"color", VertexElementFormat::Float3}
+			},
+		VertexLayoutDescriptor::Interleaved
+		};
+
+		auto geomVao = renderer.CreateVertexLayout(geomLayout);
+
+		// Shader
+		IGraphicsRenderer::ShaderFileList geometryFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/geometry_shader.vert" },
+			{ ShaderStage::Geometry,	"source/Graphics/Resources/shaders/OpenGL/geometry_shader.geom" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/geometry_shader.frag" }
+		};
+		ShaderProgramHandle geomProgram = renderer.CreateShaderProgramFromSourceFiles(geometryFileList);
+
+		// Material
+		MaterialDescriptor emptyDesc;
+		MaterialInterface pointsInf = lib.CreateMaterialInterface(geomProgram, emptyDesc);
+		MaterialInstance pointsInst = lib.CreateMaterialInstance(pointsInf);
+
+		// Geometry
+		struct VertexPositionColor2
+		{
+			Vec2 m_position;
+			Vec3 m_color;
+		};
+
+		Array<VertexPositionColor2, 4> geomTest = {
+			{{-0.5f,  0.5f}, Vec3(1, 0, 0)}, // top-left
+			{{ 0.5f,  0.5f}, Vec3(0, 1, 0)}, // top-right
+			{{ 0.5f, -0.5f}, Vec3(0, 0, 1)}, // bottom-right
+			{{-0.5f, -0.5f}, Vec3(1, 1, 0)}  // bottom-left
+		};
+
+		Mesh* points = renderWorld.CreateStaticMesh(geomTest);
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+			m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			//lightsSystem.UpdateLights();
+
+			//lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&pointsInst);
+				//cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
+				//cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(points, geomVao, nullptr);
+
+			}
+
+			SwapBuffers();
+		}
+	}
+
+
+
+	void TestApplication::TestGeometryShaderExplode()
+	{
+		IGraphicsRenderer& renderer = MutRenderer();
+
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("SkyboxViewProjection", { MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, ResourceKind::UniformBuffer });
+
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor cubeLayout{
+			{
+				{"position", VertexElementFormat::Float3},
+				{"texture", VertexElementFormat::Float2}
+			},
+			VertexLayoutDescriptor::Interleaved
+		};
+
+		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+		/* Create cube shader */
+		IGraphicsRenderer::ShaderFileList cubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/depth_testing.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/depth_testing.frag" }
+		};
+
+		ShaderProgramHandle cubeProgram = renderer.CreateShaderProgramFromSourceFiles(cubeFileList);
+
+
+		// Create cube geometry
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+		auto cubeGeom = CreateCubePositionTexture(0.5f);
+		Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+		// Create plane geometry
+		VertexPositionTexture planeVertices[] = {
+			// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+			{{ 5.0f, -0.5f,  5.0f },  {2.0f, 0.0f}},
+			{{-5.0f, -0.5f, -5.0f },  {0.0f, 2.0f}},
+			{{-5.0f, -0.5f,  5.0f },  {0.0f, 0.0f}},
+
+			{{ 5.0f, -0.5f,  5.0f},  {2.0f, 0.0f}},
+			{{ 5.0f, -0.5f, -5.0f},  {2.0f, 2.0f}},
+			{{-5.0f, -0.5f, -5.0f},  {0.0f, 2.0f}}
+		};
+
+		Mesh* plane = renderWorld.CreateStaticMesh(planeVertices);
+
+		/* Create materials */
+		MaterialDescriptor materialDesc(
+			{
+				{"View_ProjectionPlanes", ShaderStage::Fragment},
+				{"Material_DiffuseMap", ShaderStage::Fragment}
+			}
+		);
+
+		MaterialInterface matInterface = lib.CreateMaterialInterface(cubeProgram, materialDesc);
+
+		Texture2DFileDescriptor diffuseTexDesc{ "Sandbox/assets/kitteh.png", TextureFormat::Any, TextureUsage{Sampled}, 4 };
+		Texture2DHandle marbleTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance cubeInstance = lib.CreateMaterialInstance(matInterface);
+		cubeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, marbleTex);
+		cubeInstance.CreateMaterialResourceSet();
+
+		diffuseTexDesc.m_filename = "Sandbox/assets/metal.png";
+		Texture2DHandle metalTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance planeInstance = lib.CreateMaterialInstance(matInterface);
+		planeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, metalTex);
+		planeInstance.CreateMaterialResourceSet();
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+		cubeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+		planeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+
+		// Create skybox
+
+		/* Create skybox VAO */
+		VertexLayoutDescriptor skyboxLayout{
+			{
+				{"position", VertexElementFormat::Float3}
+			},
+			VertexLayoutDescriptor::Interleaved
+		};
+
+		auto skyboxVao = renderer.CreateVertexLayout(skyboxLayout);
+
+
+		/* Create skybox shader */
+		IGraphicsRenderer::ShaderFileList skyboxFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/skybox.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/skybox.frag" }
+		};
+
+		ShaderProgramHandle skyboxProgram = renderer.CreateShaderProgramFromSourceFiles(skyboxFileList);
+
+
+		// Create a new pipeline for the skybox with depth comparison set to LessEqual
+		// The depth buffer will be filled with values of 1.0 for the skybox, so we need to make sure it passes with values less than or equal to the depth buffer.
+		PipelineDescriptor skyboxPipeDesc;
+		skyboxPipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::LessEqual };
+
+		PipelineHandle skyboxPipe = m_renderer.MutGraphicsDevice().CreatePipeline(skyboxPipeDesc);
+
+		/* Create materials */
+		MaterialDescriptor skyboxMatDesc(
+			{
+				{"SkyboxViewProjection", ShaderStage::Vertex},
+				{"Material_SkyboxMap", ShaderStage::Fragment}
+			}
+		);
+		MaterialInterface skyboxIntf = lib.CreateMaterialInterface(skyboxProgram, skyboxMatDesc);
+		CubeMapTextureFilesDescriptor skyboxTexDesc{ {"Sandbox/assets/textures/skybox/right.jpg",
+			"Sandbox/assets/textures/skybox/left.jpg",
+			"Sandbox/assets/textures/skybox/top.jpg",
+			"Sandbox/assets/textures/skybox/bottom.jpg",
+			"Sandbox/assets/textures/skybox/front.jpg",
+			"Sandbox/assets/textures/skybox/back.jpg"},
+			TextureFormat::RGBA8
+		};
+
+		MaterialInstance skyboxInst = lib.CreateMaterialInstance(skyboxIntf);
+		TextureHandle skyboxTex = MutRenderer().MutGraphicsDevice().CreateCubemapTexture(skyboxTexDesc);
+		skyboxInst.BindTexture(MaterialTextureBinding::SKYBOX, skyboxTex);
+		skyboxInst.CreateMaterialResourceSet();
+
+		Array<VertexPosition, 36> skyboxVertices = {
+			// positions
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}}
+		};
+		//CreateCube(1.0f);
+
+		Mesh* skybox = renderWorld.CreateStaticMesh(skyboxVertices);
+
+
+
+		// Create reflective cube
+
+		// VAO
+		VertexLayoutDescriptor reflectiveCubeLayout{
+	{
+			{"position", VertexElementFormat::Float3},
+			{"normal", VertexElementFormat::Float3}
+			},
+		VertexLayoutDescriptor::Interleaved
+		};
+
+		auto reflCubeVao = renderer.CreateVertexLayout(reflectiveCubeLayout);
+
+		// Shader
+		IGraphicsRenderer::ShaderFileList reflCubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/cubemaps.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/cubemaps.frag" }
+		};
+		ShaderProgramHandle reflCubeProgram = renderer.CreateShaderProgramFromSourceFiles(reflCubeFileList);
+
+		// Material
+
+		MaterialDescriptor reflectiveMatDesc(
+			{
+				{ "Material_SkyboxMap", ShaderStage::Fragment }
+			}
+		);
+
+		MaterialInterface reflMatIntf = lib.CreateMaterialInterface(reflCubeProgram, reflectiveMatDesc);
+		MaterialInstance reflMatInst = lib.CreateMaterialInstance(reflMatIntf);
+		reflMatInst.BindTexture(MaterialTextureBinding::SKYBOX, skyboxTex);
+		reflMatInst.CreateMaterialResourceSet();
+
+		// Geometry
+		Array<VertexPositionNormal, 36> cubeVpnGeom = CreateCubePositionNormal(0.5f);
+
+		Mesh* reflCube = renderWorld.CreateStaticMesh(cubeVpnGeom);
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			//lightsSystem.UpdateLights();
+
+			//lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+				m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&cubeInstance);
+				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&reflMatInst);
+				reflCube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
+				reflCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(reflCube, reflCubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&planeInstance);
+				plane->SetTransform(Transform::Identity());
+				plane->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(plane, cubeVao, nullptr);
+
+				// Render skybox last
+				m_renderer.MutGraphicsDevice().SetPipeline(skyboxPipe);
+
+				renderer.UseMaterialInstance(&skyboxInst);
+
+				// We want the skybox to be centered around the player so that no matter how far the player moves, the skybox won't get any closer.
+				// We can achieve this by converting the view matrix to a 3x3 matrix (removing translation) and converting it back to a 4x4 matrix:
+				// TODO: it works, but it's a bit ugly. Find a better way to do that... (just zero translation from the view-projection matrix ?)
+				Mat4 view = camSys.GetCamera(iCam).GetViewMatrix();
+				view[3] = Vec4(0, 0, 0, 1);
+				Mat4 proj = camSys.GetCamera(iCam).GetProjectionMatrix();
+				Mat4 skyboxViewProj = proj * view;
+				skyboxInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, skyboxViewProj);
+
+				renderWorld.DrawMesh(skybox, skyboxVao, nullptr);
+
+			}
+
+			SwapBuffers();
+		}
+	}
+
+
+
+	void TestApplication::TestGeometryShaderNormals()
+	{
+
+	}
+
 }

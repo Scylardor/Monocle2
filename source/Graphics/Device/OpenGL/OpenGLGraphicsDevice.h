@@ -238,6 +238,8 @@ namespace moe
 		OpenGLSwapchain	m_swapChain;
 
 		Vector<OpenGLFramebuffer>	m_framebuffers; // TODO: this is a code smell. Should be a free list but needs to fix compile...
+
+		GLenum	m_primitiveTopology = GL_TRIANGLES;	// Current topology used to draw geometry. Modified by SetPipeline
 	};
 }
 

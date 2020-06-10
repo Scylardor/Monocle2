@@ -12,7 +12,7 @@ cd "$WORKING_DIR"
 mkdir CMake
 
 # Using sed to escape filenames with spaces in them.
-BASE_SOURCES=$( find ./ -type f -name "*.cpp" -or -name "*.h" -or -name "*.hpp" -or -name "*.vert" -or -name "*.frag" | sed 's/ /\\ /g')
+BASE_SOURCES=$( find ./ -type f -name "*.cpp" -or -name "*.h" -or -name "*.hpp" -or -name "*.vert" -or -name "*.frag" -or -name "*.geom" | sed 's/ /\\ /g')
 CROSSPLATFORM_SOURCES=$( echo "$BASE_SOURCES" | grep -Fv -e "$WINDOWS_ONLY_SUBPATH" -e "$LINUX_ONLY_SUBPATH" -e "$MACOS_ONLY_SUBPATH" )
 
 WIN32_SOURCES=$( echo "$BASE_SOURCES" | grep "$WINDOWS_ONLY_SUBPATH")

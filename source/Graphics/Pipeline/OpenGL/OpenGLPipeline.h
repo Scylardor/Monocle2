@@ -15,6 +15,7 @@ namespace moe
 
 		static void	SetRasterizerState(const RasterizerStateDescriptor& rsDesc);
 
+		static int	GetOpenGLPrimitiveTopology(PrimitiveTopology topo);
 
 		static int	GetOpenGLBlendEnum(BlendFactor blendFactor);
 

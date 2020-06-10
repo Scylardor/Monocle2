@@ -131,6 +131,23 @@ namespace moe
 	}
 
 
+	int OpenGLPipeline::GetOpenGLPrimitiveTopology(PrimitiveTopology topo)
+	{
+		switch (topo)
+		{
+			case PrimitiveTopology::PointList: return GL_POINTS;
+			case PrimitiveTopology::LineList:  return GL_LINES;
+			case PrimitiveTopology::LineStrip: return GL_LINE_STRIP;
+			case PrimitiveTopology::TriangleList: return GL_TRIANGLES;
+			case PrimitiveTopology::TriangleStrip: return GL_TRIANGLE_STRIP;
+			default:
+				MOE_DEBUG_ASSERT(false);
+				MOE_ERROR(moe::ChanGraphics, "Unmanaged topology value: %i", topo);
+				return 0;
+		}
+	}
+
+
 	int OpenGLPipeline::GetOpenGLDSComparisonFunc(DepthStencilComparisonFunc func)
 	{
 		switch (func)

@@ -15,7 +15,7 @@ namespace moe
 		LineList,		// A series of isolated, 2-element line segments.
 		LineStrip,		// A series of connected line segments.
 		TriangleList,	// A list of isolated, 3-element triangles.
-		TriangleStrip	// A series of connected triangles.
+		TriangleStrip,	// A series of connected triangles.
 	};
 
 
