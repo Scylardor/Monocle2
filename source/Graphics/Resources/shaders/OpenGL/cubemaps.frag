@@ -22,10 +22,16 @@ layout(binding = 5) uniform samplerCube skybox;
 
 void main()
 {
-	// Reflection - first compute the light-to-point world space vector...
+	// first compute the light-to-point world space vector...
 	vec3 eyeToPoint = normalize(vs_position_world.xyz - cameraPos_world.xyz);
-	// ... Then reflect it around the surface normal to obtain the vector we lookup the skybox with
-	vec3 reflectVec = reflect(eyeToPoint, normalize(vs_normal));
-	FragColor = vec4(texture(skybox, reflectVec).rgb, 1.0);
 
+	// Reflection: reflect this vector around the surface normal to obtain the vector we lookup the skybox with
+	// This creates a "perfect mirror" (no reflection map).
+	//	vec3 reflectVec = reflect(eyeToPoint, normalize(vs_normal));
+	//	FragColor = vec4(texture(skybox, reflectVec).rgb, 1.0);
+
+	// Refraction: the direction of the view vector is slightly bent. This resulting bent vector is then used to sample from the cubemap.
+	float ratio = 1.00 / 1.52; // The ratio between source material / destination material refracting indices. 1 = air and 1.52 = glass
+	vec3 refractVec = refract(eyeToPoint, normalize(vs_normal), ratio);
+	FragColor = vec4(texture(skybox, refractVec).rgb, 1.0);
 }
