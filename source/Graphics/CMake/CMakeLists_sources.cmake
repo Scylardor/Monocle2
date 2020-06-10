@@ -106,6 +106,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/basic.vert
 ./Resources/shaders/OpenGL/blending.frag
 ./Resources/shaders/OpenGL/blending.vert
+./Resources/shaders/OpenGL/cubemaps.frag
+./Resources/shaders/OpenGL/cubemaps.vert
 ./Resources/shaders/OpenGL/depth_testing.frag
 ./Resources/shaders/OpenGL/depth_testing.vert
 ./Resources/shaders/OpenGL/framebuffer.frag
@@ -150,6 +152,7 @@ set(Monocle_Graphics_SOURCES
 ./Texture/TextureDescription.h
 ./Texture/TextureFormat.cpp
 ./Texture/TextureFormat.h
+./Texture/TextureHandle.h
 ./Texture/TextureUsage.h
 ./Texture/TextureView.h
 ./Texture/TextureViewDescription.h
@@ -162,6 +165,7 @@ set(Monocle_Graphics_SOURCES
 ./VertexLayout/OpenGL/OpenGLVertexFormat.cpp
 ./VertexLayout/OpenGL/OpenGLVertexFormat.h
 ./VertexLayout/OpenGL/OpenGLVertexLayout.h
+./VertexLayout/OpenGL/OpenGLVertexLayoutComparator.h
 ./VertexLayout/VertexElementDescriptor.h
 ./VertexLayout/VertexElementFormat.h
 ./VertexLayout/VertexLayout.h

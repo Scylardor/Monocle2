@@ -10,6 +10,7 @@ uint8_t moe::GetTextureFormatChannelsNumber(TextureFormat format)
 	case TextureFormat::Any:
 		return 0;
 	case TextureFormat::RGBA32F:
+	case TextureFormat::RGBA8:
 		return 4;
 	case TextureFormat::RGB32F:
 		return 3;

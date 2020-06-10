@@ -33,4 +33,14 @@ namespace moe
 		uint32_t		m_wantedMipmapLevels{1};
 		TextureFormat	m_requiredFormat{ TextureFormat::Any };
 	};
+
+
+	struct CubeMapTextureFilesDescriptor
+	{
+		std::string				m_rightLeftTopBottomFrontBackTexFiles[6]{};
+		TextureFormat			m_targetFormat{ TextureFormat::Any };
+		TextureUsage			m_texUsage{ TextureUsage::Sampled };
+		uint32_t				m_wantedMipmapLevels{ 1 };
+		TextureFormat			m_requiredFormat{ TextureFormat::Any };
+	};
 }

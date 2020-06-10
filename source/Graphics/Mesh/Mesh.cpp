@@ -37,6 +37,7 @@ namespace moe
 		const Mat4& vp = currentCamera.GetViewProjectionMatrix();
 		const Mat4 modelView = view * model;
 
+		// TODO: this is silly ! The normal matrix is built from the modelView but it should be using the model matrix ! Fix that (and check all tests using normal matrix still work).
 		ObjectMatrices matrices{ model, modelView, vp * model, Mat3(modelView).GetInverseTransposed() };
 
 		m_world->MutRenderer().MutGraphicsDevice().UpdateBuffer(m_perObjectUniformBuffer, &matrices, sizeof(ObjectMatrices));

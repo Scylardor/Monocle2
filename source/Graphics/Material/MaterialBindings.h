@@ -13,7 +13,7 @@ namespace moe
 		OBJECT_MATRICES,
 		MATERIAL_COLOR,
 		VIEW_PROJECTION_PLANES,
-		MATERIAL_VIEW_MAT3
+		MATERIAL_SKYBOX_VIEWPROJ
 	};
 
 	enum  MaterialTextureBinding : uint8_t

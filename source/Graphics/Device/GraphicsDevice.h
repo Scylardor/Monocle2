@@ -17,6 +17,7 @@
 #include "Graphics/Camera/ViewportHandle.h"
 #include "Graphics/Camera/ViewportDescriptor.h"
 
+#include "Graphics/Texture/TextureHandle.h"
 #include "Graphics/Texture/Texture2DHandle.h"
 #include "Graphics/Texture/TextureDescription.h"
 
@@ -97,9 +98,11 @@ namespace moe
 		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DDescriptor& tex2DDesc) = 0;
 		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc) = 0;
 
+		[[nodiscard]] virtual TextureHandle	CreateCubemapTexture(const CubeMapTextureFilesDescriptor& cubemapFilesDesc) = 0;
+
 		virtual void	DestroyTexture2D(Texture2DHandle textureHandle) = 0;
 
-		virtual void	BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)  = 0;
+		virtual void	BindTextureUnit(int textureBindingPoint, TextureHandle texHandle)  = 0;
 
 		[[nodiscard]]	virtual PipelineHandle	CreatePipeline(PipelineDescriptor& pipelineDesc) = 0;
 

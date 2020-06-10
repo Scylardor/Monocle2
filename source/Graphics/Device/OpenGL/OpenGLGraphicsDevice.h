@@ -36,6 +36,7 @@
 
 #include "Monocle_Graphics_Export.h"
 
+
 namespace moe
 {
 	/**
@@ -158,6 +159,9 @@ namespace moe
 		[[nodiscard]] Texture2DHandle	CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc) override;
 
 
+		[[nodiscard]] TextureHandle	CreateCubemapTexture(const CubeMapTextureFilesDescriptor& cubemapFilesDesc) override;
+
+
 		/**
 		 * \brief Destroys a 2D Texture created previously.
 		 * \param texHandle The handle of texture to destroy
@@ -183,9 +187,9 @@ namespace moe
 		}
 
 
-		void	BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, Texture2DHandle texHandle, const char* uniformName);
+		void	BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, TextureHandle texHandle, const char* uniformName);
 
-		void	BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle) override;
+		void	BindTextureUnit(int textureBindingPoint, TextureHandle texHandle) override;
 
 		[[nodiscard]]	PipelineHandle	CreatePipeline(PipelineDescriptor& pipelineDesc) override;
 		void							SetPipeline(PipelineHandle pipeHandle) override;

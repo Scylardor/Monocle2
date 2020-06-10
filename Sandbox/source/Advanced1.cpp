@@ -32,6 +32,8 @@
 
 #include "Graphics/Framebuffer/FramebufferDescription.h"
 
+#include "Graphics/Texture/TextureHandle.h"
+
 
 namespace moe
 {
@@ -158,7 +160,6 @@ namespace moe
 		PipelineDescriptor pipeDesc;
 		// always pass the depth test (same effect as glDisable(GL_DEPTH_TEST))
 		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
-
 		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
 
 		/* Create cube VAO */
@@ -1126,6 +1127,62 @@ namespace moe
 		Std140Mat<3>	m_mat;
 	};
 
+	struct VertexPositionNormal
+	{
+		Vec3	m_position;
+		Vec3	m_normal;
+	};
+
+
+
+	Array<VertexPositionNormal, 36>	CreateCubePositionNormal(float halfExtent)
+	{
+		return {
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+			{Vec3{ halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+			{Vec3{-halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}},
+
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f, 1.0f }},
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}},
+
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent }, { -1.0f,  0.0f,  0.0 }},
+			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}},
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}},
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}},
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0}},
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0}},
+
+			{ Vec3{ halfExtent,  halfExtent,  halfExtent }, { 1.0f,  0.0f,  0.0f }},
+			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }},
+			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f }},
+			{ Vec3{ halfExtent, -halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f }},
+
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent }, { 0.0f, -1.0f,  0.0f } },
+			{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f} },
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f} },
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f} },
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f} },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f} },
+
+			{Vec3{ -halfExtent,  halfExtent, -halfExtent }, { 0.0f,  1.0f,  0.0f } },
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f} },
+			{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f} },
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f} },
+			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f} },
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}}
+		};
+
+	}
+
 
 	void TestApplication::TestCubemap()
 	{
@@ -1139,16 +1196,17 @@ namespace moe
 		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
 		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
 		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("SkyboxViewProjection", { MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, ResourceKind::UniformBuffer });
+
 		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
 		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
 		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
-		lib.AddBindingMapping("Material_Skybox", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
 
 		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
-		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_VIEW_MAT3, []() { return sizeof(Std140Mat<3>); });
-
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
 
 		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
@@ -1268,6 +1326,142 @@ namespace moe
 		cubeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
 		planeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
 
+		// Create skybox
+
+		/* Create skybox VAO */
+		VertexLayoutDescriptor skyboxLayout{
+			{
+				{"position", VertexElementFormat::Float3}
+			},
+			VertexLayoutDescriptor::Interleaved
+		};
+
+		auto skyboxVao = renderer.CreateVertexLayout(skyboxLayout);
+
+
+		/* Create skybox shader */
+		IGraphicsRenderer::ShaderFileList skyboxFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/skybox.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/skybox.frag" }
+		};
+
+		ShaderProgramHandle skyboxProgram = renderer.CreateShaderProgramFromSourceFiles(skyboxFileList);
+
+
+		// Create a new pipeline for the skybox with depth comparison set to LessEqual
+		// The depth buffer will be filled with values of 1.0 for the skybox, so we need to make sure it passes with values less than or equal to the depth buffer.
+		PipelineDescriptor skyboxPipeDesc;
+		skyboxPipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::LessEqual };
+
+		PipelineHandle skyboxPipe = m_renderer.MutGraphicsDevice().CreatePipeline(skyboxPipeDesc);
+
+		/* Create materials */
+		MaterialDescriptor skyboxMatDesc(
+			{
+				{"SkyboxViewProjection", ShaderStage::Vertex},
+				{"Material_SkyboxMap", ShaderStage::Fragment}
+			}
+		);
+		MaterialInterface skyboxIntf = lib.CreateMaterialInterface(skyboxProgram, skyboxMatDesc);
+		CubeMapTextureFilesDescriptor skyboxTexDesc{{"Sandbox/assets/textures/skybox/right.jpg",
+			"Sandbox/assets/textures/skybox/left.jpg",
+			"Sandbox/assets/textures/skybox/top.jpg",
+			"Sandbox/assets/textures/skybox/bottom.jpg",
+			"Sandbox/assets/textures/skybox/front.jpg",
+			"Sandbox/assets/textures/skybox/back.jpg"},
+			TextureFormat::RGBA8
+		};
+
+		MaterialInstance skyboxInst = lib.CreateMaterialInstance(skyboxIntf);
+		TextureHandle skyboxTex = MutRenderer().MutGraphicsDevice().CreateCubemapTexture(skyboxTexDesc);
+		skyboxInst.BindTexture(MaterialTextureBinding::SKYBOX, skyboxTex);
+		skyboxInst.CreateMaterialResourceSet();
+
+		Array<VertexPosition, 36> skyboxVertices = {
+			// positions
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}}
+		};
+		//CreateCube(1.0f);
+
+		Mesh* skybox = renderWorld.CreateStaticMesh(skyboxVertices);
+
+
+
+		// Create reflective cube
+
+		// VAO
+		VertexLayoutDescriptor reflectiveCubeLayout{
+	{
+			{"position", VertexElementFormat::Float3},
+			{"normal", VertexElementFormat::Float3}
+			},
+		VertexLayoutDescriptor::Interleaved
+		};
+
+		auto reflCubeVao = renderer.CreateVertexLayout(reflectiveCubeLayout);
+
+		// Shader
+		IGraphicsRenderer::ShaderFileList reflCubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/cubemaps.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/cubemaps.frag" }
+		};
+		ShaderProgramHandle reflCubeProgram = renderer.CreateShaderProgramFromSourceFiles(reflCubeFileList);
+
+		// Material
+
+		MaterialDescriptor reflectiveMatDesc(
+			{
+				{ "Material_SkyboxMap", ShaderStage::Fragment }
+			}
+		);
+
+		MaterialInterface reflMatIntf = lib.CreateMaterialInterface(reflCubeProgram, reflectiveMatDesc);
+		MaterialInstance reflMatInst = lib.CreateMaterialInstance(reflMatIntf);
+		reflMatInst.BindTexture(MaterialTextureBinding::SKYBOX, skyboxTex);
+		reflMatInst.CreateMaterialResourceSet();
+
+		// Geometry
+		Array<VertexPositionNormal, 36> cubeVpnGeom = CreateCubePositionNormal(0.5f);
+
+		Mesh* reflCube = renderWorld.CreateStaticMesh(cubeVpnGeom);
+
 		while (WindowIsOpened())
 		{
 			float thisFrameTime = GetApplicationTimeSeconds();
@@ -1294,8 +1488,6 @@ namespace moe
 				CameraMoveStrafeRight();
 			}
 
-			m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
-
 			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
 
 			//lightsSystem.UpdateLights();
@@ -1306,23 +1498,41 @@ namespace moe
 
 			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
 			{
+				m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
 				camSys.BindCameraBuffer(iCam);
 
 				renderer.UseMaterialInstance(&cubeInstance);
-
 				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
 				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
 				renderWorld.DrawMesh(cube, cubeVao, nullptr);
 
-				cube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
-				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
-				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+				renderer.UseMaterialInstance(&reflMatInst);
+				reflCube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
+				reflCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(reflCube, reflCubeVao, nullptr);
 
 				renderer.UseMaterialInstance(&planeInstance);
-
 				plane->SetTransform(Transform::Identity());
 				plane->UpdateObjectMatrices(camSys.GetCamera(iCam));
 				renderWorld.DrawMesh(plane, cubeVao, nullptr);
+
+				// Render skybox last
+				m_renderer.MutGraphicsDevice().SetPipeline(skyboxPipe);
+
+				renderer.UseMaterialInstance(&skyboxInst);
+
+				// We want the skybox to be centered around the player so that no matter how far the player moves, the skybox won't get any closer.
+				// We can achieve this by converting the view matrix to a 3x3 matrix (removing translation) and converting it back to a 4x4 matrix:
+				// TODO: it works, but it's a bit ugly. Find a better way to do that... (just zero translation from the view-projection matrix ?)
+				Mat4 view = camSys.GetCamera(iCam).GetViewMatrix();
+				view[3] = Vec4(0,0,0, 1);
+				Mat4 proj = camSys.GetCamera(iCam).GetProjectionMatrix();
+				Mat4 skyboxViewProj = proj * view;
+				skyboxInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, skyboxViewProj);
+
+				renderWorld.DrawMesh(skybox, skyboxVao, nullptr);
+
 			}
 
 			SwapBuffers();

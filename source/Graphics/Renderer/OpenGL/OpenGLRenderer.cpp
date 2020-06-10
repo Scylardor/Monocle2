@@ -106,8 +106,8 @@ namespace moe
 				break;
 			case ResourceKind::TextureReadOnly:
 				{
-					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
-					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
+					TextureHandle texHandle = rscSetDesc.Get<TextureHandle>(iBinding);
+					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, texHandle, rscBindingDesc.m_name.c_str());
 					textureUnitIndex++;
 				}
 
@@ -163,8 +163,8 @@ namespace moe
 				break;
 				case ResourceKind::TextureReadOnly:
 				{
-					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
-					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
+					TextureHandle texHandle = rscSetDesc.Get<TextureHandle>(iBinding);
+					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, texHandle, rscBindingDesc.m_name.c_str());
 					textureUnitIndex++;
 				}
 
@@ -227,8 +227,8 @@ namespace moe
 				break;
 				case ResourceKind::TextureReadOnly:
 				{
-					Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(textureUnitIndex);
-					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, tex2DHandle, rscBindingDesc.m_name.c_str());
+					TextureHandle texHandle = rscSetDesc.Get<TextureHandle>(textureUnitIndex);
+					m_device.BindTextureUnitToProgramUniform(shaderProgramID, textureUnitIndex, texHandle, rscBindingDesc.m_name.c_str());
 					textureUnitIndex++;
 				}
 

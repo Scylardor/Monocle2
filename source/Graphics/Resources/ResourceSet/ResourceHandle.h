@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
-#include "Graphics/Texture/Texture2DHandle.h"
+#include "Graphics/Texture/TextureHandle.h"
 
 
 namespace moe
@@ -18,8 +18,8 @@ namespace moe
 			m_ubHandle(bufferHandle)
 		{}
 
-		ResourceHandle(Texture2DHandle tex2DHandle) :
-			m_tex2DHandle(tex2DHandle)
+		ResourceHandle(TextureHandle texHandle) :
+			m_texHandle(texHandle)
 		{}
 
 		template <typename T>
@@ -27,7 +27,7 @@ namespace moe
 
 
 		DeviceBufferHandle	m_ubHandle;
-		Texture2DHandle		m_tex2DHandle;
+		TextureHandle		m_texHandle;
 	};
 
 
@@ -38,8 +38,8 @@ namespace moe
 	}
 
 	template <>
-	inline auto ResourceHandle::Get<Texture2DHandle>() const
+	inline auto ResourceHandle::Get<TextureHandle>() const
 	{
-		return m_tex2DHandle;
+		return m_texHandle;
 	}
 }

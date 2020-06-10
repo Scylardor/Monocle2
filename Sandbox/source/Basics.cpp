@@ -141,13 +141,9 @@ namespace moe
 	};
 
 
-	struct VertexPosition
-	{
-		Vec3	m_position;
-	};
 
 
-	Array<VertexPosition, 36>	CreateCube(float halfExtent)
+	Array<TestApplication::VertexPosition, 36>	TestApplication::CreateCube(float halfExtent)
 	{
 		return {
 			{Vec3{-halfExtent, -halfExtent, -halfExtent}},

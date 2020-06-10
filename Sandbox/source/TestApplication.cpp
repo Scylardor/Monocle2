@@ -161,7 +161,6 @@ Array<VertexPositionColor, 36>	CreatePositionColorVertexCube(float halfExtent)
 		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
 		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4}
 	};
-
 }
 
 
@@ -211,7 +210,7 @@ struct ProjectionPlanes
 
 void TestApplication::Run()
 {
-	TestBlending();
+	TestCubemap();
 }
 
 	void TestApplication::CameraMoveForward()

@@ -514,6 +514,121 @@ namespace moe
 	}
 
 
+	TextureHandle OpenGLGraphicsDevice::CreateCubemapTexture(const CubeMapTextureFilesDescriptor& cubemapFilesDesc)
+	{
+		// First ensure the target texture format is valid - don't bother going further if not
+		const GLuint textureFormat = TranslateToOpenGLSizedFormat(cubemapFilesDesc.m_targetFormat);
+		if (textureFormat == 0)
+		{
+			return TextureHandle::Null();
+		}
+
+		// Now read the files, taking into account required number of components.
+		const std::uint32_t requiredCompNum = GetTextureFormatChannelsNumber(cubemapFilesDesc.m_requiredFormat);
+
+		unsigned char* imagesData[6]{nullptr};
+		int iCubeSide = 0;
+		int cubemapWidth, cubemapHeight, cubemapNrChannels;
+		cubemapWidth = cubemapHeight = cubemapNrChannels = 0;
+
+		bool failed = false; // start optimistic
+
+		// contrary to the usual OpenGL behaviour of having the image origin in the lower left,
+		// Cube Maps' specification is that the images' origin is in the upper left.
+		// So specifically when loading cube maps, we have to revert our vertical flipping image loading logic.
+		// cf. https://stackoverflow.com/questions/11685608/convention-of-faces-in-opengl-cubemapping
+		stbi_set_flip_vertically_on_load(false);
+
+		for (const auto& fileName : cubemapFilesDesc.m_rightLeftTopBottomFrontBackTexFiles)
+		{
+			int width, height, nrChannels;
+			imagesData[iCubeSide] = stbi_load(fileName.c_str(), &width, &height, &nrChannels, requiredCompNum);
+
+			if (imagesData[iCubeSide] == nullptr)
+			{
+				MOE_ERROR(ChanGraphics, "Could not create cube map : image file %s could not be read.", fileName);
+				failed = true;
+				break;
+			}
+
+			if (cubemapWidth == 0)
+			{
+				// First round : initialize the cube maps values
+				cubemapWidth = width;
+				cubemapHeight = height;
+				cubemapNrChannels = nrChannels;
+			}
+			else
+			{
+				// Sanity check : make sure all cubemap images have the same width, height and channels number information (or something may be wrong)
+				if (width != cubemapWidth || height != cubemapHeight || nrChannels != cubemapNrChannels)
+				{
+					MOE_ERROR(ChanGraphics, "Could not create cube map : image file %s data format differs from other cube map files !", fileName);
+					failed = true;
+					break;
+				}
+			}
+
+			iCubeSide++;
+		}
+
+		// Turn the vertical flip back on
+		stbi_set_flip_vertically_on_load(true);
+
+		if (failed)
+		{
+			// Something went wrong: free the data and stop here
+			for (unsigned char* imgData : imagesData)
+			{
+				if (imgData != nullptr)
+					stbi_image_free(imgData);
+			}
+			return TextureHandle::Null();
+		}
+
+		// From now on we successfully loaded image data : upload to GPU
+
+		// Determine what could be a good base format
+		const GLuint inputBaseFormat = TranslateToOpenGLBaseFormat(cubemapNrChannels);
+
+		// Creating a cube map with DSA requires us to use glTextureStorage2D + glTextureSubImage3D.
+		// For more info, see : https://github.com/fendevel/Guide-to-Modern-OpenGL-Functions#uploading-cube-maps
+		// Or : https://www.reddit.com/r/opengl/comments/556zac/how_to_create_cubemap_with_direct_state_access/
+		GLuint cubemapID;
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemapID);
+		glTextureStorage2D(cubemapID, cubemapFilesDesc.m_wantedMipmapLevels, textureFormat, cubemapWidth, cubemapHeight);
+		for (GLint face = 0; face < 6; ++face)
+		{
+			glTextureSubImage3D(cubemapID, 0, 0, 0, face, cubemapWidth, cubemapHeight, 1, inputBaseFormat, GL_UNSIGNED_BYTE, imagesData[face]);
+		}
+
+		if (cubemapFilesDesc.m_wantedMipmapLevels != 0)
+		{
+			glGenerateTextureMipmap(cubemapID);
+		}
+
+		// We set the wrapping method to GL_CLAMP_TO_EDGE since texture coordinates that are exactly between two faces may not hit an exact face (due to some hardware limitations).
+		// So by using GL_CLAMP_TO_EDGE OpenGL always returns their edge values whenever we sample between faces.
+		// TODO: use a sampler to do that ?
+		glTextureParameteri(cubemapID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(cubemapID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		// we don't need to keep the image data
+		for (unsigned char* imgData : imagesData)
+		{
+			if (imgData != nullptr)
+				stbi_image_free(imgData);
+		}
+
+
+
+		return TextureHandle{ cubemapID };
+	}
+
+
 	void OpenGLGraphicsDevice::DestroyTexture2D(Texture2DHandle texHandle)
 	{
 		GLuint texID{texHandle.Get()};
@@ -694,14 +809,14 @@ namespace moe
 	}
 
 
-	void OpenGLGraphicsDevice::BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, Texture2DHandle texHandle, const char* uniformName)
+	void OpenGLGraphicsDevice::BindTextureUnitToProgramUniform(GLuint shaderProgramID, int textureUnitIndex, TextureHandle texHandle, const char* uniformName)
 	{
 		glBindTextureUnit(textureUnitIndex, texHandle.Get());
 		glProgramUniform1i(shaderProgramID, glGetUniformLocation(shaderProgramID, uniformName), textureUnitIndex);
 	}
 
 
-	void OpenGLGraphicsDevice::BindTextureUnit(int textureBindingPoint, Texture2DHandle texHandle)
+	void OpenGLGraphicsDevice::BindTextureUnit(int textureBindingPoint, TextureHandle texHandle)
 	{
 		glBindTextureUnit(textureBindingPoint, texHandle.Get());
 

@@ -10,6 +10,8 @@ namespace moe
 		{
 		case TextureFormat::Any:
 			return GL_RGBA32F;
+		case TextureFormat::RGBA8:
+			return GL_RGBA8;
 		case TextureFormat::RGBA32F:
 			return GL_RGBA32F;
 		case TextureFormat::RGB32F:

@@ -55,8 +55,8 @@ namespace moe
 			break;
 			case ResourceKind::TextureReadOnly:
 			{
-				Texture2DHandle tex2DHandle = rscSetDesc.Get<Texture2DHandle>(iBinding);
-				device.BindTextureUnit(rscBindingDesc.m_bindingPoint, tex2DHandle);
+				TextureHandle texHandle = rscSetDesc.Get<TextureHandle>(iBinding);
+				device.BindTextureUnit(rscBindingDesc.m_bindingPoint, texHandle);
 			}
 
 			break;

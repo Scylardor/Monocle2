@@ -70,6 +70,17 @@ namespace moe
 			{}
 
 
+			/**
+			 * \brief Build a Mat4 out from a Mat3. This effectively builds a Mat4 without translation part.
+			 * \param mat3 The source 3x3 matrix
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			explicit Matrix(const Matrix<3, 3, ValT> & mat3) :
+				m_mat(glm::mat4(mat3.m_mat))
+			{}
+
+
+
 			// Math Functions
 
 
@@ -569,6 +580,8 @@ namespace moe
 			MatrixType	m_mat;
 
 			friend Matrix<3, 3, ValT>; // Needed otherwise the Mat3 from Mat4 constructor doesn't work !
+			friend Matrix<4, 4, ValT>; // Needed otherwise the Mat4 from Mat3 constructor doesn't work !
+
 		};
 
 	}

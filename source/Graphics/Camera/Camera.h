@@ -8,7 +8,7 @@
 
 #include "Graphics/RenderWorld/GraphicsObject.h"
 
-#include "Graphics/DeviceBuffer/UniformBufferHandle.h"
+#include "Math/Vec4.h"
 
 #include "Monocle_Graphics_Export.h"
 
@@ -77,6 +77,7 @@ namespace moe
 		Mat4	m_view;
 		Mat4	m_proj;
 		Mat4	m_viewProj;
+		Vec4	m_cameraPos{0};
 	};
 
 

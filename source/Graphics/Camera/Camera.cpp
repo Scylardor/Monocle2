@@ -233,6 +233,8 @@ namespace moe
 
 		m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
 
+		m_matricesDataPtr->m_cameraPos = Vec4(m_transform.Matrix().GetTranslation(), 1.F);
+
 		if (m_parentSystem)
 			m_parentSystem->FlagUpdateNeeded();
 	}

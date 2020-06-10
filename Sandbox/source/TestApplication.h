@@ -39,6 +39,15 @@ public:
 	void	CameraZoomMouseScroll(double xpos, double ypos);
 
 private:
+
+	struct VertexPosition
+	{
+		Vec3	m_position;
+	};
+
+	Array<VertexPosition, 36>	CreateCube(float halfExtent);
+
+
 	using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
 
 	AppLogger	m_logger;

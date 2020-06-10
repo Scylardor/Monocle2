@@ -34,7 +34,7 @@ namespace moe
 				auto texIt = m_textureUnitBindings.Find(MaterialTextureBinding(rscBindingDesc.m_bindingPoint));
 				if (texIt != m_textureUnitBindings.End())
 				{
-					Texture2DHandle texHandle = texIt->second;
+					TextureHandle texHandle = texIt->second;
 					newRscSetDesc.Emplace(texHandle);
 				}
 			}

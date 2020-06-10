@@ -34,9 +34,9 @@ namespace moe
 			m_blockBindingBuffers[blockBinding] = ubHandle;
 		}
 
-		void	BindTexture(MaterialTextureBinding texBinding, Texture2DHandle tex2DHandle)
+		void	BindTexture(MaterialTextureBinding texBinding, const TextureHandle& texHandle)
 		{
-			m_textureUnitBindings[texBinding] = tex2DHandle;
+			m_textureUnitBindings[texBinding] = texHandle;
 		}
 
 		Monocle_Graphics_API bool	CreateMaterialResourceSet();
@@ -73,7 +73,7 @@ namespace moe
 		ResourceSetHandle		m_rscSetHandle;
 
 		HashMap<MaterialBlockBinding, DeviceBufferHandle>	m_blockBindingBuffers;
-		HashMap<MaterialTextureBinding, Texture2DHandle>	m_textureUnitBindings;
+		HashMap<MaterialTextureBinding, TextureHandle>		m_textureUnitBindings;
 	};
 
 
