@@ -19,6 +19,7 @@
 #include "Graphics/Shader/Manager/OpenGL/OpenGLShaderManager.h"
 
 #include "Graphics/VertexLayout/OpenGL/OpenGLVertexLayout.h"
+#include "Graphics/VertexLayout/OpenGL/OpenGLVertexLayoutComparator.h"
 
 #include "Graphics/GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h"
 
@@ -220,7 +221,7 @@ namespace moe
 
 		OpenGLShaderManager				m_shaderManager;
 
-		Vector<OpenGLVertexLayout>			m_vertexLayouts;
+		std::set<OpenGLVertexLayout, OpenGLVertexLayoutComparator>		m_vertexLayouts;
 
 		Freelist<ResourceLayoutDescriptor>	m_resourceLayouts;
 

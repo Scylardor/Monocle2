@@ -38,7 +38,7 @@ namespace moe
 		m_shaderManager.Clear();
 
 		// Destroy all VAOs at the same time.
-		Vector<GLuint> vaoIDs(m_vertexLayouts.Size());
+		Vector<GLuint> vaoIDs(m_vertexLayouts.size());
 
 		int iLayout = 0;
 		for (const auto& layout : m_vertexLayouts)
@@ -49,7 +49,7 @@ namespace moe
 
 		glDeleteVertexArrays((GLsizei)vaoIDs.Size(), vaoIDs.Data());
 
-		m_vertexLayouts.Clear();
+		m_vertexLayouts.clear();
 	}
 
 
@@ -96,13 +96,13 @@ namespace moe
 	VertexLayoutHandle OpenGLGraphicsDevice::CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc)
 	{
 		// First and foremost, check that we do not have an existing vertex layout that could fit this description...
-		// It's ok to linear search we don't expect a lot of existing vertex layouts anyway
-		auto vtxLayoutIt = std::find_if(m_vertexLayouts.Begin(), m_vertexLayouts.End(), [&vertexLayoutDesc](const OpenGLVertexLayout& oglVtxLayout)
+		auto vtxLayoutIt = std::find_if(m_vertexLayouts.begin(), m_vertexLayouts.end(), [&vertexLayoutDesc](const OpenGLVertexLayout& oglVtxLayout)
 		{
 			return (oglVtxLayout.ReadDescriptor() == vertexLayoutDesc);
 		});
 
-		if (vtxLayoutIt != m_vertexLayouts.End())
+
+		if (vtxLayoutIt != m_vertexLayouts.end())
 		{
 			// we found a matching one : don't bother recreating a new one and give out a handle
 			return VertexLayoutHandle{*vtxLayoutIt};
@@ -211,7 +211,7 @@ namespace moe
 		else
 		{
 			// The VAO was successfully initialized : we store our vertex layout
-			m_vertexLayouts.EmplaceBack(vertexLayoutDesc, vaoID, totalStride);
+			m_vertexLayouts.emplace(vertexLayoutDesc, vaoID, totalStride);
 		}
 
 		return handle;
@@ -220,14 +220,11 @@ namespace moe
 
 	const VertexLayout* OpenGLGraphicsDevice::GetVertexLayout(VertexLayoutHandle handle) const
 	{
-		// Kind of a trick : we rely on the fact all valid VAO IDs will always start at 1 and increment by one.
-		// So, a valid handle is simply at index (VAO id - 1) in the array.
-		// NOTE: this assumption won't stand if we add the ability to remove vertex layouts. So far, a vertex layout gets created "forever" (you cannot delete them).
-		// TODO: really have to fix that as it also breaks RenderDoc !
+		auto vtxLayout = m_vertexLayouts.find(handle);
 
-		if (MOE_ASSERT(handle.Get() <= m_vertexLayouts.Size()))
+		if (vtxLayout != m_vertexLayouts.end())
 		{
-			return &m_vertexLayouts[handle.Get() - 1];
+			return &(*vtxLayout);
 		}
 
 		return nullptr;
