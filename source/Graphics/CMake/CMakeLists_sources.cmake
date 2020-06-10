@@ -110,6 +110,9 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/cubemaps.vert
 ./Resources/shaders/OpenGL/depth_testing.frag
 ./Resources/shaders/OpenGL/depth_testing.vert
+./Resources/shaders/OpenGL/explode.frag
+./Resources/shaders/OpenGL/explode.geom
+./Resources/shaders/OpenGL/explode.vert
 ./Resources/shaders/OpenGL/framebuffer.frag
 ./Resources/shaders/OpenGL/framebuffer.vert
 ./Resources/shaders/OpenGL/geometry_shader.frag
@@ -125,6 +128,9 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/skybox.vert
 ./Resources/shaders/OpenGL/stencil_testing.frag
 ./Resources/shaders/OpenGL/stencil_testing.vert
+./Resources/shaders/OpenGL/visualize_normals.frag
+./Resources/shaders/OpenGL/visualize_normals.geom
+./Resources/shaders/OpenGL/visualize_normals.vert
 ./SceneGraph/SceneGraph.cpp
 ./SceneGraph/SceneGraph.h
 ./SceneGraph/SceneGraphHandle.h

@@ -4,8 +4,6 @@ in vec3 vs_normal;
 
 in vec4 vs_position_world;
 
-flat in int error;
-
 out vec4 FragColor;
 
 

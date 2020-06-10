@@ -1734,6 +1734,7 @@ namespace moe
 		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
 		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
 
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_TIME, []() { return sizeof(float); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
@@ -1783,8 +1784,9 @@ namespace moe
 		/* Create cube shader */
 		IGraphicsRenderer::ShaderFileList cubeFileList =
 		{
-			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/depth_testing.vert" },
-			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/depth_testing.frag" }
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/explode.vert" },
+			{ ShaderStage::Geometry,	"source/Graphics/Resources/shaders/OpenGL/explode.geom" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/explode.frag" }
 		};
 
 		ShaderProgramHandle cubeProgram = renderer.CreateShaderProgramFromSourceFiles(cubeFileList);
@@ -1815,7 +1817,8 @@ namespace moe
 		MaterialDescriptor materialDesc(
 			{
 				{"View_ProjectionPlanes", ShaderStage::Fragment},
-				{"Material_DiffuseMap", ShaderStage::Fragment}
+				{"Material_DiffuseMap", ShaderStage::Fragment},
+				{"Frame_Time", ShaderStage::Geometry}
 			}
 		);
 
@@ -1988,6 +1991,18 @@ namespace moe
 		reflMatInst.BindTexture(MaterialTextureBinding::SKYBOX, skyboxTex);
 		reflMatInst.CreateMaterialResourceSet();
 
+		IGraphicsRenderer::ShaderFileList normalVizFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/visualize_normals.vert" },
+			{ ShaderStage::Geometry,	"source/Graphics/Resources/shaders/OpenGL/visualize_normals.geom" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/visualize_normals.frag" }
+		};
+		ShaderProgramHandle normalVizProgram = renderer.CreateShaderProgramFromSourceFiles(normalVizFileList);
+
+		MaterialDescriptor normalVizDesc;
+		MaterialInterface normalVizIntf = lib.CreateMaterialInterface(normalVizProgram, normalVizDesc);
+		MaterialInstance normalVizInst = lib.CreateMaterialInstance(normalVizIntf);
+
 		// Geometry
 		Array<VertexPositionNormal, 36> cubeVpnGeom = CreateCubePositionNormal(0.5f);
 
@@ -2019,6 +2034,11 @@ namespace moe
 				CameraMoveStrafeRight();
 			}
 
+			// The sin function returns a value between -1.0 and 1.0. Because we don't want to implode the object we transform the sin value to the [0,1] range.
+			float sinTime = (sinf(thisFrameTime) + 1.f) / 2.f; sinTime;
+			cubeInstance.UpdateUniformBlock(MaterialBlockBinding::FRAME_TIME, sinTime);
+
+
 			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
 
 			//lightsSystem.UpdateLights();
@@ -2033,15 +2053,20 @@ namespace moe
 
 				camSys.BindCameraBuffer(iCam);
 
-				renderer.UseMaterialInstance(&cubeInstance);
-				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
-				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
-				renderWorld.DrawMesh(cube, cubeVao, nullptr);
-
 				renderer.UseMaterialInstance(&reflMatInst);
 				reflCube->SetTransform(Transform::Translate({ 2.0f, 0.0f, 0.0f }));
 				reflCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
 				renderWorld.DrawMesh(reflCube, reflCubeVao, nullptr);
+
+				// Draw the normals of the reflective cube
+				renderer.UseMaterialInstance(&normalVizInst);
+				renderWorld.DrawMesh(reflCube, reflCubeVao, nullptr);
+
+
+				renderer.UseMaterialInstance(&cubeInstance);
+				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
 
 				renderer.UseMaterialInstance(&planeInstance);
 				plane->SetTransform(Transform::Identity());
