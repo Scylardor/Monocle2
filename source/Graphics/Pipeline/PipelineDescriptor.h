@@ -19,7 +19,7 @@ namespace moe
 		BlendStateDescriptor		m_blendStateDesc;
 		DepthStencilStateDescriptor	m_depthStencilStateDesc;
 		RasterizerStateDescriptor	m_rasterizerStateDesc;
-		PrimitiveTopology			m_topology{ PrimitiveTopology::TriangleStrip };
+		PrimitiveTopology			m_topology{ PrimitiveTopology::TriangleList };
 	};
 
 }
