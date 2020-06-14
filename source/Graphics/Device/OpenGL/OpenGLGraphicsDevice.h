@@ -101,6 +101,7 @@ namespace moe
 
 
 		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) override;
+		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(InstancedVertexLayoutDescriptor desc) override; // TODO: remove
 
 		Monocle_Graphics_API [[nodiscard]] const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const override;
 
@@ -117,6 +118,9 @@ namespace moe
 
 		void	DrawVertexBuffer(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
 								DeviceBufferHandle idxBufHandle, size_t numIndices) override;
+
+		void	DrawInstancedMesh(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
+			DeviceBufferHandle idxBufHandle, size_t numIndices, DeviceBufferHandle instancingBuffer, uint32_t instancesAmount) override;
 
 		void	UpdateBuffer(DeviceBufferHandle bufferHandle, const void* data, size_t dataSize) const override;
 

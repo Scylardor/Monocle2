@@ -168,7 +168,7 @@ namespace moe
 				{"position", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
@@ -394,7 +394,7 @@ namespace moe
 				{"position", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
@@ -642,7 +642,7 @@ namespace moe
 				{"position", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
@@ -918,7 +918,7 @@ namespace moe
 				{"position", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
@@ -1243,7 +1243,7 @@ namespace moe
 				{"position", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
@@ -1333,7 +1333,7 @@ namespace moe
 			{
 				{"position", VertexElementFormat::Float3}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto skyboxVao = renderer.CreateVertexLayout(skyboxLayout);
@@ -1431,7 +1431,7 @@ namespace moe
 			{"position", VertexElementFormat::Float3},
 			{"normal", VertexElementFormat::Float3}
 			},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 		};
 
 		auto reflCubeVao = renderer.CreateVertexLayout(reflectiveCubeLayout);
@@ -1626,7 +1626,7 @@ namespace moe
 			{"position", VertexElementFormat::Float2},
 			{"color", VertexElementFormat::Float3}
 			},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 		};
 
 		auto geomVao = renderer.CreateVertexLayout(geomLayout);
@@ -1775,7 +1775,7 @@ namespace moe
 				{"position", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
@@ -1867,7 +1867,7 @@ namespace moe
 			{
 				{"position", VertexElementFormat::Float3}
 			},
-			VertexLayoutDescriptor::Interleaved
+			LayoutType::Interleaved
 		};
 
 		auto skyboxVao = renderer.CreateVertexLayout(skyboxLayout);
@@ -1965,7 +1965,7 @@ namespace moe
 			{"position", VertexElementFormat::Float3},
 			{"normal", VertexElementFormat::Float3}
 			},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 		};
 
 		auto reflCubeVao = renderer.CreateVertexLayout(reflectiveCubeLayout);
@@ -2035,7 +2035,7 @@ namespace moe
 			}
 
 			// The sin function returns a value between -1.0 and 1.0. Because we don't want to implode the object we transform the sin value to the [0,1] range.
-			float sinTime = (sinf(thisFrameTime) + 1.f) / 2.f; sinTime;
+			float sinTime = (sinf(thisFrameTime) + 1.f) / 2.f;
 			cubeInstance.UpdateUniformBlock(MaterialBlockBinding::FRAME_TIME, sinTime);
 
 
@@ -2088,7 +2088,6 @@ namespace moe
 				skyboxInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, skyboxViewProj);
 
 				renderWorld.DrawMesh(skybox, skyboxVao, nullptr);
-
 			}
 
 			SwapBuffers();
@@ -2096,10 +2095,375 @@ namespace moe
 	}
 
 
-
-	void TestApplication::TestGeometryShaderNormals()
+	void TestApplication::TestInstancedAsteroids()
 	{
+		IGraphicsRenderer& renderer = MutRenderer();
 
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("SkyboxViewProjection", { MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, ResourceKind::UniformBuffer });
+
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_TIME, []() { return sizeof(float); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_PROJECTION_PLANES, []() { return sizeof(ProjectionPlanes); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		pipeDesc.m_rasterizerStateDesc.m_cullMode = CullFace::None;
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor cubeLayout{
+			{
+				{"position", VertexElementFormat::Float3},
+				{"texture", VertexElementFormat::Float2}
+			},
+			LayoutType::Interleaved
+		};
+
+		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+		/* Create cube shader */
+		IGraphicsRenderer::ShaderFileList cubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/depth_testing.vert" },
+			//{ ShaderStage::Geometry,	"source/Graphics/Resources/shaders/OpenGL/explode.geom" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/depth_testing.frag" }
+		};
+
+		ShaderProgramHandle cubeProgram = renderer.CreateShaderProgramFromSourceFiles(cubeFileList);
+
+
+		// Create cube geometry
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+		/* Create materials */
+		MaterialDescriptor materialDesc(
+			{
+				{"View_ProjectionPlanes", ShaderStage::Fragment},
+				{"Material_DiffuseMap", ShaderStage::Fragment},
+				{"Frame_Time", ShaderStage::Geometry}
+			}
+		);
+
+		MaterialInterface matInterface = lib.CreateMaterialInterface(cubeProgram, materialDesc);
+
+		Texture2DFileDescriptor diffuseTexDesc{ "Sandbox/assets/kitteh.png", TextureFormat::Any, TextureUsage{Sampled}, 4 };
+		Texture2DHandle marbleTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance cubeInstance = lib.CreateMaterialInstance(matInterface);
+		cubeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, marbleTex);
+		cubeInstance.CreateMaterialResourceSet();
+
+		diffuseTexDesc.m_filename = "Sandbox/assets/metal.png";
+		Texture2DHandle metalTex = MutRenderer().MutGraphicsDevice().CreateTexture2D(diffuseTexDesc);
+
+		MaterialInstance planeInstance = lib.CreateMaterialInstance(matInterface);
+		planeInstance.BindTexture(MaterialTextureBinding::DIFFUSE, metalTex);
+		planeInstance.CreateMaterialResourceSet();
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 1000.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+		cubeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+		planeInstance.UpdateUniformBlock(MaterialBlockBinding::VIEW_PROJECTION_PLANES, ProjectionPlanes{ 0.1f, 100.f });
+
+		// Create skybox
+
+		/* Create skybox VAO */
+		VertexLayoutDescriptor skyboxLayout{
+			{
+				{"position", VertexElementFormat::Float3}
+			},
+			LayoutType::Interleaved
+		};
+
+		auto skyboxVao = renderer.CreateVertexLayout(skyboxLayout);
+
+
+		/* Create skybox shader */
+		IGraphicsRenderer::ShaderFileList skyboxFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/skybox.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/skybox.frag" }
+		};
+
+		ShaderProgramHandle skyboxProgram = renderer.CreateShaderProgramFromSourceFiles(skyboxFileList);
+
+
+		// Create a new pipeline for the skybox with depth comparison set to LessEqual
+		// The depth buffer will be filled with values of 1.0 for the skybox, so we need to make sure it passes with values less than or equal to the depth buffer.
+		PipelineDescriptor skyboxPipeDesc;
+		skyboxPipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::LessEqual };
+
+		PipelineHandle skyboxPipe = m_renderer.MutGraphicsDevice().CreatePipeline(skyboxPipeDesc);
+
+		/* Create materials */
+		MaterialDescriptor skyboxMatDesc(
+			{
+				{"SkyboxViewProjection", ShaderStage::Vertex},
+				{"Material_SkyboxMap", ShaderStage::Fragment}
+			}
+		);
+		MaterialInterface skyboxIntf = lib.CreateMaterialInterface(skyboxProgram, skyboxMatDesc);
+		CubeMapTextureFilesDescriptor skyboxTexDesc{ {"Sandbox/assets/textures/skybox/right.jpg",
+			"Sandbox/assets/textures/skybox/left.jpg",
+			"Sandbox/assets/textures/skybox/top.jpg",
+			"Sandbox/assets/textures/skybox/bottom.jpg",
+			"Sandbox/assets/textures/skybox/front.jpg",
+			"Sandbox/assets/textures/skybox/back.jpg"},
+			TextureFormat::RGBA8
+		};
+
+		MaterialInstance skyboxInst = lib.CreateMaterialInstance(skyboxIntf);
+		TextureHandle skyboxTex = MutRenderer().MutGraphicsDevice().CreateCubemapTexture(skyboxTexDesc);
+		skyboxInst.BindTexture(MaterialTextureBinding::SKYBOX, skyboxTex);
+		skyboxInst.CreateMaterialResourceSet();
+
+		Array<VertexPosition, 36> skyboxVertices = {
+			// positions
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{ 1.0f,  1.0f, -1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{ 1.0f,  1.0f,  1.0f}},
+			{{-1.0f,  1.0f,  1.0f}},
+			{{-1.0f,  1.0f, -1.0f}},
+			{{-1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{ 1.0f, -1.0f, -1.0f}},
+			{{-1.0f, -1.0f,  1.0f}},
+			{{ 1.0f, -1.0f,  1.0f}}
+		};
+
+		Mesh* skybox = renderWorld.CreateStaticMesh(skyboxVertices);
+
+
+		// Create instanced cubes
+
+		/* Create instanced VAO */
+
+		InstancedVertexLayoutDescriptor instancedObjectLayout{
+			{{{"position", VertexElementFormat::Float3}, {"texture", VertexElementFormat::Float2}}, LayoutType::Interleaved, 0},
+			 {{{"modelMatrices", VertexElementFormat::Mat4}}, LayoutType::Interleaved, 1, 1}
+		};
+
+		auto instancedVao = renderer.CreateInstancedVertexLayout(instancedObjectLayout);
+
+		// Create instancing shader
+		IGraphicsRenderer::ShaderFileList instCubeFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/instancing.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/instancing.frag" }
+		};
+
+		ShaderProgramHandle instancedCubeProgram = renderer.CreateShaderProgramFromSourceFiles(instCubeFileList);
+
+		/* Create materials */
+		MaterialDescriptor instancedMatDesc(
+			{
+				{"Material_DiffuseMap", ShaderStage::Fragment}
+			}
+		);
+		MaterialInterface instanceMatIntf = lib.CreateMaterialInterface(instancedCubeProgram, instancedMatDesc);
+		MaterialInstance instanceMatInst = lib.CreateMaterialInstance(instanceMatIntf);
+		instanceMatInst.BindTexture(MaterialTextureBinding::DIFFUSE, marbleTex);
+		instanceMatInst.CreateMaterialResourceSet();
+
+		auto cubeGeom = CreateCubePositionTexture(0.5f);
+		Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+		InstancedMesh* instCube = renderWorld.CreateInstancedMesh(cubeGeom);
+
+
+		// generate a large list of semi-random model transformation matrices
+		// ------------------------------------------------------------------
+		constexpr unsigned int amount = 50;
+		Mat4 modelMatrices[amount];
+		srand((unsigned)GetApplicationTimeSeconds()); // initialize random seed
+		float radius = 15.f;
+		float offset = 25.0f;
+		for (unsigned int iMat = 0; iMat < amount; iMat++)
+		{
+			modelMatrices[iMat].SetIdentity();
+
+			// 1. translation: displace along circle with 'radius' in range [-offset, offset]
+			float angle = (float)iMat / (float)amount * 360.0f;
+			float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+			float x = sin(angle) * radius + displacement; x;
+			displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+			float y = displacement * 0.4f; y; // keep height of asteroid field smaller compared to width of x and z
+			displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+			float z = cos(angle) * radius + displacement; z;
+			modelMatrices[iMat].Translate(Vec3(x, y, z));
+
+			// 2. scale: Scale between 0.05 and 0.25f
+			//float scale = (rand() % 20) / 100.0f + 0.05f;
+			//modelMatrices[iMat].Scale(Vec3(scale));
+
+			// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+			float rotAngle = float(rand() % 360);
+			modelMatrices[iMat].Rotate(Degs_f(rotAngle), Vec3(0.4f, 0.6f, 0.8f));
+		}
+
+		// Now create a GPU buffer to copy this data into
+		DeviceBufferHandle instancingBuffer = m_renderer.MutGraphicsDevice().CreateStaticVertexBufferFromData(modelMatrices);
+
+		// Finally, associate this data to the instancing buffer of the instanced cube
+		instCube->SetInstancingBufferBinding(instancingBuffer, amount);
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+			// The sin function returns a value between -1.0 and 1.0. Because we don't want to implode the object we transform the sin value to the [0,1] range.
+			float sinTime = (sinf(thisFrameTime) + 1.f) / 2.f;
+			cubeInstance.UpdateUniformBlock(MaterialBlockBinding::FRAME_TIME, sinTime);
+
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			//lightsSystem.UpdateLights();
+
+			//lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+				m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&cubeInstance);
+				cube->SetTransform(Transform::Translate({ -1.0f, 0.0f, -1.0f }));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&instanceMatInst);
+				renderWorld.DrawInstancedMesh(instCube, instancedVao);
+
+
+				// Render skybox last
+				m_renderer.MutGraphicsDevice().SetPipeline(skyboxPipe);
+
+				renderer.UseMaterialInstance(&skyboxInst);
+
+				// We want the skybox to be centered around the player so that no matter how far the player moves, the skybox won't get any closer.
+				// We can achieve this by converting the view matrix to a 3x3 matrix (removing translation) and converting it back to a 4x4 matrix:
+				// TODO: it works, but it's a bit ugly. Find a better way to do that... (just zero translation from the view-projection matrix ?)
+				Mat4 view = camSys.GetCamera(iCam).GetViewMatrix();
+				view[3] = Vec4(0, 0, 0, 1);
+				Mat4 proj = camSys.GetCamera(iCam).GetProjectionMatrix();
+				Mat4 skyboxViewProj = proj * view;
+				skyboxInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, skyboxViewProj);
+
+				renderWorld.DrawMesh(skybox, skyboxVao, nullptr);
+			}
+
+			SwapBuffers();
+		}
 	}
-
 }

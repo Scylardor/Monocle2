@@ -23,6 +23,7 @@ namespace moe
 		GLenum			m_type{ GL_FALSE };
 		std::uint8_t	m_numCpnts{ 0 };
 		GLboolean		m_normalized{ false };
+		uint32_t		m_repeats{1}; // repeats are useful for e.g. mat4
 	};
 
 }

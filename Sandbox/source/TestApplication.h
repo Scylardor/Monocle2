@@ -29,7 +29,8 @@ public:
 	void	TestCubemap();
 	void	TestGeometryShaderHouses();
 	void	TestGeometryShaderExplode();
-	void	TestGeometryShaderNormals();
+	void	TestInstancedAsteroids();
+
 
 	// Others
 	void	CameraMoveForward();

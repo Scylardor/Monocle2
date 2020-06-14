@@ -28,6 +28,11 @@ namespace moe
 		m_strideInBytes(totalSizeBytes)
 		{}
 
+		OpenGLVertexLayout(InstancedVertexLayoutDescriptor&& desc, GLuint vaoID) :
+			VertexLayout(std::move(desc)),
+			m_vaoId(vaoID)
+		{}
+
 
 		~OpenGLVertexLayout() = default;
 
@@ -51,6 +56,7 @@ namespace moe
 
 		// Only really useful for Interleaved layouts, but it's a reasonable overhead even if unused.
 		uint32_t	m_strideInBytes = 0;
+
 
 	};
 }

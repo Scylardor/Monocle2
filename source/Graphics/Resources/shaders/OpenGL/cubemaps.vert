@@ -7,8 +7,6 @@ layout (location = 1) in vec3 normal;
 out vec3 vs_normal;
 out vec4 vs_position_world;
 
-flat out int error;
-
 layout (std140, binding = 2) uniform CameraMatrices
 {
 	mat4	view;

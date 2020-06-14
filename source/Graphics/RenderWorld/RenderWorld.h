@@ -7,6 +7,7 @@
 #include "Monocle_Graphics_Export.h"
 
 #include "Graphics/Mesh/Mesh.h"
+#include "Graphics/Mesh/InstancedMesh.h"
 #include "Graphics/Mesh/MeshDataDescriptor.h"
 
 #include "Graphics/VertexLayout/VertexLayoutHandle.h"
@@ -41,8 +42,9 @@ namespace moe
 		 * \param buffer A contiguous buffer containing the vertex data.
 		 * \param size The size in bytes of the full buffer
 		 */
-		Monocle_Graphics_API [[nodiscard]]  Mesh*	CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData);
+		Monocle_Graphics_API [[nodiscard]]	Mesh*	CreateStaticMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData);
 
+		Monocle_Graphics_API [[nodiscard]]	InstancedMesh*	CreateInstancedMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData);
 
 		/**
 		 * \brief Will delete any graphics resources associated to this mesh handle (vertex buffer, index buffer...).
@@ -61,9 +63,14 @@ namespace moe
 		template <typename VertexType, size_t N, size_t IndN = 0>
 		Mesh*	CreateStaticMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
 
-
 		template<typename VertexType, size_t N>
 		Mesh* CreateStaticMesh(VertexType(&vertexData)[N]);
+
+		template <typename VertexType, size_t N, size_t IndN = 0>
+		InstancedMesh*	CreateInstancedMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
+
+		template<typename VertexType, size_t N>
+		InstancedMesh* CreateInstancedMesh(VertexType(&vertexData)[N]);
 
 		/**
 		 * \brief Creates an orthographic camera and a new viewport associated to it.
@@ -112,6 +119,8 @@ namespace moe
 
 		Monocle_Graphics_API void	DrawMesh(Mesh* drawnMesh, VertexLayoutHandle layoutHandle, Material* material = nullptr);
 
+		Monocle_Graphics_API void	DrawInstancedMesh(InstancedMesh* drawnInstancedMesh, VertexLayoutHandle layoutHandle, Material* material = nullptr);
+
 
 		Monocle_Graphics_API void	BeginDraw();
 
@@ -125,6 +134,8 @@ namespace moe
 		CameraManager		m_cameraManager;
 
 		Freelist<Mesh>		m_meshFreelist;
+
+		Freelist<InstancedMesh>		m_instancedMeshFreelist; // TODO: rework that (merge the two mesh freelist together ?)
 
 		PolymorphicFreelist<AGraphicObject*>	m_objects;
 
@@ -154,6 +165,24 @@ namespace moe
 		return CreateStaticMeshFromBuffer(
 			MeshDataDescriptor{ vertexData, sizeof(vertexData), N },
 			MeshDataDescriptor {}
+		);
+	}
+
+	template <typename VertexType, size_t N, size_t IndN>
+	InstancedMesh* RenderWorld::CreateInstancedMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData)
+	{
+		return CreateInstancedMeshFromBuffer(
+			MeshDataDescriptor{ vertexData.Data(), vertexData.Size() * sizeof(VertexType), N },
+			MeshDataDescriptor{ indexData.Data(), indexData.Size() * sizeof(uint32_t), IndN }
+		);
+	}
+
+	template <typename VertexType, size_t N>
+	InstancedMesh* RenderWorld::CreateInstancedMesh(VertexType(& vertexData)[N])
+	{
+		return CreateInstancedMeshFromBuffer(
+			MeshDataDescriptor{ vertexData, sizeof(vertexData), N },
+			MeshDataDescriptor{}
 		);
 	}
 }

@@ -10,6 +10,83 @@
 
 namespace moe
 {
+	/**
+	 * \brief Describes whether a layout's elements are supposed to be interleaved (XYZ XYZ XYZ) or packed together (XXX YYY ZZZ).
+	 */
+	enum class LayoutType : unsigned char
+	{
+		Interleaved = 0,
+		Packed
+	};
+
+	using VertexElementVector = Vector<VertexElementDescriptor>;
+
+	class VertexLayoutBindings
+	{
+	public:
+		VertexLayoutBindings(const VertexElementVector& vec, LayoutType type = LayoutType::Interleaved, uint32_t buffBinding = 0, uint32_t instanceStepRate = 0) :
+		m_vtxElemFmts(vec), m_type(type), m_bufferBinding(buffBinding), m_instanceStepRate(instanceStepRate)
+		{}
+
+		VertexLayoutBindings(VertexElementVector&& vec, LayoutType type = LayoutType::Interleaved, uint32_t buffBinding = 0, uint32_t instanceStepRate = 0)
+		: m_vtxElemFmts(std::move(vec)), m_type(type), m_bufferBinding(buffBinding), m_instanceStepRate(instanceStepRate)
+		{}
+
+		bool	operator==(const VertexLayoutBindings& rhs) const
+		{
+			if (&rhs != this)
+			{
+				return (m_vtxElemFmts == rhs.m_vtxElemFmts && m_type == rhs.m_type
+				&& m_bufferBinding == rhs.m_bufferBinding && m_instanceStepRate == rhs.m_instanceStepRate);
+			}
+			return true;
+		}
+
+		LayoutType	GetLayoutType() const { return m_type; }
+		bool		IsInterleaved() const { return m_type == LayoutType::Interleaved; }
+
+		uint32_t	BufferBinding() const { return m_bufferBinding; }
+
+		uint32_t	InstanceStepRate() const { return m_instanceStepRate; }
+
+		void		SetTotalStride(uint32_t stride) { m_totalStride = stride; }
+		uint32_t	GetTotalStride() const { return m_totalStride; }
+
+
+		//C++11 range for interface implementation
+
+		VertexElementVector::Iterator	begin()
+		{
+			return m_vtxElemFmts.Begin();
+		}
+
+
+		VertexElementVector::ConstIterator	begin() const
+		{
+			return m_vtxElemFmts.Begin();
+		}
+
+
+		VertexElementVector::Iterator	end()
+		{
+			return m_vtxElemFmts.End();
+		}
+
+		VertexElementVector::ConstIterator	end() const
+		{
+			return m_vtxElemFmts.End();
+		}
+
+
+	private:
+		VertexElementVector	m_vtxElemFmts;
+		LayoutType			m_type{ LayoutType::Interleaved };
+		uint32_t			m_bufferBinding{0};
+		uint32_t			m_instanceStepRate{ 0 };
+		uint32_t			m_totalStride{0}; // set by the graphics library
+	};
+
+	using VertexBindingsVector = Vector<VertexLayoutBindings>;
 
 	/**
 	 * \brief A graphics API-agnostic descriptor of a Vertex Layout.
@@ -21,18 +98,8 @@ namespace moe
 	class VertexLayoutDescriptor
 	{
 	public:
-		using VertexElementVector = Vector<VertexElementDescriptor>;
+
 		template <std::size_t N> using VertexElementArray = Array<VertexElementDescriptor, N>;
-
-
-		/**
-		 * \brief Describes whether a layout's elements are supposed to be interleaved (XYZ XYZ XYZ) or packed together (XXX YYY ZZZ).
-		 */
-		enum LayoutType : unsigned char
-		{
-			Interleaved = 0,
-			Packed
-		};
 
 
 		VertexLayoutDescriptor(const VertexElementVector& vtxElems, LayoutType type = LayoutType::Interleaved) :
@@ -103,4 +170,87 @@ namespace moe
 		LayoutType	m_type{LayoutType::Interleaved};
 	};
 
+	/**
+	* \brief A graphics API-agnostic descriptor of a Vertex Layout made to be used with Instancing.
+	* Vertex layout describes how is the structure of a vertex laid out in memory.
+	* It describes the type of each element, the number of components, whether these are supposed to be normalized or not.
+	* The graphics engine manages data differently whether the data comes in an Interleaved or Packed way.
+	* Usually, Interleaved is a bit more optimized and probably what you want by default.
+	* TODO: This is actually how all vertex layouts should work but was not made to not break any retro-compatibility. Make that the one and only VertexLayoutDescriptor.
+	*/
+	class InstancedVertexLayoutDescriptor
+	{
+	public:
+
+		template <std::size_t N> using VertexBindingsArray = Array<VertexLayoutBindings, N>;
+
+		InstancedVertexLayoutDescriptor(const VertexBindingsVector& vtxBindings) :
+			m_vtxBindings(vtxBindings)
+		{}
+
+		InstancedVertexLayoutDescriptor(VertexBindingsVector&& vtxBindings) :
+			m_vtxBindings(std::move(vtxBindings))
+		{}
+
+		template <std::size_t N>
+		InstancedVertexLayoutDescriptor(VertexBindingsArray<N>&& vtxBindings) :
+			m_vtxBindings(vtxBindings.Begin(), vtxBindings.End())
+		{}
+
+
+		InstancedVertexLayoutDescriptor(std::initializer_list<VertexLayoutBindings> il) :
+			m_vtxBindings(il) {}
+
+
+		size_t	NumBindings() const { return m_vtxBindings.Size(); }
+
+
+		bool	operator==(const InstancedVertexLayoutDescriptor& rhs) const
+		{
+			if (&rhs != this)
+			{
+				return (m_vtxBindings == rhs.m_vtxBindings);
+			}
+			return true;
+		}
+
+		//C++11 range for interface implementation
+
+		VertexBindingsVector::Iterator	begin()
+		{
+			return m_vtxBindings.Begin();
+		}
+
+
+		VertexBindingsVector::ConstIterator	begin() const
+		{
+			return m_vtxBindings.Begin();
+		}
+
+
+		VertexBindingsVector::Iterator	end()
+		{
+			return m_vtxBindings.End();
+		}
+
+		VertexBindingsVector::ConstIterator	end() const
+		{
+			return m_vtxBindings.End();
+		}
+
+		//LayoutType	Type() const
+		//{
+		//	return m_type;
+		//}
+
+
+		//void	SetType(LayoutType type)
+		//{
+		//	m_type = type;
+		//}
+
+
+	private:
+		VertexBindingsVector	m_vtxBindings;
+	};
 }

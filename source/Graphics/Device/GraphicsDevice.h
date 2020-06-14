@@ -65,6 +65,9 @@ namespace moe
 													const void* data, size_t dataSizeBytes) = 0;
 
 		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& desc) = 0;
+		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(InstancedVertexLayoutDescriptor desc) = 0; // TODO: remove
+
+
 		[[nodiscard]] virtual const VertexLayout*	GetVertexLayout(VertexLayoutHandle handle) const = 0;
 
 		[[nodiscard]] virtual DeviceBufferHandle	CreateStaticVertexBuffer(const void* data, size_t dataSize) = 0;
@@ -77,6 +80,9 @@ namespace moe
 
 		virtual void	DrawVertexBuffer(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
 			DeviceBufferHandle idxBufHandle, size_t numIndices) = 0;
+
+		virtual void	DrawInstancedMesh(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle, size_t numVertices,
+			DeviceBufferHandle idxBufHandle, size_t numIndices, DeviceBufferHandle instancingBuffer, uint32_t instancesAmount) = 0;
 
 		virtual void	UpdateBuffer(DeviceBufferHandle bufferHandle, const void* data, size_t dataSize) const = 0;
 
@@ -113,5 +119,14 @@ namespace moe
 		[[nodiscard]]	virtual FramebufferHandle	CreateFramebuffer(const FramebufferDescriptor& fbDesc) = 0;
 		[[nodiscard]]	virtual AFramebuffer*		MutFramebuffer(FramebufferHandle fbHandle) = 0;
 
+
+		template <typename T, size_t N>
+		DeviceBufferHandle	CreateStaticVertexBufferFromData(T(&geometryData)[N]);
 	};
+
+	template <typename T, size_t N>
+	DeviceBufferHandle IGraphicsDevice::CreateStaticVertexBufferFromData(T(& geometryData)[N])
+	{
+		return CreateStaticVertexBuffer(&geometryData[0], N * sizeof(T));
+	}
 }

@@ -31,6 +31,10 @@ namespace moe
 		// \brief :
 		//     Four 32-bit floating point values.
 		Float4,
+		//
+		// \brief :
+		//     Sixteen 32-bit floating point values.
+		Mat4,
 		/**
 		* \brief  One 8-bit unsigned integer.
 		*/

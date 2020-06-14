@@ -24,6 +24,8 @@ namespace moe
 			return { { GL_FLOAT, 3, false } };
 		case VertexElementFormat::Float4:
 			return { { GL_FLOAT, 4, false } };
+		case VertexElementFormat::Mat4:
+			return { { GL_FLOAT, 4, false, 4 } };
 		case VertexElementFormat::Byte:
 			return { { GL_UNSIGNED_BYTE, 1, false } };
 		case VertexElementFormat::Byte_Norm:

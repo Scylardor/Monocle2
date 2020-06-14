@@ -49,6 +49,47 @@ namespace moe
 	}
 
 
+	InstancedMesh* RenderWorld::CreateInstancedMeshFromBuffer(const MeshDataDescriptor& vertexData, const MeshDataDescriptor& indexData)
+	{
+		if (vertexData.IsNull())
+		{
+			// No mesh data to process
+			return nullptr;
+		}
+
+		DeviceBufferHandle vertexHandle = m_renderer.MutGraphicsDevice().CreateStaticVertexBuffer(vertexData.m_dataBuffer, vertexData.m_bufferSizeBytes);
+		if (false == MOE_ASSERT(vertexHandle.IsNotNull()))
+		{
+			return nullptr;
+		}
+
+		DeviceBufferHandle indexHandle{ 0 };
+
+		if (false == indexData.IsNull())
+		{
+			indexHandle = m_renderer.MutGraphicsDevice().CreateIndexBuffer(indexData.m_dataBuffer, indexData.m_bufferSizeBytes);
+			if (false == MOE_ASSERT(indexHandle.IsNotNull()))
+			{
+				// If creating the index buffer failed, don't forget to destroy the vertex buffer or it will go dangling
+				m_renderer.MutGraphicsDevice().DeleteStaticVertexBuffer(vertexHandle);
+				return nullptr;
+			}
+		}
+
+		GraphicObjectData newMeshData{ vertexHandle, indexHandle, DeviceBufferHandle::Null(), vertexData, indexData };
+
+		FreelistID newMeshID = m_instancedMeshFreelist.Add(this, newMeshData);
+
+		InstancedMesh* newMesh = &m_instancedMeshFreelist.Lookup(newMeshID);
+
+		newMesh->SetObjectID(newMeshID);
+
+		m_activeObjects.PushBack(newMeshID);
+
+		return newMesh;
+	}
+
+
 	void RenderWorld::DeleteStaticMesh(Mesh* mesh)
 	{
 		MOE_DEBUG_ASSERT(mesh != nullptr); // you're not supposed to pass null handles to this function
@@ -154,6 +195,30 @@ namespace moe
 		DeviceBufferHandle idxBufHandle = drawnMesh->GetIndexBufferHandle();
 
 		m_renderer.MutGraphicsDevice().DrawVertexBuffer(layoutHandle, vtxBufHandle, drawnMesh->NumVertices(), idxBufHandle, drawnMesh->NumIndices());
+
+	}
+
+
+	void RenderWorld::DrawInstancedMesh(InstancedMesh* drawnInstancedMesh, VertexLayoutHandle layoutHandle,
+		Material* material)
+	{
+		if (drawnInstancedMesh == nullptr)
+			return;
+
+		if (material != nullptr)
+		{
+			m_renderer.UseMaterialPerObject(material, *drawnInstancedMesh);
+		}
+
+		ResourceSetHandle objectRscSet = drawnInstancedMesh->GetPerObjectResourceSet();
+
+		m_renderer.UseResourceSet(objectRscSet);
+
+		DeviceBufferHandle vtxBufHandle = drawnInstancedMesh->GetVertexBufferHandle();
+		DeviceBufferHandle idxBufHandle = drawnInstancedMesh->GetIndexBufferHandle();
+
+		m_renderer.MutGraphicsDevice().DrawInstancedMesh(layoutHandle, vtxBufHandle, drawnInstancedMesh->NumVertices(), idxBufHandle, drawnInstancedMesh->NumIndices(),
+			drawnInstancedMesh->GetInstancingBuffer(), drawnInstancedMesh->GetInstancesAmount());
 
 	}
 

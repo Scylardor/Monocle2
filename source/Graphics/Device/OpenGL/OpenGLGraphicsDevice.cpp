@@ -118,7 +118,7 @@ namespace moe
 
 		switch (vertexLayoutDesc.Type())
 		{
-			case VertexLayoutDescriptor::Interleaved:
+			case LayoutType::Interleaved:
 			{
 				int iAttrib = 0;
 
@@ -159,7 +159,7 @@ namespace moe
 			}
 			break;
 
-			case VertexLayoutDescriptor::Packed:
+			case LayoutType::Packed:
 			{
 				int iAttrib = 0;
 
@@ -218,6 +218,137 @@ namespace moe
 	}
 
 
+	VertexLayoutHandle OpenGLGraphicsDevice::CreateVertexLayout(InstancedVertexLayoutDescriptor desc)
+	{
+		GLuint vaoID;
+		glCreateVertexArrays(1, &vaoID);
+
+		// Yeah it's a bit weird,don't initialize the handle just yet ! Will help to know if our algorithm worked.
+		VertexLayoutHandle handle;
+
+		int iAttrib = 0;
+
+		bool bindingInitSuccessful = true; // start optimistic
+
+		for (auto iBindings = 0; bindingInitSuccessful && iBindings < desc.NumBindings(); iBindings++ )
+		{
+			auto& vtxBindings = *(desc.begin() + iBindings);
+			uint32_t totalStride{ 0 }; // only really useful for Interleaved mode
+
+			switch (vtxBindings.GetLayoutType())
+			{
+			case LayoutType::Interleaved:
+				for (const VertexElementDescriptor& elemDesc : vtxBindings)
+				{
+					auto OpenGLInfoOpt = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
+					if (false == OpenGLInfoOpt.has_value())
+					{
+						MOE_ERROR(ChanGraphics, "Failed to translate following OpenGL format : %u", elemDesc.m_format);
+						bindingInitSuccessful = false;
+						break;
+					}
+
+					const auto& glVertexElemFmt = OpenGLInfoOpt.value();
+
+					// "Repeats" are necessary to handle vertex attributes like mat4 that can exist in shaders, but are not handled by the API code.
+					// For a mat4 as an example, we have to describe a matrix as four vec4 attributes following each other; the repeat count will then be 4.
+					for (auto iRepeat = 0u; iRepeat < glVertexElemFmt.m_repeats; iRepeat++)
+					{
+						// TODO : switch to glVertexAttribPointer if retrocompat needed
+						// Enable attrib index for given VAO
+						glEnableVertexArrayAttrib(vaoID, iAttrib);
+
+						// Specify format for this attrib : type; number of components, normalized. Use totalStride as relativeoffset because data is interleaved (XYZ XYZ...)
+						glVertexArrayAttribFormat(vaoID, iAttrib, glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type, glVertexElemFmt.m_normalized, totalStride);
+
+						// We can bind all attributes to same binding index because data is interleaved.
+						glVertexArrayAttribBinding(vaoID, iAttrib, vtxBindings.BufferBinding());
+
+						iAttrib++;
+
+						auto sizeOpt = OpenGLVertexElementFormat::FindTypeSize(glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
+						if (false == sizeOpt.has_value())
+						{
+							MOE_ERROR(ChanGraphics, "Failed to find the OpenGL type size of following combination : %u %i", glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
+							bindingInitSuccessful = false;
+							break; // invalid, could not find component size
+						}
+
+						totalStride += sizeOpt.value();
+					}
+				}
+
+				if (vtxBindings.InstanceStepRate() != 0)
+				{
+					glVertexArrayBindingDivisor(vaoID, vtxBindings.BufferBinding(), vtxBindings.InstanceStepRate());
+				}
+
+				break;
+
+			case LayoutType::Packed:
+				for (const VertexElementDescriptor& elemDesc : vtxBindings)
+				{
+					auto OpenGLInfoOpt = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
+					if (false == OpenGLInfoOpt.has_value())
+					{
+						MOE_ERROR(ChanGraphics, "Failed to translate following OpenGL format : %u", elemDesc.m_format);
+						break;
+					}
+
+					const auto& glVertexElemFmt = OpenGLInfoOpt.value();
+
+					// More of a safety measure because we actually don't need the total size in packed mode.
+					auto sizeOpt = OpenGLVertexElementFormat::FindTypeSize(glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
+					if (false == sizeOpt.has_value())
+					{
+						MOE_ERROR(ChanGraphics, "Failed to find the OpenGL type size of following combination : %u %i", glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type);
+						break;
+					}
+
+					// TODO : switch to glVertexAttribPointer if retrocompat needed
+					// Enable attrib index for given VAO
+					glEnableVertexArrayAttrib(vaoID, iAttrib);
+
+					// Specify format for this attrib : type; number of components, normalized. Use 0 as relativeoffset because data will be tightly packed (XXX YYY...)
+					glVertexArrayAttribFormat(vaoID, iAttrib, glVertexElemFmt.m_numCpnts, glVertexElemFmt.m_type, glVertexElemFmt.m_normalized, 0);
+
+					// As data will be tightly packed, we need to bind each attribute to a different binding index.
+					glVertexArrayAttribBinding(vaoID, iAttrib, vtxBindings.BufferBinding() + iAttrib);
+
+					if (vtxBindings.InstanceStepRate() != 0)
+					{
+						glVertexArrayBindingDivisor(vaoID, vtxBindings.BufferBinding() + iAttrib, vtxBindings.InstanceStepRate());
+					}
+
+					iAttrib++;
+				}
+				break;
+
+			default:
+				MOE_ASSERT(false); // not supposed to happen
+				MOE_ERROR(ChanGraphics, "Unmanaged vertex layout type.");
+				break;
+			}
+
+			vtxBindings.SetTotalStride(totalStride);
+		}
+
+		if (bindingInitSuccessful)
+		{
+			handle = VertexLayoutHandle{ vaoID }; // if we're here initialization was successful until the end: set the handle.
+			// The VAO was successfully initialized : we store our vertex layout
+			m_vertexLayouts.emplace(std::move(desc), vaoID);
+		}
+		else
+		{
+			// There was a problem somewhere : delete our created VAO
+			glDeleteVertexArrays(1, &vaoID);
+		}
+
+		return handle;
+	}
+
+
 	const VertexLayout* OpenGLGraphicsDevice::GetVertexLayout(VertexLayoutHandle handle) const
 	{
 		auto vtxLayout = m_vertexLayouts.find(handle);
@@ -250,19 +381,31 @@ namespace moe
 
 	DeviceBufferHandle OpenGLGraphicsDevice::CreateStaticVertexBuffer(const void* data, size_t byteSize)
 	{
-		const uint32_t meshOffset = m_vertexBufferPool.Allocate(data, (uint32_t)byteSize);
+		uint32_t meshOffset = m_vertexBufferPool.Allocate(data, (uint32_t)byteSize);
+
+		GLuint bufferID;
+
 		if (meshOffset == OpenGLBuddyAllocator::ms_INVALID_OFFSET)
 		{
-			return DeviceBufferHandle::Null();
+			// The requested allocation didn't fit in our allocation scheme : allocate an ad hoc buffer.
+			// TODO: this is very bad ! This allocation goes completely off the grid ! It should be recorded somewhere...
+			glCreateBuffers(1, &bufferID);
+
+			MOE_DEBUG_ASSERT(bufferID != 0);
+
+			glNamedBufferStorage(bufferID, byteSize, data, GL_DYNAMIC_STORAGE_BIT);
+
+			meshOffset = 0;
 		}
 		else
 		{
-			// Encode the VBO ID and the offset in the handle.
-			// The handle looks like : | VBO ID (32 bits) | offset in VBO (32 bits) |
-			uint64_t handleValue = (uint64_t)m_vertexBufferPool.GetBufferHandle() << 32;
-			handleValue |= meshOffset;
-			return DeviceBufferHandle{handleValue};
+			bufferID = m_vertexBufferPool.GetBufferHandle();
 		}
+
+		// Encode the VBO ID and the offset in the handle.
+		// The handle looks like : | VBO ID (32 bits) | offset in VBO (32 bits) |
+		DeviceBufferHandle bufHandle = EncodeBufferHandle(bufferID, meshOffset);
+		return bufHandle;
 	}
 
 
@@ -335,7 +478,6 @@ namespace moe
 		else
 		{
 			// In packed mode, set the bindings one by one.
-
 			const VertexLayoutDescriptor& layoutDesc = vtxLayout->ReadDescriptor();
 
 			uint32_t bindingIdx = 0;
@@ -363,6 +505,67 @@ namespace moe
 		else
 		{
 			glDrawArrays(m_primitiveTopology, 0, (GLsizei)numVertices);
+		}
+	}
+
+
+	void OpenGLGraphicsDevice::DrawInstancedMesh(VertexLayoutHandle vtxLayoutHandle, DeviceBufferHandle vtxBufHandle,
+		size_t numVertices, DeviceBufferHandle idxBufHandle, size_t numIndices, DeviceBufferHandle instancingBuffer, uint32_t instancesAmount)
+	{
+		const OpenGLVertexLayout* vtxLayout = UseVertexLayout(vtxLayoutHandle);
+		if (vtxLayout == nullptr)
+		{
+			return;
+		}
+
+		for (const auto& vtxBindings : vtxLayout->ReadInstancedDescriptor())
+		{
+			std::pair<GLuint, unsigned> bufferIDAndOffset;
+
+			if (vtxBindings.InstanceStepRate() == 0)
+			{
+				bufferIDAndOffset = DecodeBufferHandle(vtxBufHandle );
+			}
+			else
+			{
+				bufferIDAndOffset = DecodeBufferHandle(instancingBuffer);
+			}
+
+			if (vtxBindings.IsInterleaved())
+			{
+				glVertexArrayVertexBuffer(vtxLayout->VAO(), vtxBindings.BufferBinding(), bufferIDAndOffset.first, bufferIDAndOffset.second, vtxBindings.GetTotalStride());
+			}
+			else
+			{
+				// In packed mode, set the bindings one by one.
+				const VertexLayoutDescriptor& layoutDesc = vtxLayout->ReadDescriptor();
+
+				uint32_t bindingIdx = 0;
+				size_t elemBufferOffset = bufferIDAndOffset.second;
+
+				for (const VertexElementDescriptor& elemDesc : layoutDesc)
+				{
+					auto oglElemFormat = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
+					auto typeSize = OpenGLVertexElementFormat::FindTypeSize(oglElemFormat.value().m_numCpnts, oglElemFormat.value().m_type);
+					glVertexArrayVertexBuffer(vtxLayout->VAO(), bindingIdx, bufferIDAndOffset.first, elemBufferOffset, typeSize.value());
+
+					elemBufferOffset += numVertices * typeSize.value();
+					bindingIdx++;
+				}
+			}
+		}
+
+		if (idxBufHandle.IsNotNull())
+		{
+			auto[ebo, eboOffset] = DecodeBufferHandle(idxBufHandle);
+
+			glVertexArrayElementBuffer(vtxLayout->VAO(), ebo);
+
+			glDrawElementsInstanced(m_primitiveTopology, (GLsizei)numIndices, GL_UNSIGNED_INT, (const void*)(uint64_t)eboOffset, instancesAmount);
+		}
+		else
+		{
+			glDrawArraysInstanced(m_primitiveTopology, 0, (GLsizei)numVertices, instancesAmount);
 		}
 	}
 

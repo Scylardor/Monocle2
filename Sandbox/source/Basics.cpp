@@ -391,14 +391,14 @@ void TestApplication::TestMultiLights()
 		{{"position", VertexElementFormat::Float3},
 				{"color", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 	};
 
 
 	/* Create light VAO */
 	VertexLayoutDescriptor lightLayout{
 	{{"position", VertexElementFormat::Float3}},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 	};
 
 	auto lightVao = renderer.CreateVertexLayout(lightLayout);
@@ -419,7 +419,7 @@ void TestApplication::TestMultiLights()
 {{"position", VertexElementFormat::Float3},
 		{"normal", VertexElementFormat::Float3},
 		{"texCoords", VertexElementFormat::Float2}},
-	VertexLayoutDescriptor::Interleaved
+	LayoutType::Interleaved
 	};
 
 	auto phongVao = renderer.CreateVertexLayout(phongLayout);
@@ -699,11 +699,11 @@ void TestApplication::Test3DPlane()
 		{{"position", VertexElementFormat::Float3},
 				{"color", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 	};
 	//
 	//auto bim = MutRenderer().CreateVertexLayout(layout);
-	//layout.SetType(VertexLayoutDescriptor::Packed);
+	//layout.SetType(LayoutType::Packed);
 	//auto bam = MutRenderer().CreateVertexLayout(layout);
 	//
 	////Array<VertexPositionColor> myVertices = {
@@ -747,14 +747,14 @@ void TestApplication::Test3DPlane()
 			{"position", VertexElementFormat::Float3},
 			{"color", VertexElementFormat::Float4}
 		},
-		VertexLayoutDescriptor::Packed
+		LayoutType::Packed
 	};
 
 	VertexLayoutDescriptor helloQuadLayout{
 	{{"position", VertexElementFormat::Float3},
 			{"color", VertexElementFormat::Float4},
 			{"texture", VertexElementFormat::Float2}},
-	VertexLayoutDescriptor::Interleaved
+	LayoutType::Interleaved
 	};
 
 	auto helloTriLayoutHandle = MutRenderer().CreateVertexLayout(helloTriLayout);
@@ -926,11 +926,11 @@ void TestApplication::TestCubeWorld()
 		{{"position", VertexElementFormat::Float3},
 				{"color", VertexElementFormat::Float3},
 				{"texture", VertexElementFormat::Float2}},
-		VertexLayoutDescriptor::Interleaved
+		LayoutType::Interleaved
 	};
 	//
 	//auto bim = MutRenderer().CreateVertexLayout(layout);
-	//layout.SetType(VertexLayoutDescriptor::Packed);
+	//layout.SetType(LayoutType::Packed);
 	//auto bam = MutRenderer().CreateVertexLayout(layout);
 	//
 	////Array<VertexPositionColor> myVertices = {
@@ -974,14 +974,14 @@ void TestApplication::TestCubeWorld()
 			{"position", VertexElementFormat::Float3},
 			{"color", VertexElementFormat::Float4}
 		},
-		VertexLayoutDescriptor::Packed
+		LayoutType::Packed
 	};
 
 	VertexLayoutDescriptor helloQuadLayout{
 	{{"position", VertexElementFormat::Float3},
 			{"color", VertexElementFormat::Float4},
 			{"texture", VertexElementFormat::Float2}},
-	VertexLayoutDescriptor::Interleaved
+	LayoutType::Interleaved
 	};
 
 	auto helloTriLayoutHandle = MutRenderer().CreateVertexLayout(helloTriLayout);

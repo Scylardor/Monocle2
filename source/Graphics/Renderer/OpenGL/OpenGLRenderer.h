@@ -88,6 +88,11 @@ namespace moe
 			return m_device.CreateVertexLayout(vertexLayoutDesc);
 		}
 
+		[[nodiscard]] virtual VertexLayoutHandle	CreateInstancedVertexLayout(const InstancedVertexLayoutDescriptor& vertexLayoutDesc) override
+		{
+			return m_device.CreateVertexLayout(vertexLayoutDesc);
+		}
+
 
 		Monocle_Graphics_API [[nodiscard]] DeviceBufferHandle		CreateUniformBuffer(const void* data, uint32_t dataSizeBytes) override;
 

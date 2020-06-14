@@ -67,6 +67,8 @@ set(Monocle_Graphics_SOURCES
 ./Material/MaterialLibrary.cpp
 ./Material/MaterialLibrary.h
 ./Material/MaterialObjectBlock.h
+./Mesh/InstancedMesh.cpp
+./Mesh/InstancedMesh.h
 ./Mesh/Mesh.cpp
 ./Mesh/Mesh.h
 ./Mesh/MeshDataDescriptor.h
@@ -118,6 +120,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/geometry_shader.frag
 ./Resources/shaders/OpenGL/geometry_shader.geom
 ./Resources/shaders/OpenGL/geometry_shader.vert
+./Resources/shaders/OpenGL/instancing.frag
+./Resources/shaders/OpenGL/instancing.vert
 ./Resources/shaders/OpenGL/light.frag
 ./Resources/shaders/OpenGL/light.vert
 ./Resources/shaders/OpenGL/phong.frag
