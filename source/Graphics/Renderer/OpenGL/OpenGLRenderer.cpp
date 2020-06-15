@@ -32,9 +32,11 @@ namespace moe
 		// Now we can start initialization
 		m_device.Initialize();
 
-		/* TODO: remove !! */
+		/* TODO: remove or put somewhere else */
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
+
+		glEnable(GL_MULTISAMPLE);
 
 		return true;
 	}

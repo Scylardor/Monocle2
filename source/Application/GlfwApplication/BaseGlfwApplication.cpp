@@ -31,6 +31,8 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 
 	glfwWindowHint(GLFW_RESIZABLE, appDesc.m_resizableWindow);
 
+	glfwWindowHint(GLFW_SAMPLES, appDesc.m_numSamples);
+
 	m_window = glfwCreateWindow(appDesc.m_windowWidth, appDesc.m_windowHeight, appDesc.m_windowTitle, nullptr, nullptr);
 	if (m_window == nullptr)
 	{

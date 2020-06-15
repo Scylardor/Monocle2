@@ -2358,8 +2358,8 @@ namespace moe
 
 		// generate a large list of semi-random model transformation matrices
 		// ------------------------------------------------------------------
-		constexpr unsigned int amount = 50;
-		Mat4 modelMatrices[amount];
+		constexpr unsigned int amount = 50000;
+		Mat4* modelMatrices = new Mat4[amount];
 		srand((unsigned)GetApplicationTimeSeconds()); // initialize random seed
 		float radius = 15.f;
 		float offset = 25.0f;
@@ -2378,8 +2378,8 @@ namespace moe
 			modelMatrices[iMat].Translate(Vec3(x, y, z));
 
 			// 2. scale: Scale between 0.05 and 0.25f
-			//float scale = (rand() % 20) / 100.0f + 0.05f;
-			//modelMatrices[iMat].Scale(Vec3(scale));
+			float scale = (rand() % 20) / 100.0f + 0.05f;
+			modelMatrices[iMat].Scale(Vec3(scale));
 
 			// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
 			float rotAngle = float(rand() % 360);
@@ -2387,7 +2387,9 @@ namespace moe
 		}
 
 		// Now create a GPU buffer to copy this data into
-		DeviceBufferHandle instancingBuffer = m_renderer.MutGraphicsDevice().CreateStaticVertexBufferFromData(modelMatrices);
+		DeviceBufferHandle instancingBuffer = m_renderer.MutGraphicsDevice().CreateStaticVertexBuffer(modelMatrices, amount * sizeof(Mat4));
+
+		delete[] modelMatrices;
 
 		// Finally, associate this data to the instancing buffer of the instanced cube
 		instCube->SetInstancingBufferBinding(instancingBuffer, amount);
