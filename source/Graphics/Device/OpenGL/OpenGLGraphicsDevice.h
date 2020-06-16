@@ -35,6 +35,8 @@
 
 #include "Graphics/Swapchain/OpenGL/OpenGLSwapchain.h"
 
+#include "Graphics/Sampler/OpenGL/OpenGLSampler.h"
+
 #include "Monocle_Graphics_Export.h"
 
 
@@ -209,11 +211,19 @@ namespace moe
 		}
 
 
+		Monocle_Graphics_API [[nodiscard]]	SamplerHandle	CreateSampler(const SamplerDescriptor& samplerDesc) override;
+
+		void	BindSamplerToTextureUnit(int textureBindingPoint, SamplerHandle samplerHandle) override;
+
+
 
 		static DeviceBufferHandle						EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset);
 
 		static std::pair<unsigned int, unsigned int>	DecodeBufferHandle(const RenderObjectHandle<std::uint64_t>& handle);
 
+		static SamplerHandle							EncodeSamplerHandle(unsigned int samplerID, unsigned int freelistID);
+
+		static std::pair<uint16_t, uint16_t>			DecodeSamplerHandle(SamplerHandle handleToDecode);
 
 
 	private:
@@ -243,8 +253,11 @@ namespace moe
 
 		Vector<OpenGLFramebuffer>	m_framebuffers; // TODO: this is a code smell. Should be a free list but needs to fix compile...
 
+		Freelist<OpenGLSampler>	m_samplers;
+
 		GLenum	m_primitiveTopology = GL_TRIANGLES;	// Current topology used to draw geometry. Modified by SetPipeline
 	};
+
 }
 
 #endif

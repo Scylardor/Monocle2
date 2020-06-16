@@ -11,7 +11,7 @@
 int main()
 {
 
-	moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
+	moe::OpenGLGlfwAppDescriptor appDesc(800_width, 600_height, "Monocle Sandbox");
 
 	moe::TestApplication app(appDesc);
 

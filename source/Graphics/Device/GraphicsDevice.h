@@ -31,6 +31,8 @@
 #include "Graphics/Framebuffer/FramebufferDescription.h"
 #include "Graphics/Framebuffer/Framebuffer.h"
 
+#include "Graphics/Sampler/SamplerHandle.h"
+#include "Graphics/Sampler/SamplerDescriptor.h"
 
 
 namespace moe
@@ -112,12 +114,16 @@ namespace moe
 
 		[[nodiscard]]	virtual PipelineHandle	CreatePipeline(PipelineDescriptor& pipelineDesc) = 0;
 
-		virtual void			SetPipeline(PipelineHandle pipeHandle) = 0;
+		virtual void	SetPipeline(PipelineHandle pipeHandle) = 0;
 
 		[[nodiscard]]	virtual SwapchainHandle	CreateSwapChain(uint32_t renderWidth, uint32_t renderHeight, FramebufferAttachment wantedAttachments) = 0;
 
 		[[nodiscard]]	virtual FramebufferHandle	CreateFramebuffer(const FramebufferDescriptor& fbDesc) = 0;
 		[[nodiscard]]	virtual AFramebuffer*		MutFramebuffer(FramebufferHandle fbHandle) = 0;
+
+		[[nodiscard]]	virtual SamplerHandle	CreateSampler(const SamplerDescriptor& samplerDesc) = 0;
+
+		virtual void	BindSamplerToTextureUnit(int textureBindingPoint, SamplerHandle samplerHandle) = 0;
 
 
 		template <typename T, size_t N>

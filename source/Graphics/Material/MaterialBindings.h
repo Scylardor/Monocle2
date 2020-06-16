@@ -23,8 +23,16 @@ namespace moe
 		SPECULAR,
 		EMISSION,
 		GLOSS,
-		SKYBOX,
-		CUSTOM
+		SKYBOX
+	};
+
+	enum MaterialSamplerBinding : uint8_t
+	{
+		SAMPLER_0 = 0,
+		SAMPLER_1,
+		SAMPLER_2,
+		SAMPLER_3,
+		SAMPLER_4
 	};
 
 }

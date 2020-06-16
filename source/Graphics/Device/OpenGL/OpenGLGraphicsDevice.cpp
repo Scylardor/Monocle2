@@ -702,6 +702,7 @@ namespace moe
 		glTextureStorage2D(textureID, tex2DFileDesc.m_wantedMipmapLevels, textureFormat, width, height);
 		glTextureSubImage2D(textureID, 0, 0, 0, width, height, inputBaseFormat, GL_UNSIGNED_BYTE, imageData);
 
+
 		if (tex2DFileDesc.m_wantedMipmapLevels != 0)
 		{
 			glGenerateTextureMipmap(textureID);
@@ -1059,6 +1060,73 @@ namespace moe
 	{
 		m_framebuffers.EmplaceBack(fbDesc);
 		return FramebufferHandle{(FramebufferHandle::Underlying) m_framebuffers.Size()};
+	}
+
+
+	SamplerHandle OpenGLGraphicsDevice::CreateSampler(const SamplerDescriptor& samplerDesc)
+	{
+		GLuint newSamplerID;
+		glCreateSamplers(1, &newSamplerID);
+
+		// Wrapping parameters
+		auto wrapS = OpenGLSampler::TranslateToOpenGLWrapMode(samplerDesc.m_wrap_S);
+		auto wrapT = OpenGLSampler::TranslateToOpenGLWrapMode(samplerDesc.m_wrap_T);
+		auto wrapR = OpenGLSampler::TranslateToOpenGLWrapMode(samplerDesc.m_wrap_R);
+		glSamplerParameteri(newSamplerID, GL_TEXTURE_WRAP_S, wrapS);
+		glSamplerParameteri(newSamplerID, GL_TEXTURE_WRAP_T, wrapT);
+		glSamplerParameteri(newSamplerID, GL_TEXTURE_WRAP_R, wrapR);
+
+		// Filtering parameters
+		auto magFilter = OpenGLSampler::TranslateToOpenGLFilterMode(samplerDesc.m_magFilter);
+		auto minFilter = OpenGLSampler::TranslateToOpenGLFilterMode(samplerDesc.m_minFilter);
+		glSamplerParameteri(newSamplerID, GL_TEXTURE_MAG_FILTER, magFilter);
+		glSamplerParameteri(newSamplerID, GL_TEXTURE_MIN_FILTER, minFilter);
+
+		// Anisotropic filtering
+		float usedAnisotropy;
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &usedAnisotropy);
+		usedAnisotropy = std::min(usedAnisotropy, samplerDesc.m_anisotropy);
+		glSamplerParameterf(newSamplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, usedAnisotropy); // TODO : check this extension is here
+
+		// LOD range
+		glSamplerParameterf(newSamplerID, GL_TEXTURE_MIN_LOD, samplerDesc.m_lodRangeMin);
+		glSamplerParameterf(newSamplerID, GL_TEXTURE_MAX_LOD, samplerDesc.m_lodRangeMax);
+
+		// LOD bias
+		float usedLodBias;
+		glGetFloatv(GL_MAX_TEXTURE_LOD_BIAS, &usedLodBias);
+		// Clamp to [-maxBias, maxBias] range.
+		usedLodBias = std::min(usedLodBias, std::max(-usedLodBias, samplerDesc.m_lodBias));
+		glSamplerParameterf(newSamplerID, GL_TEXTURE_LOD_BIAS, usedLodBias);
+
+		auto freeListID = m_samplers.Add(newSamplerID, samplerDesc);
+		MOE_DEBUG_ASSERT(freeListID.Index() < (1 << 16)); // We cannot have more than 65k samplers at that time.
+
+		SamplerHandle newHandle = EncodeSamplerHandle(newSamplerID, freeListID.Index());
+
+		return newHandle;
+	}
+
+
+	void OpenGLGraphicsDevice::BindSamplerToTextureUnit(int textureBindingPoint, SamplerHandle samplerHandle)
+	{
+		auto [samplerID, _ ] = DecodeSamplerHandle(samplerHandle);
+		glBindSampler(textureBindingPoint, samplerID);
+	}
+
+
+	std::pair<uint16_t, uint16_t> OpenGLGraphicsDevice::DecodeSamplerHandle(SamplerHandle handleToDecode)
+	{
+		uint16_t samplerID = handleToDecode.Get() >> 16;
+		uint16_t freeListID = (uint16_t)handleToDecode.Get();
+		return { samplerID, freeListID};
+	}
+
+
+	SamplerHandle OpenGLGraphicsDevice::EncodeSamplerHandle(unsigned samplerID, unsigned freelistID)
+	{
+		uint32_t handleValue = (uint16_t)samplerID << 16 | (uint16_t)freelistID;
+		return SamplerHandle{ handleValue };
 	}
 
 

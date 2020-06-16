@@ -139,6 +139,10 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/visualize_normals.frag
 ./Resources/shaders/OpenGL/visualize_normals.geom
 ./Resources/shaders/OpenGL/visualize_normals.vert
+./Sampler/OpenGL/OpenGLSampler.cpp
+./Sampler/OpenGL/OpenGLSampler.h
+./Sampler/SamplerDescriptor.h
+./Sampler/SamplerHandle.h
 ./SceneGraph/SceneGraph.cpp
 ./SceneGraph/SceneGraph.h
 ./SceneGraph/SceneGraphHandle.h

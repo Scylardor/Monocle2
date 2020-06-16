@@ -31,6 +31,7 @@
 #include "Graphics/Material/MaterialLibrary.h"
 
 #include "Graphics/Framebuffer/FramebufferDescription.h"
+#include "Graphics/Sampler/SamplerDescriptor.h"
 
 #include "Graphics/Texture/TextureHandle.h"
 
@@ -249,6 +250,8 @@ namespace moe
 		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
 		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
 
+		lib.AddBindingMapping("Material_Sampler", { MaterialSamplerBinding::SAMPLER_0, ResourceKind::Sampler });
+
 		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
 		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
@@ -326,6 +329,7 @@ namespace moe
 		MaterialDescriptor materialdesc(
 			{
 				{"Material_Phong", ShaderStage::Fragment},
+				{"Material_Sampler", ShaderStage::Fragment},
 				{"Material_DiffuseMap", ShaderStage::Fragment}
 			}
 		);
@@ -337,8 +341,16 @@ namespace moe
 							Vec4(0.3f, 0.3f, 0.3f, 1.f),
 							64 });
 
-		Texture2DHandle woodImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(Texture2DFileDescriptor{ "Sandbox/assets/textures/wood.png", TextureFormat::SRGB_RGBA8 });
+		Texture2DFileDescriptor woodDesc{ "Sandbox/assets/textures/wood.png", TextureFormat::SRGB_RGBA8 };
+		woodDesc.m_wantedMipmapLevels = 8;
+		Texture2DHandle woodImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(woodDesc);
 		planeInst.BindTexture(MaterialTextureBinding::DIFFUSE, woodImg);
+
+		SamplerDescriptor samplerDesc; // keep the default parameters
+		samplerDesc.m_anisotropy = 4.f;
+		SamplerHandle samplerHandle = MutRenderer().MutGraphicsDevice().CreateSampler(samplerDesc);
+		planeInst.BindSampler(MaterialSamplerBinding::SAMPLER_0, samplerHandle);
+
 		planeInst.CreateMaterialResourceSet();
 		/* End Phong material buffer */
 

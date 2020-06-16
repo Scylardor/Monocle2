@@ -39,6 +39,11 @@ namespace moe
 			m_textureUnitBindings[texBinding] = texHandle;
 		}
 
+		void	BindSampler(MaterialSamplerBinding samplerBinding, SamplerHandle samplerHandle)
+		{
+			m_samplerBindings[samplerBinding] = samplerHandle;
+		}
+
 		Monocle_Graphics_API bool	CreateMaterialResourceSet();
 
 		template <typename T>
@@ -74,6 +79,7 @@ namespace moe
 
 		HashMap<MaterialBlockBinding, DeviceBufferHandle>	m_blockBindingBuffers;
 		HashMap<MaterialTextureBinding, TextureHandle>		m_textureUnitBindings;
+		HashMap<MaterialSamplerBinding, SamplerHandle >		m_samplerBindings;
 	};
 
 

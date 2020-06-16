@@ -29,6 +29,7 @@ namespace moe
 				}
 			}
 			break;
+
 			case ResourceKind::TextureReadOnly:
 			{
 				auto texIt = m_textureUnitBindings.Find(MaterialTextureBinding(rscBindingDesc.m_bindingPoint));
@@ -38,11 +39,19 @@ namespace moe
 					newRscSetDesc.Emplace(texHandle);
 				}
 			}
-
 			break;
-			case ResourceKind::Sampler:
 
-				break;
+			case ResourceKind::Sampler:
+			{
+				auto samplerIt = m_samplerBindings.Find(MaterialSamplerBinding(rscBindingDesc.m_bindingPoint));
+				if (samplerIt != m_samplerBindings.End())
+				{
+					SamplerHandle samplHandle = samplerIt->second;
+					newRscSetDesc.Emplace(samplHandle);
+				}
+			}
+			break;
+
 			default:
 				MOE_ASSERT(false);
 				MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");

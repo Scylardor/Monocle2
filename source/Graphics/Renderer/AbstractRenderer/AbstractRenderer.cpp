@@ -43,6 +43,8 @@ namespace moe
 
 		int iBinding = 0;
 
+		SamplerHandle lastSamplerUsed{0};
+
 		for (const ResourceLayoutBindingDescriptor& rscBindingDesc : rscLayoutDesc)
 		{
 			switch (rscBindingDesc.m_kind)
@@ -57,12 +59,17 @@ namespace moe
 			{
 				TextureHandle texHandle = rscSetDesc.Get<TextureHandle>(iBinding);
 				device.BindTextureUnit(rscBindingDesc.m_bindingPoint, texHandle);
-			}
 
+				// The way Samplers work in Monocle is that the last sampler used automatically binds itself to the next textures.
+				if (lastSamplerUsed.IsNotNull())
+				{
+					device.BindSamplerToTextureUnit(rscBindingDesc.m_bindingPoint, lastSamplerUsed);
+				}
+			}
 			break;
 			case ResourceKind::Sampler:
-
-				break;
+				lastSamplerUsed = rscSetDesc.Get<SamplerHandle>(iBinding);
+			break;
 			default:
 				MOE_ASSERT(false);
 				MOE_ERROR(ChanGraphics, "Unmanaged ResourceKind value.");
