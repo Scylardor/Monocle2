@@ -68,15 +68,7 @@ namespace moe
 
 
 
-	struct VertexPositionNormalTexture
-	{
-		Vec3	m_position;
-		Vec3	m_normal;
-		Vec2	m_texcoords;
-	};
-
-
-	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent)
+	Array<TestApplication::VertexPositionNormalTexture, 36> TestApplication::CreateCubePositionNormalTexture(float halfExtent)
 	{
 
 		return {

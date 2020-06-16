@@ -210,7 +210,8 @@ struct ProjectionPlanes
 
 void TestApplication::Run()
 {
-	TestInstancedAsteroids();
+	TestGammaCorrection();
+
 }
 
 	void TestApplication::CameraMoveForward()

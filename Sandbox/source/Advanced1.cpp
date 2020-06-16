@@ -37,13 +37,6 @@
 
 namespace moe
 {
-	struct PhongMaterial
-	{
-		Vec4	m_ambientColor{ 1.f };
-		Vec4	m_diffuseColor{ 1.f };
-		Vec4	m_specularColor{ 1.f };
-		float	m_shininess{ 32 };
-	};
 
 
 	struct ProjectionPlanes

@@ -8,6 +8,7 @@ set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/TestApplication.cpp"
 	"${SOURCE_DIR}/Basics.cpp"
 	"${SOURCE_DIR}/Advanced1.cpp"
+	"${SOURCE_DIR}/AdvancedLighting.cpp"
 	"${SOURCE_DIR}/TestApplication.h"
 )
 

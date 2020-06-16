@@ -108,6 +108,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/basic.vert
 ./Resources/shaders/OpenGL/blending.frag
 ./Resources/shaders/OpenGL/blending.vert
+./Resources/shaders/OpenGL/blinn_phong.frag
+./Resources/shaders/OpenGL/blinn_phong.vert
 ./Resources/shaders/OpenGL/cubemaps.frag
 ./Resources/shaders/OpenGL/cubemaps.vert
 ./Resources/shaders/OpenGL/depth_testing.frag
@@ -117,6 +119,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/explode.vert
 ./Resources/shaders/OpenGL/framebuffer.frag
 ./Resources/shaders/OpenGL/framebuffer.vert
+./Resources/shaders/OpenGL/gamma_correction.frag
+./Resources/shaders/OpenGL/gamma_correction.vert
 ./Resources/shaders/OpenGL/geometry_shader.frag
 ./Resources/shaders/OpenGL/geometry_shader.geom
 ./Resources/shaders/OpenGL/geometry_shader.vert

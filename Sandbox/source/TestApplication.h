@@ -31,6 +31,10 @@ public:
 	void	TestGeometryShaderExplode();
 	void	TestInstancedAsteroids();
 
+	// Test Advanced Lighting
+	void	TestBlinnPhong();
+	void	TestGammaCorrection();
+
 
 	// Others
 	void	CameraMoveForward();
@@ -49,8 +53,24 @@ private:
 		Vec3	m_position;
 	};
 
-	Array<VertexPosition, 36>	CreateCube(float halfExtent);
+	struct VertexPositionNormalTexture
+	{
+		Vec3	m_position;
+		Vec3	m_normal;
+		Vec2	m_texcoords;
+	};
 
+	struct PhongMaterial
+	{
+		Vec4	m_ambientColor{ 1.f };
+		Vec4	m_diffuseColor{ 1.f };
+		Vec4	m_specularColor{ 1.f };
+		float	m_shininess{ 32 };
+	};
+
+
+	Array<VertexPosition, 36>	CreateCube(float halfExtent);
+	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent);
 
 	using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
 

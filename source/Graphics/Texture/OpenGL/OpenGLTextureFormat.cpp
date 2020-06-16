@@ -9,9 +9,14 @@ namespace moe
 		switch (format)
 		{
 		case TextureFormat::Any:
-			return GL_RGBA32F;
 		case TextureFormat::RGBA8:
 			return GL_RGBA8;
+		case TextureFormat::SRGB_RGBA8:
+			return GL_SRGB8_ALPHA8;
+		case TextureFormat::RGB8:
+			return GL_RGB8;
+		case TextureFormat::SRGB_RGB8:
+			return GL_SRGB8;
 		case TextureFormat::RGBA32F:
 			return GL_RGBA32F;
 		case TextureFormat::RGB32F:
@@ -28,6 +33,7 @@ namespace moe
 			MOE_ASSERT(false);
 			MOE_ERROR(ChanGraphics, "Could not translate unmanaged texture format value.");
 			return 0;
+
 		}
 	}
 
