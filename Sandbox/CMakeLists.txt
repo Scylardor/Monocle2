@@ -10,6 +10,8 @@ set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/Advanced1.cpp"
 	"${SOURCE_DIR}/AdvancedLighting.cpp"
 	"${SOURCE_DIR}/TestApplication.h"
+	"${SOURCE_DIR}/DepthRenderPass.h"
+	"${SOURCE_DIR}/DepthRenderPass.cpp"
 )
 
 add_compile_options(

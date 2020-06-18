@@ -1,4 +1,4 @@
-// Monocle Game Engine source files - Alexandre Baron
+// Monocle Game Engine source files
 
 #pragma once
 

@@ -23,14 +23,16 @@ namespace moe
 		Perspective
 	};
 
-	struct CameraDescriptor
-	{
-		CameraProjection	m_proj{CameraProjection::Perspective};
-
-	};
 
 	struct OrthographicCameraDesc
 	{
+		OrthographicCameraDesc() = default;
+
+		OrthographicCameraDesc(float cubeExtent, float near, float far) :
+			m_left(-cubeExtent), m_right(cubeExtent), m_bottom(-cubeExtent), m_top(cubeExtent),
+			m_near(near), m_far(far)
+		{}
+
 		float	m_left = 0.0f;
 		float	m_right = 800.0f;
 		float	m_bottom = 0.0f;
@@ -68,6 +70,13 @@ namespace moe
 	};
 
 
+	struct CameraDescriptor
+	{
+		CameraProjection	m_projType{ CameraProjection::Perspective };
+		CameraData			m_camData;
+	};
+
+
 	struct CameraMatrices
 	{
 		CameraMatrices(const Mat4& view = Mat4::Identity(), const Mat4 & proj = Mat4::Identity(), const Mat4& viewProj = Mat4::Identity()) :
@@ -78,6 +87,11 @@ namespace moe
 		Mat4	m_proj;
 		Mat4	m_viewProj;
 		Vec4	m_cameraPos{0};
+
+	private:
+		// TODO: ugly hack to make each camera block a multiple of 256 to abide by the law of having to bind an offset of GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT into the UBO.
+		// Maybe try to do it better ?
+		byte_t	m_padding[48];
 	};
 
 

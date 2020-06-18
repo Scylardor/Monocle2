@@ -5,8 +5,22 @@
 #include "Core/Containers/Vector/Vector.h"
 #include "Graphics/Texture/Texture2DHandle.h"
 
+#include "Graphics/Framebuffer/FramebufferHandle.h"
+
 namespace moe
 {
+
+	/**
+	 * \brief Graphics-API agnostic to describe a type of target buffer.
+	 * Useful to specify which buffer is to be used for read and draw operations.
+	 */
+	enum class TargetBuffer : uint8_t
+	{
+		None = 0,
+		Default,
+		Back
+		// Could add more...
+	};
 
 	/**
 	 * \brief A graphics APi-agnostic descriptor of what textures, or render targets, should be used to populate a framebuffer.
@@ -16,7 +30,15 @@ namespace moe
 		FramebufferDescriptor() = default;
 
 		Vector<Texture2DHandle>	m_colorAttachments;
+		Texture2DHandle			m_depthAttachment;
 		Texture2DHandle			m_depthStencilAttachment;
+
+		// The source color buffer to use for all read operations when this framebuffer is bound.
+		TargetBuffer			m_readBuffer{ TargetBuffer::Default };
+
+		// The destination color buffer to use for all write operations when this framebuffer is bound.
+		TargetBuffer			m_drawBuffer{ TargetBuffer::Default };
+
 	};
 
 }

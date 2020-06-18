@@ -41,6 +41,12 @@ namespace moe
 			return Transform(Mat4::Translation(translate));
 		}
 
+		[[nodiscard]] static Transform	Rotate(Degs_f angle, Vec3 axis)
+		{
+			return Transform(Mat4::Rotation(angle, axis));
+		}
+
+
 		[[nodiscard]] static Transform	Scale(const Vec3 & scale)
 		{
 			return Transform(Mat4::Scaling(scale));

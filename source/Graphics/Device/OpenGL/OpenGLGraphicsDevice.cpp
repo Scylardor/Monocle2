@@ -663,7 +663,11 @@ namespace moe
 			{
 				glTextureSubImage2D(textureID, 0, 0, 0, tex2DDesc.m_width, tex2DDesc.m_height, GL_RGBA, GL_UNSIGNED_BYTE, tex2DDesc.m_imageData);
 			}
-			glGenerateTextureMipmap(textureID);
+
+			if (tex2DDesc.m_wantedMipmapLevels != 0)
+			{
+				glGenerateTextureMipmap(textureID);
+			}
 
 			return Texture2DHandle{ textureID };
 		}
@@ -1059,7 +1063,7 @@ namespace moe
 	FramebufferHandle OpenGLGraphicsDevice::CreateFramebuffer(const FramebufferDescriptor& fbDesc)
 	{
 		m_framebuffers.EmplaceBack(fbDesc);
-		return FramebufferHandle{(FramebufferHandle::Underlying) m_framebuffers.Size()};
+		return FramebufferHandle{ (FramebufferHandle::Underlying) m_framebuffers.Back().GetID() };
 	}
 
 

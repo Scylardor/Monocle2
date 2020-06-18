@@ -34,7 +34,7 @@ public:
 	// Test Advanced Lighting
 	void	TestBlinnPhong();
 	void	TestGammaCorrection();
-
+	void	TestShadowMapping();
 
 	// Others
 	void	CameraMoveForward();
@@ -46,12 +46,21 @@ public:
 
 	void	CameraZoomMouseScroll(double xpos, double ypos);
 
+
+	struct VertexPositionTexture
+	{
+		Vec3	m_position;
+		Vec2	m_texture;
+	};
+
+
 private:
 
 	struct VertexPosition
 	{
 		Vec3	m_position;
 	};
+
 
 	struct VertexPositionNormalTexture
 	{

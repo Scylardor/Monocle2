@@ -80,6 +80,12 @@ namespace moe
 	}
 
 
+	void OpenGLRenderer::ClearDepth()
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+
+
 	void OpenGLRenderer::UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle)
 	{
 		const GLuint shaderProgramID = m_device.UseShaderProgram(progHandle);

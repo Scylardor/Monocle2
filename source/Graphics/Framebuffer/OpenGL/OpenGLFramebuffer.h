@@ -52,14 +52,21 @@ namespace moe
 
 		bool	IsComplete() const override;
 
+		unsigned int	GetID() const { return m_frameBufferID; }
+
 
 	private:
 
 		void	BindAttachment(unsigned int attachmentID, Texture2DHandle attachmentHandle);
 
-		unsigned int	m_frameBufferID{0};
+		static	unsigned int	TranslateToOpenGLTargetBufferEnum(TargetBuffer tgtBuf);
+
+		unsigned int		m_frameBufferID{0};
+
 		RenderTargetHandle	m_colorAttachment{0};
 		RenderTargetHandle	m_depthStencilAttachment{0};
+
+		FramebufferDescriptor	m_desc;
 	};
 
 }

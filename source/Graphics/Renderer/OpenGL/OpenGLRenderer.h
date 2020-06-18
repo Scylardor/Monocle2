@@ -140,6 +140,7 @@ namespace moe
 		/* TODO : quick and dirty test framework, to remove later */
 
 		Monocle_Graphics_API void	Clear(const ColorRGBAf& clearColor) override;
+		Monocle_Graphics_API void	ClearDepth() override;
 
 		Monocle_Graphics_API void	UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle) override;
 

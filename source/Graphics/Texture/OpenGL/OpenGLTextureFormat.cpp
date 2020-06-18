@@ -21,6 +21,10 @@ namespace moe
 			return GL_RGBA32F;
 		case TextureFormat::RGB32F:
 			return GL_RGB32F;
+		case TextureFormat::Depth16:
+			return GL_DEPTH_COMPONENT16;
+		case TextureFormat::Depth24:
+			return GL_DEPTH_COMPONENT24;
 		case TextureFormat::Depth32:
 			return GL_DEPTH_COMPONENT32;
 		case TextureFormat::Depth32F:

@@ -30,6 +30,7 @@ namespace moe
 		Monocle_Graphics_API Camera*	AddNewCamera(ViewportHandle vpHandle, const PerspectiveCameraDesc& perspecDesc);
 		Monocle_Graphics_API Camera*	AddNewCamera(ViewportHandle vpHandle, const OrthographicCameraDesc& cameraDesc);
 		Monocle_Graphics_API Camera*	AddNewCamera(ViewportHandle vpHandle, const CameraData& camData, CameraProjection projType);
+		Monocle_Graphics_API Camera*	AddNewCamera(ViewportHandle vpHandle, const CameraDescriptor& camDesc);
 
 
 		Monocle_Graphics_API void		RemoveCamera(Camera* Camera);

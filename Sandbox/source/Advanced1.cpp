@@ -46,14 +46,9 @@ namespace moe
 	};
 
 
-	struct VertexPositionTexture
-	{
-		Vec3	m_position;
-		Vec2	m_texture;
-	};
 
 
-	Array<VertexPositionTexture, 36>	CreateCubePositionTexture(float halfExtent)
+	Array<TestApplication::VertexPositionTexture, 36>	CreateCubePositionTexture(float halfExtent)
 	{
 		return {
 			{Vec3{-halfExtent, -halfExtent, -halfExtent}, { 0.0f,  0.0f }},

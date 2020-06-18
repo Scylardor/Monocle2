@@ -69,12 +69,15 @@ namespace moe
 		return AddNewCamera(vpHandle, CameraData(perspecDesc), CameraProjection::Perspective);
 	}
 
-
 	Camera* CameraSystem::AddNewCamera(ViewportHandle vpHandle, const OrthographicCameraDesc& orthoDesc)
 	{
 		return AddNewCamera(vpHandle, CameraData(orthoDesc), CameraProjection::Orthographic);
 	}
 
+	Camera* CameraSystem::AddNewCamera(ViewportHandle vpHandle, const CameraDescriptor& camDesc)
+	{
+		return AddNewCamera(vpHandle, CameraData(camDesc.m_camData), camDesc.m_projType);
+	}
 
 	Camera* CameraSystem::AddNewCamera(ViewportHandle vpHandle, const CameraData& camData, CameraProjection projType)
 	{
@@ -84,7 +87,11 @@ namespace moe
 
 		m_CameraObjects.EmplaceBack(this, vpHandle, camData, projType, &m_CameraDataBuffer[m_nextCameraIdx]);
 
-		return &m_CameraObjects[m_nextCameraIdx++];
+		Camera& newCamera = m_CameraObjects.Back();
+		newCamera.SetCameraIndex(m_nextCameraIdx);
+		m_nextCameraIdx++;
+
+		return &newCamera;
 	}
 
 

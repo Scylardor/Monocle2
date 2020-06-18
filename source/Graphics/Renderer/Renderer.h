@@ -144,6 +144,7 @@ namespace moe
 
 		/* TODO: Test mini-framework, should be temporary and removed later */
 		virtual void	Clear(const ColorRGBAf& clearColor) = 0;
+		virtual void	ClearDepth() = 0;
 
 		virtual void	UseMaterial(ShaderProgramHandle progHandle, ResourceSetHandle rscSetHandle) = 0;
 
