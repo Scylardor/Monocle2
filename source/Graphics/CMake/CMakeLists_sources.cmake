@@ -136,6 +136,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/phong.vert
 ./Resources/shaders/OpenGL/phong_maps.frag
 ./Resources/shaders/OpenGL/phong_maps.vert
+./Resources/shaders/OpenGL/shadow_mapping.frag
+./Resources/shaders/OpenGL/shadow_mapping.vert
 ./Resources/shaders/OpenGL/skybox.frag
 ./Resources/shaders/OpenGL/skybox.vert
 ./Resources/shaders/OpenGL/stencil_testing.frag

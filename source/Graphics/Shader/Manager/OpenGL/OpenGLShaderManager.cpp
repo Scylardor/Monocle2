@@ -21,6 +21,7 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
 		char infoLog[ms_INFOLOG_BUF_SIZE]; \
 		glGetShaderInfoLog(shaderObj, ms_INFOLOG_BUF_SIZE, nullptr, infoLog); \
 		MOE_ERROR(ChanGraphics, format, infoLog, ##__VA_ARGS__); \
+		MOE_DEBUG_ASSERT(false); \
 		return ShaderProgramHandle::Null(); \
 	} \
 }
@@ -40,6 +41,7 @@ static const unsigned ms_INFOLOG_BUF_SIZE = 512;
 		char infoLog[ms_INFOLOG_BUF_SIZE]; \
 		glGetProgramInfoLog(programObj, ms_INFOLOG_BUF_SIZE, nullptr, infoLog); \
 		MOE_ERROR(ChanGraphics, infoLog, ##__VA_ARGS__); \
+		MOE_DEBUG_ASSERT(false); \
 		return ShaderProgramHandle::Null(); \
 	} \
 }

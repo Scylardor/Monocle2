@@ -37,6 +37,7 @@ namespace moe
 				m_vec(xyzw)
 			{}
 
+			// TODO : this is broken with GLM, does not compile.
 			template<typename = std::enable_if_t<NumT >= 2>>
 			Vector(ValT x, ValT y) :
 				m_vec(x, y)

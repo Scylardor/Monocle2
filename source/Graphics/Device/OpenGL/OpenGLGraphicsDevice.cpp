@@ -1080,6 +1080,8 @@ namespace moe
 		glSamplerParameteri(newSamplerID, GL_TEXTURE_WRAP_T, wrapT);
 		glSamplerParameteri(newSamplerID, GL_TEXTURE_WRAP_R, wrapR);
 
+		glSamplerParameterfv(newSamplerID, GL_TEXTURE_BORDER_COLOR, samplerDesc.m_borderColor.Ptr());
+
 		// Filtering parameters
 		auto magFilter = OpenGLSampler::TranslateToOpenGLFilterMode(samplerDesc.m_magFilter);
 		auto minFilter = OpenGLSampler::TranslateToOpenGLFilterMode(samplerDesc.m_minFilter);

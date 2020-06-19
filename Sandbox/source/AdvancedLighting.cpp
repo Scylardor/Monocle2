@@ -459,6 +459,10 @@ namespace moe
 	struct ShadowMappingInfo
 	{
 		Mat4	m_lightSpaceMatrix;
+		float	m_minShadowBias;
+		float	m_maxShadowBias;
+		float	m_pcfGridSize;
+		Vec2	m_shadowMapTextureSize;
 	};
 
 
@@ -590,9 +594,13 @@ namespace moe
 		// -------------
 
 
+		LightObject* pointLight1 = lightsSystem.AddNewLight({ Vec4{-2.0f, 4.0f, -1.0f, 1}, Vec4::ZeroVector(),
+			Vec4(0.3f), Vec4(1.f), Vec4(1.f) });
+		pointLight1->SetAttenuationFactors(0.f, 0.f, 0.1f);
+/*
 		LightObject* pointLight1 = lightsSystem.AddNewLight({ Vec4::ZeroVector(), Vec4{2.0f, -4.0f, 1.0f, 0.f},
 			Vec4(0.3f, 0.3f, 0.3f, 1.f), Vec4(0.3f, 0.3f, 0.3f, 1.f), Vec4(0.3f, 0.3f, 0.3f, 1.f) });
-		pointLight1->SetAttenuationFactors(0.f, 0.f, 1.f);
+		pointLight1->SetAttenuationFactors(0.f, 0.f, 1.f);*/
 
 	//	LightObject* pointLight2 = lightsSystem.AddNewLight({ Vec4{-1.0f, 0.0f, 0.0f, 1}, Vec4::ZeroVector(),
 	//Vec4(0.05f), Vec4(0.5f, 0.5f, 0.5f, 1.f), Vec4(0.5f, 0.5f, 0.5f, 1.f) });
@@ -608,7 +616,9 @@ namespace moe
 
 		// Depth map render pass initialization
 		CameraDescriptor shadowCamDesc{CameraProjection::Orthographic, OrthographicCameraDesc{10.f, 1.f, 7.5f} };
-		ShadowMapDescriptor shadowMapDesc{shadowCamDesc, 1024_width, 1024_height, Vec3(-2.0f, 4.0f, -1.0f), Vec3::ZeroVector()};
+		//CameraDescriptor shadowCamDesc{ CameraProjection::Perspective, PerspectiveCameraDesc{45_radf, 1024 / 1024, 1.f, 7.5f} };
+
+		ShadowMapDescriptor shadowMapDesc{shadowCamDesc, 1024_width, 1024_height, Vec3{-2.0f, 4.0f, -1.0f}, Vec3::ZeroVector()};
 		DepthRenderPass depthRP(camSys, m_renderer.MutGraphicsDevice(), shadowMapDesc);
 
 		// Create the depth map shader
@@ -631,13 +641,17 @@ namespace moe
 		SamplerDescriptor depthMapsamplerDesc;
 		depthMapsamplerDesc.m_magFilter = SamplerFilter::Nearest;
 		depthMapsamplerDesc.m_minFilter = SamplerFilter::Nearest;
+		depthMapsamplerDesc.m_wrap_S = SamplerWrapping::ClampToBorder;
+		depthMapsamplerDesc.m_wrap_T = SamplerWrapping::ClampToBorder;
+		depthMapsamplerDesc.m_borderColor = ColorRGBAf::White();
+
 		SamplerHandle depthMapSamplerHandle = MutRenderer().MutGraphicsDevice().CreateSampler(depthMapsamplerDesc);
 
 
 		/* Create Phong material buffer */
 		MaterialDescriptor materialdesc(
 			{
-				{"Frame_ShadowMappingInfo", ShaderStage::Vertex},
+				{"Frame_ShadowMappingInfo", ShaderStage(Vertex | Fragment) },
 				{"Material_Phong", ShaderStage::Fragment},
 				{"Material_Sampler", ShaderStage::Fragment},
 				{"Material_DiffuseMap", ShaderStage::Fragment},
@@ -649,13 +663,17 @@ namespace moe
 		MaterialInstance planeInst = lib.CreateMaterialInstance(blinnPhongInterface);
 
 		planeInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
-			PhongMaterial{ Vec4(0.3f, 0.3f, 0.3f, 1.f),
+			PhongMaterial{ Vec4(0.05f, 0.05f, 0.05f, 1.f),
 							ColorRGBAf::White().ToVec(),
-							ColorRGBAf::White().ToVec(),
+							Vec4(0.3f, 0.3f, 0.3f, 1.f),
 							64 });
 
 		// Plug the light space matrix (which is, the view projection matrix of the depth map matrix) into the shadow mapping uniform buffer
-		planeInst.UpdateUniformBlock(FRAME_SHADOW_MAPPING, ShadowMappingInfo{ depthMapCam.GetViewProjectionMatrix() });
+		planeInst.UpdateUniformBlock(FRAME_SHADOW_MAPPING, ShadowMappingInfo{
+			depthMapCam.GetViewProjectionMatrix(), 0.005f, 0.05f,
+
+			4.f, Vec2{1024, 1024}
+		});
 
 		Texture2DFileDescriptor woodDesc{ "Sandbox/assets/textures/wood.png", TextureFormat::SRGB_RGBA8 };
 		woodDesc.m_wantedMipmapLevels = 8;

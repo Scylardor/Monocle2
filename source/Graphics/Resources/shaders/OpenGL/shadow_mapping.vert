@@ -25,7 +25,12 @@ layout (std140, binding = 4) uniform ObjectMatrices
 
 layout (std140, binding = 8) uniform ShadowMappingInfo
 {
-	mat4 lightSpaceMatrix;
+	mat4	lightSpaceMatrix;
+	float	minShadowBias;
+	float	maxShadowBias;
+	float	pcfGridSize;
+	float	shadowMapTextureWidth;
+	float	shadowMapTextureHeight;
 };
 
 

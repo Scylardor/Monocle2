@@ -26,7 +26,7 @@ namespace moe
 
 			inputFile.read(&contents[0], contents.size());
 
-			return std::optional<std::string>{contents};
+			return std::optional<std::string>{std::move(contents)};
 		}
 
 		return std::nullopt;

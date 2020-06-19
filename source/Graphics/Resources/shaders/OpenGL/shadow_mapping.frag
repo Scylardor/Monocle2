@@ -49,6 +49,18 @@ layout (std140, binding = 3) uniform PhongMaterial
 	float	shininess;
 };
 
+
+layout (std140, binding = 8) uniform ShadowMappingInfo
+{
+	mat4	lightSpaceMatrix;
+	float	minShadowBias;
+	float	maxShadowBias;
+	float	pcfGridSize;
+	float	shadowMapTextureWidth;
+	float	shadowMapTextureHeight;
+};
+
+
 layout(binding = 0) uniform sampler2D diffuseMap;
 
 layout(binding = 6) uniform sampler2D shadowMap;
@@ -57,7 +69,7 @@ layout(binding = 6) uniform sampler2D shadowMap;
 // TODO : right now the shadow mapping only works for directional light
 
 
-float ShadowCalculation(vec4 fragPosLightSpace)
+float ShadowCalculation(vec4 fragPosLightSpace, float NdotL)
 {
 	// perform perspective divide
 	// When using an orthographic projection matrix the w component of a vertex remains untouched so this step is actually quite meaningless.
@@ -69,15 +81,36 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	// let's transform the NDC coordinates to the range [0,1]:
 	projCoords = projCoords * 0.5 + 0.5;
 
-	// Get the closest depth from the light's point of view:
-	float closestDepth = texture(shadowMap, projCoords.xy).r;
+	// Avoid over sampling by not shadowing objects outside of the light camera projection.
+	if (projCoords.z > 1.0)
+		return 0.0;
 
 	// To get the current depth at this fragment, we simply retrieve the projected vector's z coordinate,
 	// this is the depth of this fragment from the light's perspective :
 	float currentDepth = projCoords.z;
 
-	// then simply check whether currentDepth is higher than closestDepth. If so, the fragment is in shadow:
-	float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+	// We change the amount of bias based on the surface angle towards the light:
+	// This way, surfaces that are almost perpendicular to the light source get a small bias, while surfaces hit in front get a much larger bias.
+	float bias = max(maxShadowBias * (1.0 - NdotL), minShadowBias);
+
+	// Use percentage-close filtering to smooth out shadows.
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / vec2(shadowMapTextureWidth, shadowMapTextureHeight);
+
+	int pcfGridAmplitude = int(floor(pcfGridSize * 0.5));
+	for(int x = -pcfGridAmplitude; x <= pcfGridAmplitude; ++x)
+	{
+		for(int y = -pcfGridAmplitude; y <= pcfGridAmplitude; ++y)
+		{
+			float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+			shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+		}
+	}
+
+	shadow /= (pcfGridSize * pcfGridSize);
+
+	// As the number of samples tested increases, the shadow grows darker. Clamp between 0 and 1 to prevent that
+	shadow = clamp(shadow, 0.0, 1.0);
 
 	return shadow;
 }
@@ -110,7 +143,7 @@ vec4	ComputeDirectionalLight(int iLight)
 	vec4 specular = lightsData[iLight].lightSpecular * materialSpecular * specularStrength;
 
 	// calculate shadow
-	float shadow = ShadowCalculation(fs_in.FragLightSpacePos);
+	float shadow = ShadowCalculation(fs_in.FragLightSpacePos, diffuseStrength);
 
 	return ambient + (1.0 - shadow) * (diffuse + specular);
 }
@@ -120,12 +153,12 @@ vec4	ComputePointLight(int iLight, vec4 lightDirEye, float attenuation)
 {
 	// First compute ambient because it will be used no matter what
 
-	vec4 ambient  = lightsData[iLight].lightAmbient;
+	vec4 ambient = lightsData[iLight].lightAmbient * materialAmbient;
 
 	// Diffuse
 	vec3 normalizedNorm = normalize(fs_in.FragEyeNormal); // just to be sure
 	float diffuseStrength = max(dot(normalizedNorm, lightDirEye.xyz), 0.0);
-	vec4 diffuse = lightsData[iLight].lightDiffuse * diffuseStrength;
+	vec4 diffuse = lightsData[iLight].lightDiffuse * materialDiffuse * diffuseStrength;
 
 	// Specular
 	float specularStrength = 0.0;
@@ -136,9 +169,12 @@ vec4	ComputePointLight(int iLight, vec4 lightDirEye, float attenuation)
 		vec3 halfwayDir = normalize(lightDirEye.xyz + vertToEyeDir.xyz);
 		specularStrength = pow(max(dot(normalizedNorm, halfwayDir), 0.0), shininess);
 	}
-	vec4 specular = lightsData[iLight].lightSpecular * specularStrength;
+	vec4 specular = lightsData[iLight].lightSpecular * materialSpecular * specularStrength;
 
-	return ((ambient + diffuse + specular) * attenuation);
+	// calculate shadow
+	float shadow = ShadowCalculation(fs_in.FragLightSpacePos, diffuseStrength);
+
+	return (ambient + (1.0 - shadow) * ((diffuse + specular)) * attenuation);
 }
 
 

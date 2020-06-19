@@ -107,6 +107,8 @@ namespace moe
 			return Vec<NumChannels, Val>(Rgba);
 		}
 
+		[[nodiscard]] const Val*	Ptr() const { return Rgba; }
+
 
 		static	Color	Red()
 		{
