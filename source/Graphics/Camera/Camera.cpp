@@ -137,6 +137,38 @@ namespace moe
 	}
 
 
+	float Camera::GetNear() const
+	{
+		switch (m_projectionType)
+		{
+		case CameraProjection::Orthographic:
+			return m_cameraData.m_ortho.m_near;
+		case CameraProjection::Perspective:
+			return m_cameraData.m_perspective.m_near;
+		default:
+			MOE_ASSERT(false);
+			MOE_ERROR(ChanGraphics, "Unsupported camera projection type");
+			return 0.F;
+		}
+	}
+
+
+	float Camera::GetFar() const
+	{
+		switch (m_projectionType)
+		{
+		case CameraProjection::Orthographic:
+			return m_cameraData.m_ortho.m_far;
+		case CameraProjection::Perspective:
+			return m_cameraData.m_perspective.m_far;
+		default:
+			MOE_ASSERT(false);
+			MOE_ERROR(ChanGraphics, "Unsupported camera projection type");
+			return 0.F;
+		}
+	}
+
+
 	void Camera::SetTransform(const Transform& transf)
 	{
 		AGraphicObject::SetTransform(transf);

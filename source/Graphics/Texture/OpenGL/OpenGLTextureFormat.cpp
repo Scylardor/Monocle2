@@ -79,23 +79,23 @@ namespace moe
 	}
 
 
-	Texture2DHandle EncodeRenderbufferHandle(GLuint renderBufferID)
+	TextureHandle EncodeRenderbufferHandle(GLuint renderBufferID)
 	{
 		// Mark the last bit of the handle to notify it's actually a renderbuffer ID
 		// TODO: make the texture handle creation code more robust to cover this. It means that we can only have 2^30 textures in flight at the same time, and not 2^31...
 		MOE_ASSERT((renderBufferID & (1 << 31)) == false);
 		renderBufferID |= (1 << 31);
-		return Texture2DHandle{ renderBufferID };
+		return TextureHandle{ renderBufferID };
 	}
 
-	Texture2DHandle DecodeRenderbufferHandle(Texture2DHandle renderbufferHandle)
+	TextureHandle DecodeRenderbufferHandle(TextureHandle renderbufferHandle)
 	{
 		// Just return the handle value with the last bit masked out.
-		return Texture2DHandle{ renderbufferHandle.Get() & ~(1 << 31) };
+		return TextureHandle{ renderbufferHandle.Get() & ~(1 << 31) };
 	}
 
 
-	bool IsARenderBufferHandle(Texture2DHandle texHandle)
+	bool IsARenderBufferHandle(TextureHandle texHandle)
 	{
 		return (texHandle.Get() & (1 << 31));
 	}

@@ -108,6 +108,8 @@ namespace moe
 
 		[[nodiscard]] virtual TextureHandle	CreateCubemapTexture(const CubeMapTextureFilesDescriptor& cubemapFilesDesc) = 0;
 
+		[[nodiscard]] virtual TextureHandle	CreateCubemapTexture(const CubeMapTextureDescriptor& cubemapDesc) = 0;
+
 		virtual void	DestroyTexture2D(Texture2DHandle textureHandle) = 0;
 
 		virtual void	BindTextureUnit(int textureBindingPoint, TextureHandle texHandle)  = 0;

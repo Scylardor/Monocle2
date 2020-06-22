@@ -168,6 +168,7 @@ namespace moe
 
 		[[nodiscard]] TextureHandle	CreateCubemapTexture(const CubeMapTextureFilesDescriptor& cubemapFilesDesc) override;
 
+		[[nodiscard]] TextureHandle	CreateCubemapTexture(const CubeMapTextureDescriptor& cubemapDesc) override;
 
 		/**
 		 * \brief Destroys a 2D Texture created previously.

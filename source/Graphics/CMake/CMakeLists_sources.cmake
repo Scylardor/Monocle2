@@ -17,6 +17,7 @@ set(Monocle_Graphics_SOURCES
 ./Camera/CameraSystem.cpp
 ./Camera/CameraSystem.h
 ./Camera/OpenGL/OpenGLCamera.h
+./Camera/ProjectionPlanes.h
 ./Camera/Viewport.h
 ./Camera/ViewportDescriptor.h
 ./Camera/ViewportHandle.h
@@ -114,6 +115,9 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/cubemaps.vert
 ./Resources/shaders/OpenGL/depth_map.frag
 ./Resources/shaders/OpenGL/depth_map.vert
+./Resources/shaders/OpenGL/depth_map_omnidirectional.frag
+./Resources/shaders/OpenGL/depth_map_omnidirectional.geom
+./Resources/shaders/OpenGL/depth_map_omnidirectional.vert
 ./Resources/shaders/OpenGL/depth_testing.frag
 ./Resources/shaders/OpenGL/depth_testing.vert
 ./Resources/shaders/OpenGL/explode.frag
@@ -132,6 +136,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/instancing.vert
 ./Resources/shaders/OpenGL/light.frag
 ./Resources/shaders/OpenGL/light.vert
+./Resources/shaders/OpenGL/omnidirectional_shadow_mapping.frag
+./Resources/shaders/OpenGL/omnidirectional_shadow_mapping.vert
 ./Resources/shaders/OpenGL/phong.frag
 ./Resources/shaders/OpenGL/phong.vert
 ./Resources/shaders/OpenGL/phong_maps.frag

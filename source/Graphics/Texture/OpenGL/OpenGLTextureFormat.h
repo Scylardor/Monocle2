@@ -38,8 +38,8 @@ namespace moe
 	GLenum	TranslateToOpenGLBaseFormat(int channelsNbr);
 
 	// TODO: these should probably be elsewhere
-	Texture2DHandle	EncodeRenderbufferHandle(GLuint renderBufferID);
-	Texture2DHandle	DecodeRenderbufferHandle(Texture2DHandle renderbufferHandle);
-	bool			IsARenderBufferHandle(Texture2DHandle texHandle);
+	TextureHandle	EncodeRenderbufferHandle(GLuint renderBufferID);
+	TextureHandle	DecodeRenderbufferHandle(TextureHandle renderbufferHandle);
+	bool			IsARenderBufferHandle(TextureHandle texHandle);
 
 }

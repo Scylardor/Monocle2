@@ -92,14 +92,14 @@ namespace moe
 	}
 
 
-	void OpenGLFramebuffer::BindAttachment(unsigned attachmentID, Texture2DHandle attachmentHandle)
+	void OpenGLFramebuffer::BindAttachment(unsigned attachmentID, TextureHandle attachmentHandle)
 	{
 		// Framebuffers can reference either plain textures or renderbuffer objects in OpenGL.
 		// I decided to make this distinction "opaque" to the user by hiding it inside the Texture2DHandle.
 		// So when binding an attachment, we have to find out if this is a renderbuffer or a texture.
 		if (IsARenderBufferHandle(attachmentHandle))
 		{
-			Texture2DHandle rboHandle = DecodeRenderbufferHandle(attachmentHandle);
+			TextureHandle rboHandle = DecodeRenderbufferHandle(attachmentHandle);
 			glNamedFramebufferRenderbuffer(m_frameBufferID, attachmentID, GL_RENDERBUFFER, rboHandle.Get());
 		}
 		else

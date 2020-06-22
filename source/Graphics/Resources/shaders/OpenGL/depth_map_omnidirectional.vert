@@ -15,7 +15,6 @@ layout (std140, binding = 4) uniform ObjectMatrices
 
 void main()
 {
-	// in this shader, modelViewProjection has actually been built with a lightSpaceMatrix.
-	// The light is acting like a camera watching in the direction of the light rays, using a custom projection.
-	gl_Position = modelViewProjection * vec4(position, 1.0);
+	// in this shader, just send the world-space coordinates to the geometry shader.
+	gl_Position = model * vec4(position, 1.0);
 }

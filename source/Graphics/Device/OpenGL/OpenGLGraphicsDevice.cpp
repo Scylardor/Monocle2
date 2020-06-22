@@ -653,7 +653,7 @@ namespace moe
 			glCreateRenderbuffers(1, &rbo);
 			glNamedRenderbufferStorage(rbo, GLtextureFormat, tex2DDesc.m_width, tex2DDesc.m_height);
 
-			return EncodeRenderbufferHandle(rbo);
+			return Texture2DHandle{ EncodeRenderbufferHandle(rbo).Get() };
 		}
 		else
 		{
@@ -725,6 +725,7 @@ namespace moe
 		const GLuint textureFormat = TranslateToOpenGLSizedFormat(cubemapFilesDesc.m_targetFormat);
 		if (textureFormat == 0)
 		{
+			MOE_DEBUG_ASSERT(false); // not supposed to happen
 			return TextureHandle::Null();
 		}
 
@@ -780,7 +781,7 @@ namespace moe
 		// Turn the vertical flip back on
 		stbi_set_flip_vertically_on_load(true);
 
-		if (failed)
+		if (!MOE_ASSERT(!failed))
 		{
 			// Something went wrong: free the data and stop here
 			for (unsigned char* imgData : imagesData)
@@ -828,7 +829,61 @@ namespace moe
 				stbi_image_free(imgData);
 		}
 
+		return TextureHandle{ cubemapID };
+	}
 
+
+	TextureHandle OpenGLGraphicsDevice::CreateCubemapTexture(const CubeMapTextureDescriptor& cubemapDesc)
+	{
+		// First ensure source and target texture formats are valid - don't bother going further if not
+		const GLuint sourceFormat = TranslateToOpenGLSizedFormat(cubemapDesc.m_sourceFormat);
+		const GLuint storageFormat = TranslateToOpenGLSizedFormat(cubemapDesc.m_targetFormat);
+		if (sourceFormat == 0 || storageFormat == 0)
+		{
+			MOE_DEBUG_ASSERT(false); // not supposed to happen
+			return Texture2DHandle::Null();
+		}
+
+		// Creating a cube map with DSA requires us to use glTextureStorage2D + glTextureSubImage3D.
+		// For more info, see : https://github.com/fendevel/Guide-to-Modern-OpenGL-Functions#uploading-cube-maps
+		// Or : https://www.reddit.com/r/opengl/comments/556zac/how_to_create_cubemap_with_direct_state_access/
+		GLuint cubemapID;
+		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubemapID);
+		glTextureStorage2D(cubemapID, cubemapDesc.m_wantedMipmapLevels, storageFormat, cubemapDesc.m_width, cubemapDesc.m_height);
+
+		uint8_t nbrComponents = 0;
+		unsigned imageByteOffset = 0;
+
+		if (cubemapDesc.m_imageData != nullptr) // Don't bother making these calculations if there is no data anyway...
+		{
+			nbrComponents = GetTextureFormatChannelsNumber(cubemapDesc.m_sourceFormat);
+			imageByteOffset = cubemapDesc.m_width * cubemapDesc.m_height * nbrComponents;
+		}
+
+		// The data upload assumes the 6 images are stored contiguously in memory at address imageData.
+		// Note : we cannot pass a nullptr to glTextureSubImage3D.
+		if (cubemapDesc.m_imageData != nullptr)
+		{
+			for (GLint face = 0; face < 6; ++face)
+			{
+				const void* imagePtr = (cubemapDesc.m_imageData != nullptr ? cubemapDesc.m_imageData + (face * imageByteOffset) : nullptr);
+				glTextureSubImage3D(cubemapID, 0, 0, 0, face, cubemapDesc.m_width, cubemapDesc.m_height, 1, sourceFormat, GL_UNSIGNED_BYTE, imagePtr);
+			}
+
+			if (cubemapDesc.m_wantedMipmapLevels != 0)
+			{
+				glGenerateTextureMipmap(cubemapID);
+			}
+		}
+
+		// We set the wrapping method to GL_CLAMP_TO_EDGE since texture coordinates that are exactly between two faces may not hit an exact face (due to some hardware limitations).
+		// So by using GL_CLAMP_TO_EDGE OpenGL always returns their edge values whenever we sample between faces.
+		// TODO: this is application dependent, use a sampler to do that !
+		glTextureParameteri(cubemapID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(cubemapID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		return TextureHandle{ cubemapID };
 	}

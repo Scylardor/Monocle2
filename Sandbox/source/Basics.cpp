@@ -119,6 +119,55 @@ namespace moe
 
 
 
+	Array<TestApplication::VertexPositionNormalTexture, 36> TestApplication::CreateCubePositionNormalTexture_ReversedNormals(float halfExtent)
+	{
+
+		return {
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  0.0f }},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  1.0f }},
+			{Vec3{ halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  0.0f }},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  1.0f }},
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  0.0f }},
+			{Vec3{-halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  1.0f }},
+
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f, -1.0f }, { 0.0f,  0.0f }},
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  0.0f }},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  1.0f }},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  1.0f }},
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  1.0f }},
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f }},
+
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent }, { 1.0f,  0.0f,  0.0 }, { 1.0f,  1.0f }},
+			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0}, { 0.0f,  1.0f } },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0}, { 1.0f,  0.0f } },
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0}, { 1.0f,  1.0f } },
+
+			{ Vec3{ halfExtent,  halfExtent,  halfExtent }, { -1.0f,  0.0f,  0.0f }, { 0.0f,  1.0f }},
+			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0f }, { 1.0f,  1.0f }},
+			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0f }, { 0.0f,  1.0f }},
+			{ Vec3{ halfExtent, -halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0f }, { 0.0f,  0.0f }},
+
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent }, { 0.0f, 1.0f,  0.0f }, { 0.0f,  1.0f }},
+			{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, 1.0f,  0.0f}, { 1.0f,  1.0f } },
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, 1.0f,  0.0f}, { 1.0f,  0.0f } },
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, 1.0f,  0.0f}, { 1.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f, 1.0f,  0.0f}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, 1.0f,  0.0f}, { 0.0f,  1.0f } },
+
+			{Vec3{ -halfExtent,  halfExtent, -halfExtent }, { 0.0f,  -1.0f,  0.0f }, { 0.0f,  0.0f }},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  -1.0f,  0.0f}, { 1.0f,  1.0f } },
+			{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  -1.0f,  0.0f}, { 0.0f,  1.0f } },
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  -1.0f,  0.0f}, { 1.0f,  1.0f } },
+			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  -1.0f,  0.0f}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  -1.0f,  0.0f}, { 1.0f,  0.0f }}
+		};
+
+	}
+
 	struct HelloQuadVertex
 	{
 		Vec3	m_position;

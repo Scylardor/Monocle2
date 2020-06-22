@@ -30,7 +30,7 @@ namespace moe
 		FramebufferDescriptor() = default;
 
 		Vector<Texture2DHandle>	m_colorAttachments;
-		Texture2DHandle			m_depthAttachment;
+		TextureHandle			m_depthAttachment;
 		Texture2DHandle			m_depthStencilAttachment;
 
 		// The source color buffer to use for all read operations when this framebuffer is bound.

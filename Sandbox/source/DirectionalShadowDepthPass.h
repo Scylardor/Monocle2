@@ -28,12 +28,12 @@ namespace moe
 		TextureFormat		m_shadowMapFormat{TextureFormat::Depth24};	// The pixel format of the texture. The more bits, the better (and more expensive).
 	};
 
-	class DepthRenderPass
+	class DirectionalShadowDepthPass
 	{
 
 	public:
-		DepthRenderPass(CameraSystem& camSys, IGraphicsDevice& device, const ShadowMapDescriptor& shadowMapDesc);
-		~DepthRenderPass() = default; // TODO: free allocated resources!
+		DirectionalShadowDepthPass(CameraSystem& camSys, IGraphicsDevice& device, const ShadowMapDescriptor& shadowMapDesc);
+		~DirectionalShadowDepthPass() = default; // TODO: free allocated resources!
 
 		uint32_t			GetShadowmapCamera() const	{ return m_lightProjectionCam->GetCameraIndex(); }
 

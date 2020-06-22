@@ -57,7 +57,7 @@ namespace moe
 
 	private:
 
-		void	BindAttachment(unsigned int attachmentID, Texture2DHandle attachmentHandle);
+		void	BindAttachment(unsigned int attachmentID, TextureHandle attachmentHandle);
 
 		static	unsigned int	TranslateToOpenGLTargetBufferEnum(TargetBuffer tgtBuf);
 

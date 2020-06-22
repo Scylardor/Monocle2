@@ -120,11 +120,13 @@ namespace moe
 		Monocle_Graphics_API void					SetFoVY(Degs_f newFovY);
 		Monocle_Graphics_API void					AddFoVY(Degs_f addedFovY) { SetFoVY(Degs_f(m_cameraData.m_perspective.m_fovY + addedFovY)); }
 
-		void	SetAspectRatio(float newAspect);
+		Monocle_Graphics_API void	SetAspectRatio(float newAspect);
 
-		void	SetNear(float zNear);
-		void	SetFar(float zFar);
+		Monocle_Graphics_API void	SetNear(float zNear);
+		Monocle_Graphics_API void	SetFar(float zFar);
 
+		Monocle_Graphics_API float	GetNear() const;
+		Monocle_Graphics_API float	GetFar() const;
 
 		[[nodiscard]] const Mat4&	GetViewMatrix() const { return m_matrices.m_view; }
 

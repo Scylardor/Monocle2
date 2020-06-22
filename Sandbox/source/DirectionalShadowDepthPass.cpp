@@ -1,6 +1,6 @@
 // Monocle Game Engine source files
 
-#include "DepthRenderPass.h"
+#include "DirectionalShadowDepthPass.h"
 
 #include "Graphics/Device/GraphicsDevice.h"
 
@@ -8,7 +8,7 @@
 
 namespace moe
 {
-	DepthRenderPass::DepthRenderPass(CameraSystem& camSys, IGraphicsDevice& device, const ShadowMapDescriptor& shadowMapDesc)
+	DirectionalShadowDepthPass::DirectionalShadowDepthPass(CameraSystem& camSys, IGraphicsDevice& device, const ShadowMapDescriptor& shadowMapDesc)
 	{
 		// Create the shadow map viewport
 		ViewportDescriptor vpDesc{0, 0, (float)shadowMapDesc.m_textureWidth, (float)shadowMapDesc.m_textureHeight};

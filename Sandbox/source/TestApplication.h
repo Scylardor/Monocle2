@@ -35,6 +35,7 @@ public:
 	void	TestBlinnPhong();
 	void	TestGammaCorrection();
 	void	TestShadowMapping();
+	void	TestOmnidirectionalShadowMapping();
 
 	// Others
 	void	CameraMoveForward();
@@ -80,6 +81,8 @@ private:
 
 	Array<VertexPosition, 36>	CreateCube(float halfExtent);
 	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent);
+	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture_ReversedNormals(float halfExtent);
+
 
 	using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
 

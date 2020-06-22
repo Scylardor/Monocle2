@@ -35,6 +35,19 @@ namespace moe
 	};
 
 
+	// TODO: refactor with Texture2DDescriptor, it's nearly the same !
+	struct CubeMapTextureDescriptor
+	{
+		char*			m_imageData{ nullptr };
+		Width_t			m_width{ 1 };
+		Height_t		m_height{ 1 };
+		TextureFormat	m_sourceFormat{ TextureFormat::Any };
+		TextureFormat	m_targetFormat{ TextureFormat::Any };
+		TextureUsage	m_texUsage{ TextureUsage::Sampled };
+		uint32_t		m_wantedMipmapLevels{ 1 };
+	};
+
+
 	struct CubeMapTextureFilesDescriptor
 	{
 		std::string				m_rightLeftTopBottomFrontBackTexFiles[6]{};
