@@ -37,6 +37,8 @@ public:
 	void	TestShadowMapping();
 	void	TestOmnidirectionalShadowMapping();
 
+	void	TestNormalMapping();
+
 	// Others
 	void	CameraMoveForward();
 	void	CameraMoveBackwards();
@@ -68,6 +70,15 @@ private:
 		Vec3	m_position;
 		Vec3	m_normal;
 		Vec2	m_texcoords;
+	};
+
+	struct VertexPositionNormalTextureTangentBitangent
+	{
+		Vec3	m_position;
+		Vec3	m_normal;
+		Vec2	m_texcoords;
+		Vec3	m_tangent;
+		Vec3	m_bitangent;
 	};
 
 	struct PhongMaterial

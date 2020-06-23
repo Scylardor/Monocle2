@@ -692,6 +692,7 @@ namespace moe
 		if (imageData == nullptr)
 		{
 			MOE_ERROR(ChanGraphics, "Image file %s could not be read.", tex2DFileDesc.m_filename);
+			MOE_DEBUG_ASSERT(false);
 			return Texture2DHandle::Null();
 		}
 
