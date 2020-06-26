@@ -15,7 +15,8 @@ namespace moe
 		VIEW_PROJECTION_PLANES,
 		MATERIAL_SKYBOX_VIEWPROJ,
 		FRAME_SHADOW_MAPPING,
-		FRAME_OMNI_SHADOW_MAPPING
+		FRAME_OMNI_SHADOW_MAPPING,
+		FRAME_TONE_MAPPING
 	};
 
 	enum  MaterialTextureBinding : uint8_t
@@ -26,7 +27,8 @@ namespace moe
 		EMISSION,
 		GLOSS,
 		SKYBOX,
-		SHADOW
+		SHADOW,
+		HEIGHT
 	};
 
 	enum MaterialSamplerBinding : uint8_t

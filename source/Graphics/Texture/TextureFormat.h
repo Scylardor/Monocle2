@@ -16,6 +16,7 @@ namespace moe
 		Any,				//	Any will do, handy when you don't care basically
 		RGBA8,				//	4 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1].
 		SRGB_RGBA8,			//	4 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1]. SRGB version (to be used for gamma-corrected images)
+		RGBA16F,			//	4 channels using each 16-bit floats. Each component is clamped to the range [0,1].
 		RGBA32F,			//	4 channels using each 32-bit floats. Each component is clamped to the range [0,1].
 		RGB8,				//	3 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1].
 		SRGB_RGB8,			//	3 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1]. SRGB version (to be used for gamma-corrected images)

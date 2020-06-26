@@ -17,6 +17,8 @@ namespace moe
 			return GL_RGB8;
 		case TextureFormat::SRGB_RGB8:
 			return GL_SRGB8;
+		case TextureFormat::RGBA16F:
+			return GL_RGBA16F;
 		case TextureFormat::RGBA32F:
 			return GL_RGBA32F;
 		case TextureFormat::RGB32F:

@@ -113,6 +113,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/blinn_phong.vert
 ./Resources/shaders/OpenGL/blinn_phong_normal_mapping.frag
 ./Resources/shaders/OpenGL/blinn_phong_normal_mapping.vert
+./Resources/shaders/OpenGL/blinn_phong_parallax_mapping.frag
+./Resources/shaders/OpenGL/blinn_phong_parallax_mapping.vert
 ./Resources/shaders/OpenGL/cubemaps.frag
 ./Resources/shaders/OpenGL/cubemaps.vert
 ./Resources/shaders/OpenGL/depth_map.frag
@@ -134,6 +136,10 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/geometry_shader.frag
 ./Resources/shaders/OpenGL/geometry_shader.geom
 ./Resources/shaders/OpenGL/geometry_shader.vert
+./Resources/shaders/OpenGL/hdr_blinn_phong.frag
+./Resources/shaders/OpenGL/hdr_blinn_phong.vert
+./Resources/shaders/OpenGL/hdr_blit.frag
+./Resources/shaders/OpenGL/hdr_blit.vert
 ./Resources/shaders/OpenGL/instancing.frag
 ./Resources/shaders/OpenGL/instancing.vert
 ./Resources/shaders/OpenGL/light.frag

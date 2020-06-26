@@ -68,51 +68,51 @@ namespace moe
 
 
 
-	Array<TestApplication::VertexPositionNormalTexture, 36> TestApplication::CreateCubePositionNormalTexture(float halfExtent)
+	Array<TestApplication::VertexPositionNormalTexture, 36> TestApplication::CreateCubePositionNormalTexture(float halfExtent, bool invertNormals)
 	{
-
+		const float invNormCoef = (invertNormals ? -1.f : 1.f);
 		return {
-			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f }},
-			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  1.0f }},
-			{Vec3{ halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  0.0f }},
-			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 1.0f,  1.0f }},
-			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  0.0f }},
-			{Vec3{-halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f}, { 0.0f,  1.0f }},
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f * invNormCoef}, { 0.0f,  0.0f }},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f * invNormCoef}, { 1.0f,  1.0f }},
+			{Vec3{ halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f * invNormCoef}, { 1.0f,  0.0f }},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f * invNormCoef}, { 1.0f,  1.0f }},
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f * invNormCoef}, { 0.0f,  0.0f }},
+			{Vec3{-halfExtent,  halfExtent, -halfExtent}, {0.0f,  0.0f, -1.0f * invNormCoef}, { 0.0f,  1.0f }},
 
-			{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f, 1.0f }, { 0.0f,  0.0f }},
-			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  0.0f }},
-			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  1.0f }},
-			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 1.0f,  1.0f }},
-			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  1.0f }},
-			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f}, { 0.0f,  0.0f }},
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f, 1.0f * invNormCoef }, { 0.0f,  0.0f }},
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f * invNormCoef}, { 1.0f,  0.0f }},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f * invNormCoef}, { 1.0f,  1.0f }},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f * invNormCoef}, { 1.0f,  1.0f }},
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f * invNormCoef}, { 0.0f,  1.0f }},
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f * invNormCoef}, { 0.0f,  0.0f }},
 
-			{Vec3{ -halfExtent,  halfExtent,  halfExtent }, { -1.0f,  0.0f,  0.0 }, { 1.0f,  1.0f }},
-			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}, { 0.0f,  1.0f } },
-			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}, { 0.0f,  0.0f } },
-			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f,  0.0f,  0.0}, { 0.0f,  0.0f } },
-			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0}, { 1.0f,  0.0f } },
-			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f,  0.0f,  0.0}, { 1.0f,  1.0f } },
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent }, { -1.0f * invNormCoef,  0.0f,  0.0 }, { 1.0f,  1.0f }},
+			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {-1.0f * invNormCoef,  0.0f,  0.0}, { 0.0f,  1.0f } },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f * invNormCoef,  0.0f,  0.0}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f * invNormCoef,  0.0f,  0.0}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {-1.0f * invNormCoef,  0.0f,  0.0}, { 1.0f,  0.0f } },
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f * invNormCoef,  0.0f,  0.0}, { 1.0f,  1.0f } },
 
-			{ Vec3{ halfExtent,  halfExtent,  halfExtent }, { 1.0f,  0.0f,  0.0f }, { 0.0f,  1.0f }},
-			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f }},
-			{ Vec3{ halfExtent,  halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }, { 1.0f,  1.0f }},
-			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f,  0.0f,  0.0f }, { 1.0f,  0.0f }},
-			{ Vec3{ halfExtent,  halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f }, { 0.0f,  1.0f }},
-			{ Vec3{ halfExtent, -halfExtent,  halfExtent}, {1.0f,  0.0f,  0.0f }, { 0.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent,  halfExtent }, { 1.0f  * invNormCoef,  0.0f,  0.0f }, { 0.0f,  1.0f }},
+			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f }, { 1.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent, -halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f }, { 1.0f,  1.0f }},
+			{ Vec3{ halfExtent, -halfExtent, -halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f }, { 1.0f,  0.0f }},
+			{ Vec3{ halfExtent,  halfExtent,  halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f }, { 0.0f,  1.0f }},
+			{ Vec3{ halfExtent, -halfExtent,  halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f }, { 0.0f,  0.0f }},
 
-			{Vec3{ -halfExtent, -halfExtent, -halfExtent }, { 0.0f, -1.0f,  0.0f }, { 0.0f,  1.0f }},
-			{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}, { 1.0f,  1.0f } },
-			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}, { 1.0f,  0.0f } },
-			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}, { 1.0f,  0.0f } },
-			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f,  0.0f}, { 0.0f,  0.0f } },
-			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f,  0.0f}, { 0.0f,  1.0f } },
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent }, { 0.0f, -1.0f * invNormCoef,  0.0f }, { 0.0f,  1.0f }},
+			{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 1.0f,  1.0f } },
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 1.0f,  0.0f } },
+			{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 1.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent,  halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 0.0f,  1.0f } },
 
-			{Vec3{ -halfExtent,  halfExtent, -halfExtent }, { 0.0f,  1.0f,  0.0f }, { 0.0f,  0.0f }},
-			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  1.0f } },
-			{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}, { 0.0f,  1.0f } },
-			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  1.0f } },
-			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f,  0.0f}, { 0.0f,  0.0f } },
-			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f,  0.0f}, { 1.0f,  0.0f }}
+			{Vec3{ -halfExtent,  halfExtent, -halfExtent }, { 0.0f,  1.0f * invNormCoef,  0.0f }, { 0.0f,  0.0f }},
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 1.0f,  1.0f } },
+			{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 0.0f,  1.0f } },
+			{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 1.0f,  1.0f } },
+			{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 0.0f,  0.0f } },
+			{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 1.0f,  0.0f }}
 		};
 
 	}

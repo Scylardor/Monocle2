@@ -38,6 +38,8 @@ public:
 	void	TestOmnidirectionalShadowMapping();
 
 	void	TestNormalMapping();
+	void	TestParallaxMapping();
+	void	TestHDR();
 
 	// Others
 	void	CameraMoveForward();
@@ -90,8 +92,16 @@ private:
 	};
 
 
+	struct ToneMappingParams
+	{
+		uint32_t	m_enabled{ true };	// Use int instead of bool for std 140
+		float		m_exposure{ 1.f };
+		uint32_t	m_useReinhardToneMapping{ 0 };
+	};
+
+
 	Array<VertexPosition, 36>	CreateCube(float halfExtent);
-	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent);
+	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent, bool invertNormals = false);
 	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture_ReversedNormals(float halfExtent);
 
 
@@ -116,6 +126,8 @@ private:
 	const float m_mouseSensitivity = 0.05f;
 
 	class LightObject*	m_flashLight = nullptr;
+
+	ToneMappingParams	m_toneMappingParams;
 };
 
 }
