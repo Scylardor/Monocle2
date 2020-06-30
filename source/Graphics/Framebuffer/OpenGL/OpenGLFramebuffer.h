@@ -57,6 +57,14 @@ namespace moe
 
 	private:
 
+		void	SetupColorAttachments();
+
+		void	SetupDepthStencilAttachment();
+
+		void	SetupReadBuffer();
+
+		void	SetupDrawBuffers();
+
 		void	BindAttachment(unsigned int attachmentID, TextureHandle attachmentHandle);
 
 		static	unsigned int	TranslateToOpenGLTargetBufferEnum(TargetBuffer tgtBuf);

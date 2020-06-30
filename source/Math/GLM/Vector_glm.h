@@ -365,6 +365,7 @@ namespace moe
 			}
 
 
+			// TODO: maybe with some memory trickery we can just return a const ref to reinterpret_cast<Vector3> the underlying ptr ?
 			template<typename = std::enable_if_t<NumT >= 4>>
 			Vector<3, ValT>	xyz() const
 			{

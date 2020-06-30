@@ -149,6 +149,14 @@ namespace moe
 			return m_resourceSets.Lookup(setHandle.Get()-1);
 		}
 
+		void	UpdateResourceSetDescriptor(ResourceSetHandle rscSetHandle, uint32_t resourceIdx, ResourceHandle newResource) override
+		{
+			ResourceSetDescriptor& desc = m_resourceSets.Lookup(rscSetHandle.Get() - 1);
+			desc.Update(resourceIdx, newResource);
+		}
+
+
+
 
 		/**
 		 * \brief Creates a texture from a pre-read texture data buffer and known dimensions, etc.

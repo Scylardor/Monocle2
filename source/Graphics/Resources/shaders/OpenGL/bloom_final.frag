@@ -12,14 +12,17 @@ layout (std140, binding = 10) uniform ToneMappingParameters
 } ToneMapping;
 
 
-layout(binding = 0) uniform sampler2D diffuseMap;
+layout(binding = 0) uniform sampler2D scene;
+
+layout(binding = 8) uniform sampler2D bloomMap;
 
 
 void main()
 {
-	vec4 colorValue = texture(diffuseMap, TexCoords);
+	vec3 colorValue = texture(scene, TexCoords).rgb;
+	vec3 bloomColor = texture(bloomMap, TexCoords).rgb;
 
-	vec3 result = colorValue.rgb;
+	vec3 result = colorValue.rgb + bloomColor; // additive blending
 
 	if (ToneMapping.enabled)
 	{

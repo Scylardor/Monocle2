@@ -20,41 +20,20 @@ namespace moe
 	{
 		Create();
 
-
 		if (MOE_ASSERT(m_frameBufferID != 0)) // or something went wrong !
 		{
-			// Setting up color attachments
-			int colorAttachIdx = 0;
-			for (auto& colorAttachment : m_desc.m_colorAttachments)
-			{
-				BindAttachment(GL_COLOR_ATTACHMENT0 + colorAttachIdx, colorAttachment);
-				colorAttachIdx++;
-			}
+			SetupColorAttachments();
 
-			// Setting up depth stencil attachment
-			// prefer to use depth/stencil attachment, but if there isn't, use depth
-			if (m_desc.m_depthStencilAttachment.IsNotNull())
-			{
-				BindAttachment(GL_DEPTH_STENCIL_ATTACHMENT, m_desc.m_depthStencilAttachment);
-			}
-			else if (m_desc.m_depthAttachment.IsNotNull())
-			{
-				BindAttachment(GL_DEPTH_ATTACHMENT, m_desc.m_depthAttachment);
+			SetupDepthStencilAttachment();
 
-			}
+			SetupReadBuffer();
+
+			SetupDrawBuffers();
 
 			// Setting up read/draw buffers if any
-			if (m_desc.m_readBuffer != TargetBuffer::Default)
-			{
-				GLenum targetBuffer = TranslateToOpenGLTargetBufferEnum(m_desc.m_readBuffer);
-				glNamedFramebufferReadBuffer(m_frameBufferID, targetBuffer);
-			}
 
-			if (m_desc.m_drawBuffer != TargetBuffer::Default)
-			{
-				GLenum targetBuffer = TranslateToOpenGLTargetBufferEnum(m_desc.m_drawBuffer);
-				glNamedFramebufferDrawBuffer(m_frameBufferID, targetBuffer);
-			}
+
+
 		}
 
 		MOE_DEBUG_ASSERT(IsComplete());
@@ -92,6 +71,74 @@ namespace moe
 	}
 
 
+	void OpenGLFramebuffer::SetupColorAttachments()
+	{
+#		if MOE_DEBUG
+		GLint maxColorAttachments = 0;
+		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
+		MOE_DEBUG_ASSERT(m_desc.m_colorAttachments.Size() < (unsigned)maxColorAttachments);
+#		endif
+
+		int colorAttachIdx = 0;
+		for (auto& colorAttachment : m_desc.m_colorAttachments)
+		{
+			BindAttachment(GL_COLOR_ATTACHMENT0 + colorAttachIdx, colorAttachment);
+			colorAttachIdx++;
+		}
+	}
+
+
+	void OpenGLFramebuffer::SetupDepthStencilAttachment()
+	{
+		// prefer to use depth/stencil attachment, but if there isn't, use depth
+		if (m_desc.m_depthStencilAttachment.IsNotNull())
+		{
+			BindAttachment(GL_DEPTH_STENCIL_ATTACHMENT, m_desc.m_depthStencilAttachment);
+		}
+		else if (m_desc.m_depthAttachment.IsNotNull())
+		{
+			BindAttachment(GL_DEPTH_ATTACHMENT, m_desc.m_depthAttachment);
+		}
+	}
+
+
+	void OpenGLFramebuffer::SetupReadBuffer()
+	{
+		if (m_desc.m_readBuffer != TargetBuffer::Default)
+		{
+			GLenum targetBuffer = TranslateToOpenGLTargetBufferEnum(m_desc.m_readBuffer);
+			glNamedFramebufferReadBuffer(m_frameBufferID, targetBuffer);
+		}
+	}
+
+
+	void OpenGLFramebuffer::SetupDrawBuffers()
+	{
+		switch (m_desc.m_drawBuffer)
+		{
+		case TargetBuffer::AllColorAttachments:
+			{
+				// Bind all color attachments
+				// TODO: I'd like it to be vector on stack !
+				Vector<GLenum> attachments(m_desc.m_colorAttachments.Size());
+				for (int iAttach = 0; iAttach < m_desc.m_colorAttachments.Size(); ++iAttach)
+				{
+					attachments[iAttach] = GL_COLOR_ATTACHMENT0 + iAttach;
+				}
+
+				glNamedFramebufferDrawBuffers(m_frameBufferID, (GLsizei) attachments.Size(), attachments.Data());
+			}
+			break;
+		case TargetBuffer::Default: // nothing to do
+			break;
+		default: // any other value
+			GLenum targetBuffer = TranslateToOpenGLTargetBufferEnum(m_desc.m_drawBuffer);
+			glNamedFramebufferDrawBuffer(m_frameBufferID, targetBuffer);
+			break;
+		}
+	}
+
+
 	void OpenGLFramebuffer::BindAttachment(unsigned attachmentID, TextureHandle attachmentHandle)
 	{
 		// Framebuffers can reference either plain textures or renderbuffer objects in OpenGL.
@@ -122,12 +169,10 @@ namespace moe
 		switch (tgtBuf)
 		{
 			case TargetBuffer::None: return GL_NONE;
-			case TargetBuffer::Back: return GL_BACK;
 			default:
-				MOE_ASSERT(false);
 				MOE_ERROR(ChanGraphics, "Could not translate unmanaged target buffer value: %u", (uint8_t)tgtBuf);
+				MOE_ASSERT(false);
 				return 0;
-			;
 		}
 	}
 }

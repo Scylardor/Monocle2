@@ -94,6 +94,7 @@ namespace moe
 			else
 			{
 				MOE_ERROR(ChanGraphics, "Graphics Renderer unable to read shader %d module file %s.", shaderStage, fileName.data()); // TODO use magic enums
+				MOE_DEBUG_ASSERT(false);
 				return std::nullopt;
 			}
 		}

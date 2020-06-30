@@ -64,6 +64,7 @@ namespace moe
 			UpdateUniformBlockVariable(bufferBinding, variableName, value);
 		}
 
+		Monocle_Graphics_API void	UpdateTexture(MaterialTextureBinding texBinding, TextureHandle texHandle);
 
 		ShaderProgramHandle	GetShaderHandle() const { return m_programHandle; }
 

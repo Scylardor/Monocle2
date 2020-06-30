@@ -17,8 +17,8 @@ namespace moe
 	enum class TargetBuffer : uint8_t
 	{
 		None = 0,
-		Default,
-		Back
+		Default, // Uses only first color attachment.
+		AllColorAttachments // Uses all specified color attachments.
 		// Could add more...
 	};
 

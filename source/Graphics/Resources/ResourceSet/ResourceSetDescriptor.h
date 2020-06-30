@@ -91,6 +91,12 @@ namespace moe
 		}
 
 
+		void	Update(int rscIndex, ResourceHandle newResource)
+		{
+			m_rscHandles[rscIndex] = newResource;
+		}
+
+
 	private:
 		ResourceLayoutHandle	m_boundLayout{0};
 		ResourceHandleVector	m_rscHandles;

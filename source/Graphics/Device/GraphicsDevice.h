@@ -13,6 +13,7 @@
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
 #include "Graphics/Resources/ResourceLayout/ResourceLayoutHandle.h"
+#include "Graphics/Resources/ResourceSet/ResourceHandle.h"
 
 #include "Graphics/Camera/ViewportHandle.h"
 #include "Graphics/Camera/ViewportDescriptor.h"
@@ -102,6 +103,10 @@ namespace moe
 		[[nodiscard]] virtual const ResourceLayoutDescriptor&	GetResourceLayoutDescriptor(ResourceLayoutHandle layoutHandle) const = 0;
 
 		[[nodiscard]] virtual const ResourceSetDescriptor&		GetResourceSetDescriptor(ResourceSetHandle setHandle) const = 0;
+
+		virtual void	UpdateResourceSetDescriptor(ResourceSetHandle rscSetHandle, uint32_t resourceIdx, ResourceHandle newResource) = 0;
+
+
 
 		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DDescriptor& tex2DDesc) = 0;
 		[[nodiscard]] virtual Texture2DHandle	CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc) = 0;
