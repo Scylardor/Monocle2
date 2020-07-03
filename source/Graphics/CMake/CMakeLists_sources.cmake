@@ -75,6 +75,8 @@ set(Monocle_Graphics_SOURCES
 ./Mesh/MeshDataDescriptor.h
 ./Mesh/MeshHandle.h
 ./Mesh/OpenGL/OpenGLMesh.h
+./Model/Model.cpp
+./Model/Model.h
 ./OpenGL/moeOpenGL.h
 ./OpenGL/Std140.h
 ./Pipeline/OpenGL/OpenGLPipeline.cpp

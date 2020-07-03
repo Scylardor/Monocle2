@@ -8,6 +8,12 @@ include(CMake/CMakeLists_sources.cmake)
 
 monocle_add_library(${MONOCLE_LIB_TYPE} ${GRAPHICS_TARGET} "${${GRAPHICS_TARGET}_SOURCES}")
 
+# Find Assimp library
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+
+find_package(OpenGL REQUIRED)
+
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR
 # to recreate the folder tree with filters within Visual Studio for example.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${GRAPHICS_TARGET}_SOURCES})
@@ -29,4 +35,9 @@ endif()
 # Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
 monocle_target_compile_config(${GRAPHICS_TARGET})
 
+
+# If using Assimp, integrate it in the build
+if(${PROJECT_NAME}_USE_ASSIMP)
+	monocle_include_assimp(${GRAPHICS_TARGET})
+endif()
 

@@ -73,6 +73,7 @@ namespace moe
 			{
 				// No memory available !
 				MOE_ERROR(moe::ChanGraphics, "Buddy Allocator failed to allocate new memory (memory exhausted)");
+				MOE_DEBUG_ASSERT(false);
 				return ms_INVALID_OFFSET;
 			}
 

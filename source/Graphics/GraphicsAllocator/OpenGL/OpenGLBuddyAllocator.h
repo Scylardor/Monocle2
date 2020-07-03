@@ -56,7 +56,7 @@ namespace moe
 
 		static const uint32_t	ms_UNINITIALIZED = 0;
 		static const uint32_t	ms_LEAF_SIZE = 4096; // The size of the smallest possible block allocated.
-		static const uint32_t	ms_MAX_LEVELS = 5; // The maximum number of levels the buddy allocator can subdivide into.
+		static const uint32_t	ms_MAX_LEVELS = 13; // The maximum number of levels the buddy allocator can subdivide into.
 
 		static uint32_t	GetDataBlockLevel(uint32_t dataBlockSize);
 

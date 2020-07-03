@@ -32,6 +32,7 @@
 
 #include "Graphics/Sampler/SamplerDescriptor.h"
 
+#include "Graphics/Model/Model.h"
 
 #include "DirectionalShadowDepthPass.h"
 
@@ -2124,6 +2125,1047 @@ namespace moe
 
 			renderer.UseMaterialInstance(&fbMatInst);
 			renderWorld.DrawMesh(plane, quadVao, nullptr);
+
+			SwapBuffers();
+
+		}
+	}
+
+
+	void	TestApplication::TestBloom()
+	{
+		IGraphicsRenderer& renderer = MutRenderer();
+
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("SkyboxViewProjection", { MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_ToneMappingParams", { MaterialBlockBinding::FRAME_TONE_MAPPING, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_TwoPassGaussianBlur", { MaterialBlockBinding::FRAME_GAUSSIAN_BLUR, ResourceKind::UniformBuffer });
+
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_NormalMap", { MaterialTextureBinding::NORMAL, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_HeightMap", { MaterialTextureBinding::HEIGHT, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_BloomMap", { MaterialTextureBinding::BLOOM, ResourceKind::TextureReadOnly });
+
+		lib.AddBindingMapping("Material_Sampler", { MaterialSamplerBinding::SAMPLER_0, ResourceKind::Sampler });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_TONE_MAPPING, []() { return sizeof(ToneMappingParams); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_GAUSSIAN_BLUR, []() { return sizeof(TwoPassGaussianBlurParams); });
+
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		Texture2DDescriptor colorAttachDesc{ nullptr, Width_t(GetWindowWidth()), Height_t(GetWindowHeight()), TextureFormat::RGBA16F, TextureUsage{Sampled} };
+
+		// Our color texture to render the scene into
+		Texture2DHandle colorAttachTex = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+
+		// Our texture to store the brightness information into
+		Texture2DHandle brightnessTexture = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+
+		Texture2DDescriptor depthAttachDesc{ nullptr, Width_t(GetWindowWidth()), Height_t(GetWindowHeight()), TextureFormat::Depth24_Stencil8, TextureUsage{RenderTarget} };
+		Texture2DHandle depthAttachTex = renderer.MutGraphicsDevice().CreateTexture2D(depthAttachDesc);
+
+		FramebufferDescriptor fbDesc{ {colorAttachTex, brightnessTexture}, depthAttachTex };
+		fbDesc.m_drawBuffer = TargetBuffer::AllColorAttachments; // Tell the framebuffer to draw to ALL color buffers (not just the first one).
+		FramebufferHandle fbHandle = renderer.MutGraphicsDevice().CreateFramebuffer(fbDesc);
+
+		/* Create gaussian blur ping pong framebuffers */
+		Texture2DHandle pingpongColorTex1 = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+		FramebufferDescriptor pingpongDesc1{ {pingpongColorTex1} };
+		FramebufferHandle pingpongFb1 = renderer.MutGraphicsDevice().CreateFramebuffer(pingpongDesc1);
+
+		Texture2DHandle pingpongColorTex2 = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+		FramebufferDescriptor pingpongDesc2{ {pingpongColorTex2} };
+		FramebufferHandle pingpongFb2 = renderer.MutGraphicsDevice().CreateFramebuffer(pingpongDesc2);
+
+		Texture2DHandle blurColorAttachments[2]{pingpongColorTex1, pingpongColorTex2};
+		FramebufferHandle blurFramebuffers[2]{pingpongFb1, pingpongFb2};
+
+		SamplerDescriptor blurSamplerDesc;
+		blurSamplerDesc.m_magFilter = SamplerFilter::Linear;
+		blurSamplerDesc.m_minFilter = SamplerFilter::Linear;
+		// we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		blurSamplerDesc.m_wrap_S = SamplerWrapping::ClampToEdge;
+		blurSamplerDesc.m_wrap_T = SamplerWrapping::ClampToEdge;
+
+		SamplerHandle blurSampler = MutRenderer().MutGraphicsDevice().CreateSampler(blurSamplerDesc);
+
+		/* Create blur quad material */
+		IGraphicsRenderer::ShaderFileList bloomBlurFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_blur.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_blur.frag" }
+		};
+
+		ShaderProgramHandle bloomBlurProgram = renderer.CreateShaderProgramFromSourceFiles(bloomBlurFileList);
+
+		MaterialDescriptor blurMatDesc({
+			{"Frame_TwoPassGaussianBlur", ShaderStage::Fragment},
+			{"Material_Sampler", ShaderStage::Fragment},
+			{"Material_DiffuseMap", ShaderStage::Fragment}
+			});
+
+		MaterialInterface blurMatIntf = lib.CreateMaterialInterface(bloomBlurProgram, blurMatDesc);
+		MaterialInstance blurMatInst = lib.CreateMaterialInstance(blurMatIntf);
+
+		TwoPassGaussianBlurParams gaussianBlurParams{ true, (int)GetWindowWidth(), (int)GetWindowHeight(), 5, {0.227027f, 0.1945946f, 0.1216216f, 0.054054f, 0.016216f} };
+		blurMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_GAUSSIAN_BLUR,
+			gaussianBlurParams);
+
+		blurMatInst.BindSampler(SAMPLER_0, blurSampler);
+		blurMatInst.BindTexture(MaterialTextureBinding::DIFFUSE, brightnessTexture);
+
+		blurMatInst.CreateMaterialResourceSet();
+
+		const int gaussianBlurAmount = 10;
+
+		/* End blur material */
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor cubeLayout{
+			{
+				{{"position", VertexElementFormat::Float3},
+				{"normal", VertexElementFormat::Float3},
+				{"texCoords", VertexElementFormat::Float2}},
+			},
+			LayoutType::Interleaved
+		};
+
+		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor quadLayout{
+			{
+				{{"position", VertexElementFormat::Float3},
+				{"texCoords", VertexElementFormat::Float2}},
+			},
+			LayoutType::Interleaved
+		};
+
+		auto quadVao = renderer.CreateVertexLayout(quadLayout);
+
+
+		/* Create cube shader */
+		IGraphicsRenderer::ShaderFileList bloomLightingFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_blinn_phong.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_blinn_phong.frag" }
+		};
+
+		ShaderProgramHandle hdrLightingProgram = renderer.CreateShaderProgramFromSourceFiles(bloomLightingFileList);
+
+		IGraphicsRenderer::ShaderFileList lightBoxFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_blinn_phong.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_light_box.frag" }
+		};
+
+		ShaderProgramHandle lightBoxProgram = renderer.CreateShaderProgramFromSourceFiles(lightBoxFileList);
+
+		IGraphicsRenderer::ShaderFileList bloomFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_final.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_final.frag" }
+		};
+
+		ShaderProgramHandle bloomProgram = renderer.CreateShaderProgramFromSourceFiles(bloomFileList);
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+		// Create geometry
+		auto cubeGeom = CreateCubePositionNormalTexture(1.f, false);
+
+		Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+		Array<VertexPositionTexture, 6> quadVertices{ // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+			// positions   // texCoords
+			{{-1.0f,  1.0f, 0.f},  {0.0f, 1.0f}},
+			{{-1.0f, -1.0f, 0.f},  {0.0f, 0.0f}},
+			{{ 1.0f, -1.0f, 0.f},  {1.0f, 0.0f}},
+
+			{{-1.0f,  1.0f, 0.f},  {0.0f, 1.0f}},
+			{{ 1.0f, -1.0f, 0.f},  {1.0f, 0.0f}},
+			{{ 1.0f,  1.0f, 0.f},  {1.0f, 1.0f}}
+		};
+
+
+		Mesh* plane = renderWorld.CreateStaticMesh(quadVertices);
+
+		/* Create Phong material buffer */
+		MaterialDescriptor materialdesc(
+			{
+				{"Material_Phong", ShaderStage::Fragment},
+				{"Material_Sampler", ShaderStage::Fragment},
+				{"Material_DiffuseMap", ShaderStage::Fragment}
+			}
+		);
+		MaterialInterface hdrInterface = lib.CreateMaterialInterface(hdrLightingProgram, materialdesc);
+		MaterialInstance planeInst = lib.CreateMaterialInstance(hdrInterface);
+		planeInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
+			PhongMaterial{ ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							32 });
+
+
+		SamplerDescriptor mySamplerDesc;
+		mySamplerDesc.m_magFilter = SamplerFilter::Linear;
+		mySamplerDesc.m_minFilter = SamplerFilter::LinearMipmapLinear;
+		mySamplerDesc.m_wrap_S = SamplerWrapping::Repeat;
+		mySamplerDesc.m_wrap_T = SamplerWrapping::Repeat;
+
+		SamplerHandle mySampler = MutRenderer().MutGraphicsDevice().CreateSampler(mySamplerDesc);
+
+		planeInst.BindSampler(MaterialSamplerBinding::SAMPLER_0, mySampler);
+
+		Texture2DFileDescriptor woodDesc{ "Sandbox/assets/textures/wood.png", TextureFormat::SRGB_RGBA8 };
+		woodDesc.m_wantedMipmapLevels = 8;
+		Texture2DHandle brickImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(woodDesc);
+		planeInst.BindTexture(MaterialTextureBinding::DIFFUSE, brickImg);
+
+		planeInst.CreateMaterialResourceSet();
+
+		MaterialInstance boxInst = lib.CreateMaterialInstance(hdrInterface);
+
+		boxInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
+			PhongMaterial{ ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							32 });
+
+		boxInst.BindSampler(MaterialSamplerBinding::SAMPLER_0, mySampler);
+
+		Texture2DFileDescriptor containerDesc{ "Sandbox/assets/textures/container2.png", TextureFormat::SRGB_RGBA8 };
+		woodDesc.m_wantedMipmapLevels = 8;
+		Texture2DHandle containerImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(containerDesc);
+		boxInst.BindTexture(MaterialTextureBinding::DIFFUSE, containerImg);
+
+		boxInst.CreateMaterialResourceSet();
+		/* End Phong material buffer */
+
+		/* Create full screen quad material */
+		MaterialDescriptor framebufferMatDesc({
+			{"Material_DiffuseMap", ShaderStage::Fragment},
+			{"Material_BloomMap", ShaderStage::Fragment},
+			{"Frame_ToneMappingParams", ShaderStage::Fragment}
+			});
+
+		MaterialInterface fbMatIntf = lib.CreateMaterialInterface(bloomProgram, framebufferMatDesc);
+		MaterialInstance fbMatInst = lib.CreateMaterialInstance(fbMatIntf);
+
+		fbMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_TONE_MAPPING, m_toneMappingParams);
+
+		fbMatInst.BindTexture(MaterialTextureBinding::DIFFUSE, colorAttachTex);
+
+		// Attach to the last bloom pingpong FBO color attachment that will have been drawn
+		// To know which FBO to bind with is simple: even number of gaussian blurs = first FBO.
+		fbMatInst.BindTexture(MaterialTextureBinding::BLOOM, blurColorAttachments[gaussianBlurAmount % 2]);
+
+		fbMatInst.CreateMaterialResourceSet();
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+
+		LightSystem lightsSystem(renderer.MutGraphicsDevice());
+
+		Vec4 lightPositions[] = {
+			{ 0.0f, 0.5f,  1.5f, 1.f},
+			{ -4.0f, 0.5f, -3.0f, 1.f},
+			{  3.0f, 0.5f,  1.0f, 1.f},
+			{ -.8f,  2.4f, -1.0f, 1.f}
+		};
+
+		Vec4 lightColors[] = {
+			{ 5.0f,   5.0f,  5.0f, 1.f},
+			{ 10.0f,  0.0f,  0.0f, 1.f},
+			{ 0.0f,   0.0f,  15.f, 1.f},
+			{ 0.0f,   5.0f,  0.0f, 1.f}
+		};
+
+		int iLight = 0;
+		for (const Vec4& lightPos : lightPositions)
+		{
+			auto pointLight =
+				lightsSystem.AddNewLight({ lightPos, Vec4::ZeroVector(),
+					Vec4(0.f), lightColors[iLight], Vec4(0.f) });
+			pointLight->SetAttenuationFactors(0.f, 0.0f, 1.f);
+			iLight++;
+		}
+
+
+		MaterialDescriptor lightMatDesc(
+			{
+				{"Material_Color", ShaderStage::Fragment} }
+		);
+
+		MaterialInterface lightMatInterface = lib.CreateMaterialInterface(lightBoxProgram, lightMatDesc);
+
+		MaterialInstance lightMatInstance = lib.CreateMaterialInstance(lightMatInterface);
+
+		lightMatInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_COLOR, ColorRGBAf::White());
+
+		lightMatInstance.CreateMaterialResourceSet();
+
+
+		m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+
+
+		PipelineDescriptor fullscreenQuadPipeDesc;
+		fullscreenQuadPipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Disabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle fsqPipe = m_renderer.MutGraphicsDevice().CreatePipeline(fullscreenQuadPipeDesc);
+
+
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+			// First, render tunnel in framebuffer
+
+			m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+			// Bind the framebuffer to effectively render-to-texture
+			renderer.BindFramebuffer(fbHandle);
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			lightsSystem.UpdateLights();
+
+			lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&planeInst);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(0.0f, -1.0f, 0.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(12.5f, 0.5f, 12.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&boxInst);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(0.0f, 1.5f, 0.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(2.0f, 0.0f, 1.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(-1.0f, -1.0f, 2.0f)));
+				cube->AddTransform(Transform::Rotate(60_degf, Vec3(1.0, 0.0, 1.0).GetNormalized()));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(0.0f, 2.7f, 4.0f)));
+				cube->AddTransform(Transform::Rotate(23_degf, Vec3(1.0, 0.0, 1.0).GetNormalized()));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(-2.0f, 1.0f, -3.0f)));
+				cube->AddTransform(Transform::Rotate(124_degf, Vec3(1.0, 0.0, 1.0).GetNormalized()));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(-3.0f, 0.0f, 0.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+
+				iLight = 0;
+				for (auto& lightPos : lightPositions)
+				{
+					lightMatInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_COLOR, lightColors[iLight]);
+					renderer.UseMaterialInstance(&lightMatInstance);
+
+					cube->SetTransform(Transform::Identity());
+					cube->AddTransform(Transform::Translate(lightPos.xyz()));
+					cube->AddTransform(Transform::Scale(Vec3(0.25f)));
+					cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+					renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+					iLight++;
+				}
+			}
+
+			renderer.UnbindFramebuffer(fbHandle);
+
+			// Step two - draw the gaussian-blurred brightness buffer using a fullscreen quad
+
+			renderer.MutGraphicsDevice().SetPipeline(fsqPipe);
+
+			for (int iBlur = 0; iBlur < gaussianBlurAmount; iBlur++)
+			{
+				gaussianBlurParams.m_horizontalBlur = !gaussianBlurParams.m_horizontalBlur;
+
+				blurMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_GAUSSIAN_BLUR,
+					gaussianBlurParams);
+
+				const Texture2DHandle& sourceAttachment = (iBlur == 0 ? brightnessTexture : blurColorAttachments[iBlur % 2]);
+
+				blurMatInst.UpdateTexture(DIFFUSE, sourceAttachment);
+
+				renderer.UseMaterialInstance(&blurMatInst);
+
+				const int destFramebuffer = (iBlur + 1) % 2;
+
+				renderer.BindFramebuffer(blurFramebuffers[destFramebuffer]);
+
+				renderWorld.DrawMesh(plane, quadVao, nullptr);
+
+				renderer.UnbindFramebuffer(blurFramebuffers[destFramebuffer]);
+			}
+
+			// Finally - draw the framebuffer using a fullscreen quad
+
+
+			fbMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_TONE_MAPPING, m_toneMappingParams);
+
+			renderer.UseMaterialInstance(&fbMatInst);
+			renderWorld.DrawMesh(plane, quadVao, nullptr);
+
+			SwapBuffers();
+
+		}
+	}
+
+
+	void	TestApplication::TestDeferredRendering()
+	{
+		IGraphicsRenderer& renderer = MutRenderer();
+
+		MaterialLibrary lib(MutRenderer().MutGraphicsDevice());
+		lib.AddBindingMapping("Object_Matrices", { MaterialBlockBinding::OBJECT_MATRICES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Time", { MaterialBlockBinding::FRAME_TIME, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_Lights", { MaterialBlockBinding::FRAME_LIGHTS, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_Camera", { MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("View_ProjectionPlanes", { MaterialBlockBinding::VIEW_PROJECTION_PLANES, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Phong", { MaterialBlockBinding::MATERIAL_PHONG, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Material_Color", { MaterialBlockBinding::MATERIAL_COLOR, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("SkyboxViewProjection", { MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_ToneMappingParams", { MaterialBlockBinding::FRAME_TONE_MAPPING, ResourceKind::UniformBuffer });
+		lib.AddBindingMapping("Frame_TwoPassGaussianBlur", { MaterialBlockBinding::FRAME_GAUSSIAN_BLUR, ResourceKind::UniformBuffer });
+
+		lib.AddBindingMapping("Material_DiffuseMap", { MaterialTextureBinding::DIFFUSE, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_NormalMap", { MaterialTextureBinding::NORMAL, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SpecularMap", { MaterialTextureBinding::SPECULAR, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_EmissionMap", { MaterialTextureBinding::EMISSION, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_SkyboxMap", { MaterialTextureBinding::SKYBOX, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_HeightMap", { MaterialTextureBinding::HEIGHT, ResourceKind::TextureReadOnly });
+		lib.AddBindingMapping("Material_BloomMap", { MaterialTextureBinding::BLOOM, ResourceKind::TextureReadOnly });
+
+		lib.AddBindingMapping("Material_Sampler", { MaterialSamplerBinding::SAMPLER_0, ResourceKind::Sampler });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_LIGHTS, []() { return sizeof(LightCastersData); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::VIEW_CAMERA, []() { return sizeof(CameraMatrices); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_SKYBOX_VIEWPROJ, []() { return sizeof(Mat4); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_PHONG, []() { return sizeof(PhongMaterial); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::MATERIAL_COLOR, []() { return sizeof(ColorRGBAf); });
+		lib.AddUniformBufferSizer(MaterialBlockBinding::OBJECT_MATRICES, []() { return sizeof(ObjectMatrices); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_TONE_MAPPING, []() { return sizeof(ToneMappingParams); });
+
+		lib.AddUniformBufferSizer(MaterialBlockBinding::FRAME_GAUSSIAN_BLUR, []() { return sizeof(TwoPassGaussianBlurParams); });
+
+
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+
+		auto[mouseX, mouseY] = GetMouseCursorPosition();
+		m_lastX = mouseX;
+		m_lastY = mouseY;
+
+		SetInputMouseMoveMapping(std::bind(&TestApplication::OrientCameraWithMouse, this, std::placeholders::_1, std::placeholders::_2));
+
+		SetInputMouseScrollMapping(std::bind(&TestApplication::CameraZoomMouseScroll, this, std::placeholders::_1, std::placeholders::_2));
+
+
+		Texture2DDescriptor colorAttachDesc{ nullptr, Width_t(GetWindowWidth()), Height_t(GetWindowHeight()), TextureFormat::RGBA16F, TextureUsage{Sampled} };
+
+		// Our color texture to render the scene into
+		Texture2DHandle colorAttachTex = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+
+		// Our texture to store the brightness information into
+		Texture2DHandle brightnessTexture = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+
+		Texture2DDescriptor depthAttachDesc{ nullptr, Width_t(GetWindowWidth()), Height_t(GetWindowHeight()), TextureFormat::Depth24_Stencil8, TextureUsage{RenderTarget} };
+		Texture2DHandle depthAttachTex = renderer.MutGraphicsDevice().CreateTexture2D(depthAttachDesc);
+
+		FramebufferDescriptor fbDesc{ {colorAttachTex, brightnessTexture}, depthAttachTex };
+		fbDesc.m_drawBuffer = TargetBuffer::AllColorAttachments; // Tell the framebuffer to draw to ALL color buffers (not just the first one).
+		FramebufferHandle fbHandle = renderer.MutGraphicsDevice().CreateFramebuffer(fbDesc);
+
+		/* Create gaussian blur ping pong framebuffers */
+		Texture2DHandle pingpongColorTex1 = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+		FramebufferDescriptor pingpongDesc1{ {pingpongColorTex1} };
+		FramebufferHandle pingpongFb1 = renderer.MutGraphicsDevice().CreateFramebuffer(pingpongDesc1);
+
+		Texture2DHandle pingpongColorTex2 = renderer.MutGraphicsDevice().CreateTexture2D(colorAttachDesc);
+		FramebufferDescriptor pingpongDesc2{ {pingpongColorTex2} };
+		FramebufferHandle pingpongFb2 = renderer.MutGraphicsDevice().CreateFramebuffer(pingpongDesc2);
+
+		Texture2DHandle blurColorAttachments[2]{ pingpongColorTex1, pingpongColorTex2 };
+		FramebufferHandle blurFramebuffers[2]{ pingpongFb1, pingpongFb2 };
+
+		SamplerDescriptor blurSamplerDesc;
+		blurSamplerDesc.m_magFilter = SamplerFilter::Linear;
+		blurSamplerDesc.m_minFilter = SamplerFilter::Linear;
+		// we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		blurSamplerDesc.m_wrap_S = SamplerWrapping::ClampToEdge;
+		blurSamplerDesc.m_wrap_T = SamplerWrapping::ClampToEdge;
+
+		SamplerHandle blurSampler = MutRenderer().MutGraphicsDevice().CreateSampler(blurSamplerDesc);
+
+		/* Create blur quad material */
+		IGraphicsRenderer::ShaderFileList bloomBlurFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_blur.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_blur.frag" }
+		};
+
+		ShaderProgramHandle bloomBlurProgram = renderer.CreateShaderProgramFromSourceFiles(bloomBlurFileList);
+
+		MaterialDescriptor blurMatDesc({
+			{"Frame_TwoPassGaussianBlur", ShaderStage::Fragment},
+			{"Material_Sampler", ShaderStage::Fragment},
+			{"Material_DiffuseMap", ShaderStage::Fragment}
+			});
+
+		MaterialInterface blurMatIntf = lib.CreateMaterialInterface(bloomBlurProgram, blurMatDesc);
+		MaterialInstance blurMatInst = lib.CreateMaterialInstance(blurMatIntf);
+
+		TwoPassGaussianBlurParams gaussianBlurParams{ true, (int)GetWindowWidth(), (int)GetWindowHeight(), 5, {0.227027f, 0.1945946f, 0.1216216f, 0.054054f, 0.016216f} };
+		blurMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_GAUSSIAN_BLUR,
+			gaussianBlurParams);
+
+		blurMatInst.BindSampler(SAMPLER_0, blurSampler);
+		blurMatInst.BindTexture(MaterialTextureBinding::DIFFUSE, brightnessTexture);
+
+		blurMatInst.CreateMaterialResourceSet();
+
+		const int gaussianBlurAmount = 10;
+
+		/* End blur material */
+
+		PipelineDescriptor pipeDesc;
+		pipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Enabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle myPipe = m_renderer.MutGraphicsDevice().CreatePipeline(pipeDesc);
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor cubeLayout{
+			{
+				{{"position", VertexElementFormat::Float3},
+				{"normal", VertexElementFormat::Float3},
+				{"texCoords", VertexElementFormat::Float2}},
+			},
+			LayoutType::Interleaved
+		};
+
+		auto cubeVao = renderer.CreateVertexLayout(cubeLayout);
+
+
+		/* Create cube VAO */
+		VertexLayoutDescriptor quadLayout{
+			{
+				{{"position", VertexElementFormat::Float3},
+				{"texCoords", VertexElementFormat::Float2}},
+			},
+			LayoutType::Interleaved
+		};
+
+		auto quadVao = renderer.CreateVertexLayout(quadLayout);
+
+
+		/* Create cube shader */
+		IGraphicsRenderer::ShaderFileList bloomLightingFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_blinn_phong.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_blinn_phong.frag" }
+		};
+
+		ShaderProgramHandle hdrLightingProgram = renderer.CreateShaderProgramFromSourceFiles(bloomLightingFileList);
+
+		IGraphicsRenderer::ShaderFileList lightBoxFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_blinn_phong.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_light_box.frag" }
+		};
+
+		ShaderProgramHandle lightBoxProgram = renderer.CreateShaderProgramFromSourceFiles(lightBoxFileList);
+
+		IGraphicsRenderer::ShaderFileList bloomFileList =
+		{
+			{ ShaderStage::Vertex,		"source/Graphics/Resources/shaders/OpenGL/bloom_final.vert" },
+			{ ShaderStage::Fragment,	"source/Graphics/Resources/shaders/OpenGL/bloom_final.frag" }
+		};
+
+		ShaderProgramHandle bloomProgram = renderer.CreateShaderProgramFromSourceFiles(bloomFileList);
+
+		RenderWorld& renderWorld = MutRenderer().CreateRenderWorld();
+
+		// Create geometry
+		auto cubeGeom = CreateCubePositionNormalTexture(1.f, false);
+
+
+		Mesh* cube = renderWorld.CreateStaticMesh(cubeGeom);
+
+		auto indexedCubeGeom = CreateIndexedCubePositionNormalTexture(1.F);
+		Array<unsigned int, 36> cubeIndices = {  // note that we start from 0!
+		// front
+		 0,  1,  2,
+		 2,  3,  0,
+		 // top
+		  4,  5,  6,
+		  6,  7,  4,
+		  // back
+		   8,  9, 10,
+		  10, 11,  8,
+		  // bottom
+		  12, 13, 14,
+		  14, 15, 12,
+		  // left
+		  16, 17, 18,
+		  18, 19, 16,
+		  // right
+		  20, 21, 22,
+		  22, 23, 20,
+		};
+
+
+		Mesh* indexedCube = renderWorld.CreateStaticMesh(indexedCubeGeom, cubeIndices);
+
+		indexedCube;
+
+		Array<VertexPositionTexture, 6> quadVertices{ // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+			// positions   // texCoords
+			{{-1.0f,  1.0f, 0.f},  {0.0f, 1.0f}},
+			{{-1.0f, -1.0f, 0.f},  {0.0f, 0.0f}},
+			{{ 1.0f, -1.0f, 0.f},  {1.0f, 0.0f}},
+
+			{{-1.0f,  1.0f, 0.f},  {0.0f, 1.0f}},
+			{{ 1.0f, -1.0f, 0.f},  {1.0f, 0.0f}},
+			{{ 1.0f,  1.0f, 0.f},  {1.0f, 1.0f}}
+		};
+
+
+		Mesh* plane = renderWorld.CreateStaticMesh(quadVertices);
+
+		/* Create Phong material buffer */
+		MaterialDescriptor materialdesc(
+			{
+				{"Material_Phong", ShaderStage::Fragment},
+				{"Material_Sampler", ShaderStage::Fragment},
+				{"Material_DiffuseMap", ShaderStage::Fragment}
+			}
+		);
+		MaterialInterface hdrInterface = lib.CreateMaterialInterface(hdrLightingProgram, materialdesc);
+		MaterialInstance planeInst = lib.CreateMaterialInstance(hdrInterface);
+		planeInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
+			PhongMaterial{ ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							32 });
+
+
+		SamplerDescriptor mySamplerDesc;
+		mySamplerDesc.m_magFilter = SamplerFilter::Linear;
+		mySamplerDesc.m_minFilter = SamplerFilter::LinearMipmapLinear;
+		mySamplerDesc.m_wrap_S = SamplerWrapping::Repeat;
+		mySamplerDesc.m_wrap_T = SamplerWrapping::Repeat;
+
+		SamplerHandle mySampler = MutRenderer().MutGraphicsDevice().CreateSampler(mySamplerDesc);
+
+		planeInst.BindSampler(MaterialSamplerBinding::SAMPLER_0, mySampler);
+
+		Texture2DFileDescriptor woodDesc{ "Sandbox/assets/textures/wood.png", TextureFormat::SRGB_RGBA8 };
+		woodDesc.m_wantedMipmapLevels = 8;
+		Texture2DHandle brickImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(woodDesc);
+		planeInst.BindTexture(MaterialTextureBinding::DIFFUSE, brickImg);
+
+		planeInst.CreateMaterialResourceSet();
+
+		MaterialInstance boxInst = lib.CreateMaterialInstance(hdrInterface);
+
+		boxInst.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
+			PhongMaterial{ ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							ColorRGBAf::White().ToVec(),
+							32 });
+
+		boxInst.BindSampler(MaterialSamplerBinding::SAMPLER_0, mySampler);
+
+		Texture2DFileDescriptor containerDesc{ "Sandbox/assets/textures/container2.png", TextureFormat::SRGB_RGBA8 };
+		woodDesc.m_wantedMipmapLevels = 8;
+		Texture2DHandle containerImg = MutRenderer().MutGraphicsDevice().CreateTexture2D(containerDesc);
+		boxInst.BindTexture(MaterialTextureBinding::DIFFUSE, containerImg);
+
+		boxInst.CreateMaterialResourceSet();
+		/* End Phong material buffer */
+
+		/* Create full screen quad material */
+		MaterialDescriptor framebufferMatDesc({
+			{"Material_DiffuseMap", ShaderStage::Fragment},
+			{"Material_BloomMap", ShaderStage::Fragment},
+			{"Frame_ToneMappingParams", ShaderStage::Fragment}
+			});
+
+		MaterialInterface fbMatIntf = lib.CreateMaterialInterface(bloomProgram, framebufferMatDesc);
+		MaterialInstance fbMatInst = lib.CreateMaterialInstance(fbMatIntf);
+
+		fbMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_TONE_MAPPING, m_toneMappingParams);
+
+		fbMatInst.BindTexture(MaterialTextureBinding::DIFFUSE, colorAttachTex);
+
+		// Attach to the last bloom pingpong FBO color attachment that will have been drawn
+		// To know which FBO to bind with is simple: even number of gaussian blurs = first FBO.
+		fbMatInst.BindTexture(MaterialTextureBinding::BLOOM, blurColorAttachments[gaussianBlurAmount % 2]);
+
+		fbMatInst.CreateMaterialResourceSet();
+
+		/* Create camera */
+		PerspectiveCameraDesc persDesc{ 45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 100.f };
+
+		CameraSystem camSys(renderer.MutGraphicsDevice());
+
+		ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+		Camera* newCam = camSys.AddNewCamera(vpHandle, persDesc);
+
+		newCam->AddTransform(Transform::Translate(Vec3(0, 0, 3)));
+
+		m_currentCamera = newCam;
+
+		// To make sure the camera points towards the negative z-axis by default we can give the yaw a default value of a 90 degree clockwise rotation.
+
+		newCam->UpdateCameraVectors(0, -90);
+
+		/* Create camera end */
+
+
+		LightSystem lightsSystem(renderer.MutGraphicsDevice());
+
+		Vec4 lightPositions[] = {
+			{ 0.0f, 0.5f,  1.5f, 1.f},
+			{ -4.0f, 0.5f, -3.0f, 1.f},
+			{  3.0f, 0.5f,  1.0f, 1.f},
+			{ -.8f,  2.4f, -1.0f, 1.f}
+		};
+
+		Vec4 lightColors[] = {
+			{ 5.0f,   5.0f,  5.0f, 1.f},
+			{ 10.0f,  0.0f,  0.0f, 1.f},
+			{ 0.0f,   0.0f,  15.f, 1.f},
+			{ 0.0f,   5.0f,  0.0f, 1.f}
+		};
+
+		int iLight = 0;
+		for (const Vec4& lightPos : lightPositions)
+		{
+			auto pointLight =
+				lightsSystem.AddNewLight({ lightPos, Vec4::ZeroVector(),
+					Vec4(0.f), lightColors[iLight], Vec4(0.f) });
+			pointLight->SetAttenuationFactors(0.f, 0.0f, 1.f);
+			iLight++;
+		}
+
+
+		MaterialDescriptor lightMatDesc(
+			{
+				{"Material_Color", ShaderStage::Fragment} }
+		);
+
+		MaterialInterface lightMatInterface = lib.CreateMaterialInterface(lightBoxProgram, lightMatDesc);
+
+		MaterialInstance lightMatInstance = lib.CreateMaterialInstance(lightMatInterface);
+
+		lightMatInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_COLOR, ColorRGBAf::White());
+
+		lightMatInstance.CreateMaterialResourceSet();
+
+
+		m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+
+
+		PipelineDescriptor fullscreenQuadPipeDesc;
+		fullscreenQuadPipeDesc.m_depthStencilStateDesc = DepthStencilStateDescriptor{ DepthTest::Disabled, DepthWriting::Enabled, DepthStencilComparisonFunc::Less };
+		PipelineHandle fsqPipe = m_renderer.MutGraphicsDevice().CreatePipeline(fullscreenQuadPipeDesc);
+
+		ModelDescriptor modelDesc;
+		modelDesc.m_modelFilename = "Sandbox/assets/objects/backpack/backpack.obj";
+		Model testModel(renderWorld, modelDesc);
+
+		while (WindowIsOpened())
+		{
+			float thisFrameTime = GetApplicationTimeSeconds();
+			m_deltaTime = GetApplicationTimeSeconds() - m_lastFrame;
+			m_lastFrame = thisFrameTime;
+
+			PollInputEvents();
+
+			if (m_moveForward)
+			{
+				CameraMoveForward();
+			}
+			else if (m_moveBackward)
+			{
+				CameraMoveBackwards();
+			}
+
+			if (m_strafeLeft)
+			{
+				CameraMoveStrafeLeft();
+			}
+			else if (m_strafeRight)
+			{
+				CameraMoveStrafeRight();
+			}
+
+			// First, render tunnel in framebuffer
+
+			m_renderer.MutGraphicsDevice().SetPipeline(myPipe);
+
+			// Bind the framebuffer to effectively render-to-texture
+			renderer.BindFramebuffer(fbHandle);
+
+			renderer.Clear(ColorRGBAf(0.1f, 0.1f, 0.1f, 1.0f));
+
+			lightsSystem.UpdateLights();
+
+			lightsSystem.BindLightBuffer();
+
+			camSys.UpdateCameras();
+
+			for (uint32_t iCam = 0; iCam < camSys.CamerasNumber(); iCam++)
+			{
+				camSys.BindCameraBuffer(iCam);
+
+				renderer.UseMaterialInstance(&planeInst);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(0.0f, -1.0f, 0.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(12.5f, 0.5f, 12.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				renderer.UseMaterialInstance(&boxInst);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(0.0f, 1.5f, 0.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(2.0f, 0.0f, 1.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(-1.0f, -1.0f, 2.0f)));
+				cube->AddTransform(Transform::Rotate(60_degf, Vec3(1.0, 0.0, 1.0).GetNormalized()));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(0.0f, 2.7f, 4.0f)));
+				cube->AddTransform(Transform::Rotate(23_degf, Vec3(1.0, 0.0, 1.0).GetNormalized()));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(-2.0f, 1.0f, -3.0f)));
+				cube->AddTransform(Transform::Rotate(124_degf, Vec3(1.0, 0.0, 1.0).GetNormalized()));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				cube->SetTransform(Transform::Identity());
+				cube->AddTransform(Transform::Translate(Vec3(-3.0f, 0.0f, 0.0f)));
+				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+				//indexedCube->SetTransform(Transform::Identity());
+				////indexedCube->AddTransform(Transform::Translate(Vec3(0.0f, 3.0f, 0.0f)));
+				//indexedCube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				//indexedCube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				//renderWorld.DrawMesh(indexedCube, cubeVao, nullptr);
+
+
+				for (Mesh* modelMesh : testModel)
+				{
+					modelMesh->SetTransform(Transform::Identity());
+					modelMesh->UpdateObjectMatrices(camSys.GetCamera(iCam));
+					renderWorld.DrawMesh(modelMesh, cubeVao, nullptr);
+
+				}
+
+
+				iLight = 0;
+				for (auto& lightPos : lightPositions)
+				{
+					lightMatInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_COLOR, lightColors[iLight]);
+					renderer.UseMaterialInstance(&lightMatInstance);
+
+					cube->SetTransform(Transform::Identity());
+					cube->AddTransform(Transform::Translate(lightPos.xyz()));
+					cube->AddTransform(Transform::Scale(Vec3(0.25f)));
+					cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+					renderWorld.DrawMesh(cube, cubeVao, nullptr);
+
+					iLight++;
+				}
+
+
+			}
+
+			renderer.UnbindFramebuffer(fbHandle);
+
+			// Step two - draw the gaussian-blurred brightness buffer using a fullscreen quad
+
+			renderer.MutGraphicsDevice().SetPipeline(fsqPipe);
+
+			for (int iBlur = 0; iBlur < gaussianBlurAmount; iBlur++)
+			{
+				gaussianBlurParams.m_horizontalBlur = !gaussianBlurParams.m_horizontalBlur;
+
+				blurMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_GAUSSIAN_BLUR,
+					gaussianBlurParams);
+
+				const Texture2DHandle& sourceAttachment = (iBlur == 0 ? brightnessTexture : blurColorAttachments[iBlur % 2]);
+
+				blurMatInst.UpdateTexture(DIFFUSE, sourceAttachment);
+
+				renderer.UseMaterialInstance(&blurMatInst);
+
+				const int destFramebuffer = (iBlur + 1) % 2;
+
+				renderer.BindFramebuffer(blurFramebuffers[destFramebuffer]);
+
+				renderWorld.DrawMesh(plane, quadVao, nullptr);
+
+				renderer.UnbindFramebuffer(blurFramebuffers[destFramebuffer]);
+			}
+
+			// Finally - draw the framebuffer using a fullscreen quad
+
+
+			fbMatInst.UpdateUniformBlock(MaterialBlockBinding::FRAME_TONE_MAPPING, m_toneMappingParams);
+
+			renderer.UseMaterialInstance(&fbMatInst);
+			renderWorld.DrawMesh(plane, quadVao, nullptr);
+
+
 
 			SwapBuffers();
 

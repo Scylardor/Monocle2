@@ -117,6 +117,49 @@ namespace moe
 
 	}
 
+	Array<TestApplication::VertexPositionNormalTexture, 24> TestApplication::CreateIndexedCubePositionNormalTexture(
+		float halfExtent, bool invertNormals)
+	{
+		const float invNormCoef = (invertNormals ? -1.f : 1.f);
+		return {
+			// front
+		{Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  0.0f, 1.0f * invNormCoef }, { 0.0f,  0.0f }},
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  0.0f, 1.0f * invNormCoef}, { 1.0f,  0.0f } },
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.f, 1.0f * invNormCoef}, { 1.0f,  1.0f } },
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  0.f, 1.0f * invNormCoef}, { 0.0f,  1.0f } },
+
+			// top
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 0.0f,  0.0f } },
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 1.0f,  0.0f } },
+		{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f,  1.0f * invNormCoef,  0.0f}, { 0.0f,  1.0f } },
+
+			// back
+		{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, 0.f,  -1.0f * invNormCoef}, { 0.0f,  0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, 0.f,  -1.0f * invNormCoef}, { 1.0f, 0.0f } },
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {0.0f, 0.f,  -1.0f * invNormCoef}, { 1.0f,  1.0f } },
+		{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {0.0f, 0.f,  -1.0f * invNormCoef}, { 0.0f,  1.0f } },
+
+			// bottom
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 0.0f, 0.0f } },
+		{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {0.0f, -1.0f * invNormCoef,  0.0f}, { 1.0f,  0.0f } },
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {0.0f,  -1.0f * invNormCoef, 0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent }, { 0.0f,  -1.0f * invNormCoef, 0.0f }, { 0.0f,  1.0f } },
+
+			// left
+		{ Vec3{ -halfExtent, -halfExtent, -halfExtent}, {-1.0f * invNormCoef, 0.f,  0.0f}, { 0.0f, 0.0f } },
+		{ Vec3{ -halfExtent, -halfExtent,  halfExtent }, { -1.0f * invNormCoef,  0.0f, 0.f }, { 1.0f,  0.0f } },
+		{ Vec3{ -halfExtent,  halfExtent,  halfExtent}, {-1.0f * invNormCoef,  0.f,  0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{ -halfExtent,  halfExtent, -halfExtent}, {-1.0f * invNormCoef,  0.f,  0.0f}, { 0.0f,  1.0f } },
+
+			// right
+		{ Vec3{  halfExtent, -halfExtent,  halfExtent}, {1.0f * invNormCoef,  0.0f, 0.0f}, { 0.0f,  0.0f } },
+		{ Vec3{  halfExtent, -halfExtent, -halfExtent}, {1.0f * invNormCoef, 0.0f,  0.0f}, { 1.0f,  0.0f } },
+		{ Vec3{  halfExtent,  halfExtent, -halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f}, { 1.0f,  1.0f } },
+		{ Vec3{  halfExtent,  halfExtent,  halfExtent}, {1.0f * invNormCoef,  0.0f,  0.0f}, { 0.0f,  1.0f } }};
+
+
+	}
 
 
 	Array<TestApplication::VertexPositionNormalTexture, 36> TestApplication::CreateCubePositionNormalTexture_ReversedNormals(float halfExtent)

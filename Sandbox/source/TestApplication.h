@@ -40,6 +40,8 @@ public:
 	void	TestNormalMapping();
 	void	TestParallaxMapping();
 	void	TestHDR();
+	void	TestBloom();
+	void	TestDeferredRendering();
 
 	// Others
 	void	CameraMoveForward();
@@ -100,8 +102,23 @@ private:
 	};
 
 
+	#define TWO_PASS_GAUSSIAN_BLUR_MAX_WEIGHTS 32
+
+	struct TwoPassGaussianBlurParams
+	{
+		int			m_horizontalBlur = true; // is this the horizontal pass or the vertical pass ? Use int instead of bool for std140 requirements
+		// Dimensions of the texture to sample
+		int			m_textureWidth = 0;
+		int			m_textureHeight = 0;
+		uint32_t	m_weightsSize = 0;	// number of weights to read in the buffer
+		Std140Array<float, TWO_PASS_GAUSSIAN_BLUR_MAX_WEIGHTS>	m_weightsBuffer; // use Vec4 to align for std140
+	};
+
+
 	Array<VertexPosition, 36>	CreateCube(float halfExtent);
 	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture(float halfExtent, bool invertNormals = false);
+	Array<VertexPositionNormalTexture, 24>	CreateIndexedCubePositionNormalTexture(float halfExtent, bool invertNormals = false);
+
 	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture_ReversedNormals(float halfExtent);
 
 

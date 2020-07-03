@@ -4,7 +4,6 @@
 
 #include "Graphics/Material/MaterialInterface.h"
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
-#include "Graphics/Texture/Texture2DHandle.h"
 #include "Graphics/Resources/ResourceSet/ResourceSetHandle.h"
 #include "Graphics/Device/GraphicsDevice.h"
 
