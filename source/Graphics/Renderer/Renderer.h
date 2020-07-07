@@ -150,7 +150,7 @@ namespace moe
 
 		virtual void	UseMaterial(Material* material) = 0;
 
-		virtual void	UseMaterialInstance(class MaterialInstance* material) = 0;
+		virtual void	UseMaterialInstance(const class MaterialInstance* material) = 0;
 
 
 		virtual void	UseMaterialPerObject(Material* material, AGraphicObject& object) = 0;

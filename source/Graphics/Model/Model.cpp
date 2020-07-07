@@ -8,8 +8,15 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "Core/Misc/moeCountof.h"
+
+#include "Graphics/Material/MaterialBindings.h"
+#include "Graphics/Material/MaterialInterface.h"
+#include "Graphics/Material/MaterialLibrary.h"
+
 namespace moe
 {
+	// TODO: refactor out of here
 	struct VertexPositionNormalTexture
 	{
 		Vec3	m_position;
@@ -17,25 +24,34 @@ namespace moe
 		Vec2	m_texcoords;
 	};
 
-	void	Model::ProcessNode(RenderWorld& renderWorld, const std::string& modelDir, aiNode* node, const aiScene* scene)
+	struct PhongMaterial
+	{
+		Vec4	m_ambientColor{ 1.f };
+		Vec4	m_diffuseColor{ 1.f };
+		Vec4	m_specularColor{ 1.f };
+		float	m_shininess{ 32 };
+	};
+
+
+	void	Model::ProcessNode(RenderWorld& renderWorld, MaterialLibrary& matLib, const std::string& modelDir, TextureCache& textureCache, ShaderProgramHandle shaderHandle, aiNode* node, const aiScene* scene)
 	{
 		// process all the node's meshes (if any)
 		m_meshes.Reserve(m_meshes.Size() + node->mNumMeshes);
 		for (unsigned int iMesh = 0; iMesh < node->mNumMeshes; iMesh++)
 		{
 			const aiMesh* mesh = scene->mMeshes[node->mMeshes[iMesh]];
-			m_meshes.PushBack(ProcessMesh(renderWorld, modelDir, mesh, scene));
+			m_meshes.PushBack(ProcessMesh(renderWorld, matLib, modelDir, textureCache, shaderHandle, mesh, scene));
 		}
 
 		// then do the same for each of its children
 		for (unsigned int iChild = 0; iChild < node->mNumChildren; iChild++)
 		{
-			ProcessNode(renderWorld, modelDir, node->mChildren[iChild], scene);
+			ProcessNode(renderWorld, matLib, modelDir, textureCache, shaderHandle, node->mChildren[iChild], scene);
 		}
 	}
 
 
-	Mesh* Model::ProcessMesh(RenderWorld& renderWorld, const std::string& modelDir, const aiMesh* mesh, const aiScene* scene)
+	Mesh* Model::ProcessMesh(RenderWorld& renderWorld, MaterialLibrary& matLib, const std::string& modelDir, TextureCache& textureCache, ShaderProgramHandle shaderHandle, const aiMesh* mesh, const aiScene* scene)
 	{
 		// For now, assume a model always has at least position, normal, texture coordinates.
 		Vector<VertexPositionNormalTexture> vertices;
@@ -94,30 +110,119 @@ namespace moe
 			}
 		}
 
-		// process material
+		// create the mesh geometry...
+		Mesh * newMesh = renderWorld.CreateStaticMeshFromBuffer(vtxData, idxData);
+
+		// ... then process the material
+		// TODO: this should be done in some kind of Resource Manager context to reuse multiple instances of the same texture instead of duplicating it.
+		// ANd heavily refactored! supportedTextureTypes does not respect open/closed principle...
+
 		if (mesh->mMaterialIndex >= 0)
 		{
+			// Create a Monocle Material Descriptor and fill it as necessary.
+			MaterialDescriptor matDesc(
+				{
+					{"Material_Phong", ShaderStage::Fragment},
+					{"Material_Sampler", ShaderStage::Fragment}
+				}
+			);
+
+			// Try to retrieve the types of texture we know.
+			// So far, we only support one texture map per type of texture.
+			const aiTextureType supportedTextureTypes[] = {
+				aiTextureType_DIFFUSE,
+				aiTextureType_SPECULAR,
+				aiTextureType_EMISSIVE,
+				aiTextureType_HEIGHT,
+				aiTextureType_NORMALS,
+				aiTextureType_SHININESS
+			};
+
+			constexpr auto numSupportedTexTypes = Countof(supportedTextureTypes);
+
+			const MaterialTextureBinding monocleTextureTypes[numSupportedTexTypes] = {
+				DIFFUSE,
+				SPECULAR,
+				EMISSION,
+				HEIGHT,
+				NORMAL,
+				GLOSS
+			};
+
+			// It's not a code smell, it's a whole code trashcan !! It reeks !!!
+			const char* monocleTextureDescriptors[numSupportedTexTypes] = {
+				"Material_DiffuseMap",
+				"Material_SpecularMap",
+				"Material_EmissionMap",
+				"Material_HeightMap",
+				"Material_NormalMap",
+				"Material_GlossMap"
+			};
+
+			Texture2DHandle textureHandles[numSupportedTexTypes]{0};
+
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			for (unsigned int iTex = 0; iTex < material->GetTextureCount(aiTextureType_DIFFUSE); iTex++)
+
+			for (int iTexType = 0; iTexType < numSupportedTexTypes; iTexType++)
 			{
 				aiString str;
-				material->GetTexture(aiTextureType_DIFFUSE, iTex , &str);
+				aiReturn texExists = material->GetTexture(supportedTextureTypes[iTexType], 0, &str);
 
-				Texture2DFileDescriptor texFileDesc;
-				StringFormat(texFileDesc.m_filename, "%s/%s", modelDir, str.C_Str());
+				if (texExists == AI_SUCCESS)
+				{
+					matDesc.AddBinding(monocleTextureDescriptors[iTexType], ShaderStage::Fragment); // assume all textures are used in fragment shader for now...
 
-				Texture2DHandle texImg = renderWorld.MutRenderer().MutGraphicsDevice().CreateTexture2D(texFileDesc);
+					// Load the texture while we're at it.
+					Texture2DFileDescriptor texFileDesc;
+					StringFormat(texFileDesc.m_filename, "%s/%s", modelDir, str.C_Str());
+
+					auto texIt = textureCache.Find(texFileDesc.m_filename);
+					if (texIt == textureCache.End())
+					{
+						textureHandles[iTexType] = renderWorld.MutRenderer().MutGraphicsDevice().CreateTexture2D(texFileDesc);
+						textureCache.Insert({ texFileDesc.m_filename , textureHandles[iTexType] });
+					}
+					else
+					{
+						textureHandles[iTexType] = texIt->second;
+					}
+				}
 			}
 
-			//vector<Texture> diffuseMaps = loadMaterialTextures(material,
-			//	aiTextureType_DIFFUSE, "texture_diffuse");
-			//textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-			//vector<Texture> specularMaps = loadMaterialTextures(material,
-			//	aiTextureType_SPECULAR, "texture_specular");
-			//textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+			// Now create Material Interface and Instance
+			MaterialInterface matInterface = matLib.CreateMaterialInterface(shaderHandle, matDesc);
+			MaterialInstance matInstance = matLib.CreateMaterialInstance(matInterface);
+
+			for (int iTexType = 0; iTexType < numSupportedTexTypes; iTexType++)
+			{
+				if (textureHandles[iTexType].IsNotNull())
+				{
+					matInstance.BindTexture(monocleTextureTypes[iTexType], textureHandles[iTexType]);
+				}
+			}
+
+			// TODO : refactor
+			matInstance.UpdateUniformBlock(MaterialBlockBinding::MATERIAL_PHONG,
+				PhongMaterial{ ColorRGBAf::White().ToVec(),
+								ColorRGBAf::White().ToVec(),
+								ColorRGBAf::White().ToVec(),
+								32 });
+
+			SamplerDescriptor mySamplerDesc;
+			mySamplerDesc.m_magFilter = SamplerFilter::Linear;
+			mySamplerDesc.m_minFilter = SamplerFilter::LinearMipmapLinear;
+			mySamplerDesc.m_wrap_S = SamplerWrapping::Repeat;
+			mySamplerDesc.m_wrap_T = SamplerWrapping::Repeat;
+
+			SamplerHandle mySampler = renderWorld.MutRenderer().MutGraphicsDevice().CreateSampler(mySamplerDesc);
+
+			matInstance.BindSampler(MaterialSamplerBinding::SAMPLER_0, mySampler);
+
+			matInstance.CreateMaterialResourceSet();
+
+			newMesh->BindMaterial(std::move(matInstance));
 		}
 
-		Mesh * newMesh = renderWorld.CreateStaticMeshFromBuffer(vtxData, idxData);
 		return newMesh;
 	}
 
@@ -140,7 +245,7 @@ namespace moe
 	//}
 
 
-	Model::Model(RenderWorld& renderWorld, const ModelDescriptor& modelDesc)
+	Model::Model(RenderWorld& renderWorld, MaterialLibrary& matLib, const ModelDescriptor& modelDesc)
 	{
 		Assimp::Importer importer;
 
@@ -148,7 +253,7 @@ namespace moe
 		// it should transform all the model's primitive shapes to triangles first.
 		// Don't flip UVs: stb_image already does
 		const aiScene* scene = importer.ReadFile(modelDesc.m_modelFilename,
-		aiProcess_Triangulate);
+		aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 		/* Extract the directory from the model file path. It will help us to retrieve textures, assuming they are stored next to the model. */
 		// TODO: use C++17 filesystem parent_path() instead.
@@ -161,9 +266,10 @@ namespace moe
 			return;
 		}
 
+		// TODO: this should be implemented in a resource manager.
+		HashMap<std::string, Texture2DHandle> textureCache;
 
-		ProcessNode(renderWorld, modelDirectory, scene->mRootNode, scene);
-
+		ProcessNode(renderWorld, matLib, modelDirectory, textureCache, modelDesc.m_shaderProgram, scene->mRootNode, scene);
 	}
 
 

@@ -7,6 +7,8 @@
 
 #include "Graphics/RenderWorld/GraphicsObject.h"
 
+#include "Graphics/Material/MaterialInstance.h"
+
 #include "Core/Containers/FreeList/Freelist.h"
 
 #include "Monocle_Graphics_Export.h"
@@ -39,6 +41,20 @@ namespace moe
 			m_meshID = id;
 		}
 
+		template <typename MaterialT>
+		void	BindMaterial(MaterialT&& meshMaterial)
+		{
+			static_assert(std::is_base_of_v<MaterialInstance, MaterialT>, "wrong usage of BindMaterial (only accepts MaterialInstances)");
+
+			m_material = std::forward<MaterialT>(meshMaterial);
+		}
+
+		const MaterialInstance& GetBoundMaterial() const
+		{
+			return m_material;
+		}
+
+
 		[[nodiscard]] ResourceSetHandle	GetPerObjectResourceSet() const { return m_perObjectResourceSetHandle; }
 
 		Monocle_Graphics_API void	UpdateObjectMatrices(const Camera& currentCamera);
@@ -50,6 +66,8 @@ namespace moe
 		DeviceBufferHandle	m_perObjectUniformBuffer; // TODO : temporary place !
 
 		ResourceSetHandle	m_perObjectResourceSetHandle;
+
+		MaterialInstance	m_material;
 	};
 
 }

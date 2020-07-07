@@ -3002,7 +3002,9 @@ namespace moe
 
 		ModelDescriptor modelDesc;
 		modelDesc.m_modelFilename = "Sandbox/assets/objects/backpack/backpack.obj";
-		Model testModel(renderWorld, modelDesc);
+		modelDesc.m_shaderProgram = hdrLightingProgram;
+
+		Model testModel(renderWorld, lib, modelDesc);
 
 		while (WindowIsOpened())
 		{
@@ -3051,19 +3053,19 @@ namespace moe
 
 				renderer.UseMaterialInstance(&planeInst);
 
-				cube->SetTransform(Transform::Identity());
-				cube->AddTransform(Transform::Translate(Vec3(0.0f, -1.0f, 0.0f)));
-				cube->AddTransform(Transform::Scale(Vec3(12.5f, 0.5f, 12.5f)));
-				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
-				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+				//cube->SetTransform(Transform::Identity());
+				//cube->AddTransform(Transform::Translate(Vec3(0.0f, -1.0f, 0.0f)));
+				//cube->AddTransform(Transform::Scale(Vec3(12.5f, 0.5f, 12.5f)));
+				//cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				//renderWorld.DrawMesh(cube, cubeVao, nullptr);
 
 				renderer.UseMaterialInstance(&boxInst);
 
-				cube->SetTransform(Transform::Identity());
-				cube->AddTransform(Transform::Translate(Vec3(0.0f, 1.5f, 0.0f)));
-				cube->AddTransform(Transform::Scale(Vec3(0.5f)));
-				cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
-				renderWorld.DrawMesh(cube, cubeVao, nullptr);
+				//cube->SetTransform(Transform::Identity());
+				//cube->AddTransform(Transform::Translate(Vec3(0.0f, 1.5f, 0.0f)));
+				//cube->AddTransform(Transform::Scale(Vec3(0.5f)));
+				//cube->UpdateObjectMatrices(camSys.GetCamera(iCam));
+				//renderWorld.DrawMesh(cube, cubeVao, nullptr);
 
 				cube->SetTransform(Transform::Identity());
 				cube->AddTransform(Transform::Translate(Vec3(2.0f, 0.0f, 1.0f)));
@@ -3104,6 +3106,8 @@ namespace moe
 
 				for (Mesh* modelMesh : testModel)
 				{
+					renderer.UseMaterialInstance(&modelMesh->GetBoundMaterial());
+
 					modelMesh->SetTransform(Transform::Identity());
 					modelMesh->UpdateObjectMatrices(camSys.GetCamera(iCam));
 					renderWorld.DrawMesh(modelMesh, cubeVao, nullptr);

@@ -255,7 +255,7 @@ namespace moe
 	}
 
 
-	void OpenGLRenderer::UseMaterialInstance(MaterialInstance* material)
+	void OpenGLRenderer::UseMaterialInstance(const MaterialInstance* material)
 	{
 		if (material == nullptr)
 			return;

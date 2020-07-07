@@ -19,11 +19,12 @@ struct aiScene;
 
 namespace moe
 {
+	class MaterialLibrary;
+
 	struct ModelDescriptor
 	{
 		std::string	m_modelFilename{""};
 		ShaderProgramHandle	m_shaderProgram;
-		Vector<MaterialDescriptor>	m_meshMaterialDescs;
 	};
 
 
@@ -37,7 +38,7 @@ namespace moe
 	public:
 		using MeshStorage = Vector<Mesh*>;
 
-		Model(RenderWorld& renderWorld, const ModelDescriptor& modelDesc);
+		Model(RenderWorld& renderWorld, MaterialLibrary& matLib, const ModelDescriptor& modelDesc);
 
 
 		MeshStorage::Iterator	begin()
@@ -62,8 +63,10 @@ namespace moe
 
 	private:
 
-		void	ProcessNode(RenderWorld& renderWorld, const std::string& modelDir, aiNode* node, const aiScene* scene);
-		Mesh*	ProcessMesh(RenderWorld& renderWorld, const std::string& modelDir, const aiMesh* mesh, const aiScene* scene);
+		using TextureCache = HashMap<std::string, Texture2DHandle>;
+
+		void	ProcessNode(RenderWorld& renderWorld, MaterialLibrary& matLib, const std::string& modelDir, TextureCache& textureCache, ShaderProgramHandle shaderHandle, aiNode* node, const aiScene* scene);
+		Mesh*	ProcessMesh(RenderWorld& renderWorld, MaterialLibrary& matLib, const std::string& modelDir, TextureCache& textureCache, ShaderProgramHandle shaderHandle, const aiMesh* mesh, const aiScene* scene);
 
 		MeshStorage	m_meshes;
 	};

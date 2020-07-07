@@ -23,7 +23,7 @@ namespace moe
 		MaterialInstance() = default;
 
 		MaterialInstance(const MaterialInterface& matIntf, IGraphicsDevice* device) :
-			m_device(device), m_rscLayoutHandle(matIntf.GetResourceLayout()), m_programHandle(matIntf.GetShaderProgram())
+			m_device(device), m_programHandle(matIntf.GetShaderProgram()), m_rscLayoutHandle(matIntf.GetResourceLayout())
 		{}
 
 

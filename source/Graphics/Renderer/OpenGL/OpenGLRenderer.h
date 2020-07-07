@@ -148,7 +148,7 @@ namespace moe
 
 		Monocle_Graphics_API void	UseMaterialPerObject(Material* material, AGraphicObject& object) override;
 
-		Monocle_Graphics_API void	UseMaterialInstance(MaterialInstance* material) override;
+		Monocle_Graphics_API void	UseMaterialInstance(const MaterialInstance* material) override;
 
 
 		Monocle_Graphics_API [[nodiscard]] RenderWorld&	CreateRenderWorld() override;
