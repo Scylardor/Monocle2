@@ -23,6 +23,7 @@ namespace moe
 		TextureFormat	m_targetFormat{ TextureFormat::Any };
 		TextureUsage	m_texUsage{ TextureUsage::Sampled };
 		uint32_t		m_wantedMipmapLevels{ 1 };
+		TextureFormat	m_sourceFormat{ TextureFormat::RGBA8 }; // TODO: refactor the ordering of this structure.
 	};
 
 	struct Texture2DFileDescriptor

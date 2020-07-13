@@ -4,6 +4,8 @@
 
 #include "Graphics/Texture/OpenGL/OpenGLTextureFormat.h"
 
+#include "Graphics/Framebuffer/FramebufferHandle.h"
+
 #include "glad/glad.h"
 
 namespace moe

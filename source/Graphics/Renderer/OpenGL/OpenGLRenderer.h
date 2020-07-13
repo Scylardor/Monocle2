@@ -82,6 +82,11 @@ namespace moe
 			return m_device.RemoveShaderProgram(programHandle);
 		}
 
+		virtual void	UseShaderProgram(ShaderProgramHandle shaderProgram) override
+		{
+			m_device.UseShaderProgram(shaderProgram);
+		}
+
 
 		Monocle_Graphics_API [[nodiscard]] VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) override
 		{

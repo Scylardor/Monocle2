@@ -17,7 +17,8 @@ namespace moe
 		FRAME_SHADOW_MAPPING,
 		FRAME_OMNI_SHADOW_MAPPING,
 		FRAME_TONE_MAPPING,
-		FRAME_GAUSSIAN_BLUR
+		FRAME_GAUSSIAN_BLUR,
+		FRAME_SSAO_PARAMS
 	};
 
 	enum  MaterialTextureBinding : uint8_t
@@ -30,7 +31,8 @@ namespace moe
 		SKYBOX,
 		SHADOW,
 		HEIGHT,
-		BLOOM
+		BLOOM,
+		AMBIENT_OCCLUSION
 	};
 
 	enum MaterialSamplerBinding : uint8_t

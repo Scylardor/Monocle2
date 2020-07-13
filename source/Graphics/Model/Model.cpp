@@ -179,6 +179,7 @@ namespace moe
 					auto texIt = textureCache.Find(texFileDesc.m_filename);
 					if (texIt == textureCache.End())
 					{
+						texFileDesc.m_targetFormat = TextureFormat::SRGB_RGBA8; // for HDR
 						textureHandles[iTexType] = renderWorld.MutRenderer().MutGraphicsDevice().CreateTexture2D(texFileDesc);
 						textureCache.Insert({ texFileDesc.m_filename , textureHandles[iTexType] });
 					}

@@ -416,6 +416,8 @@ namespace moe
 		}
 
 		MOE_ERROR(moe::ChanGraphics, errorMessage.c_str(), id, message);
+		if (severity == GL_DEBUG_SEVERITY_HIGH)
+			MOE_DEBUG_ASSERT(false);
 	}
 }
 

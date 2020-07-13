@@ -126,7 +126,9 @@ namespace moe
 		[[nodiscard]]	virtual SwapchainHandle	CreateSwapChain(uint32_t renderWidth, uint32_t renderHeight, FramebufferAttachment wantedAttachments) = 0;
 
 		[[nodiscard]]	virtual FramebufferHandle	CreateFramebuffer(const FramebufferDescriptor& fbDesc) = 0;
+						virtual void				BlitFramebuffer(FramebufferHandle srcFramebuffer, FramebufferHandle destFramebuffer, TargetBuffer target, const Rect2Di& srcArea, const Rect2Di& destArea, SamplerFilter stretchFilter) = 0;
 		[[nodiscard]]	virtual AFramebuffer*		MutFramebuffer(FramebufferHandle fbHandle) = 0;
+
 
 		[[nodiscard]]	virtual SamplerHandle	CreateSampler(const SamplerDescriptor& samplerDesc) = 0;
 

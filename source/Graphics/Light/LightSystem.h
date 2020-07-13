@@ -18,7 +18,7 @@ namespace moe
 {
 	enum
 	{
-		MAX_LIGHTS = 16
+		MAX_LIGHTS = 32
 	};
 
 	 struct LightData

@@ -42,6 +42,7 @@ public:
 	void	TestHDR();
 	void	TestBloom();
 	void	TestDeferredRendering();
+	void	TestSSAO();
 
 	// Others
 	void	CameraMoveForward();

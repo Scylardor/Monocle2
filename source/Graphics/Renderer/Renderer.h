@@ -72,6 +72,9 @@ namespace moe
 		virtual bool								RemoveShaderProgram(ShaderProgramHandle programHandle) = 0;
 
 
+		virtual void	UseShaderProgram(ShaderProgramHandle shaderProgram) = 0;
+
+
 		[[nodiscard]] virtual VertexLayoutHandle	CreateVertexLayout(const VertexLayoutDescriptor& vertexLayoutDesc) = 0;
 		[[nodiscard]] virtual VertexLayoutHandle	CreateInstancedVertexLayout(const InstancedVertexLayoutDescriptor& vertexLayoutDesc) = 0; // TODO: remove
 

@@ -214,6 +214,8 @@ namespace moe
 
 
 		Monocle_Graphics_API	[[nodiscard]]	FramebufferHandle	CreateFramebuffer(const FramebufferDescriptor& fbDesc) override;
+		Monocle_Graphics_API	void								BlitFramebuffer(FramebufferHandle srcFramebuffer, FramebufferHandle destFramebuffer, TargetBuffer target, const Rect2Di& srcArea, const Rect2Di& destArea, SamplerFilter stretchFilter) override;
+
 		[[nodiscard]]							AFramebuffer*		MutFramebuffer(FramebufferHandle fbHandle) override
 		{
 			return &m_framebuffers[fbHandle.Get()-1];

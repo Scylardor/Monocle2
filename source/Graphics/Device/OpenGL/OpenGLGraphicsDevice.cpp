@@ -661,7 +661,11 @@ namespace moe
 			glTextureStorage2D(textureID, tex2DDesc.m_wantedMipmapLevels, GLtextureFormat, tex2DDesc.m_width, tex2DDesc.m_height);
 			if (tex2DDesc.m_imageData != nullptr)
 			{
-				glTextureSubImage2D(textureID, 0, 0, 0, tex2DDesc.m_width, tex2DDesc.m_height, GL_RGBA, GL_UNSIGNED_BYTE, tex2DDesc.m_imageData);
+				// Analyse the source format enum to know what would be the appropriate input type and format to use.
+				auto inputBaseFormat = TranslateToOpenGLBaseFormat(tex2DDesc.m_sourceFormat);
+				auto inputFormatTypeEnum = TranslateToOpenGLTypeEnum(tex2DDesc.m_sourceFormat);
+
+				glTextureSubImage2D(textureID, 0, 0, 0, tex2DDesc.m_width, tex2DDesc.m_height, inputBaseFormat, inputFormatTypeEnum, tex2DDesc.m_imageData);
 			}
 
 			if (tex2DDesc.m_wantedMipmapLevels != 0)
@@ -1120,6 +1124,40 @@ namespace moe
 	{
 		m_framebuffers.EmplaceBack(fbDesc);
 		return FramebufferHandle{ (FramebufferHandle::Underlying) m_framebuffers.Back().GetID() };
+	}
+
+
+	void OpenGLGraphicsDevice::BlitFramebuffer(FramebufferHandle srcFramebuffer, FramebufferHandle destFramebuffer, TargetBuffer target, const Rect2Di& srcArea, const Rect2Di& destArea, SamplerFilter stretchFilter)
+	{
+		auto srcFbID = srcFramebuffer.Get();
+		auto destFbID = destFramebuffer.Get();
+
+		uint8_t targetVal = (uint8_t)target;
+		GLbitfield mask = 0;
+		if (targetVal & (uint8_t)TargetBuffer::Color)
+			mask |= GL_COLOR_BUFFER_BIT;
+		if (targetVal & (uint8_t)TargetBuffer::Depth)
+			mask |= GL_DEPTH_BUFFER_BIT;
+		if (targetVal & (uint8_t)TargetBuffer::Stencil)
+			mask |= GL_STENCIL_BUFFER_BIT;
+
+		GLenum filter{0};
+		switch (stretchFilter)
+		{
+			case SamplerFilter::Linear:
+				filter = GL_LINEAR;
+				break;
+			case SamplerFilter::Nearest:
+				filter = GL_NEAREST;
+				break;
+			default:
+				MOE_ERROR(moe::ChanGraphics, "Trying to blit framebuffer with invalid stretch filter operation.");
+				MOE_DEBUG_ASSERT(false);
+		}
+
+		// Note that this may or may not work as the internal formats of both FBOs have to match.
+		// The internal format of an FBO is implementation defined.
+		glBlitNamedFramebuffer(srcFbID, destFbID, srcArea.x, srcArea.y, srcArea.width, srcArea.height, destArea.x, destArea.y, destArea.width, destArea.height, mask, filter);
 	}
 
 

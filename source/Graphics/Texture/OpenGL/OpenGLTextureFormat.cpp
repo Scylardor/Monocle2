@@ -9,6 +9,8 @@ namespace moe
 		switch (format)
 		{
 		case TextureFormat::Any:
+		case TextureFormat::R8:
+			return GL_R8;
 		case TextureFormat::RGBA8:
 			return GL_RGBA8;
 		case TextureFormat::SRGB_RGBA8:
@@ -78,6 +80,28 @@ namespace moe
 			MOE_ERROR(ChanGraphics, "Could not translate unmanaged texture format value.");
 			return 0;
 		}
+	}
+
+
+	GLenum TranslateToOpenGLTypeEnum(TextureFormat format)
+	{
+		switch (format)
+		{
+			case TextureFormat::RGBA8:
+			case TextureFormat::SRGB_RGBA8:
+			case TextureFormat::RGB8:
+			case TextureFormat::SRGB_RGB8:
+				return GL_UNSIGNED_BYTE;
+			case TextureFormat::RGBA16F:
+			case TextureFormat::RGBA32F:
+			case TextureFormat::RGB32F:
+				return GL_FLOAT;
+			default:
+				MOE_ERROR(ChanGraphics, "Unmanaged value given to TranslateToOpenGLTypeEnum.");
+				MOE_DEBUG_ASSERT(false);
+		}
+
+		return 0;
 	}
 
 

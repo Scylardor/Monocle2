@@ -37,6 +37,11 @@ namespace moe
 	 */
 	GLenum	TranslateToOpenGLBaseFormat(int channelsNbr);
 
+
+	GLenum	TranslateToOpenGLTypeEnum(TextureFormat format);
+
+
+
 	// TODO: these should probably be elsewhere
 	TextureHandle	EncodeRenderbufferHandle(GLuint renderBufferID);
 	TextureHandle	DecodeRenderbufferHandle(TextureHandle renderbufferHandle);

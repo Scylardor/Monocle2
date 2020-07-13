@@ -5,7 +5,6 @@
 #include "Core/Containers/Vector/Vector.h"
 #include "Graphics/Texture/Texture2DHandle.h"
 
-#include "Graphics/Framebuffer/FramebufferHandle.h"
 
 namespace moe
 {
@@ -17,8 +16,11 @@ namespace moe
 	enum class TargetBuffer : uint8_t
 	{
 		None = 0,
-		Default, // Uses only first color attachment.
-		AllColorAttachments // Uses all specified color attachments.
+		Default = 1, // Uses only first color attachment.
+		AllColorAttachments = 2, // Uses all specified color attachments.
+		Color = 4,
+		Depth = 8,
+		Stencil = 16
 		// Could add more...
 	};
 
