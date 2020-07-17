@@ -44,6 +44,11 @@ public:
 	void	TestDeferredRendering();
 	void	TestSSAO();
 
+
+	// Test PBR
+	void	TestPBRLighting();
+
+
 	// Others
 	void	CameraMoveForward();
 	void	CameraMoveBackwards();
@@ -100,6 +105,7 @@ private:
 		uint32_t	m_enabled{ true };	// Use int instead of bool for std 140
 		float		m_exposure{ 1.f };
 		uint32_t	m_useReinhardToneMapping{ 0 };
+		float padding;
 	};
 
 
@@ -121,6 +127,8 @@ private:
 	Array<VertexPositionNormalTexture, 24>	CreateIndexedCubePositionNormalTexture(float halfExtent, bool invertNormals = false);
 
 	Array<VertexPositionNormalTexture, 36>	CreateCubePositionNormalTexture_ReversedNormals(float halfExtent);
+
+	std::pair<Vector<TestApplication::VertexPositionNormalTexture>, Vector<uint32_t>>	CreateSphereGeometry(unsigned int latitudeSegments, unsigned int longitudeSegments);
 
 
 	using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;

@@ -66,6 +66,9 @@ namespace moe
 		template<typename VertexType, size_t N>
 		Mesh* CreateStaticMesh(VertexType(&vertexData)[N]);
 
+		template <typename VertexType, typename IndexType = uint32_t>
+		Mesh* CreateStaticMesh(const Vector<VertexType>& vertexData, const Vector<IndexType> & indexData);
+
 		template <typename VertexType, size_t N, size_t IndN = 0>
 		InstancedMesh*	CreateInstancedMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData = {});
 
@@ -149,6 +152,14 @@ namespace moe
 
 	};
 
+	template <typename VertexType, typename IndexType>
+	Mesh* RenderWorld::CreateStaticMesh(const Vector<VertexType>& vertexData, const Vector<IndexType> & indexData)
+	{
+		return CreateStaticMeshFromBuffer(
+			MeshDataDescriptor{ vertexData.Data(), vertexData.Size() * sizeof(VertexType), vertexData.Size() },
+			MeshDataDescriptor{ indexData.Data(), indexData.Size() * sizeof(IndexType), indexData.Size() }
+		);
+	}
 
 	template <typename VertexType, size_t N, size_t IndN>
 	Mesh* RenderWorld::CreateStaticMesh(const Array<VertexType, N>& vertexData, const Array<uint32_t, IndN>& indexData)

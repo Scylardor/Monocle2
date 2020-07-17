@@ -18,7 +18,8 @@ namespace moe
 		FRAME_OMNI_SHADOW_MAPPING,
 		FRAME_TONE_MAPPING,
 		FRAME_GAUSSIAN_BLUR,
-		FRAME_SSAO_PARAMS
+		FRAME_SSAO_PARAMS,
+		MATERIAL_PBR
 	};
 
 	enum  MaterialTextureBinding : uint8_t
