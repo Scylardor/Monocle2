@@ -47,6 +47,7 @@ public:
 
 	// Test PBR
 	void	TestPBRLighting();
+	void	TestPBRTextured();
 
 
 	// Others

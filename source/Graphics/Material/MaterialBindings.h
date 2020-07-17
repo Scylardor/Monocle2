@@ -33,7 +33,8 @@ namespace moe
 		SHADOW,
 		HEIGHT,
 		BLOOM,
-		AMBIENT_OCCLUSION
+		AMBIENT_OCCLUSION,
+		METALLIC
 	};
 
 	enum MaterialSamplerBinding : uint8_t

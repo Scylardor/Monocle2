@@ -126,6 +126,10 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/bloom_light_box.frag
 ./Resources/shaders/OpenGL/cubemaps.frag
 ./Resources/shaders/OpenGL/cubemaps.vert
+./Resources/shaders/OpenGL/deferred_gbuffer.frag
+./Resources/shaders/OpenGL/deferred_gbuffer.vert
+./Resources/shaders/OpenGL/deferred_lighting_pass.frag
+./Resources/shaders/OpenGL/deferred_lighting_pass.vert
 ./Resources/shaders/OpenGL/depth_map.frag
 ./Resources/shaders/OpenGL/depth_map.vert
 ./Resources/shaders/OpenGL/depth_map_omnidirectional.frag
@@ -155,6 +159,10 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/light.vert
 ./Resources/shaders/OpenGL/omnidirectional_shadow_mapping.frag
 ./Resources/shaders/OpenGL/omnidirectional_shadow_mapping.vert
+./Resources/shaders/OpenGL/pbr_constant.frag
+./Resources/shaders/OpenGL/pbr_constant.vert
+./Resources/shaders/OpenGL/pbr_textured.frag
+./Resources/shaders/OpenGL/pbr_textured.vert
 ./Resources/shaders/OpenGL/phong.frag
 ./Resources/shaders/OpenGL/phong.vert
 ./Resources/shaders/OpenGL/phong_maps.frag
@@ -163,6 +171,14 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/shadow_mapping.vert
 ./Resources/shaders/OpenGL/skybox.frag
 ./Resources/shaders/OpenGL/skybox.vert
+./Resources/shaders/OpenGL/ssao.frag
+./Resources/shaders/OpenGL/ssao.vert
+./Resources/shaders/OpenGL/ssao_blur.frag
+./Resources/shaders/OpenGL/ssao_blur.vert
+./Resources/shaders/OpenGL/ssao_geometry.frag
+./Resources/shaders/OpenGL/ssao_geometry.vert
+./Resources/shaders/OpenGL/ssao_lighting_pass.frag
+./Resources/shaders/OpenGL/ssao_lighting_pass.vert
 ./Resources/shaders/OpenGL/stencil_testing.frag
 ./Resources/shaders/OpenGL/stencil_testing.vert
 ./Resources/shaders/OpenGL/visualize_normals.frag

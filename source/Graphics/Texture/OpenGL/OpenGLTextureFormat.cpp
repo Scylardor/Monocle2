@@ -9,10 +9,10 @@ namespace moe
 		switch (format)
 		{
 		case TextureFormat::Any:
-		case TextureFormat::R8:
-			return GL_R8;
 		case TextureFormat::RGBA8:
 			return GL_RGBA8;
+		case TextureFormat::R8:
+			return GL_R8;
 		case TextureFormat::SRGB_RGBA8:
 			return GL_SRGB8_ALPHA8;
 		case TextureFormat::RGB8:

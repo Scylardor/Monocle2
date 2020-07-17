@@ -681,6 +681,7 @@ namespace moe
 	Texture2DHandle OpenGLGraphicsDevice::CreateTexture2D(const Texture2DFileDescriptor& tex2DFileDesc)
 	{
 		// First ensure the target texture format is valid - don't bother going further if not
+		// TODO: I think we can do that later. What we could do is if target format is Any, just figure out a correct default target format from the read inputBaseFormat just below.
 		const GLuint textureFormat = TranslateToOpenGLSizedFormat(tex2DFileDesc.m_targetFormat);
 		if (textureFormat == 0)
 		{
