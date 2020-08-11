@@ -15,6 +15,7 @@ namespace moe
 	{
 		Any,				//	Any will do, handy when you don't care basically
 		R8,					//	1 channel using a 8-bit unsigned integer. Each component is clamped to the range [0,1].
+		RG16F,				//	2 channels using each 16-bit floats. Each component is clamped to the range [0,1].
 		RGBA8,				//	4 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1].
 		SRGB_RGBA8,			//	4 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1]. SRGB version (to be used for gamma-corrected images)
 		RGBA16F,			//	4 channels using each 16-bit floats. Each component is clamped to the range [0,1].
@@ -23,6 +24,8 @@ namespace moe
 		SRGB_RGB8,			//	3 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1]. SRGB version (to be used for gamma-corrected images)
 		R32F,				//	1 channel using a 8-bit unsigned integer. Each component is clamped to the range [0,1].
 		RGB32F,				//	3 channels using each 32-bit floats. Each component is clamped to the range [0,1].
+		RGB16F,				//	3 channels using each 16-bit floats. Each component is clamped to the range [0,1].
+		RGBE,				//	Radiance HDR format. It stores pixels as one byte each for RGB (red, green, and blue) values with a one byte shared exponent. Thus it stores four bytes per pixel.
 		Depth16,			//	Can store any 16-bit normalized integer value of depth information. It maps the integer range onto the depth values [0,1].
 		Depth24,			//	Can store any 24-bit normalized integer value of depth information. It maps the integer range onto the depth values [0,1].
 		Depth32,			//	Can store any 32-bit normalized integer value of depth information. It maps the integer range onto the depth values [0,1].

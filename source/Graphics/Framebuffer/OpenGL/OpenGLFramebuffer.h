@@ -50,6 +50,11 @@ namespace moe
 
 		void	Unbind() override;
 
+		void	BindColorAttachment(int colorAttachmentIdx, TextureHandle colorAttachment, int mipLevel = 0, bool layered = false, int layerIdx = 0) override;
+
+		void	BindDepthAttachment(TextureHandle depthAttachment, int mipLevel = 0, bool layered = false, int layerIdx = 0) override;
+
+
 		bool	IsComplete() const override;
 
 		unsigned int	GetID() const { return m_frameBufferID; }
@@ -65,7 +70,7 @@ namespace moe
 
 		void	SetupDrawBuffers();
 
-		void	BindAttachment(unsigned int attachmentID, TextureHandle attachmentHandle);
+		void	BindAttachment(unsigned int attachmentID, TextureHandle attachmentHandle, int mipLevel = 0, bool layered = false, int layerIdx = 0);
 
 		static	unsigned int	TranslateToOpenGLTargetBufferEnum(TargetBuffer tgtBuf);
 

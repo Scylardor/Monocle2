@@ -48,6 +48,8 @@ layout (std140, binding = 13) uniform PBRMaterial
 }	PBR;
 
 
+layout(binding = 0) uniform samplerCube irradianceMap;
+
 
 in vec3	VertexNormal;
 
@@ -57,6 +59,8 @@ in vec3	vs_fragPosWorld;
 
 
 layout (location = 0) out vec4 FragColor;
+
+
 
 
 // So far, this shader only supports point lights...
@@ -179,6 +183,16 @@ vec3 FresnelSchlick_FE(float cosTheta, vec3 F0)
 }
 
 
+// Fresnel equation using Fresnel-Schlick approximation.
+// Updated version using a roughness parameter, cf. Sébastien Lagarde https://seblagarde.wordpress.com/2011/08/17/hello-world/
+vec3 FresnelSchlickRough_FE(float cosTheta, vec3 F0, float roughness)
+{
+	// In case someday black pixels appear : try cosTheta = min(cosTheta, 1.0)
+	// cf. https://learnopengl.com/PBR/Lighting#comment-4581163621
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+
 void main()
 {
 	vec3 FragNormalWorld = normalize(VertexNormal);
@@ -227,8 +241,18 @@ void main()
 		Lo += (kD * PBR.albedo / M_PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
-	// ambient lighting (note that IBL will replace this ambient lighting with environment lighting).
-	vec3 ambient = vec3(0.03) * PBR.albedo * PBR.ao;
+
+	// ambient lighting (we now use IBL as the ambient term)
+	// we take account of the surface's roughness when calculating the ambient Fresnel response
+	// because otherwise, the indirect Fresnel reflection strength looks off on rough non-metal surfaces.
+	// (Indirect light follows the same properties of direct light so we expect rougher surfaces to reflect less strongly on the surface edges.)
+	vec3 kS = FresnelSchlickRough_FE(max(dot(FragNormalWorld, ViewDirWorld), 0.0), F0, PBR.roughness);
+	vec3 kD = 1.0 - kS;
+	kD *= 1.0 - PBR.metallic;
+	vec3 irradiance = texture(irradianceMap, FragNormalWorld).rgb;
+	vec3 diffuse      = irradiance * PBR.albedo;
+	vec3 ambient = (kD * diffuse) * PBR.ao;
+	//vec3 ambient = vec3(0.03) * PBR.albedo * PBR.ao;
 
 	vec3 color = ambient + Lo;
 

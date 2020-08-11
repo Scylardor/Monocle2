@@ -691,8 +691,13 @@ namespace moe
 		// Now read the file, taking into account required number of components.
 		const std::uint32_t requiredCompNum = GetTextureFormatChannelsNumber(tex2DFileDesc.m_requiredFormat);
 
+		// TODO : Maybe refactor that in another way ?
+		const bool isRadianceHDRFormat = (tex2DFileDesc.m_targetFormat == TextureFormat::RGBE);
+
 		int width, height, nrChannels;
-		unsigned char * const imageData = stbi_load(tex2DFileDesc.m_filename.c_str(), &width, &height, &nrChannels, requiredCompNum);
+		void * const imageData = (isRadianceHDRFormat ?
+				(void*)stbi_loadf(tex2DFileDesc.m_filename.c_str(), &width, &height, &nrChannels, requiredCompNum)
+			:	(void*)stbi_load(tex2DFileDesc.m_filename.c_str(), &width, &height, &nrChannels, requiredCompNum));
 
 		if (imageData == nullptr)
 		{
@@ -706,11 +711,14 @@ namespace moe
 		// Determine what could be a good base format
 		const GLuint inputBaseFormat = TranslateToOpenGLBaseFormat(nrChannels);
 
+
+		const GLenum targetType = (isRadianceHDRFormat ? GL_FLOAT : GL_UNSIGNED_BYTE);
+
 		GLuint textureID;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
 		glTextureStorage2D(textureID, tex2DFileDesc.m_wantedMipmapLevels, textureFormat, width, height);
-		glTextureSubImage2D(textureID, 0, 0, 0, width, height, inputBaseFormat, GL_UNSIGNED_BYTE, imageData);
+		glTextureSubImage2D(textureID, 0, 0, 0, width, height, inputBaseFormat, targetType, imageData);
 
 
 		if (tex2DFileDesc.m_wantedMipmapLevels != 0)
@@ -892,6 +900,13 @@ namespace moe
 		glTextureParameteri(cubemapID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 		return TextureHandle{ cubemapID };
+	}
+
+
+	void OpenGLGraphicsDevice::GenerateTextureMipmaps(TextureHandle texHandle)
+	{
+		MOE_DEBUG_ASSERT(!IsARenderBufferHandle(texHandle));
+		glGenerateTextureMipmap(texHandle.Get());
 	}
 
 

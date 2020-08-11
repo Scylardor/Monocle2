@@ -115,6 +115,8 @@ namespace moe
 
 		[[nodiscard]] virtual TextureHandle	CreateCubemapTexture(const CubeMapTextureDescriptor& cubemapDesc) = 0;
 
+		virtual void	GenerateTextureMipmaps(TextureHandle texHandle) = 0;
+
 		virtual void	DestroyTexture2D(Texture2DHandle textureHandle) = 0;
 
 		virtual void	BindTextureUnit(int textureBindingPoint, TextureHandle texHandle)  = 0;

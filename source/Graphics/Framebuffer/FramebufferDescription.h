@@ -24,6 +24,16 @@ namespace moe
 		// Could add more...
 	};
 
+	/* Used to specify if you want completeness check on framebuffer creation.
+	 * You can skip it if you create the framebuffer before having all attachments.
+	 * But then you're on your own to provide a complete framebuffer (no safety net).
+	 */
+	enum class CompleteCheck
+	{
+		Enabled,
+		Disabled
+	};
+
 	/**
 	 * \brief A graphics APi-agnostic descriptor of what textures, or render targets, should be used to populate a framebuffer.
 	 */
@@ -40,6 +50,8 @@ namespace moe
 
 		// The destination color buffer to use for all write operations when this framebuffer is bound.
 		TargetBuffer			m_drawBuffer{ TargetBuffer::Default };
+
+		CompleteCheck			m_doCompletenessCheck{CompleteCheck::Enabled};
 
 	};
 

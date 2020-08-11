@@ -3,8 +3,9 @@
 #pragma once
 
 #include "Core/Containers/Vector/Vector.h"
-#include "Graphics/RenderTarget/RenderTargetHandle.h"
 
+#include "Graphics/RenderTarget/RenderTargetHandle.h"
+#include "Graphics/Texture/TextureHandle.h"
 
 namespace moe
 {
@@ -42,6 +43,10 @@ namespace moe
 
 		virtual void	Bind() = 0;
 		virtual void	Unbind() = 0;
+
+		virtual void	BindColorAttachment(int colorAttachmentIdx, TextureHandle colorAttachment, int mipLevel = 0, bool layered = false, int layerIdx = 0) = 0;
+
+		virtual void	BindDepthAttachment(TextureHandle depthAttachment, int mipLevel = 0, bool layered = false, int layerIdx = 0) = 0;
 
 		virtual bool	IsComplete() const = 0;
 

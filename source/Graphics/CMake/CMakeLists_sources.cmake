@@ -124,6 +124,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/bloom_final.frag
 ./Resources/shaders/OpenGL/bloom_final.vert
 ./Resources/shaders/OpenGL/bloom_light_box.frag
+./Resources/shaders/OpenGL/brdf_lut.frag
+./Resources/shaders/OpenGL/brdf_lut.vert
 ./Resources/shaders/OpenGL/cubemaps.frag
 ./Resources/shaders/OpenGL/cubemaps.vert
 ./Resources/shaders/OpenGL/deferred_gbuffer.frag
@@ -161,8 +163,16 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/omnidirectional_shadow_mapping.vert
 ./Resources/shaders/OpenGL/pbr_constant.frag
 ./Resources/shaders/OpenGL/pbr_constant.vert
+./Resources/shaders/OpenGL/pbr_constant_IBL.frag
+./Resources/shaders/OpenGL/pbr_cubemap.vert
+./Resources/shaders/OpenGL/pbr_equirectangular_to_cubemap.frag
+./Resources/shaders/OpenGL/pbr_hdr_background.frag
+./Resources/shaders/OpenGL/pbr_hdr_background.vert
+./Resources/shaders/OpenGL/pbr_irradiance_convolution.frag
+./Resources/shaders/OpenGL/pbr_prefilter_environment.frag
 ./Resources/shaders/OpenGL/pbr_textured.frag
 ./Resources/shaders/OpenGL/pbr_textured.vert
+./Resources/shaders/OpenGL/pbr_textured_IBL.frag
 ./Resources/shaders/OpenGL/phong.frag
 ./Resources/shaders/OpenGL/phong.vert
 ./Resources/shaders/OpenGL/phong_maps.frag

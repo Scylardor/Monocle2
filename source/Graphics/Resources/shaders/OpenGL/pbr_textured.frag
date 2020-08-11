@@ -166,7 +166,7 @@ float TRGGX_NDF(vec3 Normal, vec3 Halfway, float roughness)
 	float denom = (NdotH2 * (a2 - 1.0) + 1.0);
 	denom = M_PI * denom * denom;
 
-	return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
+	return nom / denom; // max(denom, 0.001) prevents divide by zero for roughness=0.0 and NdotH=1.0
 }
 
 
@@ -199,8 +199,11 @@ float SmithSchlickGGX_GF(vec3 N, vec3 V, vec3 L, float roughness)
 // Fresnel equation using Fresnel-Schlick approximation.
 vec3 FresnelSchlick_FE(float cosTheta, vec3 F0)
 {
+	// In case someday black pixels appear : try cosTheta = min(cosTheta, 1.0)
+	// cf. https://learnopengl.com/PBR/Lighting#comment-4581163621
 	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+
 
 struct PBRMaterial
 {

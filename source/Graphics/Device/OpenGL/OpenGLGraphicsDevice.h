@@ -156,8 +156,6 @@ namespace moe
 		}
 
 
-
-
 		/**
 		 * \brief Creates a texture from a pre-read texture data buffer and known dimensions, etc.
 		 * \param tex2DDesc The description of the wanted texture 2D texture data
@@ -177,6 +175,9 @@ namespace moe
 		[[nodiscard]] TextureHandle	CreateCubemapTexture(const CubeMapTextureFilesDescriptor& cubemapFilesDesc) override;
 
 		[[nodiscard]] TextureHandle	CreateCubemapTexture(const CubeMapTextureDescriptor& cubemapDesc) override;
+
+
+		void	GenerateTextureMipmaps(TextureHandle texHandle) override;
 
 		/**
 		 * \brief Destroys a 2D Texture created previously.

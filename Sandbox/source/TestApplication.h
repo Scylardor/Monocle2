@@ -49,6 +49,7 @@ public:
 	void	TestPBRLighting();
 	void	TestPBRTextured();
 
+	void	TestPBRIrradianceConversion();
 
 	// Others
 	void	CameraMoveForward();

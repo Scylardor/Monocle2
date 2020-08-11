@@ -39,15 +39,24 @@ layout (std140, binding = 10) uniform ToneMappingParameters
 } ToneMapping;
 
 
-layout (std140, binding = 13) uniform PBRMaterial
-{
-	vec3	albedo;
-	float	metallic;
-	float	roughness;
-	float	ao;
-}	PBR;
 
 
+layout(binding = 0) uniform samplerCube irradianceMap;
+
+layout(binding = 2) uniform sampler2D brdfLUT;
+
+layout(binding = 5) uniform samplerCube prefilterMap;
+
+
+layout(binding = 3) uniform sampler2D albedoMap;
+
+layout(binding = 1) uniform sampler2D normalMap;
+
+layout(binding = 10) uniform sampler2D metallicMap;
+
+layout(binding = 11) uniform sampler2D roughnessMap;
+
+layout(binding = 9) uniform sampler2D aoMap;
 
 in vec3	VertexNormal;
 
@@ -57,6 +66,8 @@ in vec3	vs_fragPosWorld;
 
 
 layout (location = 0) out vec4 FragColor;
+
+
 
 
 // So far, this shader only supports point lights...
@@ -179,14 +190,31 @@ vec3 FresnelSchlick_FE(float cosTheta, vec3 F0)
 }
 
 
+// Fresnel equation using Fresnel-Schlick approximation.
+// Updated version using a roughness parameter, cf. Sébastien Lagarde https://seblagarde.wordpress.com/2011/08/17/hello-world/
+vec3 FresnelSchlickRough_FE(float cosTheta, vec3 F0, float roughness)
+{
+	// In case someday black pixels appear : try cosTheta = min(cosTheta, 1.0)
+	// cf. https://learnopengl.com/PBR/Lighting#comment-4581163621
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+
 void main()
 {
 	vec3 FragNormalWorld = normalize(VertexNormal);
 	vec3 ViewDirWorld = normalize(Camera.cameraPos.xyz - vs_fragPosWorld);
 
+	// material properties
+	// TODO: import albedo textures in SRGB so we can skip the gamma correction here!
+	vec3 albedo = texture(albedoMap, vs_texCoords).rgb;
+	float metallic = texture(metallicMap, vs_texCoords).r;
+	float roughness = texture(roughnessMap, vs_texCoords).r;
+	float ao = texture(aoMap, vs_texCoords).r;
+
 	// calculate reflectance at normal incidence for Fresnel Schlick function;
 	// Use F0 = 0.04 if dia-electric (like plastic) or use the albedo color as F0 if it's a metal / conductor (metallic workflow)
-	vec3 F0 = mix(vec3(0.04), PBR.albedo, PBR.metallic);
+	vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
 	// lighting using reflectance equation
 	vec3 Lo = vec3(0.0);
@@ -201,8 +229,8 @@ void main()
 		vec3 radiance = Lights.lightsData[iLight].lightDiffuse.xyz * attenuation;
 
 		// Cook-Torrance BRDF
-		float NDF = TRGGX_NDF(FragNormalWorld, H, PBR.roughness);
-		float G   = SmithSchlickGGX_GF(FragNormalWorld, ViewDirWorld, L, PBR.roughness);
+		float NDF = TRGGX_NDF(FragNormalWorld, H, roughness);
+		float G   = SmithSchlickGGX_GF(FragNormalWorld, ViewDirWorld, L, roughness);
 		vec3 F    = FresnelSchlick_FE(clamp(dot(H, ViewDirWorld), 0.0, 1.0), F0);
 
 		vec3 nominator    = NDF * G * F;
@@ -218,20 +246,38 @@ void main()
 		// multiply kD by the inverse metalness such that only non-metals
 		// have diffuse lighting, or a linear blend if partly metal (pure metals
 		// have no diffuse light).
-		kD *= 1.0 - PBR.metallic;
+		kD *= 1.0 - metallic;
 
 		// scale light by NdotL
 		float NdotL = max(dot(FragNormalWorld, L), 0.0);
 
 		// add to outgoing radiance Lo
-		Lo += (kD * PBR.albedo / M_PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+		Lo += (kD * albedo / M_PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
 	}
 
-	// ambient lighting (note that IBL will replace this ambient lighting with environment lighting).
-	vec3 ambient = vec3(0.03) * PBR.albedo * PBR.ao;
+
+	// ambient lighting (we now use IBL as the ambient term)
+	// we take account of the surface's roughness when calculating the ambient Fresnel response
+	// because otherwise, the indirect Fresnel reflection strength looks off on rough non-metal surfaces.
+	// (Indirect light follows the same properties of direct light so we expect rougher surfaces to reflect less strongly on the surface edges.)
+	vec3 F = FresnelSchlickRough_FE(max(dot(FragNormalWorld, ViewDirWorld), 0.0), F0, roughness);
+	vec3 kS = F;
+	vec3 kD = 1.0 - kS;
+	kD *= 1.0 - metallic;
+	vec3 irradiance = texture(irradianceMap, FragNormalWorld).rgb;
+	vec3 diffuse      = irradiance * albedo;
+
+	// sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+	const float MAX_REFLECTION_LOD = 4.0;
+	const vec3 reflectedViewDir = reflect(-ViewDirWorld, FragNormalWorld);
+
+	vec3 prefilteredColor = textureLod(prefilterMap, reflectedViewDir, roughness * MAX_REFLECTION_LOD).rgb;
+	vec2 brdf  = texture(brdfLUT, vec2(max(dot(FragNormalWorld, ViewDirWorld), 0.0), roughness)).rg;
+	vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+	vec3 ambient = (kD * diffuse + specular) * ao;
 
 	vec3 color = ambient + Lo;
-
 
 	// HDR tonemapping
 	if (ToneMapping.enabled)

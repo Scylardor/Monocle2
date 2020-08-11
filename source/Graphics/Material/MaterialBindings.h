@@ -34,7 +34,8 @@ namespace moe
 		HEIGHT,
 		BLOOM,
 		AMBIENT_OCCLUSION,
-		METALLIC
+		METALLIC,
+		ROUGHNESS
 	};
 
 	enum MaterialSamplerBinding : uint8_t

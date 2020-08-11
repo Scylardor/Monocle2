@@ -210,7 +210,7 @@ struct ProjectionPlanes
 
 void TestApplication::Run()
 {
-	TestPBRTextured();
+	TestPBRIrradianceConversion();
 
 }
 

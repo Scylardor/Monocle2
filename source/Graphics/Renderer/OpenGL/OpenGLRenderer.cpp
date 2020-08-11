@@ -38,6 +38,13 @@ namespace moe
 
 		glEnable(GL_MULTISAMPLE);
 
+		// Needed for PBR :
+		// When sampling a prefiltered map on rough surfaces, we will probably sample across mipmaps.
+		// When sampling cubemaps, OpenGL by default doesn't linearly interpolate across cubemap faces.
+		// Because the lower mip levels are both of a lower resolution and the prefilter map is convoluted with a much larger sample lobe,
+		// the lack of between-cube-face filtering becomes quite apparent. So we need to enable the option to properly filter across cubemap faces.
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
 		return true;
 	}
 

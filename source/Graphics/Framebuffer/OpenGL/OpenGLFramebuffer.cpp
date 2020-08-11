@@ -31,21 +31,17 @@ namespace moe
 			SetupReadBuffer();
 
 			SetupDrawBuffers();
-
-			// Setting up read/draw buffers if any
-
-
-
 		}
 
-		MOE_DEBUG_ASSERT(IsComplete());
+		if (fbDesc.m_doCompletenessCheck == CompleteCheck::Enabled)
+			MOE_DEBUG_ASSERT(IsComplete());
 	}
 
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
 		auto colorTex = m_colorAttachment.Get();
-		glDeleteTextures(1, &colorTex);
+		glDeleteTextures(1, &colorTex); // TODO: this could be a render buffer instead ? Should fix this texture/renderbuffer interface!
 
 		auto rbo = m_depthStencilAttachment.Get();
 		glDeleteRenderbuffers(1, &rbo);
@@ -66,9 +62,22 @@ namespace moe
 	}
 
 
+	void OpenGLFramebuffer::BindColorAttachment(int colorAttachmentIdx, TextureHandle colorAttachment, int mipLevel, bool layered, int layerIdx)
+	{
+		BindAttachment(GL_COLOR_ATTACHMENT0 + colorAttachmentIdx, colorAttachment, mipLevel, layered, layerIdx);
+	}
+
+
+	void OpenGLFramebuffer::BindDepthAttachment(TextureHandle depthAttachment, int mipLevel, bool layered, int layerIdx)
+	{
+		BindAttachment(GL_DEPTH_ATTACHMENT, depthAttachment, mipLevel, layered, layerIdx);
+	}
+
+
 	bool OpenGLFramebuffer::IsComplete() const
 	{
-		bool isComplete = (glCheckNamedFramebufferStatus(m_frameBufferID, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+		auto status = glCheckNamedFramebufferStatus(m_frameBufferID, GL_FRAMEBUFFER);
+		bool isComplete = (status == GL_FRAMEBUFFER_COMPLETE);
 		return isComplete;
 	}
 
@@ -141,7 +150,7 @@ namespace moe
 	}
 
 
-	void OpenGLFramebuffer::BindAttachment(unsigned attachmentID, TextureHandle attachmentHandle)
+	void OpenGLFramebuffer::BindAttachment(unsigned attachmentID, TextureHandle attachmentHandle, int mipLevel, bool layered, int layerIdx)
 	{
 		// Framebuffers can reference either plain textures or renderbuffer objects in OpenGL.
 		// I decided to make this distinction "opaque" to the user by hiding it inside the Texture2DHandle.
@@ -161,8 +170,16 @@ namespace moe
 			glTextureParameteri(attachmentHandle.Get(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTextureParameteri(attachmentHandle.Get(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			glNamedFramebufferTexture(m_frameBufferID, attachmentID, attachmentHandle.Get(), 0);
+			if (layered)
+			{
+				glNamedFramebufferTextureLayer(m_frameBufferID, attachmentID, attachmentHandle.Get(), mipLevel, layerIdx);
+			}
+			else
+			{
+				glNamedFramebufferTexture(m_frameBufferID, attachmentID, attachmentHandle.Get(), mipLevel);
+			}
 		}
+
 	}
 
 
