@@ -44,9 +44,9 @@ install_manifest.txt
 *.lib
 
 # Don't ignore the libs vendored in the application !
-!vendor/*/*.lib
-!vendor/*/*.dll
-!vendor/*/*.so
+!vendor/**/*.lib
+!vendor/**/*.dll
+!vendor/**/*.so
 
 # Executables
 *.exe

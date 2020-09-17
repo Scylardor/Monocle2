@@ -11,6 +11,9 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 option(${PROJECT_NAME}_USE_ASSERTS "If ON, Monocle asserts will be defined. Otherwise, they will become no-ops." ON)
 option(${PROJECT_NAME}_USE_STL "If ON, Monocle containers will use STL containers under the hood." ON)
 option(${PROJECT_NAME}_USE_GLM "If ON, Monocle will use GLM as underlying Math library." ON)
+option(${PROJECT_NAME}_USE_STB_IMAGE_IMPORTER "If ON, Monocle will use STB as Image Importer." ON)
+option(${PROJECT_NAME}_USE_ASSIMP_IMPORTER "If ON, Monocle will use Assimp as the 3D Object Importer." ON)
+
 
 # Windowing APIs
 option(${PROJECT_NAME}_USE_GLFW "If ON, Monocle will compile with the GLFW library." ON)
@@ -91,6 +94,12 @@ if(${PROJECT_NAME}_USE_OPENGL)
 	set_source_files_properties( "${GLAD_SOURCE}" PROPERTIES LANGUAGE CXX )
 	
 	target_include_directories(GLAD PUBLIC "${GLAD_DIR}/include")
+endif()
+
+
+# Integrate STB
+if(${PROJECT_NAME}_USE_STB_IMAGE_IMPORTER)
+	set(STB_DIR "${VENDOR_DIR}/stb")
 endif()
 
 

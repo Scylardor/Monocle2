@@ -41,3 +41,7 @@ if(${PROJECT_NAME}_USE_ASSIMP)
 	monocle_include_assimp(${GRAPHICS_TARGET})
 endif()
 
+# If using STB, integrate it in the build
+if(${PROJECT_NAME}_USE_STB_IMAGE_IMPORTER)
+	target_include_directories(${GRAPHICS_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/vendor/stb")
+endif()
