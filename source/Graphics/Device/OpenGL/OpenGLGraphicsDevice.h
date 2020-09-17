@@ -265,7 +265,8 @@ namespace moe
 
 		Vector<OpenGLFramebuffer>	m_framebuffers; // TODO: this is a code smell. Should be a free list but needs to fix compile...
 
-		Freelist<OpenGLSampler>	m_samplers;
+		// Emergency change from FreeList to Vector because it didn't compile in MSVC2019.
+		Vector<OpenGLSampler>	m_samplers;
 
 		GLenum	m_primitiveTopology = GL_TRIANGLES;	// Current topology used to draw geometry. Modified by SetPipeline
 	};

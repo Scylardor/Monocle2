@@ -1215,10 +1215,10 @@ namespace moe
 		usedLodBias = std::min(usedLodBias, std::max(-usedLodBias, samplerDesc.m_lodBias));
 		glSamplerParameterf(newSamplerID, GL_TEXTURE_LOD_BIAS, usedLodBias);
 
-		auto freeListID = m_samplers.Add(newSamplerID, samplerDesc);
-		MOE_DEBUG_ASSERT(freeListID.Index() < (1 << 16)); // We cannot have more than 65k samplers at that time.
+		m_samplers.EmplaceBack(newSamplerID, samplerDesc);
+		MOE_DEBUG_ASSERT(m_samplers.Size() < (1 << 16)); // We cannot have more than 65k samplers at that time.
 
-		SamplerHandle newHandle = EncodeSamplerHandle(newSamplerID, freeListID.Index());
+		SamplerHandle newHandle = EncodeSamplerHandle(newSamplerID, (unsigned int) m_samplers.Size() - 1);
 
 		return newHandle;
 	}

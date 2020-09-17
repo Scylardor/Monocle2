@@ -31,6 +31,8 @@ namespace moe
 		{
 		public:
 
+			virtual ~IState() {}
+
 			virtual void	OnStateEnter(FSM& owner, StateID thisStateID) = 0;
 			virtual void	OnStateUpdate(FSM& owner, StateID thisStateID) = 0;
 			virtual void	OnStateExit(FSM& owner, StateID thisStateID) = 0;
@@ -40,6 +42,8 @@ namespace moe
 		class ITransition
 		{
 		public:
+
+			virtual ~ITransition() {}
 
 			virtual bool	Passes(FSM& fsm, IState& stateFrom, StateID fromID) = 0;
 		};
