@@ -47,7 +47,32 @@ function(MONOCLE_INCLUDE_GLFW3 TARGET_NAME)
 	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		${GLFW_DLL}
-		$<TARGET_FILE_DIR:${TARGET_NAME}>)
+		"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>")
+
+endfunction()
+
+function(MONOCLE_INCLUDE_ASSIMP TARGET_NAME)
+	# Point to our CMake dir with some code to find external dependencies
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMake/")
+	
+	# Hint at our supposed ASSIMP installation location
+	set(ASSIMP_ROOT ${PROJECT_SOURCE_DIR}/vendor/Assimp)
+	find_package(ASSIMP REQUIRED)
+	message(STATUS "Found ASSIMP include dir: ${ASSIMP_INCLUDE_DIR}")
+	message(STATUS "Found ASSIMP library: ${ASSIMP_LIBRARY}")
+	
+	target_include_directories(${TARGET_NAME} PRIVATE ${ASSIMP_INCLUDE_DIR})
+	target_link_libraries(${TARGET_NAME} PRIVATE ${ASSIMP_LIBRARY})
+	
+	# We expect the DLL file to be next to the import library file.
+	# Next, we copy the DLL next to the executables.
+	string(REPLACE ".lib" ".dll" ASSIMP_DLL ${ASSIMP_LIBRARY})
+
+	add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		${ASSIMP_DLL}
+		"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>")
+
 
 endfunction()
 

@@ -35,9 +35,8 @@ endif()
 # Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
 monocle_target_compile_config(${GRAPHICS_TARGET})
 
-
 # If using Assimp, integrate it in the build
-if(${PROJECT_NAME}_USE_ASSIMP)
+if(${PROJECT_NAME}_USE_ASSIMP_IMPORTER)
 	monocle_include_assimp(${GRAPHICS_TARGET})
 endif()
 
