@@ -18,5 +18,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${GAMEFRAMEWORK_TARGET}_SO
 
 # This library uses Core
 target_link_libraries(${GAMEFRAMEWORK_TARGET}
-	PUBLIC ${PROJECT_NAME}_Core
+	PUBLIC	${PROJECT_NAME}_Core
+			${PROJECT_NAME}_Graphics
 	PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.

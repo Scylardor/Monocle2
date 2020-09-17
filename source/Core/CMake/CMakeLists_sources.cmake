@@ -55,6 +55,7 @@ set(Monocle_Core_SOURCES
 ./Misc/Types.h
 ./Patterns/moeSingleton.h
 ./Preprocessor/moeAssert.h
+./Preprocessor/moeBuilder.h
 ./Preprocessor/moeDebug.h
 ./Preprocessor/moeDiscard.h
 ./Preprocessor/moeJoin.h
