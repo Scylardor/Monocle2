@@ -36,6 +36,8 @@ target_link_libraries(${SANDBOX_TARGET} PRIVATE
 	${PROJECT_NAME}_Graphics
 	${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
+set_property(TARGET ${SANDBOX_TARGET} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+
 
 # Setup boilerplate Monocle target configurations (warning level, LTCG etc.)
 monocle_target_compile_config(${SANDBOX_TARGET})
