@@ -253,6 +253,8 @@ set(Monocle_Graphics_SOURCES
 ./VertexLayout/VertexLayout.h
 ./VertexLayout/VertexLayoutDescriptor.h
 ./VertexLayout/VertexLayoutHandle.h
+./Vulkan/DebugMessenger/VulkanDebugMessenger.cpp
+./Vulkan/DebugMessenger/VulkanDebugMessenger.h
 ./Vulkan/Instance/VulkanInstance.cpp
 ./Vulkan/Instance/VulkanInstance.h
 ./Vulkan/VulkanMacros.h

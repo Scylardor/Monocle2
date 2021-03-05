@@ -14,7 +14,6 @@ namespace moe
 	class VulkanRHI
 	{
 	public:
-
 		VulkanRHI() = default;
 		~VulkanRHI();
 
@@ -22,8 +21,7 @@ namespace moe
 
 	private:
 
-		VulkanInstance	m_instance;
-
+		VulkanInstance			m_instance;
 
 
 	};

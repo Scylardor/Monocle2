@@ -11,9 +11,13 @@ namespace moe
 #endif
 
 
-	bool VulkanInstance::Initialize(VulkanInstance::CreationParams&& instanceParams)
+	bool VulkanInstance::Initialize(CreationParams&& instanceParams)
 	{
 		m_creationParams = std::move(instanceParams);
+
+		// Activating the dynamic dispatcher in order to easily use Vulkan EXTension functions.
+		// We need to initialize it a first time in order to enable validation layers. see https://github.com/KhronosGroup/Vulkan-Hpp#extensions--per-device-function-pointers
+		InitDynamicDispatcherFirstStep();
 
 		// Enable validation layers if we're in Debug mode
 		if (S_enableValidationLayers)
@@ -31,6 +35,15 @@ namespace moe
 		{
 			MOE_ERROR(moe::ChanGraphics, "An error occurred during Vulkan Instance creation.");
 		}
+
+		// Next, we need to further initialize the dynamic dispatcher in order to create the debug messenger.
+		InitDynamicDispatcherSecondStep();
+
+		if (S_enableValidationLayers)
+		{
+			SetupDebugMessenger();
+		}
+
 
 		return ok;
 	}
@@ -52,16 +65,24 @@ namespace moe
 			(uint32_t)(m_creationParams.RequiredExtensions.Count()), m_creationParams.RequiredExtensions.List() // enabled extensions
 		);
 
+		// Using a special debug messenger to catch potential errors during instance creation.
+		// keeping it out of the if so it survives until the instance creation.
+		vk::DebugUtilsMessengerCreateInfoEXT instanceCreationDebugMessengerInfo;
+
 		if constexpr (S_enableValidationLayers)
 		{
 			createInfo.enabledLayerCount = (uint32_t)(S_USED_VALIDATION_LAYERS.size());
 			createInfo.ppEnabledLayerNames = S_USED_VALIDATION_LAYERS.data();
+
+			instanceCreationDebugMessengerInfo = VulkanDebugMessenger::GenerateCreateInfo();
+			createInfo.pNext = &instanceCreationDebugMessengerInfo;
 		}
 
 		// Create the Vulkan Instance!
 		try
 		{
 			m_instance = vk::createInstanceUnique(createInfo, nullptr);
+			MOE_DEBUG_ASSERT(m_instance.get());
 		}
 		catch (const vk::SystemError & err)
 		{
@@ -71,6 +92,20 @@ namespace moe
 		}
 
 		return true;
+	}
+
+
+	void VulkanInstance::InitDynamicDispatcherFirstStep()
+	{
+		vk::DynamicLoader dl;
+		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = dl.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+	}
+
+
+	void VulkanInstance::InitDynamicDispatcherSecondStep()
+	{
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(m_instance.get());
 	}
 
 
@@ -157,9 +192,18 @@ namespace moe
 		bool allLayersSupported = CheckValidationLayersSupport();
 
 		if (allLayersSupported)
+		{
+			//  We don't really need to check for the existence of this extension, because it should be implied by the availability of the validation layers.
 			m_creationParams.RequiredExtensions.AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		}
 
 		return allLayersSupported;
+	}
+
+
+	void VulkanInstance::SetupDebugMessenger()
+	{
+		m_debugMessenger.Create(*this);
 	}
 }
 

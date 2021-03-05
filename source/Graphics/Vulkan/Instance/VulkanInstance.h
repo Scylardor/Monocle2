@@ -1,6 +1,13 @@
+
 #ifdef MOE_VULKAN
 
 #pragma once
+
+// Activating the dynamic dispatcher in order to easily use Vulkan EXTension functions.
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+
+
+#include "Graphics/Vulkan/DebugMessenger/VulkanDebugMessenger.h"
 
 #include <vulkan/vulkan.hpp>
 
@@ -66,10 +73,12 @@ namespace moe
 		const vk::Instance& Instance() const
 		{ return m_instance.get(); }
 
-	protected:
 
 	private:
 		bool	Create();
+
+		void	InitDynamicDispatcherFirstStep();
+		void	InitDynamicDispatcherSecondStep();
 
 		void	RetrieveExtensionProperties();
 		bool	CheckRequiredExtensionsAvailability(const ExtensionList& requiredExtensions);
@@ -77,11 +86,14 @@ namespace moe
 		bool	CheckValidationLayersSupport();
 		bool	EnableValidationLayersSupport();
 
-		vk::UniqueInstance	m_instance;
+		void	SetupDebugMessenger();
+
+		vk::UniqueInstance		m_instance;
+
+		VulkanDebugMessenger	m_debugMessenger;
 
 		std::vector<vk::ExtensionProperties>	m_extensionProperties;
 		std::vector<vk::LayerProperties>		m_layerProperties;
-
 
 		CreationParams		m_creationParams;
 

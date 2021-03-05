@@ -2,16 +2,25 @@
 
 #include "VulkanRHI.h"
 
+// Activating the dynamic dispatcher in order to easily use Vulkan EXTension functions.
+// TODO: It may not be enough in DLL mode. See : https://github.com/KhronosGroup/Vulkan-Hpp#extensions--per-device-function-pointers
+// "In some cases the storage for the DispatchLoaderDynamic should be embedded in a DLL.
+// For those cases you need to define VULKAN_HPP_STORAGE_SHARED to tell Vulkan - Hpp that the storage resides in a DLL.
+// When compiling the DLL with the storage it is also required to define VULKAN_HPP_STORAGE_SHARED_EXPORT to export the required symbols.
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 moe::VulkanRHI::~VulkanRHI()
 {
-	// Destroy the Vulkan Instance
 }
 
 
 bool moe::VulkanRHI::Initialize(VulkanInstance::CreationParams&& instanceParams)
 {
-	return (m_instance.Initialize(std::move(instanceParams)));
+	bool ok = m_instance.Initialize(std::move(instanceParams));
+	if (!ok)
+		return false;
+
+	return true;
 }
 
 
