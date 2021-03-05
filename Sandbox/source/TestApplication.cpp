@@ -84,7 +84,6 @@ namespace moe
 	TestApplication::TestApplication(const OpenGLGlfwAppDescriptor& appDesc) :
 		OpenGLGlfwApplication(appDesc)
 	{
-		moe::GetLogChainSingleton().LinkTo(&m_logger);
 
 	}
 

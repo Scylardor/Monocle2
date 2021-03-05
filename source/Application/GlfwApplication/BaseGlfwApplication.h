@@ -159,6 +159,12 @@ namespace moe
 		static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
 		static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+	protected:
+
+		using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
+
+		AppLogger	m_logger;
+
 
 	private:
 

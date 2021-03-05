@@ -133,9 +133,6 @@ private:
 	std::pair<Vector<TestApplication::VertexPositionNormalTexture>, Vector<uint32_t>>	CreateSphereGeometry(unsigned int latitudeSegments, unsigned int longitudeSegments);
 
 
-	using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
-
-	AppLogger	m_logger;
 
 	Camera*	m_currentCamera = nullptr;
 	float	m_deltaTime{0.f};
