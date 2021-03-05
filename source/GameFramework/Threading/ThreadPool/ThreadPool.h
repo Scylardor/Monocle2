@@ -30,6 +30,10 @@ public:
 
 	void	EnqueueTask(Task task);
 
+
+	template <typename Callable>
+	void	EnqueueCallable(Callable&& callable);
+
 	template <typename Callable, typename... Args>
 	void	EnqueueCallable(Callable&& callable, Args&&... args);
 
@@ -39,8 +43,18 @@ public:
 	template<class F>
 	auto EnqueueAsync(F&& func);
 
+
+
 	bool	HasNoTasks() const;
 	bool	HasTasks() const { return !HasNoTasks(); }
+
+	size_t	GetSize() const
+	{
+		// Returning capacity in case we call the function before starting the threads.
+		return (m_threads.empty() ? m_threads.capacity() : m_threads.size());
+	}
+
+
 
 private:
 
@@ -60,7 +74,9 @@ private:
 
 	std::condition_variable		m_condVar;
 
-	std::queue<Task>		m_taskQueue;
+	std::queue<Task>			m_taskQueue;
+
+	std::unordered_map < size_t, std::function<void()> >	m_runnableThreadFunctions;
 
 	bool	m_stopped = true;
 };

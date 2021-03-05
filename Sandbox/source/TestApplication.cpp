@@ -1,5 +1,14 @@
 // Monocle Game Engine source files - Alexandre Baron
 
+
+#ifdef _WIN32
+
+#define WIN32_LEAN_AND_MEAN
+
+#include <Windows.h>
+#endif
+
+
 #include "TestApplication.h"
 
 
@@ -12,6 +21,8 @@
 #include "Graphics/Color/Color.h"
 
 #include "Core/Misc/moeFile.h"
+#include "GameFramework/Resources/Factories/Texture/OpenGL/GL4TextureFactory.h"
+#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
 
 
 #include "Graphics/SceneGraph/SceneGraph.h"
@@ -24,6 +35,10 @@
 #include "Graphics/Material/Material.h"
 
 #include "Graphics/Material/MaterialLibrary.h"
+
+#include "GameFramework/ObjectPool/ObjectPool.h"
+
+#include "GameFramework/Threading/ThreadPool/ThreadPool.h"
 
 
 
@@ -66,153 +81,152 @@ namespace moe
 
 
 
-TestApplication::TestApplication(const OpenGLGlfwAppDescriptor& appDesc) :
-	OpenGLGlfwApplication(appDesc)
-{
-	moe::GetLogChainSingleton().LinkTo(&m_logger);
+	TestApplication::TestApplication(const OpenGLGlfwAppDescriptor& appDesc) :
+		OpenGLGlfwApplication(appDesc)
+	{
+		moe::GetLogChainSingleton().LinkTo(&m_logger);
 
-}
+	}
 
-struct VertexPositionColor
-{
-	Vec3	m_position;
-	Vec4	m_color;
-};
-
-struct VertexPositionTexture
-{
-	Vec3	m_position;
-	Vec2	m_texture;
-};
-
-
-struct VertexPositionNormalTexture
-{
-	Vec3	m_position;
-	Vec3	m_normal;
-	Vec2	m_texcoords;
-};
-
-struct VertexPosition
-{
-	Vec3	m_position;
-};
-
-
-struct HelloQuadVertex
-{
-	Vec3	m_position;
-	Vec4	m_color;
-	Vec2	m_texture;
-};
-
-struct HelloTriVertex
-{
-	Vec3	m_position;
-	Vec4	color;
-};
-
-
-Array<VertexPositionColor, 36>	CreatePositionColorVertexCube(float halfExtent)
-{
-	const ColorRGBAf white = 0xffffffff_rgbaf;
-	const Vec4 whiteAsVec4 = Vec4(white.R(), white.G(), white.B(), white.A());
-
-	return {
-		{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{-halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-
-		{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
-
-		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
-		{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4}
+	struct VertexPositionColor
+	{
+		Vec3	m_position;
+		Vec4	m_color;
 	};
-}
 
-
-class CameraNode : public ASceneNode
-{
-public:
-	CameraNode(SceneGraph& graph, std::string name) : ASceneNode(graph), grou(name)
+	struct VertexPositionTexture
 	{
-		MOE_LOG("krou krou");
+		Vec3	m_position;
+		Vec2	m_texture;
+	};
+
+
+	struct VertexPositionNormalTexture
+	{
+		Vec3	m_position;
+		Vec3	m_normal;
+		Vec2	m_texcoords;
+	};
+
+	struct VertexPosition
+	{
+		Vec3	m_position;
+	};
+
+
+	struct HelloQuadVertex
+	{
+		Vec3	m_position;
+		Vec4	m_color;
+		Vec2	m_texture;
+	};
+
+	struct HelloTriVertex
+	{
+		Vec3	m_position;
+		Vec4	color;
+	};
+
+
+	Array<VertexPositionColor, 36>	CreatePositionColorVertexCube(float halfExtent)
+	{
+		const ColorRGBAf white = 0xffffffff_rgbaf;
+		const Vec4 whiteAsVec4 = Vec4(white.R(), white.G(), white.B(), white.A());
+
+		return {
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{-halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+
+			{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4},
+
+			{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent,  halfExtent, -halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4},
+			{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4}
+		};
 	}
 
-	~CameraNode()
+
+	class CameraNode : public ASceneNode
 	{
-		MOE_LOG("krouuuuu");
+	public:
+		CameraNode(SceneGraph& graph, std::string name) : ASceneNode(graph)
+		{
+		}
+
+		~CameraNode()
+		{
+		}
+
+	private:
+		Transform	m_viewMatrix;
+	};
+
+
+	struct PhongMaterial
+	{
+		Vec4	m_ambientColor{ 1.f };
+		Vec4	m_diffuseColor{ 1.f };
+		Vec4	m_specularColor{ 1.f };
+		float	m_shininess{ 32 };
+	};
+	//
+	//
+	//struct LightCastersData
+	//{
+	//	Vec4	m_ambientColor{ColorRGBAf::White().ToVec()};
+	//	Vec4	m_diffuseColor{ ColorRGBAf::White().ToVec() };
+	//	Vec4	m_specularColor{ ColorRGBAf::White().ToVec() };
+	//	Vec4	m_lightPos{ 0.f };
+	//};
+
+
+	struct ProjectionPlanes
+	{
+		float m_near{ 0 };
+		float m_far{ 0 };
+	};
+
+
+
+	void TestApplication::Run()
+	{
+
+		TestPBRIrradianceConversion();
+
 	}
-
-private:
-	std::string grou;
-	Transform	m_viewMatrix;
-};
-
-
-struct PhongMaterial
-{
-	Vec4	m_ambientColor{1.f};
-	Vec4	m_diffuseColor{1.f};
-	Vec4	m_specularColor{1.f};
-	float	m_shininess{32};
-};
-//
-//
-//struct LightCastersData
-//{
-//	Vec4	m_ambientColor{ColorRGBAf::White().ToVec()};
-//	Vec4	m_diffuseColor{ ColorRGBAf::White().ToVec() };
-//	Vec4	m_specularColor{ ColorRGBAf::White().ToVec() };
-//	Vec4	m_lightPos{ 0.f };
-//};
-
-
-struct ProjectionPlanes
-{
-	float m_near{0};
-	float m_far{0};
-};
-
-
-void TestApplication::Run()
-{
-	TestPBRIrradianceConversion();
-
-}
 
 	void TestApplication::CameraMoveForward()
 	{

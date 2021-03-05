@@ -31,7 +31,11 @@ namespace moe
 
 
 		[[nodiscard]] virtual Width_t	GetWindowWidth() const = 0;
-		[[nodiscard]] virtual Height_t GetWindowHeight() const = 0;
+		[[nodiscard]] virtual Height_t	GetWindowHeight() const = 0;
+
+
+		virtual void	InitializeGraphicsContext() = 0;
+		virtual void	ReleaseGraphicsContext() = 0;
 
 	protected:
 

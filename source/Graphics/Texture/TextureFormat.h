@@ -37,4 +37,7 @@ namespace moe
 
 
 	uint8_t	GetTextureFormatChannelsNumber(TextureFormat format);
+
+	inline TextureFormat	GetRadianceHDRFormat()						{ return TextureFormat::RGBE; }
+	inline bool				IsRadianceHDRFormat(TextureFormat format)	{ return (format == TextureFormat::RGBE); }
 }

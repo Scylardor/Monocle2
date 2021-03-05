@@ -40,12 +40,14 @@ namespace moe
 		MOE_BUILDER_PROPERTY(TextureFormat, TargetFormat, TextureFormat::Any)
 		MOE_BUILDER_PROPERTY(TextureUsage, Usage, TextureUsage::Sampled)
 		MOE_BUILDER_PROPERTY(uint32_t, MipMaps, 1)
+
+		bool	HasImageData() const { return m_ImageData != nullptr;  }
 	};
 
 	// Renamed for backwards compatibility
 	struct Tex2DFileDescriptor
 	{
-		MOE_BUILDER_PROPERTY(std::string_view, Filename, nullptr)
+		MOE_BUILDER_PROPERTY(std::string, Filename, nullptr)
 		MOE_BUILDER_PROPERTY(TextureFormat, TargetFormat, TextureFormat::Any)
 		MOE_BUILDER_PROPERTY(TextureFormat, RequiredFormat, TextureFormat::Any)
 		MOE_BUILDER_PROPERTY(TextureUsage, Usage, TextureUsage::Sampled)
@@ -58,8 +60,7 @@ namespace moe
 	// Renamed for backwards compatibility
 	struct CubemapTexFilesDescriptor
 	{
-		//std::array<std::string_view, 6> m_RightLeftTopBottomFrontBackTexFiles = {};
-		MOE_BUILDER_ARRAY_PROPERTY(std::string_view, 6, RightLeftTopBottomFrontBackTexFiles, )
+		MOE_BUILDER_ARRAY_PROPERTY(std::string, 6, RightLeftTopBottomFrontBackTexFiles, )
 		MOE_BUILDER_PROPERTY(TextureFormat, TargetFormat, TextureFormat::Any)
 		MOE_BUILDER_PROPERTY(TextureFormat, RequiredFormat, TextureFormat::Any)
 		MOE_BUILDER_PROPERTY(TextureUsage, Usage, TextureUsage::Sampled)

@@ -516,7 +516,7 @@ namespace moe
 			}
 
 
-			[[nodiscard]] Matrix operator*(Matrix other) const
+			[[nodiscard]] Matrix operator*(const Matrix& other) const
 			{
 				return Matrix(m_mat * other.m_mat);
 			}
@@ -539,23 +539,23 @@ namespace moe
 				return *this;
 			}
 
-			[[nodiscard]] Matrix operator-(Matrix other) const
+			[[nodiscard]] Matrix operator-(const Matrix& other) const
 			{
 				return Matrix(m_mat - other.m_mat);
 			}
 
-			Matrix& operator-=(Matrix other)
+			Matrix& operator-=(const Matrix& other)
 			{
 				m_mat -= other.m_mat;
 				return *this;
 			}
 
-			[[nodiscard]] Matrix operator/(Matrix other) const
+			[[nodiscard]] Matrix operator/(const Matrix& other) const
 			{
 				return Matrix(m_mat / other.m_mat);
 			}
 
-			Matrix& operator/=(Matrix other)
+			Matrix& operator/=(const Matrix& other)
 			{
 				m_mat /= other.m_mat;
 				return *this;

@@ -1,7 +1,7 @@
 //// Monocle Game Engine source files - Alexandre Baron
 //
-//#pragma once
-//
+#pragma once
+
 #include "Monocle_GameFramework_Export.h"
 
 #include "Core/Containers/Vector/Vector.h"

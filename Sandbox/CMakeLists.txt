@@ -34,6 +34,7 @@ target_link_libraries(${SANDBOX_TARGET} PRIVATE
 	${PROJECT_NAME}_Application
 	${PROJECT_NAME}_Math
 	${PROJECT_NAME}_Graphics
+	${PROJECT_NAME}_GameFramework
 	${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 
 set_property(TARGET ${SANDBOX_TARGET} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")

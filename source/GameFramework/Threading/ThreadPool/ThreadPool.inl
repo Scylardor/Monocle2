@@ -1,5 +1,12 @@
 #pragma once
 
+template <typename Callable>
+void	ThreadPool::EnqueueCallable(Callable&& callable)
+{
+	Task workerPackage{ callable };
+	EnqueueTask(std::move(workerPackage));
+}
+
 
 template <typename Callable, typename... Args>
 void	ThreadPool::EnqueueCallable(Callable&& callable, Args&&... args)

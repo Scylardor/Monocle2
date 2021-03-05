@@ -85,6 +85,18 @@ std::pair<float, float> moe::BaseGlfwApplication::GetMouseCursorPosition()
 }
 
 
+void moe::BaseGlfwApplication::InitializeGraphicsContext()
+{
+	glfwMakeContextCurrent(GetGlfwWindow());
+}
+
+
+void moe::BaseGlfwApplication::ReleaseGraphicsContext()
+{
+	glfwMakeContextCurrent(nullptr);
+}
+
+
 void moe::BaseGlfwApplication::KeyCallback(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
 {
 	BaseGlfwApplication* me = static_cast<BaseGlfwApplication*>(glfwGetWindowUserPointer(window));

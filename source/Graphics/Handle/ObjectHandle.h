@@ -15,6 +15,8 @@ namespace moe
 	{
 		typedef ValT	Underlying;
 
+		RenderObjectHandle() = default;
+		RenderObjectHandle(ValT val) : m_handle(val) {}
 
 		ValT	m_handle{ 0 };
 

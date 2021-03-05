@@ -101,7 +101,7 @@ namespace moe
 
 	public:
 		Monocle_Application_API BaseGlfwApplication();
-		Monocle_Application_API virtual ~BaseGlfwApplication();
+		Monocle_Application_API	~BaseGlfwApplication() override;
 
 	protected:
 
@@ -145,8 +145,13 @@ namespace moe
 			m_inputMgr.SetMouseScrollBinding(std::move(callback));
 		}
 
-
 		Monocle_Application_API	std::pair<float, float> GetMouseCursorPosition() override;
+
+		/* Initializes the graphics context to be owned by the calling thread. */
+		Monocle_Application_API void	InitializeGraphicsContext() override;
+
+		/* Releases the graphics context owned by the calling thread so that another thread can grab it. */
+		Monocle_Application_API void	ReleaseGraphicsContext() override;
 
 		static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
