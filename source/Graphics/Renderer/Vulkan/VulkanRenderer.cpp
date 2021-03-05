@@ -7,9 +7,12 @@
 #pragma warning( disable: 4100 )
 namespace moe
 {
-	VulkanRenderer::~VulkanRenderer()
+
+	VulkanRenderer::VulkanRenderer() :
+		m_world(*this)
 	{
 	}
+
 
 	bool VulkanRenderer::Initialize(IGraphicsRenderer::GraphicsContextSetup setupFunction)
 	{
@@ -138,6 +141,12 @@ namespace moe
 
 	void VulkanRenderer::UseResourceSet(const ResourceSetHandle rscSetHandle)
 	{
+	}
+
+
+	bool VulkanRenderer::InitializeRHI(VulkanInstance::CreationParams&& instanceParams)
+	{
+		return m_rhi.Initialize(std::move(instanceParams));
 	}
 }
 #pragma warning( pop )

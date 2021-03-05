@@ -9,6 +9,7 @@ namespace moe
 	class VulkanDevice : public IGraphicsDevice
 	{
 	public:
+		VulkanDevice() = default;
 		~VulkanDevice() override;
 
 
@@ -155,7 +156,7 @@ namespace moe
 
 	private:
 		// TODO: TO remove, these two are needed to compile but useless.
-		ResourceLayoutDescriptor	dummyLayoutDesc;
+		ResourceLayoutDescriptor	dummyLayoutDesc{0};
 		ResourceSetDescriptor		dummySetDesc;
 	};
 }

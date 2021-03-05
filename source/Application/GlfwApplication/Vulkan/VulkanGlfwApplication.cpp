@@ -7,6 +7,7 @@
 #include "Application/GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.h"
 
 #include "Graphics/RHI/Vulkan/VulkanRHI.h"
+#include "Graphics/Vulkan/Instance/VulkanInstance.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -35,16 +36,25 @@ moe::VulkanGlfwApplication::VulkanGlfwApplication(const moe::VulkanGlfwAppDescri
 	if (false == m_initialized)
 	{
 		MOE_ERROR(moe::ChanWindowing, "Failed to create GLFW window.");
+		return;
 	}
 
-	RequiredExtensionList extensionList;
-	extensionList.ExtensionList = glfwGetRequiredInstanceExtensions(&extensionList.ExtensionNumber);
 
+	uint32_t extensionCount;
+	const char** extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 	if (CheckGLFWError() != GLFW_NO_ERROR)
 	{
 		m_initialized = false;
+		return;
 	}
 
+	VulkanInstance::CreationParams instanceParms{ { extensionCount, extensions }, "Hello Vulkan", "Monocle" };
+	m_initialized = m_renderer.InitializeRHI(std::move(instanceParms));
+
+	if (m_initialized == false)
+	{
+		MOE_ERROR(moe::ChanWindowing, "Monocle GLFW Vulkan Interface could not initialize !");
+	}
 }
 
 

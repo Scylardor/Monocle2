@@ -1,9 +1,11 @@
 #pragma once
 #ifdef MOE_VULKAN
-
 #include "Graphics/Renderer/AbstractRenderer/AbstractRenderer.h"
 
 #include "Graphics/Device/Vulkan/VulkanDevice.h"
+
+
+#include "Graphics/RHI/Vulkan/VulkanRHI.h"
 
 namespace moe
 {
@@ -12,6 +14,7 @@ namespace moe
 	{
 	public:
 
+		VulkanRenderer();
 
 		bool Initialize(IGraphicsRenderer::GraphicsContextSetup setupFunction) override;
 
@@ -66,20 +69,29 @@ namespace moe
 		void BindFramebuffer(FramebufferHandle fbHandle) override;
 
 		void UnbindFramebuffer(FramebufferHandle fbHandle) override;
-		~VulkanRenderer() override;
+
+		~VulkanRenderer() override = default;
 
 		[[nodiscard]] RenderWorld& CreateRenderWorld() override;
 
 		void UseResourceSet(const ResourceSetHandle rscSetHandle) override;
 
+		bool	InitializeRHI(VulkanInstance::CreationParams&& instanceParams);
+
 	protected:
 
-		[[nodiscard]] const IGraphicsDevice& GetDevice() const override;
-		[[nodiscard]] IGraphicsDevice& MutDevice() override;
+		[[nodiscard]] const IGraphicsDevice& GetDevice() const override
+		{ return m_device; }
+
+		[[nodiscard]] IGraphicsDevice& MutDevice() override
+		{ return m_device; }
 
 	private:
 
 		VulkanDevice	m_device;
+
+		VulkanRHI		m_rhi;
+
 		RenderWorld		m_world;
 	};
 

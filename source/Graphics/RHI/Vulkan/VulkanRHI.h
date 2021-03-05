@@ -1,39 +1,28 @@
-#pragma once
 
 #ifdef MOE_VULKAN
+#pragma once
 
-#include <vulkan/vulkan.hpp>
+#include "Graphics/Vulkan/Instance/VulkanInstance.h"
+
 
 
 namespace moe
 {
 
-	struct RequiredExtensionList
-	{
-	public:
-		RequiredExtensionList() = default;
-
-		RequiredExtensionList(uint32_t extensionNbr, const char** extensionList) :
-			ExtensionNumber(extensionNbr), ExtensionList(extensionList)
-		{}
-
-		uint32_t		ExtensionNumber = 0;
-		const char**	ExtensionList = nullptr;
-
-	};
 
 
 	class VulkanRHI
 	{
 	public:
 
-		VulkanRHI(const RequiredExtensionList& extensionsList, std::string_view appName = "Unnamed Application", std::string_view engineName = "No Engine");
+		VulkanRHI() = default;
 		~VulkanRHI();
+
+		bool	Initialize(VulkanInstance::CreationParams&& instanceParams);
 
 	private:
 
-		VkInstance instance;
-
+		VulkanInstance	m_instance;
 
 
 
