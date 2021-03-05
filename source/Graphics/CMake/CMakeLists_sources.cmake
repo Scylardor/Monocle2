@@ -194,6 +194,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/visualize_normals.frag
 ./Resources/shaders/OpenGL/visualize_normals.geom
 ./Resources/shaders/OpenGL/visualize_normals.vert
+./RHI/Vulkan/VulkanRHI.cpp
+./RHI/Vulkan/VulkanRHI.h
 ./Sampler/OpenGL/OpenGLSampler.cpp
 ./Sampler/OpenGL/OpenGLSampler.h
 ./Sampler/SamplerDescriptor.h

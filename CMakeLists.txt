@@ -96,6 +96,12 @@ if(${PROJECT_NAME}_USE_OPENGL)
 	target_include_directories(GLAD PUBLIC "${GLAD_DIR}/include")
 endif()
 
+if(${PROJECT_NAME}_USE_VULKAN)
+	add_definitions(-DMOE_VULKAN)
+endif()
+
+
+
 
 # Integrate STB
 if(${PROJECT_NAME}_USE_STB_IMAGE_IMPORTER)

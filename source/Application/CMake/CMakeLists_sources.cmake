@@ -10,6 +10,10 @@ set(Monocle_Application_SOURCES
 ./GlfwApplication/OpenGL/OpenGLGlfwAppDescriptor.h
 ./GlfwApplication/OpenGL/OpenGLGlfwApplication.cpp
 ./GlfwApplication/OpenGL/OpenGLGlfwApplication.h
+./GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.cpp
+./GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.h
+./GlfwApplication/Vulkan/VulkanGlfwApplication.cpp
+./GlfwApplication/Vulkan/VulkanGlfwApplication.h
 	)
 	
 if(WIN32)

@@ -6,6 +6,7 @@ set(SOURCE_DIR source)
 set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/main.cpp"
 	"${SOURCE_DIR}/TestApplication.cpp"
+	"${SOURCE_DIR}/TestVkApplication.cpp"
 	"${SOURCE_DIR}/Basics.cpp"
 	"${SOURCE_DIR}/Advanced1.cpp"
 	"${SOURCE_DIR}/AdvancedLighting.cpp"
@@ -18,8 +19,8 @@ set(${SANDBOX_TARGET}_SOURCES
 )
 
 add_compile_options(
-    "$<$<CONFIG:Debug>:-DMOE_DEBUG>"
-    "$<$<CONFIG:RelWithDebInfo>:-DMOE_DEBUG>"
+	"$<$<CONFIG:Debug>:-DMOE_DEBUG>"
+	"$<$<CONFIG:RelWithDebInfo>:-DMOE_DEBUG>"
 )
 
 add_executable(${SANDBOX_TARGET} ${${SANDBOX_TARGET}_SOURCES} )

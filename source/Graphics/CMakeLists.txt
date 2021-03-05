@@ -12,7 +12,6 @@ monocle_add_library(${MONOCLE_LIB_TYPE} ${GRAPHICS_TARGET} "${${GRAPHICS_TARGET}
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
-find_package(OpenGL REQUIRED)
 
 # Create the source groups for source tree with root at CMAKE_CURRENT_SOURCE_DIR
 # to recreate the folder tree with filters within Visual Studio for example.
@@ -30,6 +29,11 @@ if(${PROJECT_NAME}_USE_OPENGL)
 	
 	# It should be possible to make this link private...
 	target_link_libraries(${GRAPHICS_TARGET} PUBLIC GLAD)
+endif()
+
+if(${PROJECT_NAME}_USE_VULKAN)
+	find_package(Vulkan REQUIRED)
+	target_link_libraries(${GRAPHICS_TARGET} PUBLIC Vulkan::Vulkan)
 endif()
 
 # Setup boilerplate Monocle target configurations (warning level, LTCG etc.)

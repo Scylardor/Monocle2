@@ -26,8 +26,8 @@ namespace moe
 		}
 
 
-		virtual const IGraphicsRenderer&	GetRenderer() const = 0;
-		virtual IGraphicsRenderer&			MutRenderer() = 0;
+		[[nodiscard]] virtual const IGraphicsRenderer&		GetRenderer() const = 0;
+		[[nodiscard]] virtual IGraphicsRenderer&			MutRenderer() = 0;
 
 
 		[[nodiscard]] virtual Width_t	GetWindowWidth() const = 0;

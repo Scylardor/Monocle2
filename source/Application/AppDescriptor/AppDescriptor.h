@@ -17,7 +17,7 @@ namespace moe
 	{
 		AppDescriptor() = default;
 
-		Monocle_Application_API AppDescriptor(Width_t w, Height_t h, const char* windowTitle, const char* iconPath, bool resizableWin, uint32_t numSamples = 4);
+		Monocle_Application_API AppDescriptor(Width_t w, Height_t h, const char* windowTitle = "Monocle Application", const char* iconPath = nullptr, bool resizableWin = false, uint32_t numSamples = 4);
 
 		Width_t				m_windowWidth{0};
 		Height_t			m_windowHeight{0};

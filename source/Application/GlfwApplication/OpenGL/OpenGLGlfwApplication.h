@@ -27,11 +27,11 @@ namespace moe
 		OpenGLGlfwApplication(const OpenGLGlfwApplication&) = delete;
 
 
-		const IGraphicsRenderer&	GetRenderer() const override
+		[[nodiscard]] const IGraphicsRenderer&	GetRenderer() const override
 		{
 			return m_renderer;
 		}
-		IGraphicsRenderer&			MutRenderer() override
+		[[nodiscard]] IGraphicsRenderer&		MutRenderer() override
 		{
 			return m_renderer;
 		}

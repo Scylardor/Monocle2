@@ -224,7 +224,7 @@ namespace moe
 	void TestApplication::Run()
 	{
 
-		TestPBRIrradianceConversion();
+		TestMultiLights();
 
 	}
 
