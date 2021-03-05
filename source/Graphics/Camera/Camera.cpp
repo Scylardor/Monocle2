@@ -261,11 +261,11 @@ namespace moe
 		m_matrices.m_view = m_transform.Matrix().GetInverse();
 		m_matrices.m_viewProj = m_matrices.m_proj * m_matrices.m_view;
 
-		m_matricesDataPtr->m_view = m_matrices.m_view; // TODO : cleanup
+		//m_matricesDataPtr->m_view = m_matrices.m_view; // TODO : cleanup
 
-		m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
+		//m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
 
-		m_matricesDataPtr->m_cameraPos = Vec4(m_transform.Matrix().GetTranslation(), 1.F);
+		//m_matricesDataPtr->m_cameraPos = Vec4(m_transform.Matrix().GetTranslation(), 1.F);
 
 		if (m_parentSystem)
 			m_parentSystem->FlagUpdateNeeded();
@@ -289,7 +289,7 @@ namespace moe
 				Rads_f(m_cameraData.m_perspective.m_fovY), m_cameraData.m_perspective.m_aspectRatio,
 				m_cameraData.m_perspective.m_near, m_cameraData.m_perspective.m_far);
 
-			m_matricesDataPtr->m_proj = m_matrices.m_proj; // TODO : cleanup
+			//m_matricesDataPtr->m_proj = m_matrices.m_proj; // TODO : cleanup
 			break;
 		default:
 			MOE_ASSERT(false);
@@ -300,7 +300,7 @@ namespace moe
 		// Projection matrix has changed : recompute view proj matrix too
 		m_matrices.m_viewProj = m_matrices.m_proj * m_matrices.m_view;
 
-		m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
+		//m_matricesDataPtr->m_viewProj = m_matrices.m_viewProj; // TODO : cleanup
 
 		if (m_parentSystem)
 			m_parentSystem->FlagUpdateNeeded();
