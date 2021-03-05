@@ -2,6 +2,7 @@
 
 
 #include "TestApplication.h"
+#include "TestVkApplication.h"
 #include "Application/GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.h"
 
 #include "Core/Misc/Literals.h"
@@ -13,14 +14,19 @@ int main()
 {
 	moe::VulkanGlfwAppDescriptor vkAppDesc(1024_width, 728_height, "Monocle Sandbox");
 
-	moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
+	moe::TestVkApplication vkApp(vkAppDesc);
 
-	moe::TestApplication app(appDesc);
+	if (vkApp.IsInitialized())
+		vkApp.Run();
 
-	if (app.IsInitialized())
-	{
-		app.Run();
-	}
+	//moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
+
+	//moe::TestApplication app(appDesc);
+
+	//if (app.IsInitialized())
+	//{
+	//	app.Run();
+	//}
 
 	return 0;
 }

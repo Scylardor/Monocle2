@@ -36,19 +36,22 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 	m_window = glfwCreateWindow(appDesc.m_windowWidth, appDesc.m_windowHeight, appDesc.m_windowTitle, nullptr, nullptr);
 	if (m_window == nullptr)
 	{
+		CheckGLFWError();
 		MOE_ERROR(moe::ChanWindowing, "Failed to create GLFW window.");
 	}
+	else
+	{
+		/* TODO : parameterize that with the app descriptor */
+		glfwSetWindowUserPointer(m_window, this);
 
-	/* TODO : parameterize that with the app descriptor */
-	glfwSetWindowUserPointer(m_window, this);
+		glfwSetKeyCallback(m_window, KeyCallback);
 
-	glfwSetKeyCallback(m_window, KeyCallback);
+		glfwSetCursorPosCallback(m_window, MouseMoveCallback);
 
-	glfwSetCursorPosCallback(m_window, MouseMoveCallback);
+		glfwSetScrollCallback(m_window, MouseScrollCallback);
 
-	glfwSetScrollCallback(m_window, MouseScrollCallback);
-
-	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
 
 	return m_window;
 }
@@ -73,6 +76,21 @@ bool moe::BaseGlfwApplication::WindowIsOpened() const
 float moe::BaseGlfwApplication::GetApplicationTimeSeconds() const
 {
 	return (float)glfwGetTime();
+}
+
+
+int moe::BaseGlfwApplication::CheckGLFWError() const
+{
+	const char* description;
+	int code = glfwGetError(&description);
+
+	if (description)
+	{
+		MOE_DEBUG_ASSERT(false);
+		MOE_ERROR(moe::ChanWindowing, "GLFW error: %s (code %i)", description, code);
+	}
+
+	return code;
 }
 
 

@@ -145,6 +145,8 @@ namespace moe
 			m_inputMgr.SetMouseScrollBinding(std::move(callback));
 		}
 
+		int	CheckGLFWError() const;
+
 		Monocle_Application_API	std::pair<float, float> GetMouseCursorPosition() override;
 
 		/* Initializes the graphics context to be owned by the calling thread. */
@@ -163,7 +165,7 @@ namespace moe
 		/**
 		 * \brief The handle to our current window. Must be set with a call to CreateGlfwWindow.
 		 */
-		GLFWwindow* m_window = nullptr;
+		GLFWwindow*		m_window = nullptr;
 
 		AppDescriptor	m_description;
 

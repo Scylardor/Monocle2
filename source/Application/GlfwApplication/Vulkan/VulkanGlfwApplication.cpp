@@ -29,23 +29,21 @@ moe::VulkanGlfwApplication::VulkanGlfwApplication(const moe::VulkanGlfwAppDescri
 	// Because GLFW was originally designed to create an OpenGL context, we need to tell it to not create an OpenGL context
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	GLFWwindow* myWindow = CreateGlfwWindow(m_description);
-	m_initialized = (myWindow != nullptr);
+	CreateGlfwWindow(m_description);
+	m_initialized = (GetGlfwWindow() != nullptr);
 
 	if (false == m_initialized)
 	{
 		MOE_ERROR(moe::ChanWindowing, "Failed to create GLFW window.");
 	}
-	else
-	{
-		glfwMakeContextCurrent(GetGlfwWindow());
-
-		m_initialized = true;
-	}
 
 	RequiredExtensionList extensionList;
 	extensionList.ExtensionList = glfwGetRequiredInstanceExtensions(&extensionList.ExtensionNumber);
 
+	if (CheckGLFWError() != GLFW_NO_ERROR)
+	{
+		m_initialized = false;
+	}
 
 }
 
