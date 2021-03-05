@@ -11,15 +11,17 @@ namespace moe
 #endif
 
 
-
-
 	bool VulkanInstance::Initialize(VulkanInstance::CreationParams&& instanceParams)
 	{
 		m_creationParams = std::move(instanceParams);
 
 		// Enable validation layers if we're in Debug mode
 		if (S_enableValidationLayers)
-			m_creationParams.RequiredExtensions.AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		{
+			bool validationLayersEnabled = EnableValidationLayersSupport();
+			MOE_DEBUG_ASSERT(validationLayersEnabled);
+		}
+
 
 		bool ok = CheckRequiredExtensionsAvailability(m_creationParams.RequiredExtensions);
 		if (ok)
@@ -116,6 +118,48 @@ namespace moe
 		}
 
 		return allRequirementsMet;
+	}
+
+
+	bool VulkanInstance::CheckValidationLayersSupport()
+	{
+		for (const auto& validationLayer : S_USED_VALIDATION_LAYERS)
+		{
+			bool layerFound = false;
+
+			for (const auto& prop : m_layerProperties)
+			{
+				if (strcmp(prop.layerName, validationLayer) == 0)
+				{
+					layerFound = true;
+					break;
+				}
+			}
+
+			if (!layerFound)
+			{
+				MOE_ERROR(moe::ChanGraphics, "Missing validation layer %s!", validationLayer);
+				MOE_DEBUG_ASSERT(false);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+
+	bool VulkanInstance::EnableValidationLayersSupport()
+	{
+		// Are validation layer supported ? If yes, enable the VK debug utils extension.
+
+		m_layerProperties = vk::enumerateInstanceLayerProperties();
+
+		bool allLayersSupported = CheckValidationLayersSupport();
+
+		if (allLayersSupported)
+			m_creationParams.RequiredExtensions.AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+		return allLayersSupported;
 	}
 }
 

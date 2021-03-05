@@ -74,9 +74,14 @@ namespace moe
 		void	RetrieveExtensionProperties();
 		bool	CheckRequiredExtensionsAvailability(const ExtensionList& requiredExtensions);
 
+		bool	CheckValidationLayersSupport();
+		bool	EnableValidationLayersSupport();
+
 		vk::UniqueInstance	m_instance;
 
 		std::vector<vk::ExtensionProperties>	m_extensionProperties;
+		std::vector<vk::LayerProperties>		m_layerProperties;
+
 
 		CreationParams		m_creationParams;
 

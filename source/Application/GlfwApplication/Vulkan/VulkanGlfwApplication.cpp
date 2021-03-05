@@ -6,7 +6,6 @@
 
 #include "Application/GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.h"
 
-#include "Graphics/RHI/Vulkan/VulkanRHI.h"
 #include "Graphics/Vulkan/Instance/VulkanInstance.h"
 
 #define GLFW_INCLUDE_VULKAN
