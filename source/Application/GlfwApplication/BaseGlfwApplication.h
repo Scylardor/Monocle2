@@ -161,10 +161,11 @@ namespace moe
 
 	protected:
 
-		using AppLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
+		using IDELogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
+		using ConsoleLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::OutStreamWritePolicy>;
 
-		AppLogger	m_logger;
-
+		IDELogger		m_logger;
+		ConsoleLogger	m_consoleLogger;
 
 	private:
 
