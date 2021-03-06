@@ -20,6 +20,8 @@ bool moe::VulkanRHI::Initialize(VulkanInstance::CreationParams&& instanceParams)
 	if (!ok)
 		return false;
 
+	m_devices.Initialize(m_instance.Instance());
+
 	return true;
 }
 

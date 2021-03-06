@@ -1,6 +1,8 @@
-#include "VulkanRenderer.h"
 
 #ifdef MOE_VULKAN
+
+#include "VulkanRenderer.h"
+
 
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
 #pragma warning( push )
