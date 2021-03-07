@@ -18,4 +18,15 @@
 		}										\
 	} while (0)
 
+namespace moe
+{
+#ifdef MOE_DEBUG
+	static const bool	S_enableValidationLayers = true;
+#else
+	static const bool	S_enableValidationLayers = false;
+#endif
+
+}
+
+
 #endif // MOE_VULKAN

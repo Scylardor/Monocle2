@@ -1,14 +1,12 @@
+
 #ifdef MOE_VULKAN
 
 #include "VulkanInstance.h"
+#include "Graphics/Vulkan/VulkanMacros.h"
 
 namespace moe
 {
-#ifdef MOE_DEBUG
-	const bool	S_enableValidationLayers = true;
-#else
-	const bool	S_enableValidationLayers = false;
-#endif
+
 
 
 	bool VulkanInstance::Initialize(CreationParams&& instanceParams)
@@ -20,12 +18,11 @@ namespace moe
 		InitDynamicDispatcherFirstStep();
 
 		// Enable validation layers if we're in Debug mode
-		if (S_enableValidationLayers)
+		if constexpr (S_enableValidationLayers)
 		{
 			bool validationLayersEnabled = EnableValidationLayersSupport();
 			MOE_DEBUG_ASSERT(validationLayersEnabled);
 		}
-
 
 		bool ok = CheckRequiredExtensionsAvailability(m_creationParams.RequiredExtensions);
 		if (ok)
@@ -39,7 +36,7 @@ namespace moe
 		// Next, we need to further initialize the dynamic dispatcher in order to create the debug messenger.
 		InitDynamicDispatcherSecondStep();
 
-		if (S_enableValidationLayers)
+		if constexpr (S_enableValidationLayers)
 		{
 			SetupDebugMessenger();
 		}

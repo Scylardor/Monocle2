@@ -13,6 +13,7 @@ moe::BaseGlfwApplication::BaseGlfwApplication()
 	SetInitialized(glfwInit());
 
 	moe::GetLogChainSingleton().LinkTo(&m_logger);
+	m_consoleLogger.GetFilterPolicy().SetFilterSeverity(moe::SevWarning);
 	m_consoleLogger.LinkTo(&m_logger);
 }
 

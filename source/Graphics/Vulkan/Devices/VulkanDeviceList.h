@@ -17,25 +17,39 @@ namespace moe
 		const auto&	Properties() const
 		{ return m_properties; }
 
+		const auto& Features() const
+		{
+			return m_features;
+		}
+
+		uint32_t	GetGraphicsScore() const;
+
+
+
 
 	private:
+		bool		HasRequiredGraphicsFeatures() const;
+		uint32_t	RateGraphicsProperties() const;
+		bool		HasRequiredGraphicsQueueFamily() const;
+
 		// No Unique handle for Physical Device because it doesn't need to be destroyed
 		vk::PhysicalDevice	m_physicalDevice;
 		vk::UniqueDevice	m_logicalDevice;
 
-		vk::PhysicalDeviceProperties	m_properties;
-
+		vk::PhysicalDeviceProperties				m_properties;
+		vk::PhysicalDeviceFeatures					m_features;
+		std::vector<vk::QueueFamilyProperties>		m_queueFamilyProps;
 	};
 
 
 	/**
 	 * @brief A class meant to represent the available devices detected by our instance.
 	 */
-	class VulkanDevices
+	class VulkanDeviceList
 	{
 	public:
 
-		VulkanDevices() = default;
+		VulkanDeviceList() = default;
 
 		bool	Initialize(const vk::Instance& instance);
 
@@ -44,8 +58,6 @@ namespace moe
 	private:
 
 		VkDevice*	PickGraphicsDevice();
-
-		uint32_t		ComputeDeviceGraphicsRate(VkDevice& device) const;
 
 		std::vector<VkDevice>	m_devices;
 		VkDevice*				m_graphicsDevice = nullptr;

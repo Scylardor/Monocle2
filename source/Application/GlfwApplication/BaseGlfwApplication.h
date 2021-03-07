@@ -162,7 +162,7 @@ namespace moe
 	protected:
 
 		using IDELogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
-		using ConsoleLogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::OutStreamWritePolicy>;
+		using ConsoleLogger = moe::StdLogger<moe::SeverityFilterPolicy, moe::DebuggerFormatPolicy, moe::OutStreamWritePolicy>;
 
 		IDELogger		m_logger;
 		ConsoleLogger	m_consoleLogger;
