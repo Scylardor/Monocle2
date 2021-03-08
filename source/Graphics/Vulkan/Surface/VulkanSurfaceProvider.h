@@ -14,7 +14,9 @@ namespace moe
 	public:
 		virtual ~IVulkanSurfaceProvider() = default;
 
-		virtual VkSurfaceKHR	GetSurface(VkInstance instance) = 0;
+		/* Creates a new surface from this provider. */
+		virtual vk::SurfaceKHR	CreateSurface(VkInstance instance) = 0;
+
 
 		struct SurfaceDimensions
 		{

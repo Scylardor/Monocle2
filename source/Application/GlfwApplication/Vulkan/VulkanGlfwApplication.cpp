@@ -50,7 +50,7 @@ moe::VulkanGlfwApplication::VulkanGlfwApplication(const moe::VulkanGlfwAppDescri
 	}
 
 	VulkanInstance::CreationParams instanceParms{ { extensionCount, extensions }, "Hello Vulkan", "Monocle" };
-	m_initialized = m_renderer.InitializeRHI(std::move(instanceParms));
+	m_initialized = m_renderer.Initialize(std::move(instanceParms), *this);
 
 	if (m_initialized == false)
 	{
@@ -68,7 +68,7 @@ moe::VulkanGlfwApplication::~VulkanGlfwApplication()
 }
 
 
-VkSurfaceKHR moe::VulkanGlfwApplication::GetSurface(VkInstance instance)
+vk::SurfaceKHR moe::VulkanGlfwApplication::CreateSurface(VkInstance instance)
 {
 	MOE_ASSERT(m_initialized);
 	VkSurfaceKHR newSurface;

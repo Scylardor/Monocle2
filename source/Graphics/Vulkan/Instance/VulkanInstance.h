@@ -1,11 +1,8 @@
+#pragma once
 
 #ifdef MOE_VULKAN
 
-#pragma once
-
-// Activating the dynamic dispatcher in order to easily use Vulkan EXTension functions.
-#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
-
+#include "Graphics/Vulkan/VulkanMacros.h"
 
 #include "Graphics/Vulkan/DebugMessenger/VulkanDebugMessenger.h"
 
@@ -79,6 +76,7 @@ namespace moe
 
 		void	InitDynamicDispatcherFirstStep();
 		void	InitDynamicDispatcherSecondStep();
+		void	InitDynamicDispatcherThirdStep();
 
 		void	RetrieveExtensionProperties();
 		bool	CheckRequiredExtensionsAvailability(const ExtensionList& requiredExtensions);
@@ -103,7 +101,7 @@ namespace moe
 
 	};
 
-	
+
 }
 
 #endif // MOE_VULKAN

@@ -1,7 +1,8 @@
 #pragma once
 #ifdef MOE_VULKAN
 
-#include <vulkan/vulkan.hpp>
+#include "Graphics/Vulkan/VulkanMacros.h"
+
 
 namespace moe
 {
@@ -10,8 +11,13 @@ namespace moe
 	class VulkanSwapchain
 	{
 	public:
+		VulkanSwapchain() = default;
+		~VulkanSwapchain()
+		{
 
-		VulkanSwapchain(const vk::Instance& instance, IVulkanSurfaceProvider& surfaceProvider);
+		}
+
+		bool	Create(const vk::Instance& instance, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface);
 
 
 	private:

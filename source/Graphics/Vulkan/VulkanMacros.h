@@ -5,6 +5,8 @@
 #include "Core/Preprocessor/moeAssert.h"
 
 // Activating the dynamic dispatcher in order to easily use Vulkan EXTension functions.
+// In order to avoid complex compile errors and weird crashes, it's MANDATORY that the vulkan.hpp include always goes after the define !
+// Never include vulkan.hpp from elsewhere than here.
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 #include <vulkan/vulkan.hpp>
 

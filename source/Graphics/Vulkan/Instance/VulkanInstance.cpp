@@ -106,6 +106,11 @@ namespace moe
 	}
 
 
+	void VulkanInstance::InitDynamicDispatcherThirdStep()
+	{
+	}
+
+
 	void VulkanInstance::RetrieveExtensionProperties()
 	{
 		m_extensionProperties = vk::enumerateInstanceExtensionProperties();

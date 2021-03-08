@@ -19,13 +19,20 @@ bool moe::VulkanRHI::Initialize(VulkanInstance::CreationParams&& instanceParams)
 	bool ok = m_instance.Initialize(std::move(instanceParams));
 	MOE_ASSERT(ok);
 
-	if (!ok)
-		return false;
+	return ok;
+}
 
-	ok = m_devices.Initialize(m_instance.Instance());
+
+bool moe::VulkanRHI::InitializeGraphicsDevice(vk::SurfaceKHR targetSurface)
+{
+	bool ok = m_devices.Initialize(m_instance.Instance());
 	MOE_ASSERT(ok);
 
-	return ok;
+	auto theGraphicsDevice = m_devices.PickGraphicsDevice(targetSurface);
+	MOE_ASSERT(theGraphicsDevice != nullptr);
+
+
+	return true;
 }
 
 

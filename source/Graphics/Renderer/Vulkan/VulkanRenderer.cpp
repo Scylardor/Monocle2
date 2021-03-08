@@ -2,6 +2,7 @@
 #ifdef MOE_VULKAN
 
 #include "VulkanRenderer.h"
+#include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
 
 
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
@@ -146,9 +147,31 @@ namespace moe
 	}
 
 
-	bool VulkanRenderer::InitializeRHI(VulkanInstance::CreationParams&& instanceParams)
+	bool VulkanRenderer::Initialize(VulkanInstance::CreationParams&& instanceParams, IVulkanSurfaceProvider& surfaceProvider)
 	{
-		return m_rhi.Initialize(std::move(instanceParams));
+		// Steps to initialize the Vulkan RHI:
+		//
+		// 1: Initialize the Instance.
+		bool ok = m_rhi.Initialize(std::move(instanceParams));
+		MOE_ASSERT(ok);
+
+		// 2: Retrieve the Vk Surface because we need it to check physical device support for this surface.
+		vk::SurfaceKHR presentSurface = surfaceProvider.CreateSurface(m_rhi.GetInstance());
+
+		// 3: Initialize the graphics device (physical and logical device retrieval)
+		ok = m_rhi.InitializeGraphicsDevice(presentSurface);
+		MOE_ASSERT(ok);
+
+		if (ok)
+		{
+			// 4: Initialize the swap chain with the previously retrieved surface
+			// TODO: probably best to use the RHI for that. Like RHI->SwapchainFactory.Create(SwapChainCreationParams)...
+			ok = m_swapchain.Create(m_rhi.GetInstance(), surfaceProvider, presentSurface);
+			MOE_ASSERT(ok);
+		}
+
+		// 5: Ready to go...
+		return ok;
 	}
 }
 #pragma warning( pop )

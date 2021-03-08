@@ -6,13 +6,16 @@
 
 #include "Graphics/Renderer/AbstractRenderer/AbstractRenderer.h"
 
+#include "Graphics/RHI/Vulkan/VulkanRHI.h"
+
 #include "Graphics/Device/Vulkan/VulkanDevice.h"
 
 
-#include "Graphics/RHI/Vulkan/VulkanRHI.h"
+#include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
 
 namespace moe
 {
+	class IVulkanSurfaceProvider;
 
 	class VulkanRenderer : public AbstractRenderer
 	{
@@ -80,13 +83,13 @@ namespace moe
 
 		void UseResourceSet(const ResourceSetHandle rscSetHandle) override;
 
-		bool	InitializeRHI(VulkanInstance::CreationParams&& instanceParams);
+		bool	Initialize(VulkanInstance::CreationParams&& instanceParams, IVulkanSurfaceProvider& surfaceProvider);
 
 		VkInstance	GetVkInstance()
 		{
-			return m_rhi.GetVkInstance();
+			return m_rhi.GetInstance();
 		}
-		
+
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice& GetDevice() const override
@@ -97,9 +100,11 @@ namespace moe
 
 	private:
 
-		VulkanDevice	m_device;
+		VulkanDevice		m_device;
 
-		VulkanRHI		m_rhi;
+		VulkanRHI			m_rhi;
+
+		VulkanSwapchain		m_swapchain;
 
 		RenderWorld		m_world;
 	};

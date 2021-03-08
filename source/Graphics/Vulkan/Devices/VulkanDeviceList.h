@@ -1,18 +1,28 @@
+#pragma once
 
 #ifdef MOE_VULKAN
 
-#pragma once
+#include "Graphics/Vulkan/VulkanMacros.h"
 
-#include <vulkan/vulkan.hpp>
+#include <optional>
 
 namespace moe
 {
 	// TODO: Should be renamed VulkanDevice once the placeholder one is gone
-	class VkDevice
+	class MyVkDevice
 	{
 	public:
 
-		VkDevice(vk::PhysicalDevice&& physDev);
+		struct SwapchainSupportParameters
+		{
+			VkSurfaceCapabilitiesKHR			SurfaceCapabilities;
+			std::vector<vk::SurfaceFormatKHR>	AvailableSurfaceFormats;
+			std::vector<vk::PresentModeKHR>		AvailablePresentModes;
+		};
+
+
+
+		MyVkDevice(vk::PhysicalDevice&& physDev);
 
 		const auto&	Properties() const
 		{ return m_properties; }
@@ -22,23 +32,52 @@ namespace moe
 			return m_features;
 		}
 
-		uint32_t	GetGraphicsScore() const;
+		const auto&	GetSwapchainSupportParameters() const
+		{
+			return m_swapchainSupportParams;
+		}
 
 
+		uint32_t	GetScoreForPresentSurface(vk::SurfaceKHR presentSurface) ;
+
+		bool		FetchQueueFamilies(vk::SurfaceKHR presentSurface);
+		bool		FetchExtensionProperties();
+		bool		HasGraphicsAndPresentOnSameQueue() const;
+
+		bool		FetchSwapchainSupportParameters(vk::SurfaceKHR presentSurface);
 
 
 	private:
-		bool		HasRequiredGraphicsFeatures() const;
-		uint32_t	RateGraphicsProperties() const;
-		bool		HasRequiredGraphicsQueueFamily() const;
+		using FamilyIndex = std::optional<uint32_t>;
+		struct FamilyIndices
+		{
+			FamilyIndex	GraphicsFamilyIdx;
+			FamilyIndex	PresentFamilyIdx;
+
+			bool	IsComplete() const
+			{
+				return GraphicsFamilyIdx.has_value() && PresentFamilyIdx.has_value();
+			}
+		};
+
+		bool		HasRequiredGraphicsQueueFamilies() const;
+		bool		FetchGraphicsFeatures() ;
+		void		FetchGraphicsProperties();
+		uint32_t	ComputeGraphicsScore();
 
 		// No Unique handle for Physical Device because it doesn't need to be destroyed
-		vk::PhysicalDevice	m_physicalDevice;
+		vk::PhysicalDevice	m_physicalDevice; // PhysicalDevice doesn't actually need to be destroyed, so no Unique handle.
 		vk::UniqueDevice	m_logicalDevice;
 
-		vk::PhysicalDeviceProperties				m_properties;
-		vk::PhysicalDeviceFeatures					m_features;
-		std::vector<vk::QueueFamilyProperties>		m_queueFamilyProps;
+		vk::PhysicalDeviceProperties			m_properties;
+		std::vector <vk::ExtensionProperties>	m_extensionProperties;
+		vk::PhysicalDeviceFeatures				m_features;
+		std::vector<vk::QueueFamilyProperties>	m_queueFamilyProps;
+
+		SwapchainSupportParameters				m_swapchainSupportParams;
+
+
+		FamilyIndices	m_queueIndices;
 	};
 
 
@@ -55,12 +94,14 @@ namespace moe
 
 		void	PopulateDevices(const vk::Instance& instance);
 
+		MyVkDevice* PickGraphicsDevice(vk::SurfaceKHR presentSurface);
+
 	private:
 
-		VkDevice*	PickGraphicsDevice();
 
-		std::vector<VkDevice>	m_devices;
-		VkDevice*				m_graphicsDevice = nullptr;
+		std::vector<MyVkDevice>	m_devices;
+		MyVkDevice*				m_graphicsDevice = nullptr;
+
 
 	};
 

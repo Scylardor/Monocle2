@@ -50,7 +50,7 @@ namespace moe
 
 	protected:
 
-		VkSurfaceKHR		GetSurface(VkInstance instance) override;
+		vk::SurfaceKHR		CreateSurface(VkInstance instance) override;
 		SurfaceDimensions	GetSurfaceDimensions() override;
 
 		// TODO : change that to use Vulkan instead.
