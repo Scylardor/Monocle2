@@ -1,5 +1,4 @@
 #pragma once
-
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/VulkanMacros.h"
@@ -24,21 +23,23 @@ namespace moe
 
 		MyVkDevice(vk::PhysicalDevice&& physDev);
 
-		const auto&	Properties() const
-		{ return m_properties; }
+		const auto& Properties() const
+		{
+			return m_properties;
+		}
 
 		const auto& Features() const
 		{
 			return m_features;
 		}
 
-		const auto&	GetSwapchainSupportParameters() const
+		const auto& GetSwapchainSupportParameters() const
 		{
 			return m_swapchainSupportParams;
 		}
 
 
-		uint32_t	GetScoreForPresentSurface(vk::SurfaceKHR presentSurface) ;
+		uint32_t	GetScoreForPresentSurface(vk::SurfaceKHR presentSurface);
 
 		bool		FetchQueueFamilies(vk::SurfaceKHR presentSurface);
 		bool		FetchExtensionProperties();
@@ -61,7 +62,7 @@ namespace moe
 		};
 
 		bool		HasRequiredGraphicsQueueFamilies() const;
-		bool		FetchGraphicsFeatures() ;
+		bool		FetchGraphicsFeatures();
 		void		FetchGraphicsProperties();
 		uint32_t	ComputeGraphicsScore();
 
@@ -74,39 +75,13 @@ namespace moe
 		vk::PhysicalDeviceFeatures				m_features;
 		std::vector<vk::QueueFamilyProperties>	m_queueFamilyProps;
 
-		SwapchainSupportParameters				m_swapchainSupportParams;
+		SwapchainSupportParameters				m_swapchainSupportParams{};
 
 
 		FamilyIndices	m_queueIndices;
 	};
 
-
-	/**
-	 * @brief A class meant to represent the available devices detected by our instance.
-	 */
-	class VulkanDeviceList
-	{
-	public:
-
-		VulkanDeviceList() = default;
-
-		bool	Initialize(const vk::Instance& instance);
-
-		void	PopulateDevices(const vk::Instance& instance);
-
-		MyVkDevice* PickGraphicsDevice(vk::SurfaceKHR presentSurface);
-
-	private:
-
-
-		std::vector<MyVkDevice>	m_devices;
-		MyVkDevice*				m_graphicsDevice = nullptr;
-
-
-	};
-
-
 }
 
-#endif // MOE_VULKAN
 
+#endif // MOE_VULKAN
