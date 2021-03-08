@@ -82,6 +82,11 @@ namespace moe
 
 		bool	InitializeRHI(VulkanInstance::CreationParams&& instanceParams);
 
+		VkInstance	GetVkInstance()
+		{
+			return m_rhi.GetVkInstance();
+		}
+		
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice& GetDevice() const override

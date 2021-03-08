@@ -67,7 +67,7 @@ namespace moe
 
 		VulkanInstance() = default;
 
-		bool	Initialize(VulkanInstance::CreationParams&& instanceParams);
+		bool	Initialize(CreationParams&& instanceParams);
 
 
 		const vk::Instance& Instance() const
@@ -102,6 +102,8 @@ namespace moe
 		{ "VK_LAYER_KHRONOS_validation" };
 
 	};
+
+	
 }
 
 #endif // MOE_VULKAN

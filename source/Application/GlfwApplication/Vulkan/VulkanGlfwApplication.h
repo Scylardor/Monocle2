@@ -10,6 +10,7 @@
 #include "Application/GlfwApplication/BaseGlfwApplication.h"
 
 #include "Graphics/Renderer/Vulkan/VulkanRenderer.h"
+#include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
 
 
 namespace moe
@@ -18,7 +19,7 @@ namespace moe
 	 * \brief Application class that uses an Vulkan context.
 	 * Can be parameterized about major/minor Vulkan versions and needed Vulkan profile type (core/compat).
 	 */
-	class VulkanGlfwApplication  : public BaseGlfwApplication
+	class VulkanGlfwApplication  : public BaseGlfwApplication, public IVulkanSurfaceProvider
 	{
 	public:
 		Monocle_Application_API VulkanGlfwApplication(const VulkanGlfwAppDescriptor& appDesc);
@@ -46,7 +47,11 @@ namespace moe
 			return m_description.m_windowHeight;
 		}
 
+
 	protected:
+
+		VkSurfaceKHR		GetSurface(VkInstance instance) override;
+		SurfaceDimensions	GetSurfaceDimensions() override;
 
 		// TODO : change that to use Vulkan instead.
 		// This is super ugly and basically should never have happened in the first place :'(

@@ -259,6 +259,9 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Devices/VulkanDeviceList.h
 ./Vulkan/Instance/VulkanInstance.cpp
 ./Vulkan/Instance/VulkanInstance.h
+./Vulkan/Surface/VulkanSurfaceProvider.h
+./Vulkan/Swapchain/VulkanSwapchain.cpp
+./Vulkan/Swapchain/VulkanSwapchain.h
 ./Vulkan/VulkanMacros.h
 	)
 

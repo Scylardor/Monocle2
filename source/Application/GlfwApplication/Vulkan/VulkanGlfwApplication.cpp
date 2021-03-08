@@ -8,6 +8,8 @@
 
 #include "Graphics/Vulkan/Instance/VulkanInstance.h"
 
+#include "Graphics/Vulkan/VulkanMacros.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -53,13 +55,36 @@ moe::VulkanGlfwApplication::VulkanGlfwApplication(const moe::VulkanGlfwAppDescri
 	if (m_initialized == false)
 	{
 		MOE_ERROR(moe::ChanWindowing, "Monocle GLFW Vulkan Interface could not initialize !");
+		return;
 	}
+
+
 }
 
 
 moe::VulkanGlfwApplication::~VulkanGlfwApplication()
 {
 
+}
+
+
+VkSurfaceKHR moe::VulkanGlfwApplication::GetSurface(VkInstance instance)
+{
+	MOE_ASSERT(m_initialized);
+	VkSurfaceKHR newSurface;
+	VkResult ok = glfwCreateWindowSurface(instance, GetGlfwWindow(), nullptr, &newSurface);
+	MOE_ASSERT(ok == VK_SUCCESS);
+	return newSurface;
+}
+
+
+moe::IVulkanSurfaceProvider::SurfaceDimensions moe::VulkanGlfwApplication::GetSurfaceDimensions()
+{
+	MOE_ASSERT(m_initialized);
+
+	SurfaceDimensions dimensions{};
+	glfwGetFramebufferSize(GetGlfwWindow(), (int*)&dimensions.Width, (int*)&dimensions.Height);
+	return dimensions;
 }
 
 

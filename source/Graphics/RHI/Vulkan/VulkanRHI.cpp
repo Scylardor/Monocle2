@@ -17,12 +17,15 @@ moe::VulkanRHI::~VulkanRHI()
 bool moe::VulkanRHI::Initialize(VulkanInstance::CreationParams&& instanceParams)
 {
 	bool ok = m_instance.Initialize(std::move(instanceParams));
+	MOE_ASSERT(ok);
+
 	if (!ok)
 		return false;
 
-	m_devices.Initialize(m_instance.Instance());
+	ok = m_devices.Initialize(m_instance.Instance());
+	MOE_ASSERT(ok);
 
-	return true;
+	return ok;
 }
 
 
