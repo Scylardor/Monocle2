@@ -94,10 +94,6 @@ namespace moe
 
 		CreationParams		m_creationParams;
 
-
-		static inline const std::array<const char*, 1>	S_USED_VALIDATION_LAYERS =
-		{ "VK_LAYER_KHRONOS_validation" };
-
 	};
 
 

@@ -2,6 +2,7 @@
 #ifdef MOE_VULKAN
 
 #include "VulkanInstance.h"
+#include "Graphics/Vulkan/ValidationLayers/VulkanValidationLayers.h"
 
 namespace moe
 {
@@ -17,7 +18,7 @@ namespace moe
 		InitDynamicDispatcherFirstStep();
 
 		// Enable validation layers if we're in Debug mode
-		if constexpr (S_enableValidationLayers)
+		if constexpr (VulkanValidationLayers::AreEnabled())
 		{
 			bool validationLayersEnabled = EnableValidationLayersSupport();
 			MOE_DEBUG_ASSERT(validationLayersEnabled);
@@ -35,7 +36,7 @@ namespace moe
 		// Next, we need to further initialize the dynamic dispatcher in order to create the debug messenger.
 		InitDynamicDispatcherSecondStep();
 
-		if constexpr (S_enableValidationLayers)
+		if constexpr (VulkanValidationLayers::AreEnabled())
 		{
 			SetupDebugMessenger();
 		}
@@ -65,10 +66,10 @@ namespace moe
 		// keeping it out of the if so it survives until the instance creation.
 		vk::DebugUtilsMessengerCreateInfoEXT instanceCreationDebugMessengerInfo;
 
-		if constexpr (S_enableValidationLayers)
+		if constexpr (VulkanValidationLayers::AreEnabled())
 		{
-			createInfo.enabledLayerCount = (uint32_t)(S_USED_VALIDATION_LAYERS.size());
-			createInfo.ppEnabledLayerNames = S_USED_VALIDATION_LAYERS.data();
+			createInfo.enabledLayerCount = (uint32_t)VulkanValidationLayers::Names().size();
+			createInfo.ppEnabledLayerNames = VulkanValidationLayers::Names().data();
 
 			instanceCreationDebugMessengerInfo = VulkanDebugMessenger::GenerateCreateInfo();
 			createInfo.pNext = &instanceCreationDebugMessengerInfo;
@@ -159,7 +160,7 @@ namespace moe
 
 	bool VulkanInstance::CheckValidationLayersSupport()
 	{
-		for (const auto& validationLayer : S_USED_VALIDATION_LAYERS)
+		for (const auto& validationLayer : VulkanValidationLayers::Names())
 		{
 			bool layerFound = false;
 
