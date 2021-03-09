@@ -14,12 +14,10 @@ namespace moe
 
 		struct SwapchainSupportParameters
 		{
-			VkSurfaceCapabilitiesKHR			SurfaceCapabilities;
+			vk::SurfaceCapabilitiesKHR			SurfaceCapabilities;
 			std::vector<vk::SurfaceFormatKHR>	AvailableSurfaceFormats;
 			std::vector<vk::PresentModeKHR>		AvailablePresentModes;
 		};
-
-
 
 		MyVkDevice(vk::PhysicalDevice&& physDev);
 
@@ -41,14 +39,16 @@ namespace moe
 
 		uint32_t	GetScoreForPresentSurface(vk::SurfaceKHR presentSurface);
 
-		bool		FetchQueueFamilies(vk::SurfaceKHR presentSurface);
-		bool		FetchExtensionProperties();
-		bool		HasGraphicsAndPresentOnSameQueue() const;
 
-		bool		FetchSwapchainSupportParameters(vk::SurfaceKHR presentSurface);
+		bool		CreateLogicalDevice();
 
+		vk::Device	GetLogicalDevice() const
+		{
+			return m_logicalDevice.get();
+		}
 
 	private:
+
 		using FamilyIndex = std::optional<uint32_t>;
 		struct FamilyIndices
 		{
@@ -61,10 +61,22 @@ namespace moe
 			}
 		};
 
+
+
+		bool		HasGraphicsAndPresentOnSameQueue() const;
 		bool		HasRequiredGraphicsQueueFamilies() const;
+
 		bool		FetchGraphicsFeatures();
 		void		FetchGraphicsProperties();
+		bool		FetchQueueFamilies(vk::SurfaceKHR presentSurface);
+		bool		FetchExtensionProperties();
+		bool		FetchSwapchainSupportParameters(vk::SurfaceKHR presentSurface);
+
 		uint32_t	ComputeGraphicsScore();
+
+
+		static vk::PhysicalDeviceFeatures	GetRequiredFeatures();
+		static bool							HasRequiredFeatures(const vk::PhysicalDeviceFeatures& features);
 
 		// No Unique handle for Physical Device because it doesn't need to be destroyed
 		vk::PhysicalDevice	m_physicalDevice; // PhysicalDevice doesn't actually need to be destroyed, so no Unique handle.
@@ -79,6 +91,15 @@ namespace moe
 
 
 		FamilyIndices	m_queueIndices;
+		vk::Queue		m_graphicsQueue;
+		vk::Queue		m_presentQueue;
+
+		// So far, the only extension we have to manage is swap chain.
+		static inline const std::array<const char*, 1>	S_neededExtensions =
+		{
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
 	};
 
 }

@@ -8,8 +8,9 @@ WINDOWS_ONLY_SUBPATH='Windows/'
 LINUX_ONLY_SUBPATH='Linux/'
 MACOS_ONLY_SUBPATH='MacOS/'
 
+
+mkdir -p "$WORKING_DIR/CMake"
 cd "$WORKING_DIR"
-mkdir CMake
 
 # Using sed to escape filenames with spaces in them.
 BASE_SOURCES=$( find ./ -type f -name "*.cpp" -or -name "*.h" -or -name "*.hpp" -or -name "*.vert" -or -name "*.frag" -or -name "*.geom" | sed 's/ /\\ /g')
@@ -51,4 +52,4 @@ elseif(UNIX)
 	)
 
 
-endif()" > CMake/CMakeLists_sources.cmake
+endif()" > "CMake/CMakeLists_sources.cmake"

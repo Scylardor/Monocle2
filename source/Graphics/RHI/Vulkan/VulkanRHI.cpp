@@ -23,7 +23,7 @@ bool moe::VulkanRHI::Initialize(VulkanInstance::CreationParams&& instanceParams)
 }
 
 
-bool moe::VulkanRHI::InitializeGraphicsDevice(vk::SurfaceKHR targetSurface)
+moe::MyVkDevice* moe::VulkanRHI::InitializeGraphicsDevice(vk::SurfaceKHR targetSurface)
 {
 	bool ok = m_devices.Initialize(m_instance.Instance());
 	MOE_ASSERT(ok);
@@ -31,8 +31,12 @@ bool moe::VulkanRHI::InitializeGraphicsDevice(vk::SurfaceKHR targetSurface)
 	auto theGraphicsDevice = m_devices.PickGraphicsDevice(targetSurface);
 	MOE_ASSERT(theGraphicsDevice != nullptr);
 
+	ok = theGraphicsDevice->CreateLogicalDevice();
+	MOE_ASSERT(ok);
 
-	return true;
+	m_instance.InitDynamicDispatcherThirdStep(*theGraphicsDevice);
+
+	return theGraphicsDevice;
 }
 
 

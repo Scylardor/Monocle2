@@ -46,6 +46,7 @@ namespace moe
 				return ExtensionNumber;
 			}
 
+
 		private:
 
 			uint32_t					ExtensionNumber = 0; // TODO: probably became useless, to remove
@@ -65,17 +66,22 @@ namespace moe
 
 		bool	Initialize(CreationParams&& instanceParams);
 
-
 		const vk::Instance& Instance() const
 		{ return m_instance.get(); }
 
 
 	private:
+
 		bool	Create();
 
 		void	InitDynamicDispatcherFirstStep();
 		void	InitDynamicDispatcherSecondStep();
-		void	InitDynamicDispatcherThirdStep();
+
+	public:
+		// This one is public because it needs to be called from outside.
+		void	InitDynamicDispatcherThirdStep(const class MyVkDevice& device);
+
+	private:
 
 		void	RetrieveExtensionProperties();
 		bool	CheckRequiredExtensionsAvailability(const ExtensionList& requiredExtensions);

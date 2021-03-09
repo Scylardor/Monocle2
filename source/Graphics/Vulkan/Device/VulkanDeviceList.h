@@ -25,6 +25,11 @@ namespace moe
 
 		MyVkDevice* PickGraphicsDevice(vk::SurfaceKHR presentSurface);
 
+		MyVkDevice*	GetGraphicsDevice() const
+		{
+			return m_graphicsDevice;
+		}
+
 	private:
 
 

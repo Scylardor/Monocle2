@@ -3,8 +3,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include <utility> // std::pair
-
 #include "Core/Misc/Literals.h"
 
 namespace moe

@@ -3,7 +3,7 @@
 
 #include "VulkanInstance.h"
 #include "Graphics/Vulkan/ValidationLayers/VulkanValidationLayers.h"
-
+#include "Graphics/Vulkan/Device/VulkanDevice.h"
 namespace moe
 {
 
@@ -105,11 +105,10 @@ namespace moe
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(m_instance.get());
 	}
 
-
-	void VulkanInstance::InitDynamicDispatcherThirdStep()
+	void VulkanInstance::InitDynamicDispatcherThirdStep(const MyVkDevice& device)
 	{
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(device.GetLogicalDevice());
 	}
-
 
 	void VulkanInstance::RetrieveExtensionProperties()
 	{

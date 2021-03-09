@@ -159,8 +159,8 @@ namespace moe
 		vk::SurfaceKHR presentSurface = surfaceProvider.CreateSurface(m_rhi.GetInstance());
 
 		// 3: Initialize the graphics device (physical and logical device retrieval)
-		ok = m_rhi.InitializeGraphicsDevice(presentSurface);
-		MOE_ASSERT(ok);
+		auto graphicsDevice = m_rhi.InitializeGraphicsDevice(presentSurface);
+		MOE_ASSERT(graphicsDevice != nullptr);
 
 		if (ok)
 		{

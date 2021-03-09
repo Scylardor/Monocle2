@@ -1,6 +1,11 @@
+
 #ifdef MOE_VULKAN
 
 #include "VulkanDevice.h"
+
+#include "Graphics/Vulkan/ValidationLayers/VulkanValidationLayers.h"
+
+#include <set>
 
 namespace moe
 {
@@ -59,13 +64,9 @@ namespace moe
 	{
 		m_extensionProperties = m_physicalDevice.enumerateDeviceExtensionProperties();
 
-		// So far, the only extension we have to manage is swap chain.
-		std::array<const char*, 1> neededExtensions = {
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
 
 		// TODO: this could be done a bit better I think ?
-		for (auto& ext : neededExtensions)
+		for (auto& ext : S_neededExtensions)
 		{
 			auto found = std::find_if(
 				m_extensionProperties.begin(),
@@ -116,7 +117,7 @@ namespace moe
 			&& m_features.samplerAnisotropy
 			&& m_features.sampleRateShading);
 
-		if constexpr (S_enableValidationLayers) // require pipeline statistics queries in Debug mode only (like validation layers)
+		if constexpr (VulkanValidationLayers::AreEnabled()) // require pipeline statistics queries in Debug mode only (like validation layers)
 		{
 			hasAllRequiredFeatures &= (bool)m_features.pipelineStatisticsQuery;
 		}
@@ -160,6 +161,94 @@ namespace moe
 		score += m_properties.limits.maxColorAttachments;
 
 		return score;
+	}
+
+	// TODO: may have to be refactored for a nicer interface (that's not very flexible)
+	vk::PhysicalDeviceFeatures MyVkDevice::GetRequiredFeatures()
+	{
+		VkPhysicalDeviceFeatures deviceFeatures{};
+		deviceFeatures.geometryShader = true;
+		deviceFeatures.tessellationShader = true;
+		deviceFeatures.multiDrawIndirect = true;
+		deviceFeatures.multiViewport = true;
+		deviceFeatures.depthClamp = true;
+		deviceFeatures.depthBiasClamp = true;
+		deviceFeatures.fillModeNonSolid = true;
+		deviceFeatures.samplerAnisotropy = true;
+		deviceFeatures.sampleRateShading = VK_TRUE;
+
+		return deviceFeatures;
+	}
+
+
+	bool MyVkDevice::HasRequiredFeatures(const vk::PhysicalDeviceFeatures& features)
+	{
+		const bool hasAllRequiredFeatures = (
+			features.geometryShader
+			&& features.tessellationShader
+			&& features.multiDrawIndirect
+			&& features.multiViewport
+			&& features.depthClamp
+			&& features.depthBiasClamp
+			&& features.fillModeNonSolid
+			&& features.samplerAnisotropy
+			&& features.sampleRateShading);
+
+		return hasAllRequiredFeatures;
+	}
+
+
+	bool MyVkDevice::CreateLogicalDevice()
+	{
+		// what we're interested in is creating graphics devices
+		MOE_ASSERT(HasRequiredGraphicsQueueFamilies());
+
+		// Vulkan lets you assign priorities between 0.0 and 1.0 to influence the scheduling of command buffer execution on specific queues.
+		// We don't really need this feature but this is required even if there is only a single queue.
+		static const float queuePriority = 1.0f;
+
+		// Create one device queue per family index we need.
+		// This index may be the same for multiple families so we need to "filter" them to only keep the unique ones.
+		// Set also has the nice property to keep them ordered.
+		std::set<uint32_t> uniqueQueueFamilies = { m_queueIndices.GraphicsFamilyIdx.value(), m_queueIndices.PresentFamilyIdx.value() };
+
+		// We don't really need more than one queue because you can record all of the command buffers in parallel with multithreading.
+		// They will all get submitted in one call.
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos(uniqueQueueFamilies.size());
+		int iInfo = 0;
+		for (uint32_t queueFamily : uniqueQueueFamilies)
+		{
+			auto& queueCreateInfo = queueCreateInfos[iInfo];
+			queueCreateInfo.queueFamilyIndex = queueFamily;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			iInfo++;
+		}
+
+		vk::DeviceCreateInfo deviceCreateInfo{};
+
+		deviceCreateInfo.queueCreateInfoCount = (uint32_t) queueCreateInfos.size();
+		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
+
+		vk::PhysicalDeviceFeatures deviceFeatures = GetRequiredFeatures();
+		deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+
+		deviceCreateInfo.enabledExtensionCount = (uint32_t) S_neededExtensions.size();
+		deviceCreateInfo.ppEnabledExtensionNames = S_neededExtensions.data();
+
+		if constexpr (VulkanValidationLayers::AreEnabled())
+		{
+			deviceCreateInfo.enabledLayerCount = (uint32_t)VulkanValidationLayers::Names().size();
+			deviceCreateInfo.ppEnabledLayerNames = VulkanValidationLayers::Names().data();
+		}
+
+		m_logicalDevice = m_physicalDevice.createDeviceUnique(deviceCreateInfo);
+		MOE_ASSERT((bool)m_logicalDevice.get());
+
+		m_graphicsQueue = m_logicalDevice->getQueue(m_queueIndices.GraphicsFamilyIdx.value(), 0);
+		m_presentQueue = m_logicalDevice->getQueue(m_queueIndices.PresentFamilyIdx.value(), 0);
+
+		return true;
 	}
 
 

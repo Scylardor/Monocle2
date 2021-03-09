@@ -16,11 +16,16 @@ namespace moe
 
 		bool	Initialize(VulkanInstance::CreationParams&& instanceParams);
 
-		bool	InitializeGraphicsDevice(vk::SurfaceKHR targetSurface);
+		MyVkDevice* InitializeGraphicsDevice(vk::SurfaceKHR targetSurface);
 
 		const vk::Instance& GetInstance() const
 		{
 			return m_instance.Instance();
+		}
+
+		const MyVkDevice&	GetGraphicsDevice() const
+		{
+			return *m_devices.GetGraphicsDevice();
 		}
 
 	private:
