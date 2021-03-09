@@ -2,7 +2,7 @@
 #ifdef MOE_VULKAN
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+#include "Graphics/Vulkan/VulkanMacros.h"
 
 namespace moe
 {

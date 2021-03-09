@@ -6,7 +6,6 @@
 
 #include "Graphics/Vulkan/DebugMessenger/VulkanDebugMessenger.h"
 
-#include <vulkan/vulkan.hpp>
 
 #include <string>
 

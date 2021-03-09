@@ -2,7 +2,6 @@
 #ifdef MOE_VULKAN
 
 #include "VulkanInstance.h"
-#include "Graphics/Vulkan/VulkanMacros.h"
 
 namespace moe
 {
@@ -129,18 +128,18 @@ namespace moe
 		{
 			MOE_INFO(moe::ChanGraphics, "\t%s", prop.extensionName.data());
 
-			if (tmpExtList.Count() != 0)
+			for (auto iReqExt = 0u; iReqExt < tmpExtList.Count(); iReqExt++)
 			{
-				for (auto iReqExt = 0u; iReqExt < tmpExtList.Count(); iReqExt++)
+				if (strcmp(prop.extensionName, tmpExtList.List()[iReqExt]) == 0)
 				{
-					if (strcmp(prop.extensionName, tmpExtList.List()[iReqExt]) == 0)
-					{
-						// found this one
-						tmpExtList.RemoveExtensionAt(iReqExt);
-						break;
-					}
+					// found this one
+					tmpExtList.RemoveExtensionAt(iReqExt);
+					break;
 				}
 			}
+
+			if (tmpExtList.Count() == 0)
+				break;
 		}
 
 		bool allRequirementsMet = (tmpExtList.Count() == 0);
