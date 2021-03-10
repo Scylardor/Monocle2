@@ -166,7 +166,7 @@ namespace moe
 		{
 			// 4: Initialize the swap chain with the previously retrieved surface
 			// TODO: probably best to use the RHI for that. Like RHI->SwapchainFactory.Create(SwapChainCreationParams)...
-			ok = m_swapchain.Create(m_rhi.GetInstance(), surfaceProvider, presentSurface);
+			ok = m_swapchain.Initialize(m_rhi.GetInstance(), *graphicsDevice, surfaceProvider, presentSurface);
 			MOE_ASSERT(ok);
 		}
 

@@ -107,7 +107,7 @@ namespace moe
 
 	void VulkanInstance::InitDynamicDispatcherThirdStep(const MyVkDevice& device)
 	{
-		VULKAN_HPP_DEFAULT_DISPATCHER.init(device.GetLogicalDevice());
+		VULKAN_HPP_DEFAULT_DISPATCHER.init((*device));
 	}
 
 	void VulkanInstance::RetrieveExtensionProperties()

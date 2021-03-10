@@ -264,6 +264,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Surface/VulkanSurfaceProvider.h
 ./Vulkan/Swapchain/VulkanSwapchain.cpp
 ./Vulkan/Swapchain/VulkanSwapchain.h
+./Vulkan/Swapchain/VulkanSwapchainFrame.cpp
+./Vulkan/Swapchain/VulkanSwapchainFrame.h
 ./Vulkan/ValidationLayers/VulkanValidationLayers.h
 ./Vulkan/VulkanMacros.h
 	)

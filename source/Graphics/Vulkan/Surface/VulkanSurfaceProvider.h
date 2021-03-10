@@ -1,7 +1,7 @@
 #pragma once
 #ifdef MOE_VULKAN
 
-#include <vulkan/vulkan.h>
+#include "Graphics/Vulkan/VulkanMacros.h"
 
 #include "Core/Misc/Literals.h"
 

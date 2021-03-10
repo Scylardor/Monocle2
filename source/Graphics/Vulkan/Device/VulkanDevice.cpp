@@ -81,7 +81,7 @@ namespace moe
 	}
 
 
-	bool MyVkDevice::HasGraphicsAndPresentOnSameQueue() const
+	bool MyVkDevice::HasUnifiedGraphicsAndPresentQueues() const
 	{
 		return m_queueIndices.IsComplete()
 			&& m_queueIndices.GraphicsFamilyIdx == m_queueIndices.PresentFamilyIdx;
@@ -142,7 +142,7 @@ namespace moe
 		}
 
 		// Get a bonus if this device supports drawing and presentation in the same queue for improved performance.
-		if (HasGraphicsAndPresentOnSameQueue())
+		if (HasUnifiedGraphicsAndPresentQueues())
 		{
 			score += 1000;
 		}
@@ -249,6 +249,25 @@ namespace moe
 		m_presentQueue = m_logicalDevice->getQueue(m_queueIndices.PresentFamilyIdx.value(), 0);
 
 		return true;
+	}
+
+
+	vk::UniqueImageView MyVkDevice::CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const
+	{
+		vk::ImageViewCreateInfo createInfo{};
+		createInfo.image = image;
+		createInfo.viewType = vk::ImageViewType::e2D;
+		createInfo.format = format;
+		createInfo.subresourceRange.aspectMask = aspectFlags;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = mipLevels;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+
+		vk::UniqueImageView imageView = m_logicalDevice->createImageViewUnique(createInfo);
+		MOE_ASSERT(imageView.get());
+
+		return imageView;
 	}
 
 

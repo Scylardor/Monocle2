@@ -36,16 +36,33 @@ namespace moe
 			return m_swapchainSupportParams;
 		}
 
+		bool					HasUnifiedGraphicsAndPresentQueues() const;
+		bool					HasRequiredGraphicsQueueFamilies() const;
+		std::array<uint32_t, 2>	GetQueueFamilyIndicesArray() const
+		{
+			return { m_queueIndices.GraphicsFamilyIdx.value(), m_queueIndices.PresentFamilyIdx.value() };
+		}
 
 		uint32_t	GetScoreForPresentSurface(vk::SurfaceKHR presentSurface);
 
-
 		bool		CreateLogicalDevice();
 
-		vk::Device	GetLogicalDevice() const
+		// TODO: temporary, to move somewhere else...
+		vk::UniqueImageView	CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
+
+
+		const vk::Device* operator->() const
 		{
+			MOE_ASSERT(m_logicalDevice.get());
+			return &m_logicalDevice.get();
+		}
+
+		vk::Device operator*() const
+		{
+			MOE_ASSERT(m_logicalDevice.get());
 			return m_logicalDevice.get();
 		}
+
 
 	private:
 
@@ -61,10 +78,6 @@ namespace moe
 			}
 		};
 
-
-
-		bool		HasGraphicsAndPresentOnSameQueue() const;
-		bool		HasRequiredGraphicsQueueFamilies() const;
 
 		bool		FetchGraphicsFeatures();
 		void		FetchGraphicsProperties();
