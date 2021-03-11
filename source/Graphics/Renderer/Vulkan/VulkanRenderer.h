@@ -104,6 +104,7 @@ namespace moe
 
 		VulkanRHI			m_rhi;
 
+		class MyVkDevice*	m_graphicsDevice;
 		VulkanSwapchain		m_swapchain;
 
 		RenderWorld		m_world;

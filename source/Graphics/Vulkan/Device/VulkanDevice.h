@@ -51,6 +51,16 @@ namespace moe
 		vk::UniqueImageView	CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
 
 
+		vk::Queue	GraphicsQueue() const
+		{
+			return m_graphicsQueue;
+		}
+
+		vk::Queue	PresentQueue() const
+		{
+			return m_presentQueue;
+		}
+
 		const vk::Device* operator->() const
 		{
 			MOE_ASSERT(m_logicalDevice.get());
@@ -58,6 +68,12 @@ namespace moe
 		}
 
 		vk::Device operator*() const
+		{
+			MOE_ASSERT(m_logicalDevice.get());
+			return m_logicalDevice.get();
+		}
+
+		explicit operator vk::Device() const
 		{
 			MOE_ASSERT(m_logicalDevice.get());
 			return m_logicalDevice.get();
@@ -114,6 +130,7 @@ namespace moe
 		};
 
 	};
+
 
 }
 

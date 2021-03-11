@@ -1,53 +1,55 @@
 
-#include "VulkanSwapchainImage.h"
 #ifdef MOE_VULKAN
 
 #include "VulkanSwapchainFrame.h"
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
 namespace moe
 {
-	bool SwapchainFrame::Initialize(const MyVkDevice& device, vk::Image frameImage, vk::Format swapChainImageFormat)
+	VulkanSwapchainImage::VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, vk::Format imageFormat)
 	{
-		FrameImage.Handle = frameImage;
+		Image = swapchainImage;
 
 		// Create the image view here for now. TODO: use a Texture Factory for that
-		FrameImage.View = device.CreateImageView(FrameImage.Handle, swapChainImageFormat, vk::ImageAspectFlagBits::eColor, 1);
+		View = device.CreateImageView(Image, imageFormat, vk::ImageAspectFlagBits::eColor, 1);
+
+	}
+
+
+	void VulkanSwapchainImage::AcquireFence(vk::Device device, vk::Fence newInFlightFence)
+	{
+		// Check if a previous frame is using this image (i.e. there is its fence to wait on)
+		if (InFlightFence)
+		{
+			static const auto NO_TIMEOUT = UINT64_MAX;
+			static const auto waitAll = VK_TRUE;
+			MOE_VK_CHECK(device.waitForFences(1, &InFlightFence, waitAll, NO_TIMEOUT));
+		}
+
+		// This image is now being controlled by the new fence (bound to current frame)
+		InFlightFence = newInFlightFence;
+	}
+
+
+	VulkanSwapchainFrame::VulkanSwapchainFrame(const MyVkDevice& device)
+	{
+		RenderCompleteSemaphore = device->createSemaphoreUnique(vk::SemaphoreCreateInfo{});
+		PresentCompleteSemaphore = device->createSemaphoreUnique(vk::SemaphoreCreateInfo{});
+
+		vk::FenceCreateInfo createInfo{};
+		createInfo.flags = vk::FenceCreateFlagBits::eSignaled; // Create the fence in 'signaled' state or waiting for it the first time will hang forever.
+		QueueSubmitFence = device->createFenceUnique(createInfo);
+	}
+
+
+	bool VulkanSwapchainFrame::WaitForSubmitFence(const MyVkDevice& device)
+	{
+		static const auto NO_TIMEOUT = UINT64_MAX;
+		static const auto waitAll = VK_TRUE;
+
+		vk::Fence* imageSubmitFence = &QueueSubmitFence.get();
+		MOE_VK_CHECK(device->waitForFences(1, imageSubmitFence, waitAll, NO_TIMEOUT));
 
 		return true;
-	}
-
-
-
-	bool SwapchainFrameList::Initialize(const MyVkDevice& device, vk::SwapchainKHR swapChain, vk::Format swapChainImageFormat)
-	{
-		auto newSwapchainImages = device->getSwapchainImagesKHR(swapChain);
-
-		MOE_ASSERT(false == newSwapchainImages.empty());
-
-		ClearImages(*device);
-		m_swapChainImages.resize(newSwapchainImages.size());
-
-		int iFrame = 0;
-		bool ok = true; // start optimistic
-		for (auto& frame : m_swapChainImages)
-		{
-			ok &= frame.Initialize(device, newSwapchainImages[iFrame], swapChainImageFormat);
-			MOE_ASSERT(ok);
-
-			iFrame++;
-		}
-
-		return ok;
-	}
-
-
-	void SwapchainFrameList::ClearImages(vk::Device device)
-	{
-		for (auto& frame : m_swapChainImages)
-		{
-			device.destroyImage(frame.FrameImage.Handle);
-		}
-		m_swapChainImages.clear(); // destroy unique handles
 	}
 }
 

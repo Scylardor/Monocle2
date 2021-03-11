@@ -23,6 +23,10 @@ namespace moe
 		};
 		virtual SurfaceDimensions	GetSurfaceDimensions() = 0;
 
+		typedef std::function<void(Width_t, Height_t)>	SurfaceResizeCallback;
+		virtual void	RegisterSurfaceResizeCallback(SurfaceResizeCallback&& cb) = 0;
+
+
 	};
 }
 

@@ -159,14 +159,14 @@ namespace moe
 		vk::SurfaceKHR presentSurface = surfaceProvider.CreateSurface(m_rhi.GetInstance());
 
 		// 3: Initialize the graphics device (physical and logical device retrieval)
-		auto graphicsDevice = m_rhi.InitializeGraphicsDevice(presentSurface);
-		MOE_ASSERT(graphicsDevice != nullptr);
+		m_graphicsDevice = m_rhi.InitializeGraphicsDevice(presentSurface);
+		MOE_ASSERT(m_graphicsDevice != nullptr);
 
 		if (ok)
 		{
 			// 4: Initialize the swap chain with the previously retrieved surface
 			// TODO: probably best to use the RHI for that. Like RHI->SwapchainFactory.Create(SwapChainCreationParams)...
-			ok = m_swapchain.Initialize(m_rhi.GetInstance(), *graphicsDevice, surfaceProvider, presentSurface);
+			ok = m_swapchain.Initialize(m_rhi.GetInstance(), *m_graphicsDevice, surfaceProvider, presentSurface);
 			MOE_ASSERT(ok);
 		}
 

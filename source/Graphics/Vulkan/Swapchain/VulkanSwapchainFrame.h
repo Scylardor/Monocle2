@@ -7,50 +7,37 @@ namespace moe
 {
 	class MyVkDevice;
 
-	class SwapchainFrame
+	struct VulkanSwapchainImage
+	{
+		VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, vk::Format imageFormat);
+
+		void	AcquireFence(vk::Device device, vk::Fence newInFlightFence);
+
+		// not a UniqueImage? This isn't a mistake!
+		// because those images are retrieved via getSwapchainImagesKHR, they get automatically freed by the UniqueSwapchain handle dtor!
+		vk::Image			Image;
+		vk::UniqueImageView	View;
+		vk::Fence			InFlightFence{}; // a reference to a fence in one of the swapchain frames
+	};
+
+	class VulkanSwapchainFrame
 	{
 	public:
-		struct VulkanSwapchainImage
-		{
-			// not a UniqueImage? This isn't a mistake!
-			// because those images are retrieved via getSwapchainImagesKHR, they get automatically freed by the UniqueSwapchain handle dtor!
-			vk::Image			Handle;
-			vk::UniqueImageView	View;
-		};
 
+		VulkanSwapchainFrame(const MyVkDevice& device);
 
-		SwapchainFrame() = default;
+		bool	WaitForSubmitFence(const MyVkDevice& device);
 
-		bool	Initialize(const MyVkDevice& device, vk::Image frameImage, vk::Format swapChainImageFormat);
-
-
-		VulkanSwapchainImage	FrameImage{};
+		vk::UniqueSemaphore		PresentCompleteSemaphore{};
+		vk::UniqueSemaphore		RenderCompleteSemaphore{};
+		vk::UniqueFence			QueueSubmitFence{};
 
 	private:
 
 
-		vk::UniqueSemaphore		m_presentCompleteSemaphore{};
-		vk::UniqueSemaphore		m_renderCompleteSemaphore{};
-
 	};
 
 
-
-	class SwapchainFrameList
-	{
-	public:
-
-		bool	Initialize(const MyVkDevice& device, vk::SwapchainKHR swapChain, vk::Format swapChainImageFormat);
-		void	Teardown(const MyVkDevice& device);
-
-		void	ClearImages(vk::Device device);
-
-	private:
-
-		std::vector<SwapchainFrame>	m_swapChainImages;
-		uint32_t					m_currentFrameIdx = 0;
-
-	};
 
 }
 

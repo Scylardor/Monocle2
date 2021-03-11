@@ -23,33 +23,144 @@ namespace moe
 		m_surface = vk::UniqueSurfaceKHR(presentSurface, instance);
 		MOE_ASSERT(m_surface.get());
 
+		m_surfaceProvider->RegisterSurfaceResizeCallback([this](Width_t, Height_t)
+		{
+			m_surfaceWasResized = true;
+		});
+
 		vk::SwapchainCreateInfoKHR createInfo = GenerateSwapchainCreateInfo(compatibleDevice, m_surface.get());
 
 		m_swapChain = compatibleDevice->createSwapchainKHRUnique(createInfo);
 		MOE_ASSERT(m_swapChain.get());
 
-		bool ok = m_frameList.Initialize(compatibleDevice, m_swapChain.get(), createInfo.imageFormat);
+		bool ok = InitializeFrameList(createInfo.imageFormat);
 		MOE_ASSERT(ok);
 
+		PrepareNewFrame();
 		return ok;
 	}
 
 
-	void VulkanSwapchain::DrawFrame()
+	void VulkanSwapchain::SubmitCommandBuffers(vk::CommandBuffer& commandBufferList, uint32_t listSize)
 	{
-		PrepareNewFrame();
+		vk::SubmitInfo submitInfo{};
+
+		submitInfo.pCommandBuffers = &commandBufferList;
+		submitInfo.commandBufferCount = listSize;
+
+		// Wait for the "present is done" semaphore of this frame to be signalled, so that it is safe to reuse for drawing.
+		submitInfo.pWaitSemaphores = GetCurrentFramePresentCompleteSemaphore();
+		submitInfo.waitSemaphoreCount = 1;
+
+		// Don't let the stage writing to the image start before the present semaphore was signalled.
+		// The submit is going to wait before starting the color attachment output ("write to the image") stage.
+		vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+		submitInfo.setPWaitDstStageMask(waitStages);
+
+		// Once the submit is finished, signal it to the render finished semaphore of this frame.
+		submitInfo.pSignalSemaphores = GetCurrentFrameRenderCompleteSemaphore();
+		submitInfo.signalSemaphoreCount = 1;
+
+		// The current image fence might still be in signaled state. Reset it so the submit doesn't wait on it forever.
+		// It's best to do it right before actually using the fence:
+		vk::Fence inFlightImageFence = GetCurrentFrameQueueSubmitFence();
+		MOE_VK_CHECK(Device()->resetFences(1, &inFlightImageFence));
+
+		// TODO : should really move the queues in the swapchain.
+		MOE_VK_CHECK(Device().GraphicsQueue().submit(1, &submitInfo, inFlightImageFence));
 	}
+
+
+	void VulkanSwapchain::PresentFrame()
+	{
+		vk::PresentInfoKHR presentInfo{};
+
+		// Wait for rendering to be done before trying to present.
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = GetCurrentFrameRenderCompleteSemaphore();
+
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &m_swapChain.get();
+		presentInfo.pImageIndices = &m_currentImageInFlightIdx;
+
+		vk::Result result = Device().PresentQueue().presentKHR(&presentInfo);
+
+		// vkQueuePresentKHR returns the same values than vkAcquireNextImageKHR with the same meaning.
+		// We also recreate the swap chain if it is suboptimal, because we want the best possible result.
+		// Regarding framebuffer resized : It is important to check this after vkQueuePresentKHR,
+		// to ensure the semaphores are in a consistent state, otherwise a signalled semaphore may never be properly waited upon.
+		if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+		{
+			MOE_WARNING(moe::ChanGraphics, "Swap chain has become obsolete - recreating it...");
+			// TODO: recreate swap chain here.
+		}
+
+		m_currentFrameIdx = (m_currentFrameIdx + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
+
 
 
 	void VulkanSwapchain::PrepareNewFrame()
 	{
+		// First wait on the fence of the oldest frame that was submitted, basically
+		m_swapChainFrames[m_currentFrameIdx].WaitForSubmitFence(*m_device);
 
+		// Now get the index of the next swap chain image we can use
+		vk::Result acquireResult = AcquireNextImage();
+
+		switch (acquireResult)
+		{
+		case vk::Result::eErrorOutOfDateKHR:
+			// we cannot use this swap chain anymore.
+			MOE_WARNING(moe::ChanGraphics, "Swap chain out of date - recreation in progress");
+			// TODO: recreate the swap chain here.
+			return;
+		case vk::Result::eSuboptimalKHR:
+			// don't manage subobtimal here because we successfully acquired the image : do it after present
+			MOE_WARNING(moe::ChanGraphics, "Going to present to suboptimal swap chain, please fix ASAP");
+			break;
+		default:
+			MOE_ASSERT(acquireResult == vk::Result::eSuccess); // not supposed to be anything else than success
+			break;
+		}
+
+		// We don't know which image it is. Perhaps it is still in use by a previous frame.
+		// it shouldn't but check just in case. Then give it current frame's fence
+		m_imagesInFlight[m_currentImageInFlightIdx].AcquireFence((vk::Device)*m_device, GetCurrentFrameQueueSubmitFence());
 	}
 
 
-	void VulkanSwapchain::AcquireNextImage()
+	vk::Result VulkanSwapchain::AcquireNextImage()
 	{
+		static const auto NO_TIMEOUT = UINT64_MAX;
+		// Use no fence because we use a semaphore instead (better for performance)
+		vk::Result acqRes = (Device()->acquireNextImageKHR(m_swapChain.get(), NO_TIMEOUT, *GetCurrentFramePresentCompleteSemaphore(), vk::Fence(), &m_currentImageInFlightIdx));
+		MOE_ASSERT(m_currentImageInFlightIdx < m_imagesInFlight.size());
 
+		return acqRes;
+	}
+
+
+	bool VulkanSwapchain::InitializeFrameList(vk::Format swapChainImageFormat)
+	{
+		m_swapChainFrames.clear(); // destroys unique handles
+		m_swapChainFrames.reserve(MAX_FRAMES_IN_FLIGHT);
+		for (int iFrame = 0; iFrame < MAX_FRAMES_IN_FLIGHT; iFrame++)
+		{
+			m_swapChainFrames.emplace_back(Device());
+		}
+
+		auto newSwapchainImages = Device()->getSwapchainImagesKHR(m_swapChain.get());
+		MOE_ASSERT(false == newSwapchainImages.empty());
+
+		m_imagesInFlight.clear(); // destroy unique handles, if any. vkImages will be cleaned up by UniqueSwapchain dtor
+		m_imagesInFlight.reserve(newSwapchainImages.size());
+		for (auto scImage : newSwapchainImages)
+		{
+			m_imagesInFlight.emplace_back(Device(), scImage, swapChainImageFormat);
+		}
+
+		return true;
 	}
 
 
