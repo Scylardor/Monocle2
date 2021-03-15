@@ -3,6 +3,8 @@
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 
+#include "Graphics/Vulkan/Framebuffer/FramebufferFactory.h"
+
 #include <optional>
 
 namespace moe
@@ -56,10 +58,19 @@ namespace moe
 			return m_graphicsQueue;
 		}
 
+		uint32_t	GraphicsQueueIdx() const
+		{
+			MOE_ASSERT(m_queueIndices.GraphicsFamilyIdx.has_value());
+			return m_queueIndices.GraphicsFamilyIdx.value();
+		}
+
 		vk::Queue	PresentQueue() const
 		{
 			return m_presentQueue;
 		}
+
+
+
 
 		const vk::Device* operator->() const
 		{
@@ -119,6 +130,7 @@ namespace moe
 		SwapchainSupportParameters				m_swapchainSupportParams{};
 
 
+
 		FamilyIndices	m_queueIndices;
 		vk::Queue		m_graphicsQueue;
 		vk::Queue		m_presentQueue;
@@ -128,6 +140,12 @@ namespace moe
 		{
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
+
+
+	public:
+
+
+		FramebufferFactory	FramebufferFactory;
 
 	};
 
