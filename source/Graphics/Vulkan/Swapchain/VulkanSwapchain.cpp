@@ -36,16 +36,22 @@ namespace moe
 		bool ok = InitializeFrameList(createInfo.imageFormat);
 		MOE_ASSERT(ok);
 
+		// Image format was validated (swap chain successfully created) : store it somewhere (useful to create framebuffers using swap chain images)
+		m_imageFormat = createInfo.imageFormat;
+		m_imagesExtent = createInfo.imageExtent;
+
 		PrepareNewFrame();
 		return ok;
 	}
 
 
-	void VulkanSwapchain::SubmitCommandBuffers(vk::CommandBuffer& commandBufferList, uint32_t listSize)
+	void VulkanSwapchain::SubmitCommandBuffers(vk::CommandBuffer* commandBufferList, uint32_t listSize)
 	{
+		MOE_ASSERT(commandBufferList != nullptr && listSize > 0);
+
 		vk::SubmitInfo submitInfo{};
 
-		submitInfo.pCommandBuffers = &commandBufferList;
+		submitInfo.pCommandBuffers = commandBufferList;
 		submitInfo.commandBufferCount = listSize;
 
 		// Wait for the "present is done" semaphore of this frame to be signalled, so that it is safe to reuse for drawing.
@@ -126,7 +132,7 @@ namespace moe
 
 		// We don't know which image it is. Perhaps it is still in use by a previous frame.
 		// it shouldn't but check just in case. Then give it current frame's fence
-		m_imagesInFlight[m_currentImageInFlightIdx].AcquireFence((vk::Device)*m_device, GetCurrentFrameQueueSubmitFence());
+		m_imagesInFlight[m_currentImageInFlightIdx].AcquireFence((vk::Device)Device(), GetCurrentFrameQueueSubmitFence());
 	}
 
 
@@ -198,7 +204,7 @@ namespace moe
 		else
 		{
 			createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-			createInfo.queueFamilyIndexCount = 2;
+			createInfo.queueFamilyIndexCount = (uint32_t) queueFamilyIndicesArray.size();
 			createInfo.pQueueFamilyIndices = queueFamilyIndicesArray.data();
 		}
 

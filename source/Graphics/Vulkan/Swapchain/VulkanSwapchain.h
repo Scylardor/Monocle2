@@ -25,7 +25,7 @@ namespace moe
 
 		void		PrepareNewFrame();
 
-		void		SubmitCommandBuffers(vk::CommandBuffer& commandBufferList, uint32_t listSize);
+		void		SubmitCommandBuffers(vk::CommandBuffer* commandBufferList, uint32_t listSize);
 
 		void		PresentFrame();
 
@@ -33,6 +33,36 @@ namespace moe
 		{
 			return m_currentImageInFlightIdx;
 		}
+
+		uint32_t	GetImagesInFlightCount() const
+		{
+			return (uint32_t) m_imagesInFlight.size();
+		}
+
+		vk::Format	GetColorAttachmentFormat() const
+		{
+			return m_imageFormat;
+		}
+
+		vk::ImageView	GetColorAttachmentView(int imageIndex) const
+		{
+			MOE_ASSERT(imageIndex < m_imagesInFlight.size());
+			return m_imagesInFlight[imageIndex].View.get();
+		}
+
+		vk::ImageView	GetDepthAttachmentView(int imageIndex) const
+		{
+			MOE_ASSERT(imageIndex < m_imagesInFlight.size());
+			return vk::ImageView(); // TODO
+		}
+
+		const VkExtent2D&	GetSwapchainImageExtent() const
+		{
+			return m_imagesExtent;
+		}
+
+		std::vector<vk::FramebufferCreateInfo>	GenerateSwapChainAttachmentsFramebufferInfo() const;
+
 
 	private:
 
@@ -78,7 +108,11 @@ namespace moe
 		std::vector<VulkanSwapchainImage>	m_imagesInFlight;
 		uint32_t							m_currentImageInFlightIdx = 0;
 
+		VkExtent2D							m_imagesExtent{};
+
 		bool	m_surfaceWasResized = false;
+
+		vk::Format								m_imageFormat;
 
 		// Bound resources
 		IVulkanSurfaceProvider* m_surfaceProvider = nullptr;
