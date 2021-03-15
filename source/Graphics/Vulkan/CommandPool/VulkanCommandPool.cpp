@@ -7,7 +7,7 @@
 namespace moe
 {
 	VulkanCommandPool::VulkanCommandPool(const MyVkDevice& device, const vk::CommandPoolCreateInfo& poolCreateInfo,
-		vk::CommandBufferAllocateInfo& bufferCreateInfo, uint32_t nbAllocatedBuffers)
+		vk::CommandBufferAllocateInfo& bufferCreateInfo)
 	{
 		m_pool = device->createCommandPoolUnique(poolCreateInfo);
 		MOE_ASSERT(m_pool);
@@ -15,10 +15,10 @@ namespace moe
 		// patch the command buffer allocate with our pool handle
 		bufferCreateInfo.commandPool = m_pool.get();
 
-		m_availableCommandBuffers.resize(nbAllocatedBuffers);
+		m_availableCommandBuffers.resize(bufferCreateInfo.commandBufferCount);
 		MOE_VK_CHECK(device->allocateCommandBuffers(&bufferCreateInfo, m_availableCommandBuffers.data() + m_availableCommandBuffers.size()));
 
-		m_recordedCommandBuffers.reserve(nbAllocatedBuffers);
+		m_recordedCommandBuffers.reserve(bufferCreateInfo.commandBufferCount);
 	}
 
 

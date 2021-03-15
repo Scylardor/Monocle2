@@ -16,7 +16,7 @@ namespace moe
 	public:
 
 		VulkanCommandPool(const MyVkDevice& device, const vk::CommandPoolCreateInfo& poolCreateInfo,
-							vk::CommandBufferAllocateInfo& bufferCreateInfo, uint32_t nbAllocatedBuffers);
+							vk::CommandBufferAllocateInfo& bufferCreateInfo);
 
 
 		bool	Initialize(const MyVkDevice& device, uint32_t wantedCapacity, vk::CommandPoolCreateFlagBits flags = vk::CommandPoolCreateFlagBits());

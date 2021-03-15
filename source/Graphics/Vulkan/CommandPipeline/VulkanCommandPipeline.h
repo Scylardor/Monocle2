@@ -39,15 +39,10 @@ namespace moe
 
 		vk::CommandBuffer	GrabAvailableBuffer();
 
-		std::vector<VulkanCommandPool>	m_commandPools2;
-
-		//std::vector<vk::UniqueCommandPool>	m_commandPools;				// Available pools to allocate command buffers from
-		//std::vector<vk::CommandBuffer>		m_availableCommandBuffers;	// Available command buffers
-		//std::vector<vk::CommandBuffer>		m_recordedCommandBuffers;	// Command buffers that have been used
+		std::vector<VulkanCommandPool>	m_commandPools;
 
 		vk::CommandPoolCreateInfo		m_poolCreateInfo;	// keep it for when we need to reallocate a new pool.
 		vk::CommandBufferAllocateInfo	m_bufferCreateInfo;	// keep it for when we need to reallocate a new pool.
-		uint32_t						m_reservedBuffersPerPool = DEFAULT_BUFFERS_PER_POOL; // a safe number to begin with ?
 
 
 	};

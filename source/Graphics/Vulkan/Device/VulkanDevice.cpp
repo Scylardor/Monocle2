@@ -5,6 +5,8 @@
 
 #include "Graphics/Vulkan/ValidationLayers/VulkanValidationLayers.h"
 
+#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
+
 #include <set>
 
 namespace moe
@@ -269,6 +271,38 @@ namespace moe
 
 		return imageView;
 	}
+
+	vk::UniqueDeviceMemory	MyVkDevice::AllocateBufferDeviceMemory(VulkanBuffer& buffer, vk::MemoryPropertyFlags memPropertiesFlags) const
+	{
+		// First retrieve the memory requirements for this buffer and properties
+		auto memRequirements = m_logicalDevice.get().getBufferMemoryRequirements(buffer);
+
+		// Now we need to find the right memory type index for the returned requirements...
+		auto memProperties = m_physicalDevice.getMemoryProperties();
+
+		uint32_t memTypeIndex = UINT32_MAX;
+		for (uint32_t iMemType = 0; iMemType < memProperties.memoryTypeCount; iMemType++)
+		{
+			if (memRequirements.memoryTypeBits & (1 << iMemType) && (memProperties.memoryTypes[iMemType].propertyFlags & memPropertiesFlags) == memPropertiesFlags)
+			{
+				memTypeIndex = iMemType;
+				break;
+			}
+		}
+		MOE_ASSERT(memTypeIndex != UINT32_MAX);
+
+		const vk::MemoryAllocateInfo allocInfo{
+			memRequirements.size,
+			memTypeIndex
+		};
+
+		auto bufferMemory = m_logicalDevice.get().allocateMemoryUnique(allocInfo);
+		MOE_ASSERT(bufferMemory);
+
+		return bufferMemory;
+	}
+
+
 
 
 	bool MyVkDevice::HasRequiredGraphicsQueueFamilies() const

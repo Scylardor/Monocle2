@@ -50,8 +50,8 @@ namespace moe
 		bool		CreateLogicalDevice();
 
 		// TODO: temporary, to move somewhere else...
-		vk::UniqueImageView	CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
-
+		vk::UniqueImageView		CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
+		vk::UniqueDeviceMemory	AllocateBufferDeviceMemory(class VulkanBuffer& buffer, vk::MemoryPropertyFlags memoryProperties) const;
 
 		vk::Queue	GraphicsQueue() const
 		{
