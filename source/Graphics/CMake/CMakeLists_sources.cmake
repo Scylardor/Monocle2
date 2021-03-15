@@ -253,6 +253,10 @@ set(Monocle_Graphics_SOURCES
 ./VertexLayout/VertexLayout.h
 ./VertexLayout/VertexLayoutDescriptor.h
 ./VertexLayout/VertexLayoutHandle.h
+./Vulkan/CommandPipeline/VulkanCommandPipeline.cpp
+./Vulkan/CommandPipeline/VulkanCommandPipeline.h
+./Vulkan/CommandPool/VulkanCommandPool.cpp
+./Vulkan/CommandPool/VulkanCommandPool.h
 ./Vulkan/DebugMessenger/VulkanDebugMessenger.cpp
 ./Vulkan/DebugMessenger/VulkanDebugMessenger.h
 ./Vulkan/Device/VulkanDevice.cpp
