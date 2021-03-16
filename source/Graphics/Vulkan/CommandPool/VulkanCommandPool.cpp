@@ -44,7 +44,7 @@ namespace moe
 		m_recordedCommandBuffers.clear();
 	}
 
-
+	// TODO: a bit dangerous, FreeBuffers could never be called ! Better to put it in the dtor ? (but we need the device... deleter?)
 	void VulkanCommandPool::FreeBuffers(const MyVkDevice& device)
 	{
 		Reset(device);

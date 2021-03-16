@@ -7,6 +7,7 @@
 
 #include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
 
+#include "Graphics/Vulkan/CommandPool/VulkanCommandPool.h"
 #include <set>
 
 namespace moe
@@ -303,6 +304,43 @@ namespace moe
 	}
 
 
+	void MyVkDevice::ImmediateCommandSubmit(std::function<void(vk::CommandBuffer)> pushFunction) const
+	{
+		// Use a transient command pool with one-time submit command buffers to inform the driver this is going to be short-lived
+		vk::CommandPoolCreateInfo poolCreateInfo{ vk::CommandPoolCreateFlagBits::eTransient, GraphicsQueueIdx() };
+		vk::CommandBufferAllocateInfo cbCreateInfo{ vk::CommandPool(), vk::CommandBufferLevel::ePrimary, 1 };
+		VulkanCommandPool tmpPool{ *this, poolCreateInfo, cbCreateInfo };
+		tmpPool.Initialize(*this, 1, vk::CommandPoolCreateFlagBits::eTransient);
+
+		auto tmpCmdBuffer = tmpPool.TryGrabCommandBuffer();
+		MOE_ASSERT(tmpCmdBuffer.has_value());
+
+		(*tmpCmdBuffer).begin(vk::CommandBufferBeginInfo{ vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
+
+		pushFunction(tmpCmdBuffer.value());
+
+		(*tmpCmdBuffer).end();
+
+		vk::SubmitInfo submitInfo{};
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &tmpCmdBuffer.value();
+
+		// Now create a fence to wait on
+		vk::FenceCreateInfo fenceCreateInfo{
+			vk::FenceCreateFlagBits()
+		};
+
+		vk::UniqueFence submitFence = m_logicalDevice->createFenceUnique(fenceCreateInfo);
+
+		GraphicsQueue().submit(1, &submitInfo, submitFence.get());
+
+		// Now wait for the operation to complete
+		static const bool WAIT_ALL = true;
+		static const auto NO_TIMEOUT = UINT64_MAX;
+		m_logicalDevice->waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT);
+
+		// The operation is over !
+	}
 
 
 	bool MyVkDevice::HasRequiredGraphicsQueueFamilies() const

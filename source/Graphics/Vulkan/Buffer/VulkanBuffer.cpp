@@ -7,9 +7,24 @@
 
 namespace moe
 {
-	VulkanBuffer VulkanBuffer::NewDeviceBuffer(const MyVkDevice& /*device*/)
+	VulkanBuffer VulkanBuffer::NewDeviceBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, vk::BufferUsageFlagBits specificUsageFlags)
 	{
-		return VulkanBuffer();
+		// First create a staging buffer
+		VulkanBuffer staging = NewStagingBuffer(device, bufferSize);
+
+		// Then upload the data in the staging buffer
+		void* mappedBuf = device->mapMemory(staging.Memory(), 0, bufferSize, vk::MemoryMapFlags());
+		MOE_ASSERT(mappedBuf != nullptr);
+		memcpy(mappedBuf, bufferData, bufferSize);
+		device->unmapMemory(staging.Memory());
+
+		// Now create our "final" device-local buffer
+		VulkanBuffer deviceBuffer = CreateBuffer(device, bufferSize, vk::BufferUsageFlagBits::eTransferDst | specificUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+		// Schedule the copy operation from the staging buffer to the device-local buffer
+		Copy(device, staging, deviceBuffer, bufferSize);
+
+		return deviceBuffer;
 	}
 
 
@@ -23,71 +38,37 @@ namespace moe
 	}
 
 
-	VulkanBuffer VulkanBuffer::NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, byte_t* bufferData)
+	VulkanBuffer VulkanBuffer::NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData)
 	{
-		// First create a staging buffer
-		VulkanBuffer staging = NewStagingBuffer(device, bufferSize);
-
-		// Then upload the data in the staging buffer
-		void* mappedBuf = device->mapMemory(staging.Memory(), 0, bufferSize, vk::MemoryMapFlags());
-		MOE_ASSERT(mappedBuf != nullptr);
-		memcpy(mappedBuf, bufferData, bufferSize);
-		device->unmapMemory(staging.Memory());
-
-		// Now create our "final" device-local buffer
-		VulkanBuffer vertexBuffer = CreateBuffer(device, bufferSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-		// Schedule the copy operation from the staging buffer to the device-local buffer
-
-
-
-
+		VulkanBuffer vertexBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eVertexBuffer);
 		return vertexBuffer;
+	}
+
+	VulkanBuffer VulkanBuffer::NewIndexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData)
+	{
+		VulkanBuffer indexBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eIndexBuffer);
+		return indexBuffer;
+	}
+
+	VulkanBuffer VulkanBuffer::NewUniformBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData)
+	{
+		VulkanBuffer uniformBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eUniformBuffer);
+		return uniformBuffer;
 	}
 
 
 	void VulkanBuffer::Copy(const MyVkDevice& device, vk::Buffer from, vk::Buffer to, VkDeviceSize size)
 	{
 		// TODO: this will have to be refactored in a BufferFactory and a TransientCommandPool.
+		device.ImmediateCommandSubmit([=](vk::CommandBuffer recordingBuffer)
+			{
+				vk::BufferCopy copyRegion{};
+				copyRegion.srcOffset = 0; // Optional
+				copyRegion.dstOffset = 0; // Optional
+				copyRegion.size = size;
+				recordingBuffer.copyBuffer(from, to, 1, &copyRegion);
+			});
 
-		// Use a transient command pool with one-time submit command buffers to inform the driver this is going to be short-lived
-		vk::CommandPoolCreateInfo poolCreateInfo{ vk::CommandPoolCreateFlagBits::eTransient, device.GraphicsQueueIdx() };
-		vk::CommandBufferAllocateInfo cbCreateInfo{ vk::CommandPool(), vk::CommandBufferLevel::ePrimary, 1 };
-		VulkanCommandPool tmpPool{device, poolCreateInfo, cbCreateInfo };
-		tmpPool.Initialize(device, 1, vk::CommandPoolCreateFlagBits::eTransient);
-
-		auto tmpCmdBuffer = tmpPool.TryGrabCommandBuffer();
-		MOE_ASSERT(tmpCmdBuffer.has_value());
-
-		(*tmpCmdBuffer).begin(vk::CommandBufferBeginInfo{ vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
-
-		vk::BufferCopy copyRegion{};
-		copyRegion.srcOffset = 0; // Optional
-		copyRegion.dstOffset = 0; // Optional
-		copyRegion.size = size;
-		(*tmpCmdBuffer).copyBuffer(from, to, 1, &copyRegion);
-
-		(*tmpCmdBuffer).end();
-
-		vk::SubmitInfo submitInfo{};
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &tmpCmdBuffer.value();
-
-		// Now create a fence to wait on
-		vk::FenceCreateInfo fenceCreateInfo{
-			vk::FenceCreateFlagBits()
-		};
-
-		vk::UniqueFence submitFence = device->createFenceUnique(fenceCreateInfo);
-
-		device.GraphicsQueue().submit(1, &submitInfo, submitFence.get());
-
-		// Now wait for the operation to complete
-		static const bool WAIT_ALL = true;
-		static const auto NO_TIMEOUT = UINT64_MAX;
-		device->waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT);
-
-		// The operation is over !
 	}
 
 
