@@ -38,19 +38,19 @@ namespace moe
 	}
 
 
-	VulkanBuffer VulkanBuffer::NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData)
+	VulkanBuffer VulkanBuffer::NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData)
 	{
 		VulkanBuffer vertexBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eVertexBuffer);
 		return vertexBuffer;
 	}
 
-	VulkanBuffer VulkanBuffer::NewIndexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData)
+	VulkanBuffer VulkanBuffer::NewIndexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData)
 	{
 		VulkanBuffer indexBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eIndexBuffer);
 		return indexBuffer;
 	}
 
-	VulkanBuffer VulkanBuffer::NewUniformBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData)
+	VulkanBuffer VulkanBuffer::NewUniformBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData)
 	{
 		VulkanBuffer uniformBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eUniformBuffer);
 		return uniformBuffer;

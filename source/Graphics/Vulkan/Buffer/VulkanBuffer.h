@@ -15,11 +15,11 @@ namespace moe
 
 		static VulkanBuffer	NewStagingBuffer(const MyVkDevice& device, VkDeviceSize bufferSize);
 
-		static VulkanBuffer	NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData);
+		static VulkanBuffer	NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData);
 
-		static VulkanBuffer	NewIndexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData);
+		static VulkanBuffer	NewIndexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData);
 
-		static VulkanBuffer	NewUniformBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const byte_t* bufferData);
+		static VulkanBuffer	NewUniformBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData);
 
 
 		static void		Copy(const MyVkDevice& device, vk::Buffer from, vk::Buffer to, VkDeviceSize size);

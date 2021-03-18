@@ -10,7 +10,7 @@ namespace moe
 	/**
 	 * \brief A graphics-API agnostic enum describing each possible stage of a shader.
 	 */
-	enum ShaderStage : char
+	enum ShaderStage : char // TODO : Make it an enum class because it's causing subtle bugs !
 	{
 		None = 0,
 		Vertex = 1 << 0,

@@ -13,9 +13,49 @@
 #include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
 
 #include "Graphics/Vulkan/FrameGraph/VulkanFrameGraph.h"
+
+#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
+
+#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
+
 namespace moe
 {
 	class IVulkanSurfaceProvider;
+
+	struct VertexData
+	{
+		glm::vec2 pos;
+		glm::vec3 color;
+
+		static vk::VertexInputBindingDescription	GetBindingDescription()
+		{
+			vk::VertexInputBindingDescription bindingDescription{};
+			bindingDescription.binding = 0;
+			bindingDescription.stride = sizeof(VertexData);
+			bindingDescription.inputRate = vk::VertexInputRate::eVertex;
+
+			return bindingDescription;
+		}
+
+
+		static std::array<vk::VertexInputAttributeDescription, 2> GetAttributeDescriptions()
+		{
+			std::array < vk::VertexInputAttributeDescription, 2 > attributeDescriptions{};
+
+			attributeDescriptions[0].binding = 0;
+			attributeDescriptions[0].location = 0;
+			attributeDescriptions[0].format = vk::Format::eR32G32Sfloat;
+			attributeDescriptions[0].offset = offsetof(VertexData, pos);
+
+			attributeDescriptions[1].binding = 0;
+			attributeDescriptions[1].location = 1;
+			attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
+			attributeDescriptions[1].offset = offsetof(VertexData, color);
+
+			return attributeDescriptions;
+		}
+	};
+
 
 	class VulkanRenderer : public AbstractRenderer
 	{
@@ -85,6 +125,16 @@ namespace moe
 
 		bool	Initialize(VulkanInstance::CreationParams&& instanceParams, IVulkanSurfaceProvider& surfaceProvider);
 
+		VulkanMaterial	CreateMainMaterial();
+
+
+		vk::UniqueShaderModule	CreateShaderModule(std::string_view bytecode);
+
+		void			CreateCommandPools();
+
+		VulkanBuffer	CreateGeometry();
+
+
 		VkInstance	GetVkInstance()
 		{
 			return m_rhi.GetInstance();
@@ -92,6 +142,9 @@ namespace moe
 
 
 		void	RenderFrame();
+
+
+
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice& GetDevice() const override
@@ -111,9 +164,17 @@ namespace moe
 		VulkanSwapchain		m_swapchain;
 
 		VulkanFrameGraph	m_frameGraph;
+
+		vk::UniqueShaderModule	m_vertexShader;
+		vk::UniqueShaderModule	m_fragmentShader;
+
 		RenderWorld		m_world;
 
 		std::vector<VulkanCommandPool>	m_commandPools;
+
+		VulkanMaterial	m_material;
+
+		VulkanBuffer	m_geometry;
 	};
 
 

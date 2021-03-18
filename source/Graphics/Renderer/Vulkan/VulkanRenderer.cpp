@@ -1,8 +1,20 @@
 
 #ifdef MOE_VULKAN
 
+#include "Core/Misc/moeFile.h"
 #include "VulkanRenderer.h"
 #include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
+
+#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
+
+
+
+static const std::vector<moe::VertexData> vertices =
+{
+	{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
 
 
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
@@ -175,6 +187,202 @@ namespace moe
 		ok = m_frameGraph.CreateMainRenderPass(*m_graphicsDevice, m_swapchain);
 		MOE_ASSERT(ok);
 
+		m_material = CreateMainMaterial();
+
+		CreateCommandPools();
+
+		m_geometry = CreateGeometry();
+
+		return ok;
+	}
+
+
+	VulkanMaterial VulkanRenderer::CreateMainMaterial()
+	{
+
+		std::array<vk::DescriptorSetLayoutBinding, 1> bindings = {
+			{ { 0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr } }
+		};
+		vk::DescriptorSetLayoutCreateInfo layoutInfo{
+				vk::DescriptorSetLayoutCreateFlags(),
+				(uint32_t) bindings.size(),
+			bindings.data()
+		};
+
+
+		{
+			auto vertShaderCode = ReadFile("source/Graphics/Resources/shaders/Vulkan/vert.spv", true);
+			MOE_ASSERT(vertShaderCode.has_value());
+			m_vertexShader = CreateShaderModule(vertShaderCode.value());
+		}
+
+		vk::PipelineShaderStageCreateInfo vertShaderStageInfo{};
+		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex;
+		vertShaderStageInfo.module = m_vertexShader.get();
+		vertShaderStageInfo.pName = "main";
+
+		{
+			auto fragShaderCode = ReadFile("source/Graphics/Resources/shaders/Vulkan/frag.spv", true);
+			MOE_ASSERT(fragShaderCode.has_value());
+			m_fragmentShader = CreateShaderModule(fragShaderCode.value());
+		}
+
+		vk::PipelineShaderStageCreateInfo fragShaderStageInfo{};
+		fragShaderStageInfo.stage = vk::ShaderStageFlagBits::eFragment;
+		fragShaderStageInfo.module = m_fragmentShader.get();
+		fragShaderStageInfo.pName = "main";
+
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
+		pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+
+		const std::array<vk::PipelineShaderStageCreateInfo, 2> shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+
+		std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions = VertexData::GetAttributeDescriptions();
+		auto vertexBindingsDescription = VertexData::GetBindingDescription();
+
+		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &vertexBindingsDescription;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+		vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
+		inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
+		inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+		// we want to use a viewport that covers the entire framebuffer :
+		vk::Viewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = (float)m_swapchain.GetSwapchainImageExtent().width;
+		viewport.height = (float)m_swapchain.GetSwapchainImageExtent().height;
+		viewport.minDepth = 0.0f; // In VK, normalized depth is [0;1] like in D3D, but this can be changed here.
+		viewport.maxDepth = 1.0f;
+
+		// we simply want to draw to the entire framebuffer, so we'll specify a scissor rectangle that covers it entirely:
+		vk::Rect2D scissor{
+			{ 0, 0 }, m_swapchain.GetSwapchainImageExtent()
+		};
+
+		vk::PipelineViewportStateCreateInfo viewportState{};
+		viewportState.viewportCount = 1;
+		viewportState.pViewports = &viewport;
+		viewportState.scissorCount = 1;
+		viewportState.pScissors = &scissor;
+
+		// A limited amount of the state that we've specified in the previous structs can actually be changed without recreating the pipeline.
+		// Examples are the size of the viewport, line width and blend constants.
+		std::array<vk::DynamicState, 3> dynamicStates = {
+			vk::DynamicState::eViewport,
+			vk::DynamicState::eScissor,
+			vk::DynamicState::eLineWidth
+		};
+		// disable dynamic state for now
+		vk::PipelineDynamicStateCreateInfo dynamicState{};
+		dynamicState.dynamicStateCount = 0; //  (uint32_t)dynamicStates.size();
+		dynamicState.pDynamicStates = nullptr; // dynamicStates.data();
+
+
+		// If depthClampEnable = VK_TRUE, fragments that are beyond the near and far planes are clamped
+		// to them as opposed to discarding them. This is useful in some special cases like shadow maps.
+		vk::PipelineRasterizationStateCreateInfo rasterizer{};
+		rasterizer.depthClampEnable = VK_FALSE;
+
+		// if rasterizerDiscardEnable = true, geometry never passes through the rasterizer stage. This basically disables any output to the framebuffer.
+		rasterizer.rasterizerDiscardEnable = VK_FALSE;
+
+		// display full poygons (use VK_POLYGON_MODE_LINE for wireframe, VK_POLYGON_MODE_POINT for point cloud)
+		rasterizer.polygonMode = vk::PolygonMode::eFill;
+
+		// thickness of lines in terms of fragments.
+		rasterizer.lineWidth = 1.0f;
+
+		// Activate back-face culling and use clockwise order to determine what is the front face.
+		rasterizer.cullMode = vk::CullModeFlagBits::eBack;
+		rasterizer.frontFace = vk::FrontFace::eClockwise;
+
+		rasterizer.depthBiasEnable = VK_FALSE;
+		rasterizer.depthBiasConstantFactor = 0.0f; // Optional
+		rasterizer.depthBiasClamp = 0.0f; // Optional
+		rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
+
+		// Let's keep MSAA disabled for now
+		vk::PipelineMultisampleStateCreateInfo multisampling{};
+		multisampling.sampleShadingEnable = VK_FALSE;
+		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
+		multisampling.minSampleShading = 1.0f; // Optional
+		multisampling.pSampleMask = nullptr; // Optional
+		multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
+		multisampling.alphaToOneEnable = VK_FALSE; // Optional
+
+		// Add depth and stencil configuration later here...
+
+		// Use alpha blending mode for now
+		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
+		colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+		colorBlendAttachment.blendEnable = VK_TRUE;
+		colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
+		colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
+		colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
+		colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+		colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+		colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
+
+		vk::PipelineColorBlendStateCreateInfo colorBlending{};
+		colorBlending.logicOpEnable = VK_FALSE;
+		colorBlending.logicOp = vk::LogicOp::eCopy; // Optional
+		colorBlending.attachmentCount = 1;
+		colorBlending.pAttachments = &colorBlendAttachment;
+		colorBlending.blendConstants[0] = 0.0f; // Optional
+		colorBlending.blendConstants[1] = 0.0f; // Optional
+		colorBlending.blendConstants[2] = 0.0f; // Optional
+		colorBlending.blendConstants[3] = 0.0f; // Optional
+
+		vk::GraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.stageCount = (uint32_t) shaderStages.size();
+		pipelineInfo.pStages = shaderStages.data();
+
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
+		pipelineInfo.pInputAssemblyState = &inputAssembly;
+		pipelineInfo.pViewportState = &viewportState;
+		pipelineInfo.pRasterizationState = &rasterizer;
+		pipelineInfo.pMultisampleState = &multisampling;
+		pipelineInfo.pDepthStencilState = nullptr; // Not yet
+		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pDynamicState = &dynamicState; // Optional
+
+		pipelineInfo.renderPass = m_frameGraph.MainRenderPass();
+		pipelineInfo.subpass = 0;
+
+		pipelineInfo.basePipelineHandle = vk::Pipeline(); // Optional
+		pipelineInfo.basePipelineIndex = -1; // Optional
+
+		VulkanMaterial matos;
+
+		matos.Initialize(*m_graphicsDevice, m_swapchain, { layoutInfo },
+			{ { 0, sizeof(Mat4)} }, pipelineLayoutInfo, pipelineInfo);
+
+		return matos;
+	}
+
+
+	vk::UniqueShaderModule VulkanRenderer::CreateShaderModule(std::string_view bytecode)
+	{
+		vk::ShaderModuleCreateInfo createInfo{};
+		createInfo.codeSize = bytecode.size();
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(bytecode.data());
+
+		vk::UniqueShaderModule shaderModule = (*m_graphicsDevice)->createShaderModuleUnique(createInfo);
+		MOE_ASSERT(shaderModule);
+
+		return shaderModule;
+	}
+
+
+	void VulkanRenderer::CreateCommandPools()
+	{
+
 		m_commandPools.reserve(m_swapchain.GetMaxFramesInFlight());
 		for (auto iFrame = 0u; iFrame < m_swapchain.GetMaxFramesInFlight(); iFrame++)
 		{
@@ -182,10 +390,17 @@ namespace moe
 			vk::CommandBufferAllocateInfo cbCreateInfo{ vk::CommandPool(), vk::CommandBufferLevel::ePrimary, 1 };
 			m_commandPools.emplace_back(*m_graphicsDevice, poolCreateInfo, cbCreateInfo);
 		}
-
-
-		return ok;
 	}
+
+
+	VulkanBuffer VulkanRenderer::CreateGeometry()
+	{
+		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+		return VulkanBuffer::NewVertexBuffer(*m_graphicsDevice, bufferSize, vertices.data());
+	}
+
+
 	void VulkanRenderer::RenderFrame()
 	{
 		m_swapchain.PrepareNewFrame();
@@ -202,6 +417,14 @@ namespace moe
 		auto& rp = m_frameGraph.MutMainRenderPass();
 
 		rp.Begin(renderPassCommandBuffer);
+
+		m_material.Bind(renderPassCommandBuffer);
+
+		vk::Buffer vertexBuffers[] = { m_geometry };
+		vk::DeviceSize offsets[] = { 0 };
+		renderPassCommandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+		renderPassCommandBuffer.draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+
 		rp.End(renderPassCommandBuffer);
 
 		renderPassCommandBuffer.end();

@@ -53,7 +53,7 @@ namespace moe
 
 		//  the clear values to use for VK_ATTACHMENT_LOAD_OP_CLEAR
 		std::array<vk::ClearValue, 2> clearValues{};
-		clearValues[0].color = std::array<float, 4>({ 1.0f, 1.0f, 0.0f, 1.0f });
+		clearValues[0].color = std::array<float, 4>({ 0.0f, 0.0f, 0.5f, 1.0f });
 		clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
 
 		bool ok = rp.Initialize(device, swapChain, rpFramebuffer,
