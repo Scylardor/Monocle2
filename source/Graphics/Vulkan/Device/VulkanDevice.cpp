@@ -310,7 +310,6 @@ namespace moe
 		vk::CommandPoolCreateInfo poolCreateInfo{ vk::CommandPoolCreateFlagBits::eTransient, GraphicsQueueIdx() };
 		vk::CommandBufferAllocateInfo cbCreateInfo{ vk::CommandPool(), vk::CommandBufferLevel::ePrimary, 1 };
 		VulkanCommandPool tmpPool{ *this, poolCreateInfo, cbCreateInfo };
-		tmpPool.Initialize(*this, 1, vk::CommandPoolCreateFlagBits::eTransient);
 
 		auto tmpCmdBuffer = tmpPool.TryGrabCommandBuffer();
 		MOE_ASSERT(tmpCmdBuffer.has_value());
@@ -340,6 +339,22 @@ namespace moe
 		m_logicalDevice->waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT);
 
 		// The operation is over !
+	}
+
+
+	vk::DeviceSize MyVkDevice::GetMinimumAlignment(vk::DescriptorType type) const
+	{
+		switch (type)
+		{
+		case vk::DescriptorType::eUniformBufferDynamic:
+			return Properties().limits.minUniformBufferOffsetAlignment;
+		case vk::DescriptorType::eStorageBufferDynamic:
+			return Properties().limits.minStorageBufferOffsetAlignment;
+		default:
+			MOE_ASSERT(false); // not implemented !
+		}
+
+		return 0;
 	}
 
 

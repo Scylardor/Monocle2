@@ -18,7 +18,7 @@ namespace moe
 
 		MyVkDevice* InitializeGraphicsDevice(vk::SurfaceKHR targetSurface);
 
-		const vk::Instance& GetInstance() const
+		vk::Instance GetInstance() const
 		{
 			return m_instance.Instance();
 		}

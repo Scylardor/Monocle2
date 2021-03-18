@@ -24,6 +24,7 @@ namespace moe
 
 	void VulkanRenderer::Shutdown()
 	{
+		vkDeviceWaitIdle(*(*m_graphicsDevice));
 	}
 
 	ShaderProgramHandle VulkanRenderer::CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc)
@@ -162,16 +163,52 @@ namespace moe
 		m_graphicsDevice = m_rhi.InitializeGraphicsDevice(presentSurface);
 		MOE_ASSERT(m_graphicsDevice != nullptr);
 
-		if (ok)
-		{
-			// 4: Initialize the swap chain with the previously retrieved surface
-			// TODO: probably best to use the RHI for that. Like RHI->SwapchainFactory.Create(SwapChainCreationParams)...
-			ok = m_swapchain.Initialize(m_rhi.GetInstance(), *m_graphicsDevice, surfaceProvider, presentSurface);
-			MOE_ASSERT(ok);
-		}
+		// 4: Initialize the swap chain with the previously retrieved surface
+		// TODO: probably best to use the RHI for that. Like RHI->SwapchainFactory.Create(SwapChainCreationParams)...
+		ok = m_swapchain.Initialize(m_rhi.GetInstance(), *m_graphicsDevice, surfaceProvider, presentSurface);
+		MOE_ASSERT(ok);
 
 		// 5: Ready to go...
+		ok = m_graphicsDevice->FramebufferFactory.Initialize(*m_graphicsDevice, m_swapchain);
+		MOE_ASSERT(ok);
+
+		ok = m_frameGraph.CreateMainRenderPass(*m_graphicsDevice, m_swapchain);
+		MOE_ASSERT(ok);
+
+		m_commandPools.reserve(m_swapchain.GetMaxFramesInFlight());
+		for (auto iFrame = 0u; iFrame < m_swapchain.GetMaxFramesInFlight(); iFrame++)
+		{
+			vk::CommandPoolCreateInfo poolCreateInfo{ vk::CommandPoolCreateFlags(), m_graphicsDevice->GraphicsQueueIdx() };
+			vk::CommandBufferAllocateInfo cbCreateInfo{ vk::CommandPool(), vk::CommandBufferLevel::ePrimary, 1 };
+			m_commandPools.emplace_back(*m_graphicsDevice, poolCreateInfo, cbCreateInfo);
+		}
+
+
 		return ok;
+	}
+	void VulkanRenderer::RenderFrame()
+	{
+		m_swapchain.PrepareNewFrame();
+
+		auto& thisFrameCommandPool = m_commandPools[m_swapchain.GetFrameIndex()];
+		thisFrameCommandPool.Reset(*m_graphicsDevice);
+
+		auto optCb = thisFrameCommandPool.TryGrabCommandBuffer();
+		MOE_ASSERT(optCb);
+		vk::CommandBuffer renderPassCommandBuffer = optCb.value();
+
+		renderPassCommandBuffer.begin(vk::CommandBufferBeginInfo{  });
+
+		auto& rp = m_frameGraph.MutMainRenderPass();
+
+		rp.Begin(renderPassCommandBuffer);
+		rp.End(renderPassCommandBuffer);
+
+		renderPassCommandBuffer.end();
+
+		m_swapchain.SubmitCommandBuffers(&renderPassCommandBuffer, 1);
+
+		m_swapchain.PresentFrame();
 	}
 }
 #pragma warning( pop )

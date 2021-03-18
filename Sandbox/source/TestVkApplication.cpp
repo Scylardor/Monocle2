@@ -14,6 +14,14 @@ namespace moe
 
 	void TestVkApplication::Run()
 	{
+		while (WindowIsOpened())
+		{
+			PollInputEvents();
+			m_renderer.RenderFrame();
+		}
+
+		m_renderer.Shutdown();
+
 	}
 
 }

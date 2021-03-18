@@ -16,22 +16,11 @@ namespace moe
 		bufferCreateInfo.commandPool = m_pool.get();
 
 		m_availableCommandBuffers.resize(bufferCreateInfo.commandBufferCount);
-		MOE_VK_CHECK(device->allocateCommandBuffers(&bufferCreateInfo, m_availableCommandBuffers.data() + m_availableCommandBuffers.size()));
+		MOE_VK_CHECK(device->allocateCommandBuffers(&bufferCreateInfo, m_availableCommandBuffers.data()));
 
 		m_recordedCommandBuffers.reserve(bufferCreateInfo.commandBufferCount);
 	}
 
-
-	bool VulkanCommandPool::Initialize(const MyVkDevice& device, uint32_t /*wantedCapacity*/, vk::CommandPoolCreateFlagBits flags)
-	{
-		MOE_ASSERT(device.HasRequiredGraphicsQueueFamilies());
-
-		vk::CommandPoolCreateInfo createInfo{ flags, device.GraphicsQueueIdx() };
-		m_pool = device->createCommandPoolUnique(createInfo);
-		MOE_ASSERT(m_pool);
-
-		return true;
-	}
 
 
 	void VulkanCommandPool::Reset(const MyVkDevice& device)

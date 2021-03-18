@@ -267,8 +267,14 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Device/VulkanDeviceList.h
 ./Vulkan/Framebuffer/FramebufferFactory.cpp
 ./Vulkan/Framebuffer/FramebufferFactory.h
+./Vulkan/Framebuffer/VulkanFramebuffer.cpp
+./Vulkan/Framebuffer/VulkanFramebuffer.h
+./Vulkan/FrameGraph/VulkanFrameGraph.cpp
+./Vulkan/FrameGraph/VulkanFrameGraph.h
 ./Vulkan/Instance/VulkanInstance.cpp
 ./Vulkan/Instance/VulkanInstance.h
+./Vulkan/RenderPass/VulkanRenderPass.cpp
+./Vulkan/RenderPass/VulkanRenderPass.h
 ./Vulkan/Surface/VulkanSurfaceProvider.h
 ./Vulkan/Swapchain/VulkanSwapchain.cpp
 ./Vulkan/Swapchain/VulkanSwapchain.h

@@ -56,6 +56,10 @@ namespace moe
 
 		void					ImmediateCommandSubmit(std::function<void(vk::CommandBuffer)> pushFunction) const;
 
+		vk::DeviceSize			GetMinimumAlignment(vk::DescriptorType type) const;
+
+
+
 		vk::Queue	GraphicsQueue() const
 		{
 			return m_graphicsQueue;

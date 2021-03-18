@@ -40,7 +40,6 @@ namespace moe
 		m_imageFormat = createInfo.imageFormat;
 		m_imagesExtent = createInfo.imageExtent;
 
-		PrepareNewFrame();
 		return ok;
 	}
 

@@ -10,9 +10,9 @@
 
 #include "Graphics/Device/Vulkan/VulkanDevice.h"
 
-
 #include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
 
+#include "Graphics/Vulkan/FrameGraph/VulkanFrameGraph.h"
 namespace moe
 {
 	class IVulkanSurfaceProvider;
@@ -90,6 +90,8 @@ namespace moe
 			return m_rhi.GetInstance();
 		}
 
+
+		void	RenderFrame();
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice& GetDevice() const override
@@ -105,9 +107,13 @@ namespace moe
 		VulkanRHI			m_rhi;
 
 		class MyVkDevice*	m_graphicsDevice;
+
 		VulkanSwapchain		m_swapchain;
 
+		VulkanFrameGraph	m_frameGraph;
 		RenderWorld		m_world;
+
+		std::vector<VulkanCommandPool>	m_commandPools;
 	};
 
 

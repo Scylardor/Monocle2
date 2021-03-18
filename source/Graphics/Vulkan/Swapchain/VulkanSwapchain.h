@@ -39,6 +39,17 @@ namespace moe
 			return (uint32_t) m_imagesInFlight.size();
 		}
 
+
+		uint32_t	GetMaxFramesInFlight() const
+		{
+			return MAX_FRAMES_IN_FLIGHT;
+		}
+
+		uint32_t	GetFrameIndex() const
+		{
+			return m_currentFrameIdx;
+		}
+
 		vk::Format	GetColorAttachmentFormat() const
 		{
 			return m_imageFormat;
