@@ -132,7 +132,7 @@ namespace moe
 
 		void			CreateCommandPools();
 
-		VulkanBuffer	CreateGeometry();
+		void	CreateGeometry();
 
 
 		VkInstance	GetVkInstance()
@@ -175,6 +175,7 @@ namespace moe
 		VulkanMaterial	m_material;
 
 		VulkanBuffer	m_geometry;
+		VulkanBuffer	m_geoIndices;
 	};
 
 

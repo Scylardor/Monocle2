@@ -8,14 +8,20 @@
 #include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
 
 
-
-static const std::vector<moe::VertexData> vertices =
+const std::vector<moe::VertexData> vertices =
 {
-	{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 };
 
+
+
+const std::vector<uint16_t> indices =
+{
+	0, 1, 2, 2, 3, 0
+};
 
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
 #pragma warning( push )
@@ -191,7 +197,7 @@ namespace moe
 
 		CreateCommandPools();
 
-		m_geometry = CreateGeometry();
+		CreateGeometry();
 
 		return ok;
 	}
@@ -393,11 +399,13 @@ namespace moe
 	}
 
 
-	VulkanBuffer VulkanRenderer::CreateGeometry()
+	void VulkanRenderer::CreateGeometry()
 	{
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+		m_geometry = VulkanBuffer::NewVertexBuffer(*m_graphicsDevice, bufferSize, vertices.data());
 
-		return VulkanBuffer::NewVertexBuffer(*m_graphicsDevice, bufferSize, vertices.data());
+		bufferSize = sizeof(indices[0]) * indices.size();
+		m_geoIndices = VulkanBuffer::NewIndexBuffer(*m_graphicsDevice, bufferSize, indices.data());
 	}
 
 
@@ -423,7 +431,9 @@ namespace moe
 		vk::Buffer vertexBuffers[] = { m_geometry };
 		vk::DeviceSize offsets[] = { 0 };
 		renderPassCommandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
-		renderPassCommandBuffer.draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+		renderPassCommandBuffer.bindIndexBuffer(m_geoIndices, 0, vk::IndexType::eUint16);
+		//renderPassCommandBuffer.draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+		renderPassCommandBuffer.drawIndexed(static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		rp.End(renderPassCommandBuffer);
 
