@@ -5,6 +5,10 @@
 
 #include "Graphics/Vulkan/Framebuffer/FramebufferFactory.h"
 
+#include "Graphics/Vulkan/Allocators/BufferAllocator.h"
+
+#include "Graphics/Vulkan/Allocators/MemoryAllocator.h"
+
 #include <optional>
 
 namespace moe
@@ -58,6 +62,7 @@ namespace moe
 
 		vk::DeviceSize			GetMinimumAlignment(vk::DescriptorType type) const;
 
+		vk::DeviceSize			GetMinimumBufferBlockAlignment(vk::BufferUsageFlagBits bufferUsage) const;
 
 
 		vk::Queue	GraphicsQueue() const
@@ -76,6 +81,20 @@ namespace moe
 			return m_presentQueue;
 		}
 
+		VulkanBufferAllocator&	BufferAllocator()
+		{
+			return m_bufferAllocator;
+		}
+
+		VulkanMemoryAllocator&	MemoryAllocator()
+		{
+			return m_memAllocator;
+		}
+
+		vk::PhysicalDevice PhysicalDevice() const
+		{
+			return m_physicalDevice;
+		}
 
 
 
@@ -126,7 +145,7 @@ namespace moe
 		static bool							HasRequiredFeatures(const vk::PhysicalDeviceFeatures& features);
 
 		// No Unique handle for Physical Device because it doesn't need to be destroyed
-		vk::PhysicalDevice	m_physicalDevice; // PhysicalDevice doesn't actually need to be destroyed, so no Unique handle.
+		vk::PhysicalDevice	m_physicalDevice;
 		vk::UniqueDevice	m_logicalDevice;
 
 		vk::PhysicalDeviceProperties			m_properties;
@@ -141,6 +160,9 @@ namespace moe
 		FamilyIndices	m_queueIndices;
 		vk::Queue		m_graphicsQueue;
 		vk::Queue		m_presentQueue;
+
+		VulkanBufferAllocator	m_bufferAllocator;
+		VulkanMemoryAllocator	m_memAllocator;
 
 		// So far, the only extension we have to manage is swap chain.
 		static inline const std::array<const char*, 1>	S_neededExtensions =

@@ -198,6 +198,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/visualize_normals.frag
 ./Resources/shaders/OpenGL/visualize_normals.geom
 ./Resources/shaders/OpenGL/visualize_normals.vert
+./Resources/shaders/Vulkan/triangle.frag
+./Resources/shaders/Vulkan/triangle.vert
 ./RHI/Vulkan/VulkanRHI.cpp
 ./RHI/Vulkan/VulkanRHI.h
 ./Sampler/OpenGL/OpenGLSampler.cpp
@@ -253,8 +255,14 @@ set(Monocle_Graphics_SOURCES
 ./VertexLayout/VertexLayout.h
 ./VertexLayout/VertexLayoutDescriptor.h
 ./VertexLayout/VertexLayoutHandle.h
+./Vulkan/Allocators/BufferAllocator.cpp
+./Vulkan/Allocators/BufferAllocator.h
+./Vulkan/Allocators/MemoryAllocator.cpp
+./Vulkan/Allocators/MemoryAllocator.h
 ./Vulkan/Buffer/VulkanBuffer.cpp
 ./Vulkan/Buffer/VulkanBuffer.h
+./Vulkan/BufferPoolAllocator/BufferPoolAllocator.cpp
+./Vulkan/BufferPoolAllocator/BufferPoolAllocator.h
 ./Vulkan/CommandPipeline/VulkanCommandPipeline.cpp
 ./Vulkan/CommandPipeline/VulkanCommandPipeline.h
 ./Vulkan/CommandPool/VulkanCommandPool.cpp

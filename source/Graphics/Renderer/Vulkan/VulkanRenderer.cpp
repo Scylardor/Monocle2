@@ -42,7 +42,7 @@ namespace moe
 
 	void VulkanRenderer::Shutdown()
 	{
-		vkDeviceWaitIdle(*(*m_graphicsDevice));
+		(*m_graphicsDevice)->waitIdle();
 	}
 
 	ShaderProgramHandle VulkanRenderer::CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc)
@@ -432,7 +432,7 @@ namespace moe
 		vk::DeviceSize offsets[] = { 0 };
 		renderPassCommandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 		renderPassCommandBuffer.bindIndexBuffer(m_geoIndices, 0, vk::IndexType::eUint16);
-		//renderPassCommandBuffer.draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+		renderPassCommandBuffer.draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 		renderPassCommandBuffer.drawIndexed(static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		rp.End(renderPassCommandBuffer);

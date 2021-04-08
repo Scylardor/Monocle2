@@ -8,7 +8,7 @@
 
 namespace moe
 {
-
+	const uint32_t VulkanSwapchain::MAX_FRAMES_IN_FLIGHT = 2;
 
 	bool VulkanSwapchain::Initialize(vk::Instance instance, const MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface)
 	{
@@ -221,7 +221,7 @@ namespace moe
 		// for example because another window is in front of them.
 		createInfo.clipped = VK_TRUE;
 
-		// TODO : change that during swap chain recreation (when the window is resized for example)
+		// TODO : change that during swap chain recreation (when the window is resized for example)  check samples Hello Triangle
 		createInfo.oldSwapchain = vk::SwapchainKHR(); // null old swap chain handle for now
 
 		return createInfo;
@@ -251,13 +251,12 @@ namespace moe
 	vk::PresentModeKHR VulkanSwapchain::PickPresentMode(const std::vector<vk::PresentModeKHR>& availableModes)
 	{
 		MOE_ASSERT(false == availableModes.empty()); // not supposed to happen
-
 		// VK_PRESENT_MODE_MAILBOX_KHR is typically used to implement triple buffering.
 		// Triple buffering is a very nice trade-off because it allows us to avoid tearing
 		// while still maintaining a fairly low latency by rendering new images that are
 		// as up-to-date as possible right until the vertical blank.
 		// So, let's look through the list to see if it's available
-		for (const auto& availablePresentMode : availableModes)
+		for (const auto availablePresentMode : availableModes)
 		{
 			if (availablePresentMode == vk::PresentModeKHR::eMailbox)
 			{

@@ -3,59 +3,108 @@
 
 #include "VulkanBuffer.h"
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
-#include "Graphics/Vulkan/CommandPool/VulkanCommandPool.h"
 
 namespace moe
 {
-	VulkanBuffer VulkanBuffer::NewDeviceBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, vk::BufferUsageFlagBits specificUsageFlags)
+	VulkanBuffer::VulkanBuffer(BufferHandles buffer, BufferHandles staging, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::DeviceSize size, vk::DeviceSize offset) :
+		m_buffer(std::move(buffer)), m_staging(std::move(staging)), m_usage(usage), m_memoryProperties(memoryProperties), m_size(size)
 	{
-		// First create a staging buffer
-		VulkanBuffer staging = NewStagingBuffer(device, bufferSize);
-
-		// Then upload the data in the staging buffer
-		void* mappedBuf = device->mapMemory(staging.Memory(), 0, bufferSize, vk::MemoryMapFlags());
-		MOE_ASSERT(mappedBuf != nullptr);
-		memcpy(mappedBuf, bufferData, bufferSize);
-		device->unmapMemory(staging.Memory());
-
-		// Now create our "final" device-local buffer
-		VulkanBuffer deviceBuffer = CreateBuffer(device, bufferSize, vk::BufferUsageFlagBits::eTransferDst | specificUsageFlags, vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-		// Schedule the copy operation from the staging buffer to the device-local buffer
-		Copy(device, staging, deviceBuffer, bufferSize);
-
-		return deviceBuffer;
+		m_descriptor.buffer = buffer.Buffer.get();
+		m_descriptor.range = size;
+		m_descriptor.offset = offset;
 	}
 
 
-	VulkanBuffer VulkanBuffer::NewStagingBuffer(const MyVkDevice& device, VkDeviceSize bufferSize)
+	void* VulkanBuffer::Map(MyVkDevice& device, vk::DeviceSize offset, vk::DeviceSize range)
 	{
-		VulkanBuffer stagingBuffer = CreateBuffer(device, bufferSize,
-			vk::BufferUsageFlagBits::eTransferSrc,
-			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		MOE_ASSERT(m_staging.MemoryBlock || m_memoryProperties & vk::MemoryPropertyFlagBits::eHostVisible);
 
-		return stagingBuffer;
+		// If there is a staging buffer, map the staging buffer. Else, try to map the actual buffer
+		VulkanMemoryBlock& mappedBlock = (m_staging.MemoryBlock ? m_staging.MemoryBlock : m_buffer.MemoryBlock);
+
+		auto mappedRange = (range == VK_WHOLE_SIZE ? m_size : range);
+		void* mappedMemory = device.MemoryAllocator().MapMemory(mappedBlock, mappedRange, offset);
+
+		m_mapping.size = m_size;
+		m_mapping.offset = offset;
+		m_mapping.memory = mappedBlock.Memory.get();
+
+		return mappedMemory;
+	}
+
+	void VulkanBuffer::Unmap(MyVkDevice& device, StagingTransfer transferMode)
+	{
+		if (!m_staging.MemoryBlock && !(m_memoryProperties & vk::MemoryPropertyFlagBits::eHostCoherent))
+		{
+			MOE_VK_CHECK(device->flushMappedMemoryRanges(1, &m_mapping));
+		}
+
+		VulkanMemoryBlock& block = (m_staging.MemoryBlock ? m_staging.MemoryBlock : m_buffer.MemoryBlock);
+		device.MemoryAllocator().UnmapMemory(block);
+
+		// Following doesn't apply if we dont have staging memory
+		if (m_staging.MemoryBlock)
+		{
+			switch (transferMode)
+			{
+			case NoTransfer:
+				break;
+			case ImmediateTransfer:
+				Copy(device, m_staging.Buffer.get(), m_buffer.Buffer.get(), m_mapping.size);
+				DeleteStagingBuffer(device);
+				break;
+			default:
+				MOE_ASSERT(false); // Not implemented !
+			}
+		}
+
+		m_mapping = vk::MappedMemoryRange{};
 	}
 
 
-	VulkanBuffer VulkanBuffer::NewVertexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData)
+	void VulkanBuffer::DeleteStagingBuffer(MyVkDevice& device)
 	{
-		VulkanBuffer vertexBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eVertexBuffer);
+		if (m_staging.Buffer && m_staging.MemoryBlock)
+		{
+			device.BufferAllocator().ReleaseBufferHandles(m_staging);
+		}
+	}
+
+
+	VulkanBuffer VulkanBuffer::NewBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, vk::BufferUsageFlagBits specificUsageFlags, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties)
+	{
+		VulkanBuffer buffer = device.BufferAllocator().Create(bufferSize, specificUsageFlags, memoryProperties);
+
+		MOE_ASSERT((bufferSize != 0 && bufferData != nullptr) || (bufferSize == 0 && bufferData == nullptr));
+		if (bufferData != nullptr)
+		{
+			auto* ptr = buffer.Map(device);
+			memcpy(ptr, bufferData, bufferSize);
+			buffer.Unmap(device, transferMode);
+		}
+
+		return buffer;
+	}
+
+
+	VulkanBuffer VulkanBuffer::NewVertexBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties)
+	{
+		VulkanBuffer vertexBuffer = NewBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eVertexBuffer, transferMode, memoryProperties);
 		return vertexBuffer;
 	}
 
-	VulkanBuffer VulkanBuffer::NewIndexBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData)
+	VulkanBuffer VulkanBuffer::NewIndexBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties)
 	{
-		VulkanBuffer indexBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eIndexBuffer);
+		VulkanBuffer indexBuffer = NewBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eIndexBuffer, transferMode, memoryProperties);
 		return indexBuffer;
 	}
 
-	VulkanBuffer VulkanBuffer::NewUniformBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData)
+	VulkanBuffer VulkanBuffer::NewUniformBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties)
 	{
-		VulkanBuffer uniformBuffer = NewDeviceBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eUniformBuffer);
+		MOE_ASSERT(bufferSize <= device.Properties().limits.maxUniformBufferRange); // or this allocation is going to fail !
+		VulkanBuffer uniformBuffer = NewBuffer(device, bufferSize, bufferData, vk::BufferUsageFlagBits::eUniformBuffer, transferMode, memoryProperties);
 		return uniformBuffer;
 	}
-
 
 	void VulkanBuffer::Copy(const MyVkDevice& device, vk::Buffer from, vk::Buffer to, VkDeviceSize size)
 	{
@@ -71,22 +120,6 @@ namespace moe
 
 	}
 
-
-	VulkanBuffer VulkanBuffer::CreateBuffer(const MyVkDevice& device, VkDeviceSize bufferSize, vk::BufferUsageFlags bufferUsage, vk::MemoryPropertyFlags memoryProperties)
-	{
-		vk::BufferCreateInfo bufferInfo{};
-		bufferInfo.size = bufferSize;
-		bufferInfo.usage = bufferUsage;
-		bufferInfo.sharingMode = vk::SharingMode::eExclusive; // assume graphics and transfer queue families are the same, probably... // TODO: check ?
-
-		VulkanBuffer newBuffer;
-		newBuffer.m_buffer = device->createBufferUnique(bufferInfo);
-		newBuffer.m_bufferMemory = device.AllocateBufferDeviceMemory(newBuffer, memoryProperties);
-
-		device->bindBufferMemory(newBuffer.m_buffer.get(), newBuffer.m_bufferMemory.get(), 0);
-
-		return newBuffer;
-	}
 }
 
 

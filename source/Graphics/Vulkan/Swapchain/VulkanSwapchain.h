@@ -130,7 +130,7 @@ namespace moe
 		const MyVkDevice* m_device = nullptr;
 
 		// TODO : Making it a static const for now - make it configurable later
-		static const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+		static const uint32_t MAX_FRAMES_IN_FLIGHT;
 
 	};
 

@@ -13,7 +13,9 @@
 namespace moe
 {
 	MyVkDevice::MyVkDevice(vk::PhysicalDevice&& physDev) :
-		m_physicalDevice(std::move(physDev))
+		m_physicalDevice(std::move(physDev)),
+		m_bufferAllocator(*this),
+		m_memAllocator(*this)
 	{
 	}
 
@@ -354,6 +356,18 @@ namespace moe
 			MOE_ASSERT(false); // not implemented !
 		}
 
+		return 0;
+	}
+
+	vk::DeviceSize MyVkDevice::GetMinimumBufferBlockAlignment(vk::BufferUsageFlagBits bufferUsage) const
+	{
+		if (bufferUsage & vk::BufferUsageFlagBits::eUniformBuffer)
+			return Properties().limits.minUniformBufferOffsetAlignment;
+
+		if (bufferUsage & vk::BufferUsageFlagBits::eStorageBuffer)
+			return Properties().limits.minStorageBufferOffsetAlignment;
+
+		// I don't know of other alignment restrictions, but there might be...
 		return 0;
 	}
 
