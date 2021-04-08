@@ -50,8 +50,12 @@ namespace moe
 
 	protected:
 
+		void	OnWindowResized(int newWidth, int newHeight) override;
+
+		/* Vulkan Surface Provider interface implementations */
 		vk::SurfaceKHR		CreateSurface(VkInstance instance) override;
 		SurfaceDimensions	GetSurfaceDimensions() override;
+		void				RegisterSurfaceResizeCallback(SurfaceResizeCallback&& cb) override;
 
 		// TODO : change that to use Vulkan instead.
 		// This is super ugly and basically should never have happened in the first place :'(
@@ -62,6 +66,7 @@ namespace moe
 		uint32_t				m_requiredExtensionCount = 0;
 		const char**			m_requiredExtensions = nullptr;
 
+		std::vector<SurfaceResizeCallback>	m_framebufferResizedCallbacks;
 	};
 }
 

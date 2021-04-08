@@ -54,6 +54,8 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 
 		glfwSetScrollCallback(m_window, MouseScrollCallback);
 
+		glfwSetFramebufferSizeCallback(m_window, FramebufferResizedCallback);
+
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
@@ -142,6 +144,13 @@ void moe::BaseGlfwApplication::MouseScrollCallback(GLFWwindow* window, double xo
 	me->m_inputMgr.CallMouseScrollCallbacks(xoffset, yoffset);
 }
 
+
+void moe::BaseGlfwApplication::FramebufferResizedCallback(struct GLFWwindow* window, int width, int height)
+{
+	BaseGlfwApplication* me = static_cast<BaseGlfwApplication*>(glfwGetWindowUserPointer(window));
+
+	me->OnWindowResized(width, height);
+}
 
 
 #endif // MOE_GLFW

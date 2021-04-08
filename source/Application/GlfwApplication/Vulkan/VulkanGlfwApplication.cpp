@@ -40,7 +40,6 @@ moe::VulkanGlfwApplication::VulkanGlfwApplication(const moe::VulkanGlfwAppDescri
 		return;
 	}
 
-
 	uint32_t extensionCount;
 	const char** extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
 	if (CheckGLFWError() != GLFW_NO_ERROR)
@@ -68,6 +67,15 @@ moe::VulkanGlfwApplication::~VulkanGlfwApplication()
 }
 
 
+void moe::VulkanGlfwApplication::OnWindowResized(int newWidth, int newHeight)
+{
+	for (auto& surfaceResizedCb : m_framebufferResizedCallbacks)
+	{
+		surfaceResizedCb(Width_t(newWidth), Height_t(newHeight));
+	}
+}
+
+
 vk::SurfaceKHR moe::VulkanGlfwApplication::CreateSurface(VkInstance instance)
 {
 	MOE_ASSERT(m_initialized);
@@ -85,6 +93,12 @@ moe::IVulkanSurfaceProvider::SurfaceDimensions moe::VulkanGlfwApplication::GetSu
 	SurfaceDimensions dimensions{};
 	glfwGetFramebufferSize(GetGlfwWindow(), (int*)&dimensions.Width, (int*)&dimensions.Height);
 	return dimensions;
+}
+
+
+void moe::VulkanGlfwApplication::RegisterSurfaceResizeCallback(SurfaceResizeCallback&& cb)
+{
+	m_framebufferResizedCallbacks.emplace_back(std::move(cb));
 }
 
 

@@ -158,13 +158,17 @@ namespace moe
 		static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 		static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
 		static void MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+		static void FramebufferResizedCallback(GLFWwindow* window, int width, int height);
 
 	protected:
 
-		using IDELogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
-		using ConsoleLogger = moe::StdLogger<moe::SeverityFilterPolicy, moe::DebuggerFormatPolicy, moe::OutStreamWritePolicy>;
+		virtual void	OnWindowResized(int /*newWidth*/, int /*newHeight*/)
+		{}
 
+		using IDELogger = moe::StdLogger<moe::NoFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
 		IDELogger		m_logger;
+
+		using ConsoleLogger = moe::StdLogger<moe::SeverityFilterPolicy, moe::DebuggerFormatPolicy, moe::OutStreamWritePolicy>;
 		ConsoleLogger	m_consoleLogger;
 
 	private:
