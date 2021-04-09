@@ -401,11 +401,8 @@ namespace moe
 
 	void VulkanRenderer::CreateGeometry()
 	{
-		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-		m_geometry = VulkanBuffer::NewVertexBuffer(*m_graphicsDevice, bufferSize, vertices.data());
-
-		bufferSize = sizeof(indices[0]) * indices.size();
-		m_geoIndices = VulkanBuffer::NewIndexBuffer(*m_graphicsDevice, bufferSize, indices.data());
+		VkDeviceSize vertexSize = sizeof(vertices[0]) * vertices.size();
+		m_mesh = VulkanMesh(*m_graphicsDevice, vertexSize, vertices.size(), vertices.data(), indices.size(), indices.data(), vk::IndexType::eUint16);
 	}
 
 
@@ -428,13 +425,7 @@ namespace moe
 
 		m_material.Bind(renderPassCommandBuffer);
 
-		vk::Buffer vertexBuffers[] = { m_geometry };
-		vk::DeviceSize offsets[] = { 0 };
-		renderPassCommandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
-		renderPassCommandBuffer.bindIndexBuffer(m_geoIndices, 0, vk::IndexType::eUint16);
-		renderPassCommandBuffer.draw(static_cast<uint32_t>(vertices.size()), 1, 0, 0);
-		renderPassCommandBuffer.drawIndexed(static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-
+		m_mesh.Draw(renderPassCommandBuffer);
 		rp.End(renderPassCommandBuffer);
 
 		renderPassCommandBuffer.end();

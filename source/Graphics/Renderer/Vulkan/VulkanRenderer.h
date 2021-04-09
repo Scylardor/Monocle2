@@ -1,6 +1,5 @@
 
 #pragma once
-
 #ifdef MOE_VULKAN
 
 
@@ -16,7 +15,8 @@
 
 #include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
 
-#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
+#include "Graphics/Vulkan/Mesh/VulkanMesh.h"
+
 
 namespace moe
 {
@@ -174,8 +174,7 @@ namespace moe
 
 		VulkanMaterial	m_material;
 
-		VulkanBuffer	m_geometry;
-		VulkanBuffer	m_geoIndices;
+		VulkanMesh		m_mesh;
 	};
 
 

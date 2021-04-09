@@ -61,6 +61,11 @@ namespace moe
 			return m_buffer.MemoryBlock.Memory.get();
 		}
 
+		vk::Buffer			Handle() const
+		{
+			return m_buffer.Buffer.get();
+		}
+
 		operator vk::Buffer() const
 		{
 			MOE_ASSERT(m_buffer.Buffer);
