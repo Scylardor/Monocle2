@@ -8,7 +8,7 @@ namespace moe
 {
 
 
-	class TestVkApplication final : public moe::VulkanGlfwApplication
+	class TestVkApplication : public moe::VulkanGlfwApplication
 	{
 	public:
 
@@ -17,8 +17,18 @@ namespace moe
 
 		void	Run();
 
+		virtual void	Update() {}
+
 
 	};
 
+
+	class BasicVkApp : public TestVkApplication
+	{
+	public:
+		BasicVkApp(const moe::VulkanGlfwAppDescriptor& appDesc);
+
+
+	};
 }
 #endif

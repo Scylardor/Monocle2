@@ -13,7 +13,7 @@ namespace moe
 		VulkanMesh(MyVkDevice& device, size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType);
 
-		void	Draw(vk::CommandBuffer drawCmdBuffer);
+		void	Draw(vk::CommandBuffer drawCmdBuffer) const;
 
 	protected:
 

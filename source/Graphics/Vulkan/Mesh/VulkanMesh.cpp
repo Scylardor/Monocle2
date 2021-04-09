@@ -29,7 +29,7 @@ namespace moe
 	}
 
 
-	void VulkanMesh::Draw(vk::CommandBuffer drawCmdBuffer)
+	void VulkanMesh::Draw(vk::CommandBuffer drawCmdBuffer) const
 	{
 		vk::DeviceSize offset = 0;
 		vk::Buffer vertexBuffer = m_vertexBuffer.Handle();

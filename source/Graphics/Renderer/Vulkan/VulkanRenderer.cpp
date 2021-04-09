@@ -8,21 +8,6 @@
 #include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
 
 
-const std::vector<moe::VertexData> vertices =
-{
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
-};
-
-
-
-const std::vector<uint16_t> indices =
-{
-	0, 1, 2, 2, 3, 0
-};
-
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
 #pragma warning( push )
 #pragma warning( disable: 4100 )
@@ -196,8 +181,6 @@ namespace moe
 		m_material = CreateMainMaterial();
 
 		CreateCommandPools();
-
-		CreateGeometry();
 
 		return ok;
 	}
@@ -399,11 +382,6 @@ namespace moe
 	}
 
 
-	void VulkanRenderer::CreateGeometry()
-	{
-		VkDeviceSize vertexSize = sizeof(vertices[0]) * vertices.size();
-		m_mesh = VulkanMesh(*m_graphicsDevice, vertexSize, vertices.size(), vertices.data(), indices.size(), indices.data(), vk::IndexType::eUint16);
-	}
 
 
 	void VulkanRenderer::RenderFrame()
@@ -425,7 +403,11 @@ namespace moe
 
 		m_material.Bind(renderPassCommandBuffer);
 
-		m_mesh.Draw(renderPassCommandBuffer);
+		for (const auto& mesh : m_meshStorage)
+		{
+			mesh.Draw(renderPassCommandBuffer);
+		}
+
 		rp.End(renderPassCommandBuffer);
 
 		renderPassCommandBuffer.end();
@@ -433,6 +415,12 @@ namespace moe
 		m_swapchain.SubmitCommandBuffers(&renderPassCommandBuffer, 1);
 
 		m_swapchain.PresentFrame();
+	}
+
+
+	void VulkanRenderer::EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData, size_t numIndices, const void* indexData, vk::IndexType indexType)
+	{
+		m_meshStorage.emplace_back(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
 	}
 }
 #pragma warning( pop )

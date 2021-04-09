@@ -283,6 +283,10 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Instance/VulkanInstance.h
 ./Vulkan/MaterialLibrary/VulkanMaterial.cpp
 ./Vulkan/MaterialLibrary/VulkanMaterial.h
+./Vulkan/Mesh/VulkanMesh.cpp
+./Vulkan/Mesh/VulkanMesh.h
+./Vulkan/Model/VulkanModel.cpp
+./Vulkan/Model/VulkanModel.h
 ./Vulkan/RenderPass/VulkanRenderPass.cpp
 ./Vulkan/RenderPass/VulkanRenderPass.h
 ./Vulkan/Surface/VulkanSurfaceProvider.h

@@ -132,8 +132,6 @@ namespace moe
 
 		void			CreateCommandPools();
 
-		void	CreateGeometry();
-
 
 		VkInstance	GetVkInstance()
 		{
@@ -143,7 +141,8 @@ namespace moe
 
 		void	RenderFrame();
 
-
+		void	EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
+			size_t numIndices, const void* indexData, vk::IndexType indexType);
 
 	protected:
 
@@ -174,7 +173,8 @@ namespace moe
 
 		VulkanMaterial	m_material;
 
-		VulkanMesh		m_mesh;
+
+		std::vector<VulkanMesh>	m_meshStorage;
 	};
 
 
