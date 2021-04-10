@@ -17,6 +17,8 @@
 
 #include "Graphics/Vulkan/Mesh/VulkanMesh.h"
 
+#include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
+
 
 namespace moe
 {
@@ -141,7 +143,7 @@ namespace moe
 
 		void	RenderFrame();
 
-		void	EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
+		uint32_t	EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType);
 
 	protected:
@@ -173,8 +175,10 @@ namespace moe
 
 		VulkanMaterial	m_material;
 
+		VulkanPipeline	m_pipeline;
 
 		std::vector<VulkanMesh>	m_meshStorage;
+
 	};
 
 

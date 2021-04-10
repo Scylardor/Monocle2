@@ -5,8 +5,6 @@
 #include "VulkanRenderer.h"
 #include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
 
-#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
-
 
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
 #pragma warning( push )
@@ -188,6 +186,27 @@ namespace moe
 
 	VulkanMaterial VulkanRenderer::CreateMainMaterial()
 	{
+		VulkanShaderProgram program;
+
+		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/vert.spv", vk::ShaderStageFlagBits::eVertex);
+		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/frag.spv", vk::ShaderStageFlagBits::eFragment);
+		program.AddPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4)); // object mvp
+		program.AddVertexBinding(vk::VertexInputRate::eVertex)
+			.AddVertexAttribute(0, offsetof(VertexData, pos), sizeof(VertexData::pos), vk::Format::eR32G32Sfloat)
+			.AddVertexAttribute(1, offsetof(VertexData, color), sizeof(VertexData::color), vk::Format::eR32G32B32Sfloat)
+			.AddNewDescriptorSetLayout().AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
+			.Compile(*m_graphicsDevice);
+
+		m_pipeline.SetShaderProgram(std::move(program))
+			.SetTopology(vk::PrimitiveTopology::eTriangleList, VK_FALSE)
+			.SetFullscreenViewportScissor(m_swapchain)
+			.SetRasterizerClamping(false, false)
+			.SetPolygonMode(vk::PolygonMode::eFill)
+			.SetPolygonLineWidth(1.f)
+			.SetCulling(vk::CullModeFlagBits::eBack, vk::FrontFace::eClockwise)
+			.SetMultisampling(vk::SampleCountFlagBits::e1)
+			.SetRenderPass(m_frameGraph.MainRenderPass(), 0)
+			.Build(*m_graphicsDevice);
 
 		std::array<vk::DescriptorSetLayoutBinding, 1> bindings = {
 			{ { 0, vk::DescriptorType::eUniformBufferDynamic, 1, vk::ShaderStageFlagBits::eVertex, nullptr } }
@@ -209,7 +228,6 @@ namespace moe
 		vertShaderStageInfo.stage = vk::ShaderStageFlagBits::eVertex;
 		vertShaderStageInfo.module = m_vertexShader.get();
 		vertShaderStageInfo.pName = "main";
-
 		{
 			auto fragShaderCode = ReadFile("source/Graphics/Resources/shaders/Vulkan/frag.spv", true);
 			MOE_ASSERT(fragShaderCode.has_value());
@@ -401,7 +419,12 @@ namespace moe
 
 		rp.Begin(renderPassCommandBuffer);
 
-		m_material.Bind(renderPassCommandBuffer);
+		renderPassCommandBuffer.setViewport(0, (uint32_t)m_pipeline.Viewports().size(), m_pipeline.Viewports().data());
+		renderPassCommandBuffer.setScissor(0, (uint32_t)m_pipeline.Scissors().size(), m_pipeline.Scissors().data());
+
+		renderPassCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.PipelineHandle());
+
+	//	m_material.Bind(renderPassCommandBuffer);
 
 		for (const auto& mesh : m_meshStorage)
 		{
@@ -418,9 +441,11 @@ namespace moe
 	}
 
 
-	void VulkanRenderer::EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData, size_t numIndices, const void* indexData, vk::IndexType indexType)
+	uint32_t VulkanRenderer::EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData, size_t numIndices, const void* indexData, vk::IndexType indexType)
 	{
+		auto ID = m_meshStorage.size();
 		m_meshStorage.emplace_back(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
+		return (uint32_t) ID;
 	}
 }
 #pragma warning( pop )

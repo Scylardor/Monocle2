@@ -287,8 +287,12 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Mesh/VulkanMesh.h
 ./Vulkan/Model/VulkanModel.cpp
 ./Vulkan/Model/VulkanModel.h
+./Vulkan/Pipeline/VulkanPipeline.cpp
+./Vulkan/Pipeline/VulkanPipeline.h
 ./Vulkan/RenderPass/VulkanRenderPass.cpp
 ./Vulkan/RenderPass/VulkanRenderPass.h
+./Vulkan/Shader/VulkanShaderProgram.cpp
+./Vulkan/Shader/VulkanShaderProgram.h
 ./Vulkan/Surface/VulkanSurfaceProvider.h
 ./Vulkan/Swapchain/VulkanSwapchain.cpp
 ./Vulkan/Swapchain/VulkanSwapchain.h
