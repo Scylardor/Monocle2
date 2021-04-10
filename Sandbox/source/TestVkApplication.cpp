@@ -11,7 +11,7 @@ namespace moe
 	TestVkApplication::TestVkApplication(const moe::VulkanGlfwAppDescriptor& appDesc) :
 		VulkanGlfwApplication(appDesc)
 	{
-
+		m_clockStart = m_clock.now();
 	}
 
 	void TestVkApplication::Run()
@@ -21,18 +21,10 @@ namespace moe
 		using sec = std::chrono::duration<float>;
 
 
-		auto start = timer.now();
 
 
 		while (WindowIsOpened())
 		{
-			//auto stop = timer.now();
-			//auto deltaTime = std::chrono::duration_cast<ms>(stop - start).count();
-			//auto deltaTimeSecs = std::chrono::duration_cast<sec>(stop - start).count();
-			//std::cout << "dt milli : " << deltaTime << std::endl;
-			//std::cout << "dt sec : " << deltaTimeSecs << std::endl;
-			//start = stop;
-
 			PollInputEvents();
 
 			Update();
@@ -41,6 +33,18 @@ namespace moe
 		}
 
 		m_renderer.Shutdown();
+
+	}
+
+
+	void TestVkApplication::Update()
+	{
+		auto stop = m_clock.now();
+		//auto dtms = std::chrono::duration_cast<ms>(stop - m_clockStart).count();
+		m_deltaTime = std::chrono::duration_cast<sec>(stop - m_clockStart).count();
+		m_clockStart = stop;
+		//std::cout << "dt milli : " << dtms << std::endl;
+		//std::cout << "dt sec : " << m_deltaTime << std::endl;
 
 	}
 
@@ -63,8 +67,9 @@ namespace moe
 		};
 
 		VkDeviceSize vertexSize = sizeof(vertices[0]) * vertices.size();
-		m_renderer.EmplaceMesh(vertexSize, vertices.size(), vertices.data(), indices.size(), indices.data(), vk::IndexType::eUint16);
+		auto meshID = m_renderer.EmplaceMesh(vertexSize, vertices.size(), vertices.data(), indices.size(), indices.data(), vk::IndexType::eUint16);
 
+		m_scene.Emplace(meshID, 0);
 	}
 
 }
