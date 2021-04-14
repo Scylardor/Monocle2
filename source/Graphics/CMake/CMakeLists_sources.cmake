@@ -45,6 +45,8 @@ set(Monocle_Graphics_SOURCES
 ./DeviceBuffer/OpenGL/OpenGLDeviceBufferRange.h
 ./DeviceBuffer/UniformBufferHandle.h
 ./DeviceBuffer/VertexBufferHandle.h
+./Drawable/Drawable.cpp
+./Drawable/Drawable.h
 ./Framebuffer/Framebuffer.h
 ./Framebuffer/FramebufferAttachments.h
 ./Framebuffer/FramebufferDescription.h
@@ -291,6 +293,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Pipeline/VulkanPipeline.h
 ./Vulkan/RenderPass/VulkanRenderPass.cpp
 ./Vulkan/RenderPass/VulkanRenderPass.h
+./Vulkan/RenderScene/RenderScene.cpp
+./Vulkan/RenderScene/RenderScene.h
 ./Vulkan/Shader/VulkanShaderProgram.cpp
 ./Vulkan/Shader/VulkanShaderProgram.h
 ./Vulkan/Surface/VulkanSurfaceProvider.h

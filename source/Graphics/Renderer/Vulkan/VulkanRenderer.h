@@ -19,6 +19,8 @@
 
 #include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
+#include "Graphics/Vulkan/RenderScene/RenderScene.h"
+
 
 namespace moe
 {
@@ -127,7 +129,7 @@ namespace moe
 
 		bool	Initialize(VulkanInstance::CreationParams&& instanceParams, IVulkanSurfaceProvider& surfaceProvider);
 
-		VulkanMaterial	CreateMainMaterial();
+		void	CreateMainMaterial();
 
 
 		vk::UniqueShaderModule	CreateShaderModule(std::string_view bytecode);
@@ -141,7 +143,7 @@ namespace moe
 		}
 
 
-		void	RenderFrame();
+		void	RenderFrame(const RenderScene& renderedScene);
 
 		uint32_t	EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType);
@@ -160,9 +162,9 @@ namespace moe
 
 		VulkanRHI			m_rhi;
 
-		class MyVkDevice*	m_graphicsDevice;
+		class MyVkDevice*	m_graphicsDevice{nullptr};
 
-		VulkanSwapchain		m_swapchain;
+		VulkanSwapchain		m_swapchain{};
 
 		VulkanFrameGraph	m_frameGraph;
 

@@ -50,7 +50,9 @@ namespace moe
 		void	Build(const MyVkDevice& device);
 
 
-		vk::Pipeline	PipelineHandle() const { return m_pipeline.get(); }
+		vk::Pipeline	PipelineHandle() const		{ return m_pipeline.get(); }
+		vk::PipelineLayout	PipelineLayout() const	{ return m_pipelineLayout.get(); }
+
 
 		[[nodiscard]] std::vector<vk::Viewport> const&	Viewports() const { return m_viewports; }
 		[[nodiscard]] std::vector<vk::Rect2D> const&	Scissors() const { return m_scissors; }
