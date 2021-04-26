@@ -9,7 +9,9 @@ set(Monocle_Core_SOURCES
 ./Containers/FreeList/PolymorphicFreelist.hpp
 ./Containers/HashMap/HashMap.h
 ./Containers/IntrusiveListNode.h
+./Containers/ObjectPool/ObjectPool.h
 ./Containers/Private/IntrusiveListNode.internal.hpp
+./Containers/SparseArray/SparseArray.h
 ./Containers/Vector/Vector.h
 ./Debugger/moeDebugger.h
 ./Delegates/Delegate.h

@@ -6,13 +6,22 @@ namespace moe
 {
 	template <	typename ObjectType,
 				typename IDType = std::uint32_t>
-	class ObjectPool
+	class SparseArray
 	{
 	public:
 
-		ObjectPool() = default;
+		typedef std::vector<ObjectType>	ObjectArray;
 
-		explicit ObjectPool(std::uint32_t nbReserved)
+
+		SparseArray() = default;
+
+		explicit SparseArray(std::size_t nbReserved)
+		{
+			Reserve(nbReserved);
+		}
+
+
+		void	Reserve(size_t nbReserved)
 		{
 			m_objects.reserve(nbReserved);
 			m_denseIndices.reserve(nbReserved);
@@ -21,7 +30,7 @@ namespace moe
 
 
 		template <typename T = ObjectType>
-		IDType	Add(T&& obj)
+		[[nodiscard]] IDType	Add(T&& obj)
 		{
 			auto sparseIdx = PushNewObjectIndices();
 
@@ -33,7 +42,7 @@ namespace moe
 
 
 		template <typename... Args>
-		IDType	Emplace(Args&&... args)
+		[[nodiscard]] IDType	Emplace(Args&&... args)
 		{
 			auto sparseIdx = PushNewObjectIndices();
 
@@ -82,7 +91,12 @@ namespace moe
 		}
 
 
-		const ObjectType&	Get(IDType id)
+		[[nodiscard]] const ObjectType&	Get(IDType id) const
+		{
+			return m_objects[m_denseIndices[id]];
+		}
+
+		[[nodiscard]] ObjectType& Mut(IDType id)
 		{
 			return m_objects[m_denseIndices[id]];
 		}
@@ -100,13 +114,13 @@ namespace moe
 		}
 
 
-		auto	GetSize() const
+		[[nodiscard]] auto	GetSize() const
 		{
 			return m_objects.size();
 		}
 
 
-		bool	IsValidID(IDType id) const
+		[[nodiscard]] bool	IsValidID(IDType id) const
 		{
 			return (id < m_objects.size() && id != ms_INVALID_ID);
 		}
@@ -120,6 +134,29 @@ namespace moe
 				func(obj);
 			}
 		}
+
+
+		// For C++11 range for syntax
+		typename ObjectArray::iterator	begin()
+		{
+			return m_objects.begin();
+		}
+
+		typename ObjectArray::const_iterator begin() const
+		{
+			return m_objects.begin();
+		}
+
+		typename ObjectArray::iterator end()
+		{
+			return m_objects.end();
+		}
+
+		typename ObjectArray::const_iterator end() const
+		{
+			return m_objects.end();
+		}
+
 
 
 	private:
@@ -151,7 +188,7 @@ namespace moe
 		}
 
 		// Our dense, contiguous array of data.
-		std::vector<ObjectType>		m_objects;
+		ObjectArray		m_objects;
 
 		// Index into this to obtain dense indices (to index directly objects.)
 		std::vector<std::size_t>	m_denseIndices;

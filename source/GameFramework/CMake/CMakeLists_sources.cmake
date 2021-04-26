@@ -3,7 +3,6 @@
 set(Monocle_GameFramework_SOURCES
 	./FSM/FSM.h
 ./FSM/Private/FSM.cpp
-./ObjectPool/ObjectPool.h
 ./Resources/Factories/AbstractResourceFactory.h
 ./Resources/Factories/ResourceFactory.h
 ./Resources/Factories/Texture/OpenGL/GL3TextureFactory.h

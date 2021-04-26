@@ -36,7 +36,7 @@
 
 #include "Graphics/Material/MaterialLibrary.h"
 
-#include "GameFramework/ObjectPool/ObjectPool.h"
+#include "Core/Containers/SparseArray/SparseArray.h"
 
 #include "GameFramework/Threading/ThreadPool/ThreadPool.h"
 
@@ -223,7 +223,7 @@ namespace moe
 	void TestApplication::Run()
 	{
 
-		TestMultiLights();
+		TestSSAO();
 
 	}
 

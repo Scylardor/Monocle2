@@ -3,7 +3,7 @@
 #include "GameFramework/Resources/Factories/Texture/TextureFactory.h"
 #include "GameFramework/Resources/ResourceManager/ResourceManager.h"
 
-#include "GameFramework/ObjectPool/ObjectPool.h"
+#include "Core/Containers/SparseArray/SparseArray.h"
 
 #include "Monocle_GameFramework_Export.h"
 
@@ -45,7 +45,7 @@ namespace moe
 
 		bool	m_verticalFlipLoadedImages = true;
 
-		ObjectPool<GLuint>		m_TexHandles;
+		SparseArray<GLuint>		m_TexHandles;
 
 	};
 
