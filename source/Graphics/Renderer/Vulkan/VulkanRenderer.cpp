@@ -196,7 +196,7 @@ namespace moe
 		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/frag.spv", vk::ShaderStageFlagBits::eFragment);
 		program.AddPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4)); // object mvp
 		program.AddVertexBinding(vk::VertexInputRate::eVertex)
-			.AddVertexAttribute(0, offsetof(VertexData, pos), sizeof(VertexData::pos), vk::Format::eR32G32Sfloat)
+			.AddVertexAttribute(0, offsetof(VertexData, pos), sizeof(VertexData::pos), vk::Format::eR32G32B32Sfloat)
 			.AddVertexAttribute(1, offsetof(VertexData, color), sizeof(VertexData::color), vk::Format::eR32G32B32Sfloat)
 			.AddVertexAttribute(2, offsetof(VertexData, texCoord), sizeof(VertexData::texCoord), vk::Format::eR32G32Sfloat)
 			.AddNewDescriptorSetLayout()
@@ -205,6 +205,8 @@ namespace moe
 			.Compile(*m_graphicsDevice);
 
 		m_pipeline.SetShaderProgram(std::move(program))
+			.SetDepthFeatures(true, true)
+			.SetDepthParameters(vk::CompareOp::eLess)
 			.SetTopology(vk::PrimitiveTopology::eTriangleList, VK_FALSE)
 			.SetFullscreenViewportScissor(m_swapchain)
 			.SetRasterizerClamping(false, false)

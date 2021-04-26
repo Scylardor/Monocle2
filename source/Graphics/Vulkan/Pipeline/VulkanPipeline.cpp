@@ -54,6 +54,16 @@ namespace moe
 	}
 
 
+	VulkanPipeline& VulkanPipeline::ConfigureStencil(bool enableStencilTest, vk::StencilOpState front, vk::StencilOpState back)
+	{
+		m_depthStencilStateInfo.stencilTestEnable = enableStencilTest;
+		m_depthStencilStateInfo.front = front;
+		m_depthStencilStateInfo.back = back;
+
+		return *this;
+	}
+
+
 	VulkanPipeline& VulkanPipeline::SetPolygonMode(vk::PolygonMode polyMode)
 	{
 		m_rasterizationstateInfo.polygonMode = polyMode;

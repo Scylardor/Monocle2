@@ -106,9 +106,9 @@ namespace moe
 
 
 	template <typename Container, typename ValueType, class Top>
-	class AObjectPool : public SparseArray<ValueType, Top>
+	class AObjectPool : public ObjectPool<ValueType, Top>
 	{
-		using Base = SparseArray<ValueType, Top>;
+		using Base = ObjectPool<ValueType, Top>;
 		friend Base;
 
 
@@ -144,6 +144,7 @@ namespace moe
 			return availableID;
 		}
 
+		
 		void	FreeImpl(uint32_t freedObjectID)
 		{
 			auto* object = (ValueType*)&m_objects[freedObjectID];
@@ -193,7 +194,7 @@ namespace moe
 	template<typename TObj>
 	class DynamicObjectPool : public AObjectPool<std::vector<PoolBlock<TObj>>, TObj, DynamicObjectPool<TObj >>
 	{
-		using Base = SparseArray<TObj, DynamicObjectPool<TObj>>;
+		using Base = ObjectPool<TObj, DynamicObjectPool<TObj>>;
 		friend Base;
 
 	public:
@@ -218,10 +219,12 @@ namespace moe
 
 	};
 
+
+
 	template<typename TObj, size_t TSize>
 	class FixedObjectPool : public AObjectPool<std::array<PoolBlock<TObj>, TSize>, TObj, FixedObjectPool<TObj, TSize>>
 	{
-		using Base = SparseArray<TObj, FixedObjectPool<TObj, TSize>>;
+		using Base = ObjectPool<TObj, FixedObjectPool<TObj, TSize>>;
 		friend Base;
 
 	public:

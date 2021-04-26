@@ -29,7 +29,7 @@ namespace moe
 		}
 
 
-		static VulkanRenderPass	New(const MyVkDevice& device, vk::Format colorAttachmentFormat);
+		static VulkanRenderPass	New(const MyVkDevice& device, vk::Format colorAttachmentFormat, vk::Format depthStencilAttachmentFormat);
 
 	protected:
 

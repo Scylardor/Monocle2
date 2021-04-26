@@ -10,7 +10,7 @@ namespace moe
 {
 	const uint32_t VulkanSwapchain::MAX_FRAMES_IN_FLIGHT = 2;
 
-	bool VulkanSwapchain::Initialize(vk::Instance instance, const MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface)
+	bool VulkanSwapchain::Initialize(vk::Instance instance, MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface)
 	{
 		MOE_ASSERT(m_surfaceProvider == nullptr); // should not get called twice on the same swapchain !
 
@@ -33,12 +33,12 @@ namespace moe
 		m_swapChain = compatibleDevice->createSwapchainKHRUnique(createInfo);
 		MOE_ASSERT(m_swapChain.get());
 
-		bool ok = InitializeFrameList(createInfo.imageFormat);
-		MOE_ASSERT(ok);
-
 		// Image format was validated (swap chain successfully created) : store it somewhere (useful to create framebuffers using swap chain images)
 		m_imageFormat = createInfo.imageFormat;
 		m_imagesExtent = createInfo.imageExtent;
+
+		bool ok = InitializeFrameList(createInfo.imageFormat);
+		MOE_ASSERT(ok);
 
 		return ok;
 	}
@@ -165,7 +165,17 @@ namespace moe
 			m_imagesInFlight.emplace_back(Device(), scImage, swapChainImageFormat);
 		}
 
+		InitializeDepthStencilAttachment();
+
 		return true;
+	}
+
+
+	void VulkanSwapchain::InitializeDepthStencilAttachment()
+	{
+		auto builder = VulkanTextureBuilder().SetDimensions(m_imagesExtent.width, m_imagesExtent.height);
+
+		m_depthStencilAttachment = VulkanTexture::CreateDepthStencilAttachment(*m_device, builder);
 	}
 
 

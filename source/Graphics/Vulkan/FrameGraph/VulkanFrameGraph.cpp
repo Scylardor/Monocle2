@@ -36,10 +36,11 @@ namespace moe
 
 	bool VulkanFrameGraph::CreateMainRenderPass(MyVkDevice& device, const VulkanSwapchain& swapChain)
 	{
-		VulkanRenderPass rp = VulkanRenderPass::New(device, swapChain.GetColorAttachmentFormat());
+		VulkanRenderPass rp = VulkanRenderPass::New(device, swapChain.GetColorAttachmentFormat(), swapChain.GetDepthAttachmentFormat());
 
-		std::array<vk::ImageView, 1>  attachments = {
-			FramebufferFactory::SWAPCHAIN_COLOR_ATTACHMENT_VIEW
+		std::array<vk::ImageView, 2>  attachments = {
+			FramebufferFactory::SWAPCHAIN_COLOR_ATTACHMENT_VIEW,
+			FramebufferFactory::SWAPCHAIN_DEPTH_STENCIL_ATTACHMENT_VIEW
 		};
 
 		vk::FramebufferCreateInfo framebufferInfo{};

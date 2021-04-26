@@ -58,9 +58,11 @@ namespace moe
 	}
 
 	// At the moment, a hardcoded "dummy function".
-	VulkanRenderPass VulkanRenderPass::New(const MyVkDevice& device, vk::Format colorAttachmentFormat)
+	VulkanRenderPass VulkanRenderPass::New(const MyVkDevice& device, vk::Format colorAttachmentFormat, vk::Format depthStencilAttachmentFormat)
 	{
-		vk::AttachmentDescription colorAttachment{};
+		std::array<vk::AttachmentDescription, 2> attachments{};
+
+		vk::AttachmentDescription& colorAttachment = attachments[0];
 		colorAttachment.format = colorAttachmentFormat;
 		colorAttachment.samples = vk::SampleCountFlagBits::e1; // not doing anything with MSAA yet so sticking to one sample
 
@@ -85,17 +87,43 @@ namespace moe
 		colorAttachmentRef.attachment = 0;
 		colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
 
+
+		vk::AttachmentDescription& depthAttachment = attachments[1];
+		depthAttachment.format = depthStencilAttachmentFormat;
+		depthAttachment.samples = vk::SampleCountFlagBits::e1; // not doing anything with MSAA yet so sticking to one sample
+
+		// clear the framebuffer before drawing a new frame.
+		depthAttachment.loadOp = vk::AttachmentLoadOp::eClear;
+
+		// The depth-stencil buffer is "one-use only" so we can trash the results afterwards
+		depthAttachment.storeOp = vk::AttachmentStoreOp::eDontCare;
+
+		// Only use the stencil buffer if the depth format includes a stencil component.
+		if (VulkanTexture::FormatHasStencil(depthStencilAttachmentFormat))
+			depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eClear;
+		else
+			depthAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+
+		depthAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare; // same as for depth.
+
+		// means that we don't care what previous layout the image was in.
+		// doesn't matter since we're going to clear it anyway.
+		depthAttachment.initialLayout = vk::ImageLayout::eUndefined;
+
+		// We want the image to be ready for presentation using the swap chain after rendering
+		depthAttachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
+		vk::AttachmentReference depthAttachmentRef{};
+		depthAttachmentRef.attachment = 1;
+		depthAttachmentRef.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+
 		vk::SubpassDescription subpass{};
 		// Vulkan may also support compute subpasses in the future, so we have to be explicit about this being a graphics subpass.
 		subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
+		subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-		vk::RenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachment;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
 
 		// Create an explicit dependency on the subpass to make sure we acquire the image at the right time
 		vk::SubpassDependency dependency{};
@@ -103,13 +131,20 @@ namespace moe
 		dependency.dstSubpass = 0;
 
 		// We need to wait for the swap chain to finish reading from the image before we can access it.
-		dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+		// The depth image is first accessed in the early fragment test pipeline stage.
+		dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
 		dependency.srcAccessMask = vk::AccessFlagBits{};
 
 		// The operations that should wait on this are in the color attachment stage and involve the writing of the color attachment.
-		dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-		dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+		// And because we probably have a depth load operation that clears, we should specify the access mask for writes.
+		dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests;
+		dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
+		vk::RenderPassCreateInfo renderPassInfo{};
+		renderPassInfo.attachmentCount = (uint32_t) attachments.size();
+		renderPassInfo.pAttachments = attachments.data();
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpass;
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 

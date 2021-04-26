@@ -235,6 +235,23 @@ namespace moe
 
 
 			/**
+			 * \brief Computes a perspective projection matrix (to use with cameras for example) compatible with Vulkan and DirectX (Depth range of 0 to 1)
+			 * This matrix maps a given frustum range to clip space, but also manipulates the w value of each vertex.
+			 * The further away a vertex is from the viewer, the smaller it will appear on screen.
+			 * \param fovy The camera's vertical field of view. In radians. Use something like 45_degf for automatic radian conversion
+			 * \param aspectRatio The AR is calculated by dividing a viewport's width by its height.
+			 * \param nearVal The coordinate of the near plane (clips polygons too close to the camera)
+			 * \param farVal The coordinate of the far plane (clips polygons too far from the camera)
+			 * \return
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			[[nodiscard]] static Matrix PerspectiveZeroOne(Rads<ValT> fovy, ValT aspectRatio, ValT nearVal, ValT farVal)
+			{
+				return Matrix(glm::perspectiveZO(ValT(fovy), aspectRatio, nearVal, farVal));
+			}
+
+
+			/**
 			 * \brief Adds a translation based on the provided vector to the current matrix transformation.
 			 * This function is NOT const : the matrix is affected.
 			 * Note: GLM is column major by default, which means the last transformation in code is actually the first applied !

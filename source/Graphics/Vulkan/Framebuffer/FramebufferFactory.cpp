@@ -87,7 +87,7 @@ namespace moe
 		FramebufferID newFbID = GetNewFramebufferID();
 
 		// If this framebuffer references swap chain attachments, enforce that its dimensions match the swapchain's.
-		auto& swapchainExtent = m_swapChain->GetSwapchainImageExtent();
+		VkExtent2D swapchainExtent = m_swapChain->GetSwapchainImageExtent();
 		fbInfo.width = swapchainExtent.width;
 		fbInfo.height = swapchainExtent.height;
 
@@ -101,7 +101,7 @@ namespace moe
 			}
 			if (swapchainDepthIdx.has_value())
 			{
-				patchedAttachmentsList[*swapchainDepthIdx] = m_swapChain->GetDepthAttachmentView(iSCImg);
+				patchedAttachmentsList[*swapchainDepthIdx] = m_swapChain->GetDepthAttachmentView();
 			}
 
 			fbInfo.pAttachments = patchedAttachmentsList.data(); // the actual patchup

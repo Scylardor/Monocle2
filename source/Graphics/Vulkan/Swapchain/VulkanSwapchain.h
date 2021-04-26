@@ -21,7 +21,7 @@ namespace moe
 		VulkanSwapchain() = default;
 		~VulkanSwapchain() = default;
 
-		bool		Initialize(vk::Instance instance, const class MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface);
+		bool		Initialize(vk::Instance instance, class MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface);
 
 		void		PrepareNewFrame();
 
@@ -55,24 +55,27 @@ namespace moe
 			return m_imageFormat;
 		}
 
+		vk::Format	GetDepthAttachmentFormat() const
+		{
+			return m_depthStencilAttachment.Format();
+		}
+
+
 		vk::ImageView	GetColorAttachmentView(int imageIndex) const
 		{
 			MOE_ASSERT(imageIndex < m_imagesInFlight.size());
 			return m_imagesInFlight[imageIndex].View.get();
 		}
 
-		vk::ImageView	GetDepthAttachmentView(int imageIndex) const
+		vk::ImageView	GetDepthAttachmentView() const
 		{
-			MOE_ASSERT(imageIndex < m_imagesInFlight.size());
-			return vk::ImageView(); // TODO
+			return m_depthStencilAttachment.DescriptorImageInfo().imageView;
 		}
 
-		const VkExtent2D&	GetSwapchainImageExtent() const
+		VkExtent2D	GetSwapchainImageExtent() const
 		{
 			return m_imagesExtent;
 		}
-
-		std::vector<vk::FramebufferCreateInfo>	GenerateSwapChainAttachmentsFramebufferInfo() const;
 
 
 	private:
@@ -87,6 +90,8 @@ namespace moe
 		vk::Result	AcquireNextImage();
 
 		bool	InitializeFrameList(vk::Format swapChainImageFormat);
+
+		void	InitializeDepthStencilAttachment();
 
 		const vk::Semaphore*	GetCurrentFramePresentCompleteSemaphore() const
 		{
@@ -119,15 +124,17 @@ namespace moe
 		std::vector<VulkanSwapchainImage>	m_imagesInFlight;
 		uint32_t							m_currentImageInFlightIdx = 0;
 
+		VulkanTexture						m_depthStencilAttachment{};
+
 		VkExtent2D							m_imagesExtent{};
 
 		bool	m_surfaceWasResized = false;
 
-		vk::Format								m_imageFormat;
+		vk::Format							m_imageFormat;
 
 		// Bound resources
 		IVulkanSurfaceProvider* m_surfaceProvider = nullptr;
-		const MyVkDevice* m_device = nullptr;
+		MyVkDevice* m_device = nullptr;
 
 		// TODO : Making it a static const for now - make it configurable later
 		static const uint32_t MAX_FRAMES_IN_FLIGHT;

@@ -49,6 +49,7 @@ namespace moe
 		vk::Fence* imageSubmitFence = &QueueSubmitFence.get();
 		MOE_VK_CHECK(device->waitForFences(1, imageSubmitFence, waitAll, NO_TIMEOUT));
 
+
 		return true;
 	}
 }

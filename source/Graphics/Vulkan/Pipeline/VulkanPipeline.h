@@ -26,7 +26,7 @@ namespace moe
 		VulkanPipeline& SetDepthFeatures(bool enableDepthTest, bool enableDepthWrite);
 		VulkanPipeline& SetDepthParameters(vk::CompareOp cmpOp, bool testDepthBounds = false, float minDepthBounds = 0.f, float maxDepthBounds = 1.f);
 		VulkanPipeline& SetDepthBias(bool enabled, float constantFactor = 0.f, float clamp = 0.f, float slopeFactor = 0.f);
-
+		VulkanPipeline& ConfigureStencil(bool enableStencilTest, vk::StencilOpState front = {}, vk::StencilOpState back = {});
 
 		VulkanPipeline& SetRasterizerClamping(bool depthClampEnabled, bool rasterizerDiscard);
 
@@ -100,8 +100,6 @@ namespace moe
 		// Examples are the size of the viewport, line width and blend constants.
 		static const std::array<vk::DynamicState, 3>	DEFAULT_DYNAMIC_STATES;
 	};
-
-
 }
 
 

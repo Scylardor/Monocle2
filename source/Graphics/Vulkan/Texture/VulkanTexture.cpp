@@ -45,20 +45,39 @@ namespace moe
 			builder.ImageCreateInfo.usage |= vk::ImageUsageFlagBits::eTransientAttachment;
 		}
 
+		builder.SetMipmapsCount(1); // no mipmaps for an attachment
 		builder.ImageCreateInfo.imageType = vk::ImageType::e2D;
 		builder.ImageViewCreateInfo.viewType = vk::ImageViewType::e2D;
 
-		return device.TextureAllocator().AllocateImage(builder);
+		VulkanTexture tex = device.TextureAllocator().AllocateImage(builder);
+
+		// Now that everything has been created, fill the descriptor info
+		tex.UpdateDescriptorInfo();
+
+		return tex;
 	}
 
 
 	VulkanTexture VulkanTexture::CreateDepthStencilAttachment(MyVkDevice& device, VulkanTextureBuilder& builder)
 	{
+		if (false == IsADepthFormat(builder.ImageCreateInfo.format))
+		{
+			// If user explicitly provided a depth format, trust them on that. Otherwise, use a reasonable default.
+			builder.ImageCreateInfo.format = vk::Format::eD32Sfloat;
+		}
+
+		builder.SetMipmapsCount(1); // no mipmaps for an attachment
 		builder.ImageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		builder.ImageCreateInfo.imageType = vk::ImageType::e2D;
 		builder.ImageViewCreateInfo.viewType = vk::ImageViewType::e2D;
+		builder.ImageViewCreateInfo.format = builder.ImageCreateInfo.format;
 
-		return device.TextureAllocator().AllocateImage(builder);
+		VulkanTexture tex = device.TextureAllocator().AllocateImage(builder);
+
+		// Now that everything has been created, fill the descriptor info
+		tex.UpdateDescriptorInfo();
+
+		return tex;
 	}
 
 
@@ -137,7 +156,7 @@ namespace moe
 
 
 	void VulkanTexture::TransitionLayoutImpl(vk::ImageLayout newLayout,
-	                                         vk::CommandBuffer commandBuffer)
+		vk::CommandBuffer commandBuffer)
 	{
 		vk::ImageMemoryBarrier barrier{};
 		barrier.oldLayout = m_layout;
@@ -325,7 +344,7 @@ namespace moe
 			// This transition will wait for level i - 1 to be filled, either from the previous blit command, or from vkCmdCopyBufferToImage.
 			// The current blit command will wait on this transition.
 			imgBarrier.subresourceRange.baseMipLevel = iMip - 1;
-			imgBarrier.oldLayout =  vk::ImageLayout::eTransferDstOptimal; // mip0 is actually in shader read only layout but should be OK
+			imgBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal; // mip0 is actually in shader read only layout but should be OK
 			imgBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
 			imgBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
 			imgBarrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
@@ -413,7 +432,15 @@ namespace moe
 			format == vk::Format::eD32SfloatS8Uint
 			);
 	}
-}
 
+
+	bool VulkanTexture::IsADepthFormat(vk::Format format)
+	{
+		static const auto SUPPORTED_DEPTH_FORMATS = { vk::Format::eD16Unorm, vk::Format::eD32Sfloat,
+			vk::Format::eD16UnormS8Uint, vk::Format::eD24UnormS8Uint , vk::Format::eD32SfloatS8Uint };
+
+		return std::find(SUPPORTED_DEPTH_FORMATS.begin(), SUPPORTED_DEPTH_FORMATS.end(), format) != SUPPORTED_DEPTH_FORMATS.end();
+	}
+}
 
 #endif // MOE_VULKAN
