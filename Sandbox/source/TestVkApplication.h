@@ -6,6 +6,7 @@
 
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
 
+
 #include <chrono>
 
 namespace moe
@@ -23,6 +24,8 @@ namespace moe
 
 		virtual void	Update();
 
+		float	GetElapsedSecondsSinceCreation() const;
+
 	protected:
 
 		using Clock = std::chrono::high_resolution_clock;
@@ -31,7 +34,8 @@ namespace moe
 		using sec = std::chrono::duration<float>;
 
 		Clock		m_clock{};
-		Timepoint	m_clockStart{};
+		Timepoint	m_appClockStart{};
+		Timepoint	m_frameClockStart{};
 		float		m_deltaTime{ 0.f };
 
 
@@ -45,7 +49,12 @@ namespace moe
 	public:
 		BasicVkApp(const moe::VulkanGlfwAppDescriptor& appDesc);
 
+		void Update() override;
 
+	private:
+
+		Mat4	m_view;
+		Mat4	m_projection;
 	};
 }
 #endif
