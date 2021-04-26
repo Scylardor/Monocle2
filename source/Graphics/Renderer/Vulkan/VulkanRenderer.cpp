@@ -186,6 +186,10 @@ namespace moe
 
 	void VulkanRenderer::CreateMainMaterial()
 	{
+		// First create our texture
+		VulkanTextureBuilder texBuilder{};
+		m_materialTexture = VulkanTexture::Create2DFromFile(*m_graphicsDevice, "Sandbox/assets/textures/texture.jpg", texBuilder);
+
 		VulkanShaderProgram program;
 
 		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/vert.spv", vk::ShaderStageFlagBits::eVertex);
@@ -194,7 +198,9 @@ namespace moe
 		program.AddVertexBinding(vk::VertexInputRate::eVertex)
 			.AddVertexAttribute(0, offsetof(VertexData, pos), sizeof(VertexData::pos), vk::Format::eR32G32Sfloat)
 			.AddVertexAttribute(1, offsetof(VertexData, color), sizeof(VertexData::color), vk::Format::eR32G32B32Sfloat)
-			.AddNewDescriptorSetLayout().AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
+			.AddNewDescriptorSetLayout()
+				.AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
+				.AddNewDescriptorBinding(0, 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment)
 			.Compile(*m_graphicsDevice);
 
 		m_pipeline.SetShaderProgram(std::move(program))

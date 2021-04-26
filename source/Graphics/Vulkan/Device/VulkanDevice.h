@@ -1,4 +1,5 @@
 #pragma once
+#include "Graphics/Vulkan/Allocators/TextureAllocator.h"
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/VulkanMacros.h"
@@ -56,8 +57,6 @@ namespace moe
 		// TODO: temporary, to move somewhere else...
 		vk::UniqueImageView		CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
 
-		vk::UniqueDeviceMemory	AllocateBufferDeviceMemory(class VulkanBuffer& buffer, vk::MemoryPropertyFlags memoryProperties) const;
-
 		void					ImmediateCommandSubmit(std::function<void(vk::CommandBuffer)> pushFunction) const;
 
 		vk::DeviceSize			GetMinimumAlignment(vk::DescriptorType type) const;
@@ -84,6 +83,11 @@ namespace moe
 		VulkanBufferAllocator&	BufferAllocator()
 		{
 			return m_bufferAllocator;
+		}
+
+		VulkanTextureAllocator& TextureAllocator()
+		{
+			return m_textureAllocator;
 		}
 
 		VulkanMemoryAllocator&	MemoryAllocator()
@@ -162,6 +166,7 @@ namespace moe
 		vk::Queue		m_presentQueue;
 
 		VulkanBufferAllocator	m_bufferAllocator;
+		VulkanTextureAllocator	m_textureAllocator;
 		VulkanMemoryAllocator	m_memAllocator;
 
 		// So far, the only extension we have to manage is swap chain.

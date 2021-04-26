@@ -179,6 +179,8 @@ namespace moe
 
 		VulkanPipeline	m_pipeline;
 
+		VulkanTexture	m_materialTexture{};
+
 		std::vector<VulkanMesh>	m_meshStorage;
 
 	};

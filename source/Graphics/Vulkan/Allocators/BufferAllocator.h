@@ -19,6 +19,8 @@ namespace moe
 
 		VulkanBuffer	Create(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties);
 
+		BufferHandles	CreateStagingBuffer(vk::DeviceSize size);
+
 		void			ReleaseBufferHandles(BufferHandles& handles);
 
 

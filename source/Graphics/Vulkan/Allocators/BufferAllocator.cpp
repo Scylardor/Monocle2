@@ -22,16 +22,26 @@ namespace moe
 		{
 			usage |= vk::BufferUsageFlagBits::eTransferDst; // just in case
 
-			vk::MemoryPropertyFlags stagingProps = (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-			vk::BufferUsageFlags stagingUsage = vk::BufferUsageFlagBits::eTransferSrc;
-
-			staging = CreateBufferHandles(size, stagingUsage, stagingProps);
+			staging = CreateStagingBuffer(size);
 		}
 
 		// Then create the "actual" buffer
 		BufferHandles buffer = CreateBufferHandles(size, usage, memoryProperties);
 
 		return VulkanBuffer{std::move(buffer), std::move(staging), usage, memoryProperties, size, 0};
+	}
+
+
+	BufferHandles VulkanBufferAllocator::CreateStagingBuffer(vk::DeviceSize size)
+	{
+		BufferHandles staging{};
+
+		vk::MemoryPropertyFlags stagingProps = (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		vk::BufferUsageFlags stagingUsage = vk::BufferUsageFlagBits::eTransferSrc;
+
+		staging = CreateBufferHandles(size, stagingUsage, stagingProps);
+
+		return staging;
 	}
 
 

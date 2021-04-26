@@ -19,7 +19,7 @@ namespace moe
 		const auto memRequirements = m_device->getBufferMemoryRequirements(buffer);
 
 		// Now we need to find the right memory type index for the returned requirements...
-		uint32_t memTypeIndex = UINT32_MAX;
+		uint32_t memTypeIndex = FindSuitableMemoryTypeIndex(memRequirements.memoryTypeBits, memPropertiesFlags);
 		for (uint32_t iMemType = 0; iMemType < m_memProps.memoryTypeCount; iMemType++)
 		{
 			if (memRequirements.memoryTypeBits & (1 << iMemType) && (m_memProps.memoryTypes[iMemType].propertyFlags & memPropertiesFlags) == memPropertiesFlags)
@@ -40,6 +40,30 @@ namespace moe
 		MOE_ASSERT(bufferMemory);
 
 		return VulkanMemoryBlock{ std::move(bufferMemory), 0 };
+	}
+
+
+	VulkanMemoryBlock VulkanMemoryAllocator::AllocateTextureDeviceMemory(vk::Image image, vk::MemoryPropertyFlags memoryProperties) const
+	{
+		// First retrieve the memory requirements for this image and properties
+		const auto memRequirements = m_device->getImageMemoryRequirements(image);
+
+		// Now we need to find the right memory type index for the returned requirements...
+		uint32_t memTypeIndex = FindSuitableMemoryTypeIndex(memRequirements.memoryTypeBits, memoryProperties);
+
+		MOE_ASSERT(memTypeIndex != UINT32_MAX);
+
+		const vk::MemoryAllocateInfo allocInfo{
+			memRequirements.size,
+			memTypeIndex
+		};
+
+		auto imageMemory = m_device->allocateMemoryUnique(allocInfo);
+		MOE_ASSERT(imageMemory);
+
+		m_device->bindImageMemory(image, imageMemory.get(), 0);
+
+		return VulkanMemoryBlock{ std::move(imageMemory), 0 };
 	}
 
 
@@ -71,6 +95,24 @@ namespace moe
 		block.IsMapped = false;
 
 		m_device->unmapMemory(block.Memory.get());
+	}
+
+
+	uint32_t VulkanMemoryAllocator::FindSuitableMemoryTypeIndex(uint32_t typeFilterBits, vk::MemoryPropertyFlags memoryProperties) const
+	{
+		for (uint32_t iMemType = 0; iMemType < m_memProps.memoryTypeCount; iMemType++)
+		{
+			const bool memTypeIsCompatible = (typeFilterBits & (1 << iMemType));
+			const bool memTypeSupportsProperties = (m_memProps.memoryTypes[iMemType].propertyFlags & memoryProperties) == memoryProperties;
+
+			if (memTypeIsCompatible && memTypeSupportsProperties)
+			{
+				return iMemType; // Found a right one
+			}
+		}
+
+		MOE_ASSERT(false); // No suitable memory type was found !
+		return UINT32_MAX;
 	}
 }
 

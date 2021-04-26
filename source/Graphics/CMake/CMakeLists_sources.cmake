@@ -261,6 +261,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Allocators/BufferAllocator.h
 ./Vulkan/Allocators/MemoryAllocator.cpp
 ./Vulkan/Allocators/MemoryAllocator.h
+./Vulkan/Allocators/TextureAllocator.cpp
+./Vulkan/Allocators/TextureAllocator.h
 ./Vulkan/Buffer/VulkanBuffer.cpp
 ./Vulkan/Buffer/VulkanBuffer.h
 ./Vulkan/BufferPoolAllocator/BufferPoolAllocator.cpp
@@ -302,6 +304,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Swapchain/VulkanSwapchain.h
 ./Vulkan/Swapchain/VulkanSwapchainFrame.cpp
 ./Vulkan/Swapchain/VulkanSwapchainFrame.h
+./Vulkan/Texture/VulkanTexture.cpp
+./Vulkan/Texture/VulkanTexture.h
 ./Vulkan/ValidationLayers/VulkanValidationLayers.h
 ./Vulkan/VulkanMacros.h
 	)

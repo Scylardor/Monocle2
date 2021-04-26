@@ -86,6 +86,8 @@ namespace moe
 		VulkanMemoryBlock	AllocateBufferDeviceMemory(vk::Buffer buffer,
 		                                                  vk::MemoryPropertyFlags memPropertiesFlags) const;
 
+		VulkanMemoryBlock	AllocateTextureDeviceMemory(vk::Image image, vk::MemoryPropertyFlags memoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal) const;
+
 		void				FreeBufferDeviceMemory(VulkanMemoryBlock& block);
 
 
@@ -96,6 +98,9 @@ namespace moe
 	protected:
 
 	private:
+
+		uint32_t	FindSuitableMemoryTypeIndex(uint32_t typeFilterBits, vk::MemoryPropertyFlags memoryProperties) const;
+
 		MyVkDevice& m_device;
 
 		vk::PhysicalDeviceMemoryProperties	m_memProps;
