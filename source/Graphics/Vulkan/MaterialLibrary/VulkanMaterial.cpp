@@ -4,63 +4,186 @@
 
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
 #include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
+#include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
 namespace moe
 {
-	bool VulkanMaterial::Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain, const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos,
-		const std::vector<BindingSize>& bindingSizes,
-		vk::PipelineLayoutCreateInfo pipelineLayoutInfo,
-		vk::GraphicsPipelineCreateInfo pipelineInfo, uint32_t maxInstances)
+	VulkanDescriptorPool::VulkanDescriptorPool(const MyVkDevice& device, const std::vector <vk::DescriptorPoolSize>& poolSizes, uint32_t maxSets)
 	{
-		m_setLayouts.reserve(layoutInfos.size());
-		std::vector<vk::DescriptorSetLayout> pipelineSetLayouts;
-		pipelineSetLayouts.reserve(layoutInfos.size());
-		for (const auto & layoutInfo : layoutInfos)
-		{
-			m_setLayouts.emplace_back(device->createDescriptorSetLayoutUnique(layoutInfo));
-			pipelineSetLayouts.push_back(m_setLayouts.back().get());
-		}
+		const vk::DescriptorPoolCreateInfo poolCreateInfo{
+			vk::DescriptorPoolCreateFlags(), maxSets, (uint32_t) poolSizes.size(), poolSizes.data() };
 
-		pipelineLayoutInfo.setLayoutCount = (uint32_t) pipelineSetLayouts.size();
-		pipelineLayoutInfo.pSetLayouts = pipelineSetLayouts.data();
+		m_pool = device->createDescriptorPoolUnique(poolCreateInfo);
 
-		m_pipelineLayout = device->createPipelineLayoutUnique(pipelineLayoutInfo);
-		MOE_ASSERT(m_pipelineLayout);
-
-		pipelineInfo.layout = m_pipelineLayout.get();
-
-		m_pipeline = device->createGraphicsPipelineUnique(vk::PipelineCache(), pipelineInfo);
-		MOE_ASSERT(m_pipeline);
-
-		m_maxInstances = maxInstances;
-
-		auto maxFramesInFlight = swapChain.GetMaxFramesInFlight();
-
-		CreateDescriptorSets(device, maxFramesInFlight, layoutInfos, pipelineSetLayouts, bindingSizes);
+	}
 
 
 
-		return true;
+	void VulkanMaterial::BindPipeline(VulkanPipeline& pipeline)
+	{
+		m_pipeline = &pipeline;
+	}
+
+	VulkanMaterial& VulkanMaterial::Initialize(const MyVkDevice& device, VulkanPipeline& pipeline, uint32_t maxInstances)
+	{
+		BindPipeline(pipeline);
+
+		// Initialize our descriptor pools based on our shader program descriptor layouts.
+		CreateDescriptorSetPool(device, maxInstances);
+
+		AllocateDescriptorSets(device);
+
+		return *this;
+	}
+
+
+	VulkanMaterial& VulkanMaterial::BindTexture(uint32_t set, uint32_t binding, const VulkanTexture& tex)
+	{
+		auto bindingIndex = FindBindingDescriptorSetWriteIndex(set, binding);
+		MOE_ASSERT(m_writeSets.size() > bindingIndex);
+
+		vk::WriteDescriptorSet& writeSet = m_writeSets[bindingIndex];
+		writeSet.dstSet = m_sets[set];
+		writeSet.dstBinding = binding;
+		writeSet.dstArrayElement = 0;
+		writeSet.descriptorType = vk::DescriptorType::eCombinedImageSampler; // TODO: manage other types of textures ?
+		writeSet.descriptorCount = 1;
+		writeSet.pImageInfo = &tex.DescriptorImageInfo();
+
+		return *this;
+	}
+
+
+	VulkanMaterial& VulkanMaterial::BindUniformBuffer(uint32_t set, uint32_t binding, const VulkanBuffer& buff)
+	{
+		auto bindingIndex = FindBindingDescriptorSetWriteIndex(set, binding);
+		MOE_ASSERT(m_writeSets.size() > bindingIndex);
+
+		vk::WriteDescriptorSet& writeSet = m_writeSets[bindingIndex];
+		writeSet.dstSet = m_sets[set];
+		writeSet.dstBinding = binding;
+		writeSet.dstArrayElement = 0;
+		writeSet.descriptorType = vk::DescriptorType::eUniformBuffer;
+		writeSet.descriptorCount = 1;
+		writeSet.pBufferInfo = &buff.DescriptorBufferInfo();
+
+		return *this;
+	}
+
+
+	VulkanMaterial& VulkanMaterial::BindStorageBuffer(uint32_t set, uint32_t binding, const VulkanBuffer& buff)
+	{
+		auto bindingIndex = FindBindingDescriptorSetWriteIndex(set, binding);
+		MOE_ASSERT(m_writeSets.size() > bindingIndex);
+
+		vk::WriteDescriptorSet& writeSet = m_writeSets[bindingIndex];
+		writeSet.dstSet = m_sets[set];
+		writeSet.dstBinding = binding;
+		writeSet.dstArrayElement = 0;
+		writeSet.descriptorType = vk::DescriptorType::eStorageBuffer;
+		writeSet.descriptorCount = 1;
+		writeSet.pBufferInfo = &buff.DescriptorBufferInfo();
+
+		return *this;
+	}
+
+	void VulkanMaterial::UpdateDescriptorSets(const MyVkDevice& device)
+	{
+		device->updateDescriptorSets((uint32_t) m_writeSets.size(), m_writeSets.data(), 0, nullptr);
 	}
 
 	void VulkanMaterial::Bind(vk::CommandBuffer recordingBuffer) const
 	{
-		recordingBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.get());
-
-		if (m_staticDescriptorSets.empty())
-			return;
-
-		// No dynamic offsets for static descriptor sets
-		recordingBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout.get(),
-			0, (uint32_t)m_staticDescriptorSets.size(), m_staticDescriptorSets.data(),
-			0, nullptr);
+		recordingBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline->PipelineHandle());
+		recordingBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline->PipelineLayout(),
+			0, (uint32_t) m_sets.size(), m_sets.data(), 0, nullptr);
 	}
 
 
+	void VulkanMaterial::CreateDescriptorSetPool(const MyVkDevice& device, uint32_t maxInstances)
+	{
+		// This code takes advantages of the descriptor type enum just being an enumeration starting at 0.
+		// WE can then index by descriptor type very easily. But put a future-proof assert here,
+		// just in case the Vulkan implementation changes someday. If this breaks, this code is not valid anymore.
+		MOE_ASSERT(VK_DESCRIPTOR_TYPE_SAMPLER == 0 && VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT == 10);
+		static const uint32_t numberOfDescriptorTypes = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT + 1;
+		std::array<uint32_t, numberOfDescriptorTypes> descriptorCounts{ };
+
+		for (const auto& layoutInfo : m_pipeline->GetDescriptorSetLayoutInfos())
+		{
+			for (const auto& binding : layoutInfo.LayoutBindings)
+			{
+				descriptorCounts[(int)binding.descriptorType] += binding.descriptorCount;
+			}
+		}
+
+		// Initialize the pool sizes vector once and for all
+		// It will be useful to reuse if we need more descriptor pools
+		m_pools.PoolSizes.reserve(numberOfDescriptorTypes);
+		for (uint32_t iDescType = 0u; iDescType < numberOfDescriptorTypes; iDescType++)
+		{
+			if (descriptorCounts[iDescType] != 0)
+			{
+				m_pools.PoolSizes.emplace_back((vk::DescriptorType) iDescType, descriptorCounts[iDescType] * maxInstances);
+			}
+		}
+
+		// Create a first descriptor pool to begin with
+		m_pools.List.emplace_back(device, m_pools.PoolSizes, maxInstances);
+	}
+
+
+	void VulkanMaterial::AllocateDescriptorSets(const MyVkDevice& device)
+	{
+		vk::DescriptorPool pool = m_pools.List[0].Handle();
+
+		const auto& layouts = m_pipeline->GetDescriptorSetLayouts();
+
+		m_sets.resize(layouts.size());
+
+		vk::DescriptorSetAllocateInfo allocInfo{
+			pool, (uint32_t) layouts.size(), layouts.data()
+		};
+
+		device->allocateDescriptorSets(&allocInfo, m_sets.data());
+
+		// Calculate how many descriptor set write we need. It's basically the sum of binding counts across all sets
+		auto totalBindingsNbr = 0u;
+		for (const auto& layoutInfo : m_pipeline->GetDescriptorSetLayoutInfos())
+		{
+			totalBindingsNbr += (uint32_t) layoutInfo.LayoutBindings.size();
+		}
+
+		m_writeSets.resize(totalBindingsNbr);
+	}
+
+
+	uint32_t VulkanMaterial::FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const
+	{
+		MOE_ASSERT(m_pipeline);
+		const auto& layoutInfos = m_pipeline->GetDescriptorSetLayoutInfos();
+		MOE_ASSERT(layoutInfos.size() > set);
+
+		uint32_t setWriteIndex = 0u;
+		uint32_t setIndex = 0u;
+
+		while (setIndex < set)
+		{
+			setWriteIndex += (uint32_t) layoutInfos[setIndex].LayoutBindings.size();
+
+			setIndex++;
+		}
+
+		auto bindingIndex = 0;
+		while (layoutInfos[setIndex].LayoutBindings[bindingIndex++].binding != binding)
+			setWriteIndex++;
+
+		return setWriteIndex;
+	}
 
 
 	// TODO : This is a simplistic example using only one descriptor set.
-	bool VulkanMaterial::CreateDescriptorSets(const MyVkDevice& device, uint32_t maxFramesInFlight,
+	bool VulkanMaterial_old::CreateDescriptorSets(const MyVkDevice& device, uint32_t maxFramesInFlight,
 		const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos,
 		const std::vector<vk::DescriptorSetLayout>& layouts,
 		const std::vector<BindingSize>& bindingSizes)
@@ -98,8 +221,9 @@ namespace moe
 	}
 
 
-	bool VulkanMaterial::InitializeOffsets(const MyVkDevice& device, const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos, const DynamicSetsIndices& dynamicSetsIndices,
-		const std::vector<BindingSize>& dynamicBindingSizes, uint32_t maxFramesInFlight, uint32_t maxInstances)
+
+	bool VulkanMaterial_old::InitializeOffsets(const MyVkDevice& device, const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos, const DynamicSetsIndices& dynamicSetsIndices,
+	                                       const std::vector<BindingSize>& dynamicBindingSizes, uint32_t maxFramesInFlight, uint32_t maxInstances)
 	{
 		// I want to know which dynamic type it is (uniform or storage)
 		// TODO: this could have been done during dynamic set indices harvesting !
@@ -144,7 +268,7 @@ namespace moe
 	}
 
 
-	std::pair<VulkanMaterial::DynamicSetsIndices, VulkanMaterial::DescriptorTypeCountTable> VulkanMaterial::ComputeDynamicSetsIndicesAndDescriptorCounts(
+	std::pair<VulkanMaterial_old::DynamicSetsIndices, VulkanMaterial_old::DescriptorTypeCountTable> VulkanMaterial_old::ComputeDynamicSetsIndicesAndDescriptorCounts(
 		const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos)
 	{
 		// Based on the number of descriptor sets and types of bindings we can know what to ask from the descriptor pool.
@@ -180,7 +304,7 @@ namespace moe
 	}
 
 
-	void VulkanMaterial::InitializePool(const MyVkDevice& device, uint32_t maxSets, uint32_t maxFramesInFlight, const DescriptorTypeCountTable& descriptorCounts)
+	void VulkanMaterial_old::InitializePool(const MyVkDevice& device, uint32_t maxSets, uint32_t maxFramesInFlight, const DescriptorTypeCountTable& descriptorCounts)
 	{
 		// Now that we have the total number of bindings we will want, we can generate all the pool sizes we need...
 		std::vector<vk::DescriptorPoolSize> poolSizes;
@@ -203,7 +327,7 @@ namespace moe
 	}
 
 
-	std::vector<vk::DescriptorSet> VulkanMaterial::AllocateDescriptorSets(const MyVkDevice& device, uint32_t maxFramesInFlight,
+	std::vector<vk::DescriptorSet> VulkanMaterial_old::AllocateDescriptorSets(const MyVkDevice& device, uint32_t maxFramesInFlight,
 		const std::vector<vk::DescriptorSetLayout>& layouts)
 	{
 		// It's silly but the number of provided layouts and the number of descriptor sets to create must match...

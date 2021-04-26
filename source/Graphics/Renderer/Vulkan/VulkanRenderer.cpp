@@ -198,8 +198,9 @@ namespace moe
 		program.AddVertexBinding(vk::VertexInputRate::eVertex)
 			.AddVertexAttribute(0, offsetof(VertexData, pos), sizeof(VertexData::pos), vk::Format::eR32G32Sfloat)
 			.AddVertexAttribute(1, offsetof(VertexData, color), sizeof(VertexData::color), vk::Format::eR32G32B32Sfloat)
+			.AddVertexAttribute(2, offsetof(VertexData, texCoord), sizeof(VertexData::texCoord), vk::Format::eR32G32Sfloat)
 			.AddNewDescriptorSetLayout()
-				.AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
+				//.AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
 				.AddNewDescriptorBinding(0, 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment)
 			.Compile(*m_graphicsDevice);
 
@@ -214,6 +215,9 @@ namespace moe
 			.SetRenderPass(m_frameGraph.MainRenderPass(), 0)
 			.Build(*m_graphicsDevice);
 
+		m_material.Initialize(*m_graphicsDevice, m_pipeline)
+			.BindTexture(0, 1, m_materialTexture)
+			.UpdateDescriptorSets(*m_graphicsDevice);
 	}
 
 
@@ -265,10 +269,12 @@ namespace moe
 		renderPassCommandBuffer.setViewport(0, (uint32_t)m_pipeline.Viewports().size(), m_pipeline.Viewports().data());
 		renderPassCommandBuffer.setScissor(0, (uint32_t)m_pipeline.Scissors().size(), m_pipeline.Scissors().data());
 
-		renderPassCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline.PipelineHandle());
-
 		for (const auto& drawable : renderedScene)
 		{
+			auto matID = drawable.GetMaterialID();
+			if (matID == 0)
+				m_material.Bind(renderPassCommandBuffer);
+
 			drawable.BindTransform(m_pipeline, renderPassCommandBuffer);
 			const VulkanMesh& drawableMesh = m_meshStorage[drawable.GetMeshID()];
 			drawableMesh.Draw(renderPassCommandBuffer);

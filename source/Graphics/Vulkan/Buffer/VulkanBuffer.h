@@ -37,6 +37,11 @@ namespace moe
 
 		void	DeleteStagingBuffer(MyVkDevice& device);
 
+		const vk::DescriptorBufferInfo&	DescriptorBufferInfo() const
+		{
+			return m_descriptor;
+		}
+
 
 		[[nodiscard]] static VulkanBuffer	NewBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, vk::BufferUsageFlagBits specificUsageFlags, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties);
 

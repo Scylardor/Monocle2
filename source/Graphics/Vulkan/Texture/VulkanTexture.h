@@ -48,6 +48,10 @@ namespace moe
 
 		void	GenerateMipmaps(MyVkDevice& device, vk::CommandBuffer commandBuffer, vk::ImageTiling tilingMode);
 
+		const vk::DescriptorImageInfo&	DescriptorImageInfo() const
+		{
+			return m_descriptorInfo;
+		}
 
 		static uint32_t					ComputeNumberOfMipmapsForDimensions(uint32_t width, uint32_t height);
 		static vk::ImageAspectFlags		FindImageAspect(vk::ImageUsageFlags usage, vk::Format format);
@@ -63,7 +67,7 @@ namespace moe
 
 		void	UpdateDescriptorInfo();
 
-		
+
 		vk::UniqueImage			m_image{};
 		VulkanMemoryBlock		m_imageMemory;
 		vk::UniqueImageView		m_imageView{};

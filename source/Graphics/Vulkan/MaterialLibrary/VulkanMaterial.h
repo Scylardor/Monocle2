@@ -2,11 +2,49 @@
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/VulkanMacros.h"
+#include "Core/Containers/ObjectPool/ObjectPool.h"
 
 namespace moe
 {
+	class VulkanBuffer;
+	class VulkanTexture;
+	class VulkanPipeline;
 	class MyVkDevice;
 	class VulkanSwapchain;
+
+
+
+
+	class VulkanDescriptorPool
+	{
+	public:
+
+		VulkanDescriptorPool() = default;
+
+		VulkanDescriptorPool(const MyVkDevice& device, const std::vector <vk::DescriptorPoolSize>& poolSizes, uint32_t maxSets);
+
+		vk::DescriptorPool	Handle() const
+		{
+			return m_pool.get();
+		}
+
+	private:
+
+		vk::UniqueDescriptorPool	m_pool{};
+	};
+
+	class VulkanDescriptorPoolList
+	{
+	public:
+
+		VulkanDescriptorPoolList() = default;
+
+		std::vector<VulkanDescriptorPool>		List{};
+		std::vector <vk::DescriptorPoolSize>	PoolSizes{};
+
+	private:
+
+	};
 
 	class VulkanMaterial
 	{
@@ -24,11 +62,82 @@ namespace moe
 			size_t		Size{};
 		};
 
+		void	BindPipeline(VulkanPipeline& pipeline);
 
-		bool	Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain, const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos,
-							const std::vector<BindingSize>& dynamicBindingSizes,
-			vk::PipelineLayoutCreateInfo pipelineLayoutInfo,
-			vk::GraphicsPipelineCreateInfo pipelineInfo, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
+
+		VulkanMaterial& Initialize(const MyVkDevice& device, VulkanPipeline& pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
+
+		VulkanMaterial& BindTexture(uint32_t set, uint32_t binding, const VulkanTexture& tex);
+
+		VulkanMaterial& BindUniformBuffer(uint32_t set, uint32_t binding, const VulkanBuffer& buff);
+
+		VulkanMaterial& BindStorageBuffer(uint32_t set, uint32_t binding, const VulkanBuffer& buff);
+
+		void	UpdateDescriptorSets(const MyVkDevice& device) ;
+
+		void	Bind(vk::CommandBuffer recordingBuffer) const;
+
+	protected:
+
+	private:
+
+		void	CreateDescriptorSetPool(const MyVkDevice& device, uint32_t maxInstances);
+
+
+		void	AllocateDescriptorSets(const MyVkDevice& device);
+
+		uint32_t	FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const;
+
+
+		VulkanPipeline*					m_pipeline{ nullptr };
+		VulkanDescriptorPoolList		m_pools{};
+		std::vector<vk::DescriptorSet>	m_sets;
+		std::vector<vk::WriteDescriptorSet>	m_writeSets{};
+
+	};
+
+
+
+
+	// Holds :
+	// - a pipeline (shaders, etc.)
+	// - descriptor set layouts
+	class VulkanBaseMaterial
+	{
+	public:
+
+
+
+
+	protected:
+
+		std::vector<vk::UniqueDescriptorSetLayout>	m_setLayouts;
+		vk::UniquePipeline							m_pipeline;
+		vk::UniquePipelineLayout					m_pipelineLayout;
+
+
+	};
+
+	class VulkanMaterial_old : public VulkanBaseMaterial
+	{
+	public:
+
+		static const uint32_t DEFAULT_MAX_INSTANCES = 64;
+
+		struct BindingSize
+		{
+			BindingSize(uint32_t binding, size_t size) :
+				Binding(binding), Size(size)
+			{}
+
+			uint32_t	Binding{};
+			size_t		Size{};
+		};
+
+		void	BindPipeline(VulkanPipeline& pipeline);
+
+
+		bool	Initialize(const MyVkDevice& device, VulkanPipeline& pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
 
 
 		void	Bind(vk::CommandBuffer recordingBuffer) const;
@@ -55,6 +164,8 @@ namespace moe
 			const std::vector<vk::DescriptorSetLayout>& layouts,
 			const std::vector<BindingSize>& bindingSizes);
 
+		void	CreateDescriptorSetPool(const MyVkDevice& device, uint32_t maxInstances);
+
 		bool	InitializeOffsets(const MyVkDevice& device, const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos,
 			const DynamicSetsIndices& dynamicSetsIndices,
 			const std::vector<BindingSize>& dynamicBindingSizes,
@@ -76,10 +187,8 @@ namespace moe
 			return DynamicDescriptorIdx(type) != -1;
 		}
 
-		std::vector<vk::UniqueDescriptorSetLayout>	m_setLayouts;
-		vk::UniquePipeline							m_pipeline;
-		vk::UniquePipelineLayout					m_pipelineLayout;
-
+		VulkanPipeline* m_pipeline{ nullptr };
+		VulkanDescriptorPoolList	m_pools{};
 
 
 		std::vector<vk::DescriptorSet>		m_staticDescriptorSets;
@@ -96,6 +205,7 @@ namespace moe
 		inline static const std::array<vk::DescriptorType, 2> DYNAMIC_DESCRIPTOR_TYPES{
 			vk::DescriptorType::eUniformBufferDynamic, vk::DescriptorType::eStorageBufferDynamic };
 	};
+
 }
 
 

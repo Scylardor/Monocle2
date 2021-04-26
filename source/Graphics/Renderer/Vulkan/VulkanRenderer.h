@@ -30,6 +30,7 @@ namespace moe
 	{
 		glm::vec2 pos;
 		glm::vec3 color;
+		glm::vec2 texCoord;
 
 		static vk::VertexInputBindingDescription	GetBindingDescription()
 		{

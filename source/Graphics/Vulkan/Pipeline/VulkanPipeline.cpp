@@ -161,8 +161,8 @@ namespace moe
 		MOE_ASSERT(m_shaderProgram.IsCompiled()); // or else some initialization step is missing
 
 		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.setLayoutCount = (uint32_t)m_shaderProgram.DescriptorSetLayouts().size();
-		pipelineLayoutInfo.pSetLayouts = m_shaderProgram.DescriptorSetLayouts().data();
+		pipelineLayoutInfo.setLayoutCount = (uint32_t)m_shaderProgram.GetDescriptorSetLayouts().size();
+		pipelineLayoutInfo.pSetLayouts = m_shaderProgram.GetDescriptorSetLayouts().data();
 		pipelineLayoutInfo.pushConstantRangeCount = (uint32_t)m_shaderProgram.PushConstants().size();
 		pipelineLayoutInfo.pPushConstantRanges = m_shaderProgram.PushConstants().data();
 

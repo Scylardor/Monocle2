@@ -67,7 +67,7 @@ vec4	ComputeDirectionalLight(int iLight)
 
 	// Specular
 	float specularStrength = 0.0;
-	if (diffuse != 0) // Do not produce a specular highlight if the object is back lit.
+	if (diffuse != vec4(0)) // Do not produce a specular highlight if the object is back lit.
 	{
 		vec3 vertToEyeDir = normalize(-vs_fragPosEye); // formula is eye pos - vertex pos but in eye space, eye is at (0, 0, 0) !
 		// Compute Blinn-Phong half vector
@@ -93,7 +93,7 @@ vec4	ComputePointLight(int iLight, vec4 lightDirEye, float attenuation)
 
 	// Specular
 	float specularStrength = 0.0;
-	if (diffuse != 0) // Do not produce a specular highlight if the object is back lit.
+	if (diffuse != vec4(0)) // Do not produce a specular highlight if the object is back lit.
 	{
 		vec3 vertToEyeDir = normalize(-vs_fragPosEye); // formula is eye pos - vertex pos but in eye space, eye is at (0, 0, 0) !
 		// Compute Blinn-Phong half vector

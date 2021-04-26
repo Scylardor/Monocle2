@@ -59,10 +59,10 @@ namespace moe
 
 		const std::vector<moe::VertexData> vertices =
 		{
-			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 		};
 
 		const std::vector<uint16_t> indices =
@@ -77,7 +77,8 @@ namespace moe
 
 		m_view = Mat4::LookAtMatrix(Vec3{ 2.f }, Vec3::ZeroVector(), Vec3{ 0, 0, 1 });
 
-		m_projection = Mat4::Perspective(45_degf, GetWindowWidth() / (float)GetWindowHeight(), 0.1f, 10.f);
+		float aspectRatio = GetWindowWidth() / (float)GetWindowHeight();
+		m_projection = Mat4::Perspective(45_degf, aspectRatio, 0.1f, 10.f);
 
 
 		//GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.

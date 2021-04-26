@@ -23,7 +23,7 @@ namespace moe
 	};
 
 
-	struct DescriptorSetLayoutInfos
+	struct DescriptorSetLayoutInfo
 	{
 		vk::DescriptorSetLayoutCreateInfo			LayoutInfo{};
 		std::vector<vk::DescriptorSetLayoutBinding>	LayoutBindings{};
@@ -34,6 +34,10 @@ namespace moe
 	class VulkanShaderProgram
 	{
 	public:
+
+		using DescriptorSetLayouts = std::vector<vk::DescriptorSetLayout>;
+		using DescriptorLayoutInfos = std::vector<DescriptorSetLayoutInfo>;
+		using PushConstantRanges = std::vector<vk::PushConstantRange>;
 
 		bool	Compile(const MyVkDevice& device);
 
@@ -56,11 +60,13 @@ namespace moe
 
 		[[nodiscard]] std::vector<vk::VertexInputAttributeDescription> const& VertexAttributeDescriptions() const { return m_vertexAttributes; }
 
-		[[nodiscard]] std::vector<vk::DescriptorSetLayout> const&	DescriptorSetLayouts() const { return m_descriptorSetLayouts; }
+		[[nodiscard]] DescriptorSetLayouts const&	GetDescriptorSetLayouts() const { return m_descriptorSetLayouts; }
 
-		[[nodiscard]] std::vector<vk::PushConstantRange> const& PushConstants() const { return m_pushConstants; }
+		[[nodiscard]] DescriptorLayoutInfos const& GetDescriptorSetLayoutInfos() const { return m_descriptorSetLayoutInfos; }
 
-		bool	IsCompiled() const { return m_compiled; }
+		[[nodiscard]] PushConstantRanges const& PushConstants() const { return m_pushConstants; }
+
+		[[nodiscard]] bool	IsCompiled() const { return m_compiled; }
 
 
 	private:
@@ -68,12 +74,12 @@ namespace moe
 		std::vector<vk::VertexInputBindingDescription>		m_vertexBindings{};
 		std::vector<vk::VertexInputAttributeDescription>	m_vertexAttributes{};
 
-		std::vector<DescriptorSetLayoutInfos>				m_descriptorSetLayoutInfos{};
-		std::vector<vk::DescriptorSetLayout>				m_descriptorSetLayouts{};
+		DescriptorLayoutInfos								m_descriptorSetLayoutInfos{};
+		DescriptorSetLayouts								m_descriptorSetLayouts{};
 
 		std::vector<VulkanShader>	m_shaders{};
 
-		std::vector<vk::PushConstantRange>	m_pushConstants{};
+		PushConstantRanges			m_pushConstants{};
 
 		bool	m_compiled = false;
 	};
