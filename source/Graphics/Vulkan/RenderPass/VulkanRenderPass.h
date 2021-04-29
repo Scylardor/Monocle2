@@ -15,7 +15,7 @@ namespace moe
 
 		VulkanRenderPass(VulkanRenderPass&& other);
 
-		bool	Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain, FramebufferFactory::FramebufferID boundFramebuffer, VkRect2D renderArea, const std::array<vk::ClearValue, 2>& clearValues);
+		bool	Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain, FramebufferFactory::FramebufferID boundFramebuffer, VkRect2D renderArea, const std::array<vk::ClearValue, 3>& clearValues);
 
 		void	Begin(vk::CommandBuffer cb);
 
@@ -29,7 +29,7 @@ namespace moe
 		}
 
 
-		static VulkanRenderPass	New(const MyVkDevice& device, vk::Format colorAttachmentFormat, vk::Format depthStencilAttachmentFormat);
+		static VulkanRenderPass	New(const MyVkDevice& device, vk::Format colorAttachmentFormat, vk::Format depthStencilAttachmentFormat, vk::SampleCountFlagBits numSamples = vk::SampleCountFlagBits::e1);
 
 	protected:
 
@@ -59,7 +59,7 @@ namespace moe
 		FramebufferFactory::FramebufferID	m_boundFramebuffer;	// the framebuffer this renderpass will use at render time.
 
 		vk::RenderPassBeginInfo				m_commandBeginInfo;		// the info to pass to vkCmdBeginRenderPass.
-		std::array<vk::ClearValue, 2>		m_commandClearValues{}; // We need to keep this with same lifetime as render pass as clear values is a pointer.
+		std::array<vk::ClearValue, 3>		m_commandClearValues{}; // We need to keep this with same lifetime as render pass as clear values is a pointer.
 	};
 }
 

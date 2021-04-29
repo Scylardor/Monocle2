@@ -26,6 +26,9 @@ namespace moe
 		// Set the mipLevels value to 1 for no mips.
 		static const auto AUTOMATIC_MIP_LEVELS = 0;
 
+		// This magic value tells the swap chain to create a multisample resolve target with the maximum number of MSAA samples available.
+		static const auto MAX_SAMPLES = (vk::SampleCountFlagBits)0;
+
 		VulkanTexture() = default;
 
 		VulkanTexture(vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
@@ -53,10 +56,16 @@ namespace moe
 			return m_descriptorInfo;
 		}
 
-		vk::Format	Format() const
+		[[nodiscard]] vk::Format	Format() const
 		{
 			return m_format;
 		}
+
+		[[nodiscard]] vk::SampleCountFlagBits	NumSamples() const
+		{
+			return m_numSamples;
+		}
+
 
 		[[nodiscard]] static uint32_t					ComputeNumberOfMipmapsForDimensions(uint32_t width, uint32_t height);
 		[[nodiscard]] static vk::ImageAspectFlags		FindImageAspect(vk::ImageUsageFlags usage, vk::Format format);
@@ -131,9 +140,9 @@ namespace moe
 		}
 
 
-		VulkanTextureBuilder& SetSamplesCount(vk::SampleCountFlagBits sampleCount)
+		VulkanTextureBuilder& SetSamplesCount(vk::SampleCountFlags sampleCount)
 		{
-			ImageCreateInfo.samples = sampleCount;
+			ImageCreateInfo.samples = reinterpret_cast<vk::SampleCountFlagBits&>(sampleCount); // what the fuck? Didn't compile without doing it
 			return *this;
 		}
 

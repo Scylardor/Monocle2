@@ -1,5 +1,8 @@
 ﻿// Monocle Game Engine source files - Alexandre Baron
 
+// TODO: This should be moved elsewhere... lol !
+#define STB_IMAGE_IMPLEMENTATION
+#include <STB/stb_image.h>
 
 #ifdef MOE_OPENGL
 
@@ -13,8 +16,6 @@
 
 #include "Graphics/Pipeline/OpenGL/OpenGLPipeline.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <STB/stb_image.h>
 
 
 namespace moe
@@ -47,7 +48,8 @@ namespace moe
 			iLayout++;
 		}
 
-		glDeleteVertexArrays((GLsizei)vaoIDs.Size(), vaoIDs.Data());
+		if (!vaoIDs.Empty())
+			glDeleteVertexArrays((GLsizei)vaoIDs.Size(), vaoIDs.Data());
 
 		m_vertexLayouts.clear();
 	}
@@ -488,7 +490,7 @@ namespace moe
 				auto oglElemFormat = OpenGLVertexElementFormat::TranslateFormat(elemDesc.m_format);
 				auto typeSize = OpenGLVertexElementFormat::FindTypeSize(oglElemFormat.value().m_numCpnts, oglElemFormat.value().m_type);
 				glVertexArrayVertexBuffer(vtxLayout->VAO(), bindingIdx, vbo, elemBufferOffset, typeSize.value());
-
+				// I think one could also use glVertexArrayVertexBuffers for a single API call !
 				elemBufferOffset += numVertices * typeSize.value();
 				bindingIdx++;
 			}

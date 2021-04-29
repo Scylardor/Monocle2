@@ -24,6 +24,10 @@ namespace moe
 
 		[[nodiscard]] float	GetMaxSupportedAnisotropy() const;
 
+		// Find the maximum sample count that is supported for BOTH color and depth formats
+		// If we also wanna use the stencil, check the stencil limits too.
+		[[nodiscard]] vk::SampleCountFlagBits	FindMaxUsableColorDepthSampleCount(bool useStencil = false) const;
+
 	protected:
 
 	private:

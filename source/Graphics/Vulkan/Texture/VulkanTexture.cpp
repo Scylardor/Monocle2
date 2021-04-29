@@ -70,7 +70,6 @@ namespace moe
 		builder.ImageCreateInfo.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
 		builder.ImageCreateInfo.imageType = vk::ImageType::e2D;
 		builder.ImageViewCreateInfo.viewType = vk::ImageViewType::e2D;
-		builder.ImageViewCreateInfo.format = builder.ImageCreateInfo.format;
 
 		VulkanTexture tex = device.TextureAllocator().AllocateImage(builder);
 

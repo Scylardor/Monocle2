@@ -17,6 +17,7 @@ namespace moe
 			builder.ImageCreateInfo.usage |= vk::ImageUsageFlagBits::eTransferSrc;
 		}
 
+
 		const vk::FormatFeatureFlags features = GetFormatFeaturesForUsage(builder.ImageCreateInfo.usage);
 		builder.ImageCreateInfo.tiling = GetFormatTilingMode(builder.ImageCreateInfo.format, features);
 
@@ -31,6 +32,8 @@ namespace moe
 		MOE_ASSERT(image);
 
 		VulkanMemoryBlock imageMemory = m_device.MemoryAllocator().AllocateTextureDeviceMemory(image.get());
+
+		builder.ImageViewCreateInfo.format = builder.ImageCreateInfo.format;
 
 		builder.ImageViewCreateInfo.subresourceRange.aspectMask = VulkanTexture::FindImageAspect(builder.ImageCreateInfo.usage, builder.ImageCreateInfo.format);
 
@@ -62,6 +65,22 @@ namespace moe
 	float VulkanTextureAllocator::GetMaxSupportedAnisotropy() const
 	{
 		return m_device.Properties().limits.maxSamplerAnisotropy;
+	}
+
+
+	vk::SampleCountFlagBits VulkanTextureAllocator::FindMaxUsableColorDepthSampleCount(bool useStencil) const
+	{
+		vk::SampleCountFlags limits = m_device.Properties().limits.framebufferColorSampleCounts;
+
+		if (useStencil)
+			limits &= m_device.Properties().limits.framebufferStencilSampleCounts;
+		else
+			limits &= m_device.Properties().limits.framebufferDepthSampleCounts;
+
+		int& limitsi = reinterpret_cast<int&>(limits); // evil bit twiddling hack!!
+		limits &= vk::SampleCountFlagBits((~limitsi) >> 1); // filter and keep only the highest one
+
+		return vk::SampleCountFlagBits(limitsi);
 	}
 
 

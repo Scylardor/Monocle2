@@ -25,6 +25,7 @@ namespace moe
 
 		std::optional<int> swapchainColorIdx{};
 		std::optional<int> swapchainDepthIdx{};
+		std::optional<int> multisampleIdx{};
 
 		// this assumes each swap chain target only appears once in the framebuffer info. Or it's probably wrong.
 		for (auto iAttach = 0u; iAttach < fbInfo.attachmentCount; iAttach++)
@@ -37,11 +38,15 @@ namespace moe
 			{
 				swapchainDepthIdx = iAttach;
 			}
+			else if (fbInfo.pAttachments[iAttach] == SWAPCHAIN_MULTISAMPLE_ATTACHMENT_VIEW)
+			{
+				multisampleIdx = iAttach;
+			}
 		}
 
 
 		FramebufferID newFbID;
-		if (false == (swapchainColorIdx.has_value() || swapchainDepthIdx.has_value()))
+		if (false == swapchainColorIdx.has_value())
 		{
 			// just create it as is
 			newFbID = CreateNewFramebuffer(fbInfo);
@@ -49,7 +54,7 @@ namespace moe
 		}
 		else // it's a bit more involved : we need N new framebuffers with N = swap chain images count
 		{
-			newFbID = CreateSwapchainAttachedFramebuffer(fbInfo, swapchainColorIdx, swapchainDepthIdx);
+			newFbID = CreateSwapchainAttachedFramebuffer(fbInfo, swapchainColorIdx, swapchainDepthIdx, multisampleIdx);
 		}
 
 		return newFbID;
@@ -78,7 +83,7 @@ namespace moe
 
 
 	FramebufferFactory::FramebufferID FramebufferFactory::CreateSwapchainAttachedFramebuffer(vk::FramebufferCreateInfo& fbInfo,
-		std::optional<int> swapchainColorIdx, std::optional<int> swapchainDepthIdx)
+		std::optional<int> swapchainColorIdx, std::optional<int> swapchainDepthIdx, std::optional<int> multisampleIdx)
 	{
 		std::vector<vk::ImageView> patchedAttachmentsList;
 		patchedAttachmentsList.reserve(fbInfo.attachmentCount);
@@ -103,6 +108,10 @@ namespace moe
 			{
 				patchedAttachmentsList[*swapchainDepthIdx] = m_swapChain->GetDepthAttachmentView();
 			}
+			if (multisampleIdx.has_value())
+			{
+				patchedAttachmentsList[*multisampleIdx] = m_swapChain->GetMultisampleAttachmentView();
+			}
 
 			fbInfo.pAttachments = patchedAttachmentsList.data(); // the actual patchup
 			CreateNewFramebuffer(fbInfo);
@@ -110,7 +119,7 @@ namespace moe
 
 		// write the informations about this framebuffer's swapchain attachments for when we recreate the swapchain.
 		std::vector<SwapchainFramebufferAttachment>	swapchainAttachmentsInfo;
-		swapchainAttachmentsInfo.reserve(2); // color + depth
+		swapchainAttachmentsInfo.reserve(3); // color + depth + multisample
 		if (swapchainColorIdx.has_value())
 		{
 			swapchainAttachmentsInfo.emplace_back(*swapchainColorIdx, SWAPCHAIN_COLOR_ATTACHMENT_VIEW);
@@ -118,6 +127,10 @@ namespace moe
 		if (swapchainDepthIdx.has_value())
 		{
 			swapchainAttachmentsInfo.emplace_back(*swapchainDepthIdx, SWAPCHAIN_DEPTH_STENCIL_ATTACHMENT_VIEW);
+		}
+		if (multisampleIdx.has_value())
+		{
+			swapchainAttachmentsInfo.emplace_back(*multisampleIdx, SWAPCHAIN_MULTISAMPLE_ATTACHMENT_VIEW);
 		}
 
 		// Add this framebuffer to the lookup map of "swapchain attached framebuffers"

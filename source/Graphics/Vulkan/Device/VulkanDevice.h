@@ -90,6 +90,12 @@ namespace moe
 			return m_textureAllocator;
 		}
 
+		const VulkanTextureAllocator& GetTextureAllocator() const
+		{
+			return m_textureAllocator;
+		}
+
+
 		VulkanMemoryAllocator&	MemoryAllocator()
 		{
 			return m_memAllocator;

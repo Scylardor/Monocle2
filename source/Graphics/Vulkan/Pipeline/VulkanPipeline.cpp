@@ -204,6 +204,12 @@ namespace moe
 
 		pipelineInfo.pRasterizationState = &m_rasterizationstateInfo;
 
+		if (m_multisamplestateInfo.rasterizationSamples == VulkanTexture::MAX_SAMPLES)
+		{
+			// retrieve the max available samples count
+			m_multisamplestateInfo.rasterizationSamples = device.GetTextureAllocator().FindMaxUsableColorDepthSampleCount();
+		}
+
 		pipelineInfo.pMultisampleState = &m_multisamplestateInfo;
 
 		pipelineInfo.pDepthStencilState = &m_depthStencilStateInfo;

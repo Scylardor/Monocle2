@@ -36,16 +36,21 @@ namespace moe
 
 	bool VulkanFrameGraph::CreateMainRenderPass(MyVkDevice& device, const VulkanSwapchain& swapChain)
 	{
-		VulkanRenderPass rp = VulkanRenderPass::New(device, swapChain.GetColorAttachmentFormat(), swapChain.GetDepthAttachmentFormat());
+		VulkanRenderPass rp = VulkanRenderPass::New(device, swapChain.GetColorAttachmentFormat(), swapChain.GetDepthAttachmentFormat(), swapChain.GetNumSamples());
 
-		std::array<vk::ImageView, 2>  attachments = {
+		std::array<vk::ImageView, 3>  attachments = {
 			FramebufferFactory::SWAPCHAIN_COLOR_ATTACHMENT_VIEW,
-			FramebufferFactory::SWAPCHAIN_DEPTH_STENCIL_ATTACHMENT_VIEW
+			FramebufferFactory::SWAPCHAIN_DEPTH_STENCIL_ATTACHMENT_VIEW,
+			FramebufferFactory::SWAPCHAIN_MULTISAMPLE_ATTACHMENT_VIEW
 		};
+
+		auto attachmentCount = (uint32_t)attachments.size();
+		if (false == swapChain.HasMultisampleAttachment())
+			attachmentCount--;
 
 		vk::FramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.renderPass = rp;
-		framebufferInfo.attachmentCount = (uint32_t)attachments.size();
+		framebufferInfo.attachmentCount = attachmentCount;
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_WIDTH;
 		framebufferInfo.height = FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_HEIGHT;
@@ -53,9 +58,10 @@ namespace moe
 		FramebufferFactory::FramebufferID rpFramebuffer = device.FramebufferFactory.CreateFramebuffer(framebufferInfo);
 
 		//  the clear values to use for VK_ATTACHMENT_LOAD_OP_CLEAR
-		std::array<vk::ClearValue, 2> clearValues{};
+		std::array<vk::ClearValue, 3> clearValues{};
 		clearValues[0].color = std::array<float, 4>({ 0.0f, 0.0f, 0.5f, 1.0f });
 		clearValues[1].depthStencil = vk::ClearDepthStencilValue(1.0f, 0);
+		clearValues[2] = clearValues[0];
 
 		bool ok = rp.Initialize(device, swapChain, rpFramebuffer,
 			{ {0, 0}, { FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_WIDTH, FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_HEIGHT} },

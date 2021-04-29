@@ -21,7 +21,7 @@ namespace moe
 		VulkanSwapchain() = default;
 		~VulkanSwapchain() = default;
 
-		bool		Initialize(vk::Instance instance, class MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface);
+		bool		Initialize(vk::Instance instance, class MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface, vk::SampleCountFlags numSamples = VulkanTexture::MAX_SAMPLES);
 
 		void		PrepareNewFrame();
 
@@ -72,10 +72,27 @@ namespace moe
 			return m_depthStencilAttachment.DescriptorImageInfo().imageView;
 		}
 
+		vk::ImageView	GetMultisampleAttachmentView() const
+		{
+			return m_multisampleAttachment.DescriptorImageInfo().imageView;
+		}
+
+		bool	HasMultisampleAttachment() const
+		{
+			return (m_multisampleAttachment.DescriptorImageInfo().imageView);
+		}
+
+		vk::SampleCountFlagBits	GetNumSamples() const
+		{
+			return (m_multisampleAttachment.NumSamples());
+		}
+
+
 		VkExtent2D	GetSwapchainImageExtent() const
 		{
 			return m_imagesExtent;
 		}
+
 
 
 	private:
@@ -89,9 +106,11 @@ namespace moe
 
 		vk::Result	AcquireNextImage();
 
-		bool	InitializeFrameList(vk::Format swapChainImageFormat);
+		bool	InitializeFrameList(vk::Format swapChainImageFormat, vk::SampleCountFlags numSamples);
 
-		void	InitializeDepthStencilAttachment();
+		void	InitializeDepthStencilAttachment(vk::SampleCountFlags numSamples);
+
+		void	InitializeMultisampledAttachment(vk::SampleCountFlags numSamples);
 
 		const vk::Semaphore*	GetCurrentFramePresentCompleteSemaphore() const
 		{
@@ -125,6 +144,8 @@ namespace moe
 		uint32_t							m_currentImageInFlightIdx = 0;
 
 		VulkanTexture						m_depthStencilAttachment{};
+
+		VulkanTexture						m_multisampleAttachment{};
 
 		VkExtent2D							m_imagesExtent{};
 

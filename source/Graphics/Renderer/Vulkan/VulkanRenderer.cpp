@@ -213,7 +213,7 @@ namespace moe
 			.SetPolygonMode(vk::PolygonMode::eFill)
 			.SetPolygonLineWidth(1.f)
 			.SetCulling(vk::CullModeFlagBits::eBack, vk::FrontFace::eCounterClockwise)
-			.SetMultisampling(vk::SampleCountFlagBits::e1)
+			.SetMultisampling(VulkanTexture::MAX_SAMPLES, true, 0.5f)
 			.SetRenderPass(m_frameGraph.MainRenderPass(), 0)
 			.Build(*m_graphicsDevice);
 

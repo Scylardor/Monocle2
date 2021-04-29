@@ -10,7 +10,7 @@ namespace moe
 {
 	const uint32_t VulkanSwapchain::MAX_FRAMES_IN_FLIGHT = 2;
 
-	bool VulkanSwapchain::Initialize(vk::Instance instance, MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface)
+	bool VulkanSwapchain::Initialize(vk::Instance instance, MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface, vk::SampleCountFlags numSamples)
 	{
 		MOE_ASSERT(m_surfaceProvider == nullptr); // should not get called twice on the same swapchain !
 
@@ -37,7 +37,7 @@ namespace moe
 		m_imageFormat = createInfo.imageFormat;
 		m_imagesExtent = createInfo.imageExtent;
 
-		bool ok = InitializeFrameList(createInfo.imageFormat);
+		bool ok = InitializeFrameList(createInfo.imageFormat, numSamples);
 		MOE_ASSERT(ok);
 
 		return ok;
@@ -146,7 +146,7 @@ namespace moe
 	}
 
 
-	bool VulkanSwapchain::InitializeFrameList(vk::Format swapChainImageFormat)
+	bool VulkanSwapchain::InitializeFrameList(vk::Format swapChainImageFormat, vk::SampleCountFlags numSamples)
 	{
 		m_swapChainFrames.clear(); // destroys unique handles
 		m_swapChainFrames.reserve(MAX_FRAMES_IN_FLIGHT);
@@ -160,22 +160,42 @@ namespace moe
 
 		m_imagesInFlight.clear(); // destroy unique handles, if any. vkImages will be cleaned up by UniqueSwapchain dtor
 		m_imagesInFlight.reserve(newSwapchainImages.size());
-		for (auto scImage : newSwapchainImages)
+		for (vk::Image scImage : newSwapchainImages)
 		{
 			m_imagesInFlight.emplace_back(Device(), scImage, swapChainImageFormat);
 		}
 
-		InitializeDepthStencilAttachment();
+		if (numSamples == VulkanTexture::MAX_SAMPLES)
+		{
+			numSamples = m_device->TextureAllocator().FindMaxUsableColorDepthSampleCount();
+		}
+
+		InitializeDepthStencilAttachment(numSamples);
+
+		InitializeMultisampledAttachment(numSamples);
 
 		return true;
 	}
 
 
-	void VulkanSwapchain::InitializeDepthStencilAttachment()
+	void VulkanSwapchain::InitializeDepthStencilAttachment(vk::SampleCountFlags numSamples)
 	{
-		auto builder = VulkanTextureBuilder().SetDimensions(m_imagesExtent.width, m_imagesExtent.height);
+		auto builder = VulkanTextureBuilder()
+			.SetDimensions(m_imagesExtent.width, m_imagesExtent.height)
+			.SetSamplesCount(numSamples);
 
 		m_depthStencilAttachment = VulkanTexture::CreateDepthStencilAttachment(*m_device, builder);
+	}
+
+
+	void VulkanSwapchain::InitializeMultisampledAttachment(vk::SampleCountFlags numSamples)
+	{
+		auto builder = VulkanTextureBuilder()
+			.SetDimensions(m_imagesExtent.width, m_imagesExtent.height)
+			.SetSamplesCount(numSamples)
+			.SetFormat(m_imageFormat);
+
+		m_multisampleAttachment = VulkanTexture::CreateColorAttachment(*m_device, builder);
 	}
 
 

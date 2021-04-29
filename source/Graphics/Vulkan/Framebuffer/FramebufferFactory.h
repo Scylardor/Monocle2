@@ -44,6 +44,8 @@ namespace moe
 
 		inline static const vk::ImageView SWAPCHAIN_DEPTH_STENCIL_ATTACHMENT_VIEW{ (VkImageView)1 };
 
+		inline static const vk::ImageView SWAPCHAIN_MULTISAMPLE_ATTACHMENT_VIEW{ (VkImageView)2 }; // For MSAA
+
 		// Will be automatically replaced when creating a framebuffer with a swapchain attachment in it.
 		inline static const uint32_t SWAPCHAIN_FRAMEBUFFER_WIDTH = 0;
 		inline static const uint32_t SWAPCHAIN_FRAMEBUFFER_HEIGHT = SWAPCHAIN_FRAMEBUFFER_WIDTH;
@@ -76,7 +78,8 @@ namespace moe
 
 		FramebufferID	CreateNewFramebuffer(const vk::FramebufferCreateInfo& fbInfo);
 
-		FramebufferID	CreateSwapchainAttachedFramebuffer(vk::FramebufferCreateInfo& fbInfo, std::optional<int> swapchainColorIdx, std::optional<int> swapchainDepthIdx);
+		FramebufferID	CreateSwapchainAttachedFramebuffer(vk::FramebufferCreateInfo& fbInfo,
+			std::optional<int> swapchainColorIdx, std::optional<int> swapchainDepthIdx, std::optional<int> multisampleIdx);
 
 
 		// framebuffers with swapchain attachments in them. Those will need to be recreated upon swap chain recreation
