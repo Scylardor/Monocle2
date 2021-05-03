@@ -4,6 +4,8 @@
 
 #include <cstdint>
 
+#define MOE_MOVE(var) var = std::move(rhs.var)
+
 namespace moe
 {
 		using std::int8_t;
