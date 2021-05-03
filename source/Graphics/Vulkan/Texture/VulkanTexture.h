@@ -31,7 +31,12 @@ namespace moe
 
 		VulkanTexture() = default;
 
+		VulkanTexture(const VulkanTextureBuilder& builder);
+
 		VulkanTexture(vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
+
+		VulkanTexture(VulkanTexture&& other);
+		VulkanTexture& operator=(VulkanTexture&& rhs);
 
 		[[nodiscard]] static VulkanTexture	Create2DTexture(MyVkDevice& device, VulkanTextureBuilder& builder);
 		[[nodiscard]] static VulkanTexture	Create3DTexture(MyVkDevice& device, VulkanTextureBuilder& builder);
@@ -67,6 +72,11 @@ namespace moe
 		}
 
 
+		[[nodiscard]] vk::ImageView	View() const
+		{
+			return m_imageView.get();
+		}
+
 		[[nodiscard]] static uint32_t					ComputeNumberOfMipmapsForDimensions(uint32_t width, uint32_t height);
 		[[nodiscard]] static vk::ImageAspectFlags		FindImageAspect(vk::ImageUsageFlags usage, vk::Format format);
 		[[nodiscard]] static bool						FormatHasStencil(vk::Format format);
@@ -74,7 +84,6 @@ namespace moe
 
 	protected:
 
-	private:
 
 		void	TransitionLayoutImpl(vk::ImageLayout newLayout, vk::CommandBuffer commandBuffer);
 

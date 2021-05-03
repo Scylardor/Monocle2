@@ -13,6 +13,8 @@ namespace moe
 {
 	class IVulkanSurfaceProvider;
 
+
+
 	class VulkanSwapchain
 	{
 	public:
@@ -64,22 +66,37 @@ namespace moe
 		vk::ImageView	GetColorAttachmentView(int imageIndex) const
 		{
 			MOE_ASSERT(imageIndex < m_imagesInFlight.size());
-			return m_imagesInFlight[imageIndex].View.get();
+			return m_imagesInFlight[imageIndex].Texture.View();
 		}
+
+
+		const VulkanSwapchainTexture&	GetColorAttachmentTexture(int imageIndex = 0) const
+		{
+			MOE_ASSERT(imageIndex < m_imagesInFlight.size());
+			return m_imagesInFlight[imageIndex].Texture;
+		}
+
 
 		vk::ImageView	GetDepthAttachmentView() const
 		{
-			return m_depthStencilAttachment.DescriptorImageInfo().imageView;
+			return m_depthStencilAttachment.View();
 		}
+
+
+		const VulkanTexture& GetDepthAttachmentTexture() const
+		{
+			return m_depthStencilAttachment;
+		}
+
 
 		vk::ImageView	GetMultisampleAttachmentView() const
 		{
-			return m_multisampleAttachment.DescriptorImageInfo().imageView;
+			return m_multisampleAttachment.View();
 		}
 
 		bool	HasMultisampleAttachment() const
 		{
-			return (m_multisampleAttachment.DescriptorImageInfo().imageView);
+			return (m_multisampleAttachment.View());
 		}
 
 		vk::SampleCountFlagBits	GetNumSamples() const
@@ -94,14 +111,21 @@ namespace moe
 		}
 
 
-
-	private:
-
 		const MyVkDevice& Device() const
 		{
 			MOE_ASSERT(m_device != nullptr);
 			return *m_device;
 		}
+
+		MyVkDevice& Device()
+		{
+			MOE_ASSERT(m_device != nullptr);
+			return *m_device;
+		}
+
+
+	private:
+
 
 
 		vk::Result	AcquireNextImage();

@@ -5,13 +5,11 @@
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
 namespace moe
 {
-	VulkanSwapchainImage::VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, vk::Format imageFormat)
+	VulkanSwapchainImage::VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder& swapchainTextureBuilder) :
+		Texture(swapchainImage,
+			device.CreateImageView(swapchainImage, swapchainTextureBuilder.ImageCreateInfo.format, vk::ImageAspectFlagBits::eColor, 1),
+			swapchainTextureBuilder)
 	{
-		Image = swapchainImage;
-
-		// Create the image view here for now. TODO: use a Texture Factory for that
-		View = device.CreateImageView(Image, imageFormat, vk::ImageAspectFlagBits::eColor, 1);
-
 	}
 
 

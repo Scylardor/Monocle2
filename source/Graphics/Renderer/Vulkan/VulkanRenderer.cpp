@@ -266,7 +266,7 @@ namespace moe
 
 		auto& rp = m_frameGraph.MutMainRenderPass();
 
-		rp.Begin(renderPassCommandBuffer);
+		rp.Begin(renderPassCommandBuffer, m_swapchain.GetImageInFlightIndex());
 
 		renderPassCommandBuffer.setViewport(0, (uint32_t)m_pipeline.Viewports().size(), m_pipeline.Viewports().data());
 		renderPassCommandBuffer.setScissor(0, (uint32_t)m_pipeline.Scissors().size(), m_pipeline.Scissors().data());

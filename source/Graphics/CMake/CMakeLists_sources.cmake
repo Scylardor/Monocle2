@@ -295,6 +295,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Pipeline/VulkanPipeline.h
 ./Vulkan/RenderPass/VulkanRenderPass.cpp
 ./Vulkan/RenderPass/VulkanRenderPass.h
+./Vulkan/RenderPass/VulkanRenderPassBuilder.cpp
+./Vulkan/RenderPass/VulkanRenderPassBuilder.h
 ./Vulkan/RenderScene/RenderScene.cpp
 ./Vulkan/RenderScene/RenderScene.h
 ./Vulkan/Shader/VulkanShaderProgram.cpp
@@ -304,6 +306,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Swapchain/VulkanSwapchain.h
 ./Vulkan/Swapchain/VulkanSwapchainFrame.cpp
 ./Vulkan/Swapchain/VulkanSwapchainFrame.h
+./Vulkan/Swapchain/VulkanSwapchainTexture.cpp
+./Vulkan/Swapchain/VulkanSwapchainTexture.h
 ./Vulkan/Texture/VulkanTexture.cpp
 ./Vulkan/Texture/VulkanTexture.h
 ./Vulkan/ValidationLayers/VulkanValidationLayers.h

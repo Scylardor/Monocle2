@@ -4,53 +4,134 @@
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
 #include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
 
+#include "Graphics/Vulkan/RenderPass/VulkanRenderPassBuilder.h"
+
+
 namespace moe
 {
+	VulkanRenderPass::VulkanRenderPass(VulkanSwapchain& swapChain, VulkanRenderPassBuilder& builder)
+	{
+		vk::RenderPassCreateInfo renderPassInfo{};
+		renderPassInfo.attachmentCount = (uint32_t)builder.AttachmentsDescriptions.size();
+		renderPassInfo.pAttachments = builder.AttachmentsDescriptions.data();
+		renderPassInfo.subpassCount = (uint32_t)builder.SubpassDescriptions.size();
+		renderPassInfo.pSubpasses = builder.SubpassDescriptions.data();
+		renderPassInfo.dependencyCount = (uint32_t)builder.SubpassDependencies.size();
+		renderPassInfo.pDependencies = builder.SubpassDependencies.data();
+
+		m_renderPass = swapChain.Device()->createRenderPassUnique(renderPassInfo);
+
+		m_buildInfos = builder;
+
+		bool ok = Initialize(swapChain, m_buildInfos);
+		MOE_ASSERT(ok);
+
+
+	}
+
 	VulkanRenderPass::VulkanRenderPass(VulkanRenderPass&& other)
 	{
 		m_device = other.m_device;
 		m_renderPass = std::move(other.m_renderPass);
-		m_boundFramebuffer = other.m_boundFramebuffer;
+		m_buildInfos = std::move(other.m_buildInfos);
 		m_commandBeginInfo = other.m_commandBeginInfo;
-		m_commandClearValues = other.m_commandClearValues;
-		m_commandBeginInfo.pClearValues = m_commandClearValues.data(); // TODO : Hot fix for bad memory address but that would need a proper fix
+		m_commandBeginInfo.pClearValues = m_buildInfos.ClearValues.data();
+		m_framebuffers = std::move(other.m_framebuffers);
+
 	}
 
-	bool VulkanRenderPass::Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain, FramebufferFactory::FramebufferID boundFramebuffer,
-	                                  VkRect2D renderArea, const std::array<vk::ClearValue, 3>& clearValues)
+	bool VulkanRenderPass::Initialize(const VulkanSwapchain& swapChain, VulkanRenderPassBuilder& builder)
 	{
 		MOE_ASSERT(m_device == nullptr);
-		m_device = &device;
+		m_device = &swapChain.Device();
 
 		m_commandBeginInfo.renderPass = m_renderPass.get();
 		m_commandBeginInfo.framebuffer = vk::Framebuffer(); // will be fetched just in time by Begin().
 
 		// Automatically replace extent magic values by the actual swap chain extent
-		if (renderArea.extent.width == FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_WIDTH)
-			renderArea.extent.width = swapChain.GetSwapchainImageExtent().width;
+		m_commandBeginInfo.renderArea = builder.RenderArea;
+		if (m_commandBeginInfo.renderArea.extent.width == FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_WIDTH)
+			m_commandBeginInfo.renderArea.extent.width = swapChain.GetSwapchainImageExtent().width;
 
-		if (renderArea.extent.height == FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_HEIGHT)
-			renderArea.extent.height = swapChain.GetSwapchainImageExtent().height;
+		if (m_commandBeginInfo.renderArea.extent.height == FramebufferFactory::SWAPCHAIN_FRAMEBUFFER_HEIGHT)
+			m_commandBeginInfo.renderArea.extent.height = swapChain.GetSwapchainImageExtent().height;
 
-		m_commandBeginInfo.renderArea = renderArea;
+		m_commandBeginInfo.clearValueCount = (uint32_t)builder.ClearValues.size();
+		m_commandBeginInfo.pClearValues = builder.ClearValues.data();
 
-		//  the clear values to use for VK_ATTACHMENT_LOAD_OP_CLEAR
-		auto clearValueCount = static_cast<uint32_t>(m_commandClearValues.size());
-		if (false == swapChain.HasMultisampleAttachment())
-			clearValueCount--;
-		m_commandClearValues = clearValues;
-		m_commandBeginInfo.clearValueCount = clearValueCount;
-		m_commandBeginInfo.pClearValues = m_commandClearValues.data();
+		CreateFramebuffer(swapChain, builder);
 
-		m_boundFramebuffer = boundFramebuffer; // TODO: try to get rid of it by hacking m_commandBeginInfo.framebuffer
 
 		return true;
 	}
 
-	void VulkanRenderPass::Begin(vk::CommandBuffer cb)
+
+	void VulkanRenderPass::CreateFramebuffer(const VulkanSwapchain& swapChain, VulkanRenderPassBuilder& builder)
 	{
+		m_framebuffers.clear();
+
+		// Make a copy of the views array because we might modify it.
+		// Scan for swapchain color attachment view in the attached image views.
+		// If there is, we have to create as many framebuffers as there are maximum images in flight possible.
+		VulkanRenderPassBuilder::AttachmentViewsArray views = builder.AttachmentViews;
+
+		std::vector< VulkanRenderPassBuilder::AttachmentViewsArray > framebufferViews;
+		framebufferViews.reserve(swapChain.GetImagesInFlightCount());
+
+		bool needsMultiFramebuffers = false;
+
+		for (auto iSwapImg = 0u; iSwapImg < swapChain.GetImagesInFlightCount(); iSwapImg++)
+		{
+			auto& fbViews = framebufferViews.emplace_back(builder.AttachmentViews);
+			for (vk::ImageView& view : fbViews)
+			{
+				if (view == FramebufferFactory::SWAPCHAIN_COLOR_ATTACHMENT_VIEW)
+				{
+					view = swapChain.GetColorAttachmentView(iSwapImg);
+					needsMultiFramebuffers = true;
+				}
+				else if (view == FramebufferFactory::SWAPCHAIN_DEPTH_STENCIL_ATTACHMENT_VIEW)
+					view = swapChain.GetDepthAttachmentView();
+				else if (view == FramebufferFactory::SWAPCHAIN_MULTISAMPLE_ATTACHMENT_VIEW)
+					view = swapChain.GetMultisampleAttachmentView();
+			}
+
+			if (needsMultiFramebuffers == false) // no swap chain color attachment detected: we only need one framebuffer.
+				break;
+		}
+
+		// Use images in flight count (eg. : 10) instead of max frames in flight (eg: 2 or 3), why?
+		// Because mailbox present for example might return us images 0 1 2 9 9 8 9 8, but using only max frames in flight,
+		// we only create framebuffers for the 0 and 1 images if it's equal to 2 for example.
+		auto nbReservedFb = (needsMultiFramebuffers ? swapChain.GetImagesInFlightCount() : 1);
+		m_framebuffers.reserve(nbReservedFb);
+
+		vk::FramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.renderPass = m_renderPass.get();
+		framebufferInfo.attachmentCount = (uint32_t) builder.AttachmentViews.size();
+		framebufferInfo.width = m_commandBeginInfo.renderArea.extent.width;
+		framebufferInfo.height = m_commandBeginInfo.renderArea.extent.height;
+		framebufferInfo.layers = 1;
+
+		MOE_ASSERT(nbReservedFb == 1 || needsMultiFramebuffers);
+
+		for (auto iFb = 0u; iFb < nbReservedFb; iFb++)
+		{
+			framebufferInfo.pAttachments = framebufferViews[iFb].data();
+			m_framebuffers.emplace_back(swapChain.Device()->createFramebufferUnique(framebufferInfo));
+		}
+	}
+
+
+	void VulkanRenderPass::Begin(vk::CommandBuffer cb, uint32_t framebufferIndex)
+	{
+		MOE_ASSERT(framebufferIndex < m_framebuffers.size());
+
 		// Fetch just-in-time the framebuffer to use for this frame
-		m_commandBeginInfo.framebuffer = m_device->FramebufferFactory.GetFramebuffer(m_boundFramebuffer);
+
+		m_commandBeginInfo.framebuffer = m_framebuffers[framebufferIndex].get();
+		MOE_ASSERT(m_commandBeginInfo.framebuffer);
+
 		// The render pass commands will be embedded in the primary command buffer itself and no secondary command buffers will be executed.
 		cb.beginRenderPass(&m_commandBeginInfo, vk::SubpassContents::eInline); // TODO: always inline for now, to be customized
 	}
@@ -116,7 +197,6 @@ namespace moe
 		subpass.pColorAttachments = (numSamples == vk::SampleCountFlagBits::e1 ? &colorAttachmentRef : &multiSampleAttachmentRef);
 		subpass.pDepthStencilAttachment = &depthAttachmentRef;
 		subpass.pResolveAttachments = (numSamples == vk::SampleCountFlagBits::e1 ? nullptr : &colorAttachmentRef);
-
 
 		// Create an explicit dependency on the subpass to make sure we acquire the image at the right time
 		vk::SubpassDependency dependency{};

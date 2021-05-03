@@ -18,7 +18,7 @@ namespace moe
 
 		typedef	std::vector<VulkanRenderPass>	RenderPassList;
 
-		bool	CreateMainRenderPass(class MyVkDevice& device, const VulkanSwapchain& swapChain);
+		bool	CreateMainRenderPass(class MyVkDevice& device, VulkanSwapchain& swapChain);
 
 		void	ConnectRenderPass(VulkanRenderPass&& renderPass);
 

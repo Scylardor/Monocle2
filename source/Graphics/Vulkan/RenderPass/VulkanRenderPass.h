@@ -4,6 +4,8 @@
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 
+#include "VulkanRenderPassBuilder.h"
+
 namespace moe
 {
 	class MyVkDevice;
@@ -13,11 +15,18 @@ namespace moe
 	{
 	public:
 
+		VulkanRenderPass() = default;
+
+		VulkanRenderPass(VulkanSwapchain& swapChain, VulkanRenderPassBuilder& builder);
+
 		VulkanRenderPass(VulkanRenderPass&& other);
 
-		bool	Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain, FramebufferFactory::FramebufferID boundFramebuffer, VkRect2D renderArea, const std::array<vk::ClearValue, 3>& clearValues);
+		bool	Initialize(const VulkanSwapchain& swapChain, VulkanRenderPassBuilder& builder);
 
-		void	Begin(vk::CommandBuffer cb);
+		void	CreateFramebuffer(const VulkanSwapchain& swapChain, VulkanRenderPassBuilder& builder);
+
+
+		void	Begin(vk::CommandBuffer cb, uint32_t framebufferIndex = 0);
 
 		void	End(vk::CommandBuffer cb);
 
@@ -40,26 +49,23 @@ namespace moe
 
 	private:
 
-
-
 		const MyVkDevice&	Device() const
 		{
 			MOE_ASSERT(m_device != nullptr);
 			return *m_device;
 		}
 
-
 		void	InitializeRenderPass(vk::Format attachmentFormat);
 
 		const MyVkDevice* m_device = nullptr;
 
-
 		vk::UniqueRenderPass				m_renderPass;		// the render pass.
 
-		FramebufferFactory::FramebufferID	m_boundFramebuffer;	// the framebuffer this renderpass will use at render time.
-
 		vk::RenderPassBeginInfo				m_commandBeginInfo;		// the info to pass to vkCmdBeginRenderPass.
-		std::array<vk::ClearValue, 3>		m_commandClearValues{}; // We need to keep this with same lifetime as render pass as clear values is a pointer.
+
+		std::vector<vk::UniqueFramebuffer>	m_framebuffers{1};
+
+		VulkanRenderPassBuilder				m_buildInfos{};
 	};
 }
 

@@ -10,6 +10,7 @@ namespace moe
 {
 	const uint32_t VulkanSwapchain::MAX_FRAMES_IN_FLIGHT = 2;
 
+
 	bool VulkanSwapchain::Initialize(vk::Instance instance, MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface, vk::SampleCountFlags numSamples)
 	{
 		MOE_ASSERT(m_surfaceProvider == nullptr); // should not get called twice on the same swapchain !
@@ -158,11 +159,14 @@ namespace moe
 		auto newSwapchainImages = Device()->getSwapchainImagesKHR(m_swapChain.get());
 		MOE_ASSERT(false == newSwapchainImages.empty());
 
+		VulkanTextureBuilder swapchainTextureBuilder;
+		swapchainTextureBuilder.SetFormat(swapChainImageFormat).SetDimensions(m_imagesExtent.width, m_imagesExtent.height);
+
 		m_imagesInFlight.clear(); // destroy unique handles, if any. vkImages will be cleaned up by UniqueSwapchain dtor
 		m_imagesInFlight.reserve(newSwapchainImages.size());
 		for (vk::Image scImage : newSwapchainImages)
 		{
-			m_imagesInFlight.emplace_back(Device(), scImage, swapChainImageFormat);
+			m_imagesInFlight.emplace_back(Device(), scImage, swapchainTextureBuilder);
 		}
 
 		if (numSamples == VulkanTexture::MAX_SAMPLES)

@@ -2,6 +2,7 @@
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/VulkanMacros.h"
+#include "VulkanSwapchainTexture.h"
 
 namespace moe
 {
@@ -9,15 +10,12 @@ namespace moe
 
 	struct VulkanSwapchainImage
 	{
-		VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, vk::Format imageFormat);
+		VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder & swapchainTextureBuilder);
 
 		void	AcquireFence(vk::Device device, vk::Fence newInFlightFence);
 
-		// not a UniqueImage? This isn't a mistake!
-		// because those images are retrieved via getSwapchainImagesKHR, they get automatically freed by the UniqueSwapchain handle dtor!
-		vk::Image			Image;
-		vk::UniqueImageView	View;
-		vk::Fence			InFlightFence{}; // a reference to a fence in one of the swapchain frames
+		VulkanSwapchainTexture	Texture;
+		vk::Fence				InFlightFence{}; // a reference to a fence in one of the swapchain frames
 	};
 
 	class VulkanSwapchainFrame

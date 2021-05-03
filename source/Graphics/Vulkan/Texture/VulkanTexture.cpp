@@ -9,12 +9,11 @@
 
 #include <STB/stb_image.h>
 
+#include "Core/Misc/Types.h"
 
 namespace moe
 {
-	VulkanTexture::VulkanTexture(vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory,
-		const VulkanTextureBuilder& builder) :
-		m_image(std::move(img)), m_imageView(std::move(imgView)), m_imageMemory(std::move(memory)),
+	VulkanTexture::VulkanTexture(const VulkanTextureBuilder& builder) :
 		m_dimensions(builder.ImageCreateInfo.extent),
 		m_mipLevels(builder.ImageCreateInfo.mipLevels),
 		m_layerCount(builder.ImageCreateInfo.arrayLayers),
@@ -22,8 +21,25 @@ namespace moe
 		m_format(builder.ImageCreateInfo.format),
 		m_usage(builder.ImageCreateInfo.usage)
 	{
+	}
+
+
+	VulkanTexture::VulkanTexture(vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory,
+		const VulkanTextureBuilder& builder) :
+		VulkanTexture(builder)
+	{
+		m_image = std::move(img);
+		m_imageView = std::move(imgView);
+		m_imageMemory = std::move(memory);
+	}
+
+
+	VulkanTexture::VulkanTexture(VulkanTexture&& other)
+	{
+		*this = std::move(other);
 
 	}
+
 
 	VulkanTexture VulkanTexture::Create2DTexture(MyVkDevice& device, VulkanTextureBuilder& builder)
 	{
@@ -440,6 +456,29 @@ namespace moe
 
 		return std::find(SUPPORTED_DEPTH_FORMATS.begin(), SUPPORTED_DEPTH_FORMATS.end(), format) != SUPPORTED_DEPTH_FORMATS.end();
 	}
+
+	VulkanTexture& VulkanTexture::operator=(VulkanTexture&& rhs)
+	{
+		if (&rhs == this)
+			return *this;
+
+		MOE_MOVE(m_image);
+		MOE_MOVE(m_imageMemory);
+		MOE_MOVE(m_imageView);
+		MOE_MOVE(m_sampler);
+		MOE_MOVE(m_staging);
+		MOE_MOVE(m_descriptorInfo);
+		MOE_MOVE(m_dimensions);
+		MOE_MOVE(m_mipLevels);
+		MOE_MOVE(m_layerCount);
+		MOE_MOVE(m_numSamples);
+		MOE_MOVE(m_format);
+		MOE_MOVE(m_usage);
+		MOE_MOVE(m_layout);
+		return *this;
+	}
 }
+
+
 
 #endif // MOE_VULKAN
