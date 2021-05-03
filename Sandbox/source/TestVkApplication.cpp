@@ -59,15 +59,21 @@ namespace moe
 
 		const std::vector<moe::VertexData> vertices =
 		{
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+	{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 		};
 
 		const std::vector<uint16_t> indices =
 		{
-			0, 1, 2, 2, 3, 0
+			0, 1, 2, 2, 3, 0,
+			4, 5, 6, 6, 7, 4
 		};
 
 		VkDeviceSize vertexSize = sizeof(vertices[0]) * vertices.size();
@@ -75,10 +81,11 @@ namespace moe
 
 		m_scene.Emplace(meshID, 0);
 
-		m_view = Mat4::LookAtMatrix(Vec3{ 2.f }, Vec3::ZeroVector(), Vec3{ 0, 0, 1 });
+		Vec3 cameraPos{0.1f,0.5f, 1.f};
+		m_view = Mat4::LookAtMatrix(cameraPos, Vec3::ZeroVector(), Vec3{ 0, 0, 1 });
 
 		float aspectRatio = GetWindowWidth() / (float)GetWindowHeight();
-		m_projection = Mat4::Perspective(45_degf, aspectRatio, 0.1f, 10.f);
+		m_projection = Mat4::PerspectiveZeroOne(45_degf, aspectRatio, 0.1f, 10.f);
 
 
 		//GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.
@@ -86,17 +93,21 @@ namespace moe
 		//If you don't do this, then the image will be rendered upside down.
 		// TODO : I think it's simpler to just use a negative viewport size in Vulkan instead.
 		m_projection[1][1] *= -1;
+
+		Mat4 model = Mat4::Identity();// Rotation(Degs_f{ 45.f }, Vec3{ 0, 0, 1 });
+
+		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 	}
 
 	void BasicVkApp::Update()
 	{
 		TestVkApplication::Update();
 
-		float time = GetElapsedSecondsSinceCreation();
-
-		Mat4 model = Mat4::Rotation(Degs_f{ time * 90.f }, Vec3{ 0, 0, 1 });
-
-		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
+		//float time = GetElapsedSecondsSinceCreation();
+		//
+		//Mat4 model = Mat4::Rotation(Degs_f{ time * 90.f }, Vec3{ 0, 0, 1 });
+		//
+		//m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 	}
 
 }
