@@ -111,6 +111,18 @@ namespace moe
 		using Base = ObjectPool<ValueType, Top>;
 		friend Base;
 
+	public:
+
+		~AObjectPool()
+		{
+			// Call the destructor for each item still in use in the container.
+			for (auto usedIdx : m_usedIndexes)
+			{
+				auto* object = (ValueType*)&m_objects[usedIdx];
+				object->~ValueType();
+			}
+		}
+
 
 	protected:
 
@@ -141,20 +153,28 @@ namespace moe
 				availableID = this->Underlying().Append(std::forward<Ts>(args)...);
 			}
 
+			m_usedIndexes.push_back(availableID);
+
 			return availableID;
 		}
 
-		
+
 		void	FreeImpl(uint32_t freedObjectID)
 		{
+			// Call the destructor
 			auto* object = (ValueType*)&m_objects[freedObjectID];
 			object->~ValueType();
-			//		m_freeIndices.push(freedObjectID);
-					// chain to the next free block
+
+			// chain to the next free block
 			auto* block = (PoolBlock<ValueType>*)object;
 			block->NextFreeBlock = m_firstFreeBlock;
-
 			m_firstFreeBlock = freedObjectID;
+
+			// Remove this block from the used index list
+			auto indexIt = std::find(m_usedIndexes.begin(), m_usedIndexes.end(), freedObjectID);
+			MOE_ASSERT(indexIt != m_usedIndexes.end());
+			std::iter_swap(indexIt, m_usedIndexes.end() - 1);
+			m_usedIndexes.pop_back();
 		}
 
 
@@ -188,6 +208,8 @@ namespace moe
 
 		Container				m_objects;
 		uint32_t				m_firstFreeBlock{ INVALID_BLOCK };
+
+		std::vector<uint32_t>	m_usedIndexes{}; // mostly used to clear
 	};
 
 
@@ -202,13 +224,22 @@ namespace moe
 		DynamicObjectPool(uint32_t reserved = 0)
 		{
 			m_objects.reserve(reserved);
+			m_usedIndexes.reserve(reserved);
+		}
 
+
+		void	SetMaximumAllowedGrowth(uint32_t maxGrowth)
+		{
+			m_maxAllowedGrowth = maxGrowth;
 		}
 
 	protected:
 		template <typename... Ts>
 		[[nodiscard]] uint32_t	AppendImpl(Ts&&... args)
 		{
+			if (m_objects.size() == m_maxAllowedGrowth)
+				return INVALID_BLOCK;
+
 			auto id = (uint32_t)m_objects.size();
 			auto& block = m_objects.emplace_back();
 			auto* object = (TObj*)&block;
@@ -217,6 +248,10 @@ namespace moe
 			return id;
 		}
 
+
+	private:
+
+		std::uint32_t	m_maxAllowedGrowth{ UINT32_MAX };
 	};
 
 
@@ -233,6 +268,8 @@ namespace moe
 			auto* block = (PoolBlock<TObj>*) & m_objects[0];
 			block->NextFreeBlock = INVALID_BLOCK;
 			m_firstFreeBlock = 0;
+
+			m_usedIndexes.reserve(TSize);
 		}
 
 	protected:
@@ -241,38 +278,42 @@ namespace moe
 		[[nodiscard]] uint32_t	EmplaceImpl(Ts&&... args)
 		{
 			uint32_t availableID{ 0 };
-			if (HasFreeBlock())
+
+			if (false == HasFreeBlock())
 			{
-				availableID = m_firstFreeBlock;
+				MOE_FATAL(moe::ChanDefault, "FixedObjectPool capacity overflown ! You need to increase the capacity of the pool.");
+				MOE_ASSERT(false); // Object pool overflow
+				return UINT32_MAX;
+			}
 
-				// chain to the next free block
-				auto* block = (PoolBlock<TObj>*) & m_objects[availableID];
+			availableID = m_firstFreeBlock;
 
-				if (block->NextFreeBlock == INVALID_BLOCK) // we were the last : bump the free block number
+			// chain to the next free block
+			auto* block = (PoolBlock<TObj>*) & m_objects[availableID];
+
+			if (block->NextFreeBlock == INVALID_BLOCK) // we were the last : bump the free block number
+			{
+				if (m_highestFreeBlock + 1 < TSize) // Do we need to push up the high water mark ?
 				{
-					if (m_highestFreeBlock + 1 < TSize)
-					{
-						m_highestFreeBlock++;
-						m_firstFreeBlock = m_highestFreeBlock;
-						block = (PoolBlock<TObj>*) & m_objects[m_firstFreeBlock];
-						block->NextFreeBlock = INVALID_BLOCK;
-					}
-					else
-					{
-						m_firstFreeBlock = INVALID_BLOCK;
-					}
+					m_highestFreeBlock++;
+					m_firstFreeBlock = m_highestFreeBlock;
+					block = (PoolBlock<TObj>*) & m_objects[m_firstFreeBlock];
+					block->NextFreeBlock = INVALID_BLOCK;
 				}
 				else
 				{
-					m_firstFreeBlock = block->NextFreeBlock;
+					m_firstFreeBlock = INVALID_BLOCK;
 				}
-
-				new (&m_objects[availableID]) TObj(std::forward<Ts>(args)...);
 			}
 			else
 			{
-				MOE_ASSERT(false); // object pool overflow !
+				m_firstFreeBlock = block->NextFreeBlock;
 			}
+
+			new (&m_objects[availableID]) TObj(std::forward<Ts>(args)...);
+
+			// Don't forget to add this to used indexes
+			m_usedIndexes.push_back(availableID);
 
 			return availableID;
 		}

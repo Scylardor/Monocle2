@@ -14,6 +14,7 @@
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Containers/HashMap/HashMap.h"
 #include "Core/Containers/Array/Array.h"
+#include "Core/Containers/ObjectPool/ObjectPool.h"
 
 struct NotCopyable
 {
@@ -93,8 +94,8 @@ TEST_CASE("Containers", "[Core]")
 {
 
 
-    SECTION("Vector")
-    {
+	SECTION("Vector")
+	{
 		// Constructors + basic accessors
 		bool eq = false;
 
@@ -266,7 +267,7 @@ TEST_CASE("Containers", "[Core]")
 		{
 			(void)item;
 		}
-    }
+	}
 
 
 	SECTION("HashMap")
@@ -366,6 +367,49 @@ TEST_CASE("Containers", "[Core]")
 		{
 			(void)item;
 		}
+	}
+
+
+	SECTION("Object Pool")
+	{
+		struct PoolTest
+		{
+			PoolTest() = delete;
+			PoolTest(float p) : myValue(p)
+			{
+				MOE_LOG("Hello cruel world! %f", myValue);
+			}
+			~PoolTest()
+			{
+				MOE_LOG("Farewell cruel world! %f", myValue);
+			}
+
+			float myValue;
+		};
+
+		{
+			moe::DynamicObjectPool<PoolTest> titi(3);
+
+			auto t1 = titi.Emplace(1.f); (void)t1;
+			auto t2 = titi.Emplace(2.f); (void)t2;
+			auto t3 = titi.Emplace(3.f); (void)t3;
+			titi.Free(t2);
+			titi.Free(t1);
+
+		}
+
+		{
+			moe::FixedObjectPool<PoolTest, 3> pool;
+
+			auto id = pool.Emplace(3.f);
+			pool.Free(id);
+
+			id = pool.Emplace(42.f);
+			auto id2 = pool.Emplace(43.f); (void)id2;
+			auto id3 = pool.Emplace(44.f);
+			pool.Free(id3);
+		}
+
 	}
 
 
