@@ -30,10 +30,11 @@ namespace moe
 		static const auto MAX_SAMPLES = (vk::SampleCountFlagBits)0;
 
 		VulkanTexture() = default;
+		~VulkanTexture();
 
-		VulkanTexture(const VulkanTextureBuilder& builder);
+		VulkanTexture(MyVkDevice& device, const VulkanTextureBuilder& builder);
 
-		VulkanTexture(vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
+		VulkanTexture(MyVkDevice& device, vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
 
 		VulkanTexture(VulkanTexture&& other);
 		VulkanTexture& operator=(VulkanTexture&& rhs);
@@ -91,7 +92,7 @@ namespace moe
 
 		void	UpdateDescriptorInfo();
 
-
+		MyVkDevice*				m_device{ nullptr };
 		vk::UniqueImage			m_image{};
 		VulkanMemoryBlock		m_imageMemory;
 		vk::UniqueImageView		m_imageView{};

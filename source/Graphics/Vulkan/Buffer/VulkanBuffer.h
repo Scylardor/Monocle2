@@ -10,7 +10,9 @@ namespace moe
 
 	struct BufferHandles
 	{
-		vk::UniqueBuffer		Buffer{};
+		void	Free(MyVkDevice& device);
+
+		vk::Buffer				Buffer{};
 		VulkanMemoryBlock		MemoryBlock{};
 	};
 
@@ -21,6 +23,14 @@ namespace moe
 	public:
 
 		VulkanBuffer() = default;
+
+		~VulkanBuffer();
+
+		VulkanBuffer(const VulkanBuffer&) = delete;
+		VulkanBuffer(VulkanBuffer&& other) noexcept;
+
+		VulkanBuffer& operator=(const VulkanBuffer& rhs) = delete;
+		VulkanBuffer& operator=(VulkanBuffer&& rhs) noexcept;
 
 		VulkanBuffer(BufferHandles buffer, BufferHandles staging, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::DeviceSize size, vk::DeviceSize offset = 0);
 
@@ -42,7 +52,6 @@ namespace moe
 			return m_descriptor;
 		}
 
-
 		[[nodiscard]] static VulkanBuffer	NewBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, vk::BufferUsageFlagBits specificUsageFlags, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties);
 
 		[[nodiscard]] static VulkanBuffer	NewVertexBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, StagingTransfer transferMode = ImmediateTransfer, vk::MemoryPropertyFlags memoryProperties = vk::MemoryPropertyFlagBits::eDeviceLocal);
@@ -63,25 +72,25 @@ namespace moe
 
 		vk::DeviceMemory	Memory() const
 		{
-			return m_buffer.MemoryBlock.Memory.get();
+			return m_buffer.MemoryBlock.Memory;
 		}
 
 		vk::Buffer			Handle() const
 		{
-			return m_buffer.Buffer.get();
+			return m_buffer.Buffer;
 		}
 
 		operator vk::Buffer() const
 		{
 			MOE_ASSERT(m_buffer.Buffer);
-			return m_buffer.Buffer.get();
+			return m_buffer.Buffer;
 		}
 
 	protected:
 
 	private:
 
-
+		MyVkDevice*		m_device{ nullptr};
 		BufferHandles	m_buffer{};
 		BufferHandles	m_staging{};
 

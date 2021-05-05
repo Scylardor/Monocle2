@@ -3,6 +3,8 @@
 set(Monocle_GameFramework_SOURCES
 	./FSM/FSM.h
 ./FSM/Private/FSM.cpp
+./Resources/AssetImporter/AssimpAssetImporter.cpp
+./Resources/AssetImporter/AssimpAssetImporter.h
 ./Resources/Factories/AbstractResourceFactory.h
 ./Resources/Factories/ResourceFactory.h
 ./Resources/Factories/Texture/OpenGL/GL3TextureFactory.h
@@ -10,6 +12,8 @@ set(Monocle_GameFramework_SOURCES
 ./Resources/Factories/Texture/OpenGL/GL4TextureFactory.h
 ./Resources/Factories/Texture/OpenGL/GLTextureFactory.h
 ./Resources/Factories/Texture/TextureFactory.h
+./Resources/Factories/Vulkan/VulkanMeshFactory.cpp
+./Resources/Factories/Vulkan/VulkanMeshFactory.h
 ./Resources/Resource/GLTextureResource.h
 ./Resources/Resource/Resource.h
 ./Resources/Resource/TextureResource.h

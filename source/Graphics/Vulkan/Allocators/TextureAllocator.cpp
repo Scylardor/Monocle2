@@ -41,7 +41,7 @@ namespace moe
 
 		vk::UniqueImageView imgView = m_device->createImageViewUnique(builder.ImageViewCreateInfo);
 
-		return VulkanTexture(std::move(image), std::move(imgView), std::move(imageMemory), builder);
+		return VulkanTexture(m_device, std::move(image), std::move(imgView), std::move(imageMemory), builder);
 	}
 
 

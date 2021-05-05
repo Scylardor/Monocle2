@@ -36,10 +36,10 @@ namespace moe
 			memTypeIndex
 		};
 
-		auto bufferMemory = m_device->allocateMemoryUnique(allocInfo);
+		auto bufferMemory = m_device->allocateMemory(allocInfo);
 		MOE_ASSERT(bufferMemory);
 
-		return VulkanMemoryBlock{ std::move(bufferMemory), 0 };
+		return VulkanMemoryBlock{ bufferMemory, 0 };
 	}
 
 
@@ -58,21 +58,19 @@ namespace moe
 			memTypeIndex
 		};
 
-		auto imageMemory = m_device->allocateMemoryUnique(allocInfo);
+		auto imageMemory = m_device->allocateMemory(allocInfo);
 		MOE_ASSERT(imageMemory);
 
-		m_device->bindImageMemory(image, imageMemory.get(), 0);
+		m_device->bindImageMemory(image, imageMemory, 0);
 
-		return VulkanMemoryBlock{ std::move(imageMemory), 0 };
+		return VulkanMemoryBlock{ imageMemory, 0 };
 	}
 
 
 	void VulkanMemoryAllocator::FreeBufferDeviceMemory(VulkanMemoryBlock& block)
 	{
-		if (block.Memory)
-		{
-			block.Memory.reset();
-		}
+		m_device->freeMemory(block.Memory);
+		block.Memory = vk::DeviceMemory();
 	}
 
 
@@ -83,7 +81,7 @@ namespace moe
 
 		void* mapping;
 
-		m_device->mapMemory(block.Memory.get(), offset, size, flags, &mapping);
+		m_device->mapMemory(block.Memory, offset, size, flags, &mapping);
 
 		return mapping;
 	}
@@ -94,7 +92,7 @@ namespace moe
 		MOE_ASSERT(block.IsMapped);
 		block.IsMapped = false;
 
-		m_device->unmapMemory(block.Memory.get());
+		m_device->unmapMemory(block.Memory);
 	}
 
 

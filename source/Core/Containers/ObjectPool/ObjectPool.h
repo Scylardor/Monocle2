@@ -1,29 +1,11 @@
 #pragma once
 
 #include "Core/Preprocessor/moeAssert.h"
+#include "Core/Misc/moeCRTP.h"
 
 #include <vector>
 #include <array>
 
-template <typename Derived>
-struct CRTP
-{
-protected:
-
-	Derived&		Underlying()		{ return static_cast<Derived&>(*this); }
-	Derived const&	Underlying() const	{ return static_cast<Derived const&>(*this); }
-
-	// To protect from misuse
-	CRTP() {}
-	friend Derived;
-};
-
-
-#define MOE_CRTP_IMPL(Method, ...) \
-	this->Underlying().Method##Impl(##__VA_ARGS__)
-
-#define MOE_CRTP_IMPL_VARIADIC(Method, Ts, args) \
-	this->Underlying().Method##Impl(std::forward<Ts>(args)...)
 
 namespace moe
 {
@@ -33,19 +15,26 @@ namespace moe
 	template <typename TObj>
 	union PoolBlock
 	{
-		PoolBlock() = default;
+		PoolBlock()
+		{
+		}
 
-	/*	template <typename... Ts>
-		PoolBlock(Ts&&... args) :
-			Object(std::forward<Ts>(args)...)
-		{}*/
-
-
+		// Necessary to declare it or it won't compile.
+		// (cannot make it "= default" since compiler doesn't know what to do)
+		// Trust the object pool to call the destructor of used objects.
 		~PoolBlock()
 		{}
-		//{
-		//	Object.~TObj();
-		//}
+
+
+
+		PoolBlock(const PoolBlock&) = delete;
+
+		PoolBlock(PoolBlock&& other) noexcept
+		{
+			NextFreeBlock = other.NextFreeBlock;
+			Object = std::move(other.Object);
+		}
+
 
 		uint32_t	NextFreeBlock{ INVALID_BLOCK };
 		TObj		Object;

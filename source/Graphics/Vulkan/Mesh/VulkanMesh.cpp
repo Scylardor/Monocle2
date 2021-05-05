@@ -2,10 +2,19 @@
 
 #include "VulkanMesh.h"
 
+#include "Core/Misc/Types.h"
+
+
 namespace moe
 {
+	VulkanMesh::VulkanMesh(VulkanMesh&& other)
+	{
+		*this = std::move(other);
+	}
+
+
 	VulkanMesh::VulkanMesh(MyVkDevice& device, size_t vertexSize, size_t numVertices, const void* vertexData,
-		size_t numIndices, const void* indexData, vk::IndexType indexType) :
+	                       size_t numIndices, const void* indexData, vk::IndexType indexType) :
 		m_indexType(indexType), m_nbVertices((uint32_t) numVertices), m_nbIndices((uint32_t) numIndices)
 	{
 		MOE_ASSERT(numVertices < UINT32_MAX && numIndices < UINT32_MAX); // assert if there was an overflow !
@@ -29,6 +38,21 @@ namespace moe
 	}
 
 
+	VulkanMesh& VulkanMesh::operator=(VulkanMesh&& rhs) noexcept
+	{
+		if (&rhs == this)
+			return *this;
+
+		MOE_MOVE(m_vertexBuffer);
+		MOE_MOVE(m_nbVertices  );
+		MOE_MOVE(m_indexBuffer );
+		MOE_MOVE(m_indexType   );
+		MOE_MOVE(m_nbIndices   );
+
+		return *this;
+	}
+
+
 	void VulkanMesh::Draw(vk::CommandBuffer drawCmdBuffer) const
 	{
 		vk::DeviceSize offset = 0;
@@ -46,6 +70,8 @@ namespace moe
 			drawCmdBuffer.draw(m_nbVertices, 1, 0, 0);
 		}
 	}
+
+
 }
 
 

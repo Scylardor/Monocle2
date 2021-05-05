@@ -61,7 +61,7 @@ function(MONOCLE_INCLUDE_ASSIMP TARGET_NAME)
 	message(STATUS "Found ASSIMP include dir: ${ASSIMP_INCLUDE_DIR}")
 	message(STATUS "Found ASSIMP library: ${ASSIMP_LIBRARY}")
 	
-	target_include_directories(${TARGET_NAME} PRIVATE ${ASSIMP_INCLUDE_DIR})
+	target_include_directories(${TARGET_NAME} PUBLIC ${ASSIMP_INCLUDE_DIR})
 	target_link_libraries(${TARGET_NAME} PRIVATE ${ASSIMP_LIBRARY})
 	
 	# We expect the DLL file to be next to the import library file.

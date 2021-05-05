@@ -2,6 +2,8 @@
 
 set(Monocle_Core_SOURCES
 	./Containers/Array/Array.h
+./Containers/AssetRegistry/ObjectRegistry.h
+./Containers/AssetRegistry/ObjectRegistry.inl
 ./Containers/FreeList/detail/FreeListObject.h
 ./Containers/FreeList/Freelist.h
 ./Containers/FreeList/Freelist.hpp
@@ -46,6 +48,7 @@ set(Monocle_Core_SOURCES
 ./Misc/Literals.h
 ./Misc/moeAbort.h
 ./Misc/moeCountof.h
+./Misc/moeCRTP.h
 ./Misc/moeEnum.h
 ./Misc/moeError.h
 ./Misc/moeFalse.h

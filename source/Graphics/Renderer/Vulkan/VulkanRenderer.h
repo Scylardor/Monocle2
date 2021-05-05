@@ -2,69 +2,30 @@
 #pragma once
 #ifdef MOE_VULKAN
 
-
 #include "Graphics/Renderer/AbstractRenderer/AbstractRenderer.h"
 
 #include "Graphics/RHI/Vulkan/VulkanRHI.h"
 
-#include "Graphics/Device/Vulkan/VulkanDevice.h"
-
 #include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
-
-#include "Graphics/Vulkan/FrameGraph/VulkanFrameGraph.h"
-
-#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
-
-#include "Graphics/Vulkan/Mesh/VulkanMesh.h"
-
 #include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
+#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
 
+#include "Graphics/Device/Vulkan/VulkanDevice.h"
+#include "Graphics/Vulkan/FrameGraph/VulkanFrameGraph.h"
+#include "Graphics/Vulkan/Mesh/VulkanMesh.h"
+
+#include "Core/Containers/AssetRegistry/ObjectRegistry.h"
 
 namespace moe
 {
 	class IVulkanSurfaceProvider;
 
-	struct VertexData
-	{
-		glm::vec3 pos;
-		glm::vec3 color;
-		glm::vec2 texCoord;
-
-		static vk::VertexInputBindingDescription	GetBindingDescription()
-		{
-			vk::VertexInputBindingDescription bindingDescription{};
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(VertexData);
-			bindingDescription.inputRate = vk::VertexInputRate::eVertex;
-
-			return bindingDescription;
-		}
+	vk::VertexInputBindingDescription GetBasicVertexBindingDescription();
 
 
-		static std::array<vk::VertexInputAttributeDescription, 3> GetAttributeDescriptions()
-		{
-			std::array < vk::VertexInputAttributeDescription, 3 > attributeDescriptions{};
-
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
-			attributeDescriptions[0].offset = offsetof(VertexData, pos);
-
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
-			attributeDescriptions[1].offset = offsetof(VertexData, color);
-
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 2;
-			attributeDescriptions[1].format = vk::Format::eR32G32Sfloat;
-			attributeDescriptions[1].offset = offsetof(VertexData, texCoord);
-
-			return attributeDescriptions;
-		}
-	};
+	std::array<vk::VertexInputAttributeDescription, 3> GetBasicVertexAttributeDescriptions();
 
 
 	class VulkanRenderer : public AbstractRenderer
@@ -154,6 +115,13 @@ namespace moe
 		uint32_t	EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType);
 
+
+		MyVkDevice&	GraphicsDevice()
+		{
+			MOE_ASSERT(m_graphicsDevice);
+			return *m_graphicsDevice;
+		}
+
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice& GetDevice() const override
@@ -188,6 +156,8 @@ namespace moe
 		VulkanTexture	m_materialTexture{};
 
 		std::vector<VulkanMesh>	m_meshStorage;
+
+		ObjectRegistry<VulkanMesh>	m_meshes;
 
 	};
 

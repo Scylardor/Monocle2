@@ -65,14 +65,14 @@ namespace moe
 
 	struct VulkanMemoryBlock
 	{
-		vk::UniqueDeviceMemory	Memory{};
+		vk::DeviceMemory		Memory{};
 		vk::DeviceSize			Offset{0};
 	//	uint32_t				Heap{VK_MAX_MEMORY_HEAPS};
 		bool					IsMapped = false;
 
 		operator bool() const
 		{
-			return Memory.get();
+			return Memory;
 		}
 	};
 

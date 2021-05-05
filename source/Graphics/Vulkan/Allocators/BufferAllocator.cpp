@@ -49,7 +49,8 @@ namespace moe
 	{
 		if (handles.Buffer)
 		{
-			handles.Buffer.reset();
+			m_device->destroyBuffer(handles.Buffer);
+			handles.Buffer = vk::Buffer{};
 		}
 		if (handles.MemoryBlock)
 		{
@@ -65,15 +66,15 @@ namespace moe
 		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = vk::SharingMode::eExclusive; // assume graphics and transfer queue families are the same, probably... // TODO: check ?
 
-		vk::UniqueBuffer buff = m_device->createBufferUnique(bufferInfo);
+		vk::Buffer buff = m_device->createBuffer(bufferInfo);
 		MOE_ASSERT(buff);
 
-		VulkanMemoryBlock memBlock = m_device.MemoryAllocator().AllocateBufferDeviceMemory(buff.get(), memoryProperties);
+		VulkanMemoryBlock memBlock = m_device.MemoryAllocator().AllocateBufferDeviceMemory(buff, memoryProperties);
 		MOE_ASSERT(memBlock);
 
-		m_device->bindBufferMemory(buff.get(), memBlock.Memory.get(), 0);
+		m_device->bindBufferMemory(buff, memBlock.Memory, 0);
 
-		return BufferHandles{ std::move(buff), std::move(memBlock) };
+		return BufferHandles{ buff, std::move(memBlock) };
 	}
 }
 

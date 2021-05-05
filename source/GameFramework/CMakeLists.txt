@@ -16,6 +16,11 @@ monocle_target_compile_config(${GAMEFRAMEWORK_TARGET})
 # to recreate the folder tree with filters within Visual Studio for example.
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${GAMEFRAMEWORK_TARGET}_SOURCES})
 
+# If using Assimp, integrate it in the build
+if(${PROJECT_NAME}_USE_ASSIMP_IMPORTER)
+	monocle_include_assimp(${GAMEFRAMEWORK_TARGET})
+endif()
+
 # This library uses Core
 target_link_libraries(${GAMEFRAMEWORK_TARGET}
 	PUBLIC	${PROJECT_NAME}_Core

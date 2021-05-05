@@ -57,7 +57,7 @@ namespace moe
 		TestVkApplication(appDesc)
 	{
 
-		const std::vector<moe::VertexData> vertices =
+		const std::vector<moe::BasicVertex> vertices =
 		{
 	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
 	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
@@ -97,11 +97,17 @@ namespace moe
 		Mat4 model = Mat4::Identity();// Rotation(Degs_f{ 45.f }, Vec3{ 0, 0, 1 });
 
 		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
+
+		m_manager.EmplaceMeshFactory<VulkanMeshFactory>(m_renderer.GraphicsDevice());
+
+		// m_manager.EmplaceAssetImporter<AssimpImporter>();
+//		assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 	}
 
 	void BasicVkApp::Update()
 	{
 		TestVkApplication::Update();
+
 
 		//float time = GetElapsedSecondsSinceCreation();
 		//

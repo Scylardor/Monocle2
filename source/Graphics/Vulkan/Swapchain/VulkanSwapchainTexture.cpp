@@ -4,9 +4,9 @@
 
 namespace moe
 {
-	VulkanSwapchainTexture::VulkanSwapchainTexture(vk::Image image, vk::UniqueImageView&& view,
+	VulkanSwapchainTexture::VulkanSwapchainTexture(MyVkDevice& device, vk::Image image, vk::UniqueImageView&& view,
 		const VulkanTextureBuilder& builder) :
-		VulkanTexture(builder)
+		VulkanTexture(device, builder)
 	{
 		Image = image;
 		m_imageView = std::move(view);

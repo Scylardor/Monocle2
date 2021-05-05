@@ -6,6 +6,8 @@
 
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
 
+#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
+
 
 #include <chrono>
 
@@ -55,6 +57,8 @@ namespace moe
 
 		Mat4	m_view;
 		Mat4	m_projection;
+
+		ResourceManager	m_manager;
 	};
 }
 #endif

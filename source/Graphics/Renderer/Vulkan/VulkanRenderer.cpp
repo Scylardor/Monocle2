@@ -5,12 +5,45 @@
 #include "VulkanRenderer.h"
 #include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
 
+#include "Graphics/Vulkan/Shader/VulkanShaderProgram.h"
+#include "Graphics/Vertex/VertexFormats.h"
 
 // This is placeholder, so I disable the "unreferenced formal parameter" warning.
 #pragma warning( push )
 #pragma warning( disable: 4100 )
 namespace moe
 {
+	vk::VertexInputBindingDescription GetBasicVertexBindingDescription()
+	{
+		vk::VertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(BasicVertex);
+		bindingDescription.inputRate = vk::VertexInputRate::eVertex;
+
+		return bindingDescription;
+	}
+
+	std::array<vk::VertexInputAttributeDescription, 3> GetBasicVertexAttributeDescriptions()
+	{
+		std::array<vk::VertexInputAttributeDescription, 3> attributeDescriptions{};
+
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
+		attributeDescriptions[0].offset = offsetof(BasicVertex, Position);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
+		attributeDescriptions[1].offset = offsetof(BasicVertex, Color);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 2;
+		attributeDescriptions[1].format = vk::Format::eR32G32Sfloat;
+		attributeDescriptions[1].offset = offsetof(BasicVertex, Texture_UV0);
+
+		return attributeDescriptions;
+	}
 
 	VulkanRenderer::VulkanRenderer() :
 		m_world(*this)
@@ -196,9 +229,9 @@ namespace moe
 		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/frag.spv", vk::ShaderStageFlagBits::eFragment);
 		program.AddPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4)); // object mvp
 		program.AddVertexBinding(vk::VertexInputRate::eVertex)
-			.AddVertexAttribute(0, offsetof(VertexData, pos), sizeof(VertexData::pos), vk::Format::eR32G32B32Sfloat)
-			.AddVertexAttribute(1, offsetof(VertexData, color), sizeof(VertexData::color), vk::Format::eR32G32B32Sfloat)
-			.AddVertexAttribute(2, offsetof(VertexData, texCoord), sizeof(VertexData::texCoord), vk::Format::eR32G32Sfloat)
+			.AddVertexAttribute(0, offsetof(BasicVertex, Position), sizeof(BasicVertex::Position), vk::Format::eR32G32B32Sfloat)
+			.AddVertexAttribute(1, offsetof(BasicVertex, Color), sizeof(BasicVertex::Color), vk::Format::eR32G32B32Sfloat)
+			.AddVertexAttribute(2, offsetof(BasicVertex, Texture_UV0), sizeof(BasicVertex::Texture_UV0), vk::Format::eR32G32Sfloat)
 			.AddNewDescriptorSetLayout()
 				//.AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
 				.AddNewDescriptorBinding(0, 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment)
@@ -278,13 +311,12 @@ namespace moe
 				m_material.Bind(renderPassCommandBuffer);
 
 			drawable.BindTransform(m_pipeline, renderPassCommandBuffer);
-			const VulkanMesh& drawableMesh = m_meshStorage[drawable.GetMeshID()];
-			drawableMesh.Draw(renderPassCommandBuffer);
+			//const VulkanMesh& drawableMesh = m_meshStorage[drawable.GetMeshID()];
+			const VulkanMesh& drawable2 = m_meshes.GetEntry(drawable.GetMeshID());
+			drawable2.Draw(renderPassCommandBuffer);
+
+			(void)drawable2;
 		}
-		//for (const auto& mesh : m_meshStorage)
-		//{
-		//	mesh.Draw(renderPassCommandBuffer);
-		//}
 
 		rp.End(renderPassCommandBuffer);
 
@@ -298,9 +330,11 @@ namespace moe
 
 	uint32_t VulkanRenderer::EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData, size_t numIndices, const void* indexData, vk::IndexType indexType)
 	{
-		auto ID = m_meshStorage.size();
-		m_meshStorage.emplace_back(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
-		return (uint32_t) ID;
+		auto ID2 = m_meshes.EmplaceEntry(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
+
+		//auto ID = m_meshStorage.size();
+		//m_meshStorage.emplace_back(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
+		return (uint32_t)ID2;
 	}
 }
 #pragma warning( pop )

@@ -5,8 +5,8 @@
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
 namespace moe
 {
-	VulkanSwapchainImage::VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder& swapchainTextureBuilder) :
-		Texture(swapchainImage,
+	VulkanSwapchainImage::VulkanSwapchainImage(MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder& swapchainTextureBuilder) :
+		Texture(device, swapchainImage,
 			device.CreateImageView(swapchainImage, swapchainTextureBuilder.ImageCreateInfo.format, vk::ImageAspectFlagBits::eColor, 1),
 			swapchainTextureBuilder)
 	{

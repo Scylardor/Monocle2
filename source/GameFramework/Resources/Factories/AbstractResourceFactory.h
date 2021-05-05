@@ -2,33 +2,39 @@
 
 #include "ResourceFactory.h"
 
-#include <deque>
+#include "Core/Misc/moeCRTP.h"
+
+#include "GameFramework/Resources/Resource/Resource.h"
 
 
-/* This class uses a deque as it makes it easy to add new elements without invalidating references to previously existing objects. */
-template <class CRTP, class ResourceType>
-class AResourceFactory : public CRTP, IResourceFactory
+namespace moe
 {
-	static_assert(std::is_base_of_v<IResource, ResourceType>, "ResourceType must be a subclass of IResource interface.");
-
-public:
-
-	template <typename... Args>
-	ResourceType*	CreateResource(Args&&... args)
+	/* This class uses a deque as it makes it easy to add new elements without invalidating references to previously existing objects. */
+	template <class Top, class TRsc>
+	class AResourceFactory : public CRTP<Top>, public IResourceFactory
 	{
-		ResourceType newRsc = static_cast<CRTP*>(this)->BuildResource(std::forward<Args>(args)...);
-		m_resources.emplace_back(std::move(newRsc));
-		return &m_resources.back();
-	}
+		//static_assert(std::is_base_of_v<IResource, ResourceType>, "ResourceType must be a subclass of IResource interface.");
+
+	public:
+
+		template <typename... Args>
+		Resource<TRsc> CreateResource(Args&&... args)
+		{
+			Resource<TRsc> resource = MOE_CRTP_IMPL(BuildResource, std::forward<Args>(args)...);
+			return resource;
+		}
 
 
-protected:
+	protected:
 
 
 
-private:
+	private:
+
+		ObjectRegistry<TRsc>	m_registry;
+
+	};
 
 
-	std::deque<ResourceType>	m_resources;
+}
 
-};

@@ -12,18 +12,20 @@ namespace moe
 	{
 	public:
 
-		IResourceFactory(ResourceManager& rscMgr) :
-			m_rscMgr(&rscMgr)
+		IResourceFactory(ResourceManager* rscMgr = nullptr) :
+			m_rscMgr(rscMgr)
 		{}
 
 		virtual ~IResourceFactory() {}
 
-		IResource* CreateResource();
+		virtual IResource CreateResource() = 0;
+
+
 
 
 	protected:
 
-
+		virtual IResource	CreateResourceImpl() = 0;
 
 	private:
 		ResourceManager*	m_rscMgr = nullptr;

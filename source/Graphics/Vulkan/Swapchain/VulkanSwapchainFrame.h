@@ -10,7 +10,7 @@ namespace moe
 
 	struct VulkanSwapchainImage
 	{
-		VulkanSwapchainImage(const MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder & swapchainTextureBuilder);
+		VulkanSwapchainImage(MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder & swapchainTextureBuilder);
 
 		void	AcquireFence(vk::Device device, vk::Fence newInFlightFence);
 

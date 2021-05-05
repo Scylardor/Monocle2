@@ -19,7 +19,7 @@ namespace moe
 	public:
 
 		ITextureFactory(ResourceManager& rscMgr) :
-			IResourceFactory(rscMgr)
+			IResourceFactory(&rscMgr)
 		{}
 
 		virtual ~ITextureFactory() = default;
@@ -49,7 +49,7 @@ namespace moe
 	template <>
 	inline TextureResource* ResourceManager::CreateResource(const Tex2DDescriptor& tex2dDesc)
 	{
-		auto* texFactory = EditFactory<ITextureFactory>(ResourceManagerFactories::Texture);
+		auto* texFactory = EditFactory<ITextureFactory>(ResourceType::Texture);
 		texFactory->CreateTexture2D(tex2dDesc);
 		return nullptr;
 	}

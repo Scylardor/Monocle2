@@ -13,7 +13,21 @@
 
 namespace moe
 {
-	VulkanTexture::VulkanTexture(const VulkanTextureBuilder& builder) :
+	VulkanTexture::~VulkanTexture()
+	{
+		if (m_device)
+		{
+			if (m_imageMemory)
+				m_device->MemoryAllocator().FreeBufferDeviceMemory(m_imageMemory);
+
+			if (m_staging.Buffer && m_staging.MemoryBlock)
+				m_device->BufferAllocator().ReleaseBufferHandles(m_staging);
+		}
+	}
+
+
+	VulkanTexture::VulkanTexture(MyVkDevice& device, const VulkanTextureBuilder& builder) :
+		m_device(&device),
 		m_dimensions(builder.ImageCreateInfo.extent),
 		m_mipLevels(builder.ImageCreateInfo.mipLevels),
 		m_layerCount(builder.ImageCreateInfo.arrayLayers),
@@ -24,9 +38,9 @@ namespace moe
 	}
 
 
-	VulkanTexture::VulkanTexture(vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory,
+	VulkanTexture::VulkanTexture(MyVkDevice& device, vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory,
 		const VulkanTextureBuilder& builder) :
-		VulkanTexture(builder)
+		VulkanTexture(device, builder)
 	{
 		m_image = std::move(img);
 		m_imageView = std::move(imgView);
@@ -150,9 +164,9 @@ namespace moe
 
 		// We can then directly copy the pixel values that we got from the image loading library to the buffer:
 		void* map;
-		MOE_VK_CHECK(device->mapMemory(m_staging.MemoryBlock.Memory.get(), m_staging.MemoryBlock.Offset, imageSize, vk::MemoryMapFlags(), &map));
+		MOE_VK_CHECK(device->mapMemory(m_staging.MemoryBlock.Memory, m_staging.MemoryBlock.Offset, imageSize, vk::MemoryMapFlags(), &map));
 		memcpy(map, imageData, imageSize);
-		device->unmapMemory(m_staging.MemoryBlock.Memory.get());
+		device->unmapMemory(m_staging.MemoryBlock.Memory);
 	}
 
 
@@ -166,7 +180,7 @@ namespace moe
 			{0, 0, 0}, m_dimensions
 		};
 
-		commandBuffer.copyBufferToImage(m_staging.Buffer.get(), m_image.get(), m_layout, { copyRegion });
+		commandBuffer.copyBufferToImage(m_staging.Buffer, m_image.get(), m_layout, { copyRegion });
 	}
 
 
@@ -462,6 +476,8 @@ namespace moe
 		if (&rhs == this)
 			return *this;
 
+		MOE_MOVE(m_device);
+		rhs.m_device = nullptr;
 		MOE_MOVE(m_image);
 		MOE_MOVE(m_imageMemory);
 		MOE_MOVE(m_imageView);
