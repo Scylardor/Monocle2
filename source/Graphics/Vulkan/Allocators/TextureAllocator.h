@@ -13,10 +13,13 @@ namespace moe
 	{
 	public:
 
+		VulkanTextureAllocator() = default;
 
 		VulkanTextureAllocator(MyVkDevice& device) :
-			m_device(device)
+			m_device(&device)
 		{}
+
+
 
 		[[nodiscard]] VulkanTexture	AllocateImage(VulkanTextureBuilder& builder);
 
@@ -41,7 +44,7 @@ namespace moe
 		// Cache to avoid asking the device each time
 		mutable std::unordered_map<vk::Format, vk::FormatProperties>	m_formatProperties{};
 
-		MyVkDevice&	m_device;
+		MyVkDevice*	m_device;
 	};
 
 }

@@ -98,10 +98,10 @@ namespace moe
 
 		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 
-		m_manager.EmplaceMeshFactory<VulkanMeshFactory>(m_renderer.GraphicsDevice());
+		m_manager.SetMeshFactory(m_renderer.GraphicsDevice().MeshFactory);
 
-		// m_manager.EmplaceAssetImporter<AssimpImporter>();
-//		assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
+		AssimpImporter& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>();
+		assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 	}
 
 	void BasicVkApp::Update()

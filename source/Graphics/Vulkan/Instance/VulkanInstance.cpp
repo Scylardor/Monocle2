@@ -11,6 +11,7 @@ namespace moe
 
 	bool VulkanInstance::Initialize(CreationParams&& instanceParams)
 	{
+		
 		m_creationParams = std::move(instanceParams);
 
 		// Activating the dynamic dispatcher in order to easily use Vulkan EXTension functions.
@@ -40,7 +41,6 @@ namespace moe
 		{
 			SetupDebugMessenger();
 		}
-
 
 		return ok;
 	}

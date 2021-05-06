@@ -68,6 +68,7 @@ set(Monocle_Core_SOURCES
 ./Preprocessor/moeStringize.h
 ./Preprocessor/moeUnusedParameter.h
 ./Preprocessor/Private/moeAssert.cpp
+./Resource/ResourceFactory.h
 ./StringFormat/moeStringFormat.h
 ./StringFormat/Private/moeStringFormat.internal.hpp
 	)

@@ -10,14 +10,33 @@
 #include "Graphics/Vulkan/CommandPool/VulkanCommandPool.h"
 #include <set>
 
+#include "Core/Misc/Types.h"
+
+
+
 namespace moe
 {
 	MyVkDevice::MyVkDevice(vk::PhysicalDevice&& physDev) :
 		m_physicalDevice(std::move(physDev)),
 		m_bufferAllocator(*this),
 		m_textureAllocator(*this),
-		m_memAllocator(*this)
+		m_memAllocator(*this),
+		MeshFactory(*this)
 	{
+	}
+
+
+
+
+
+
+	MyVkDevice::~MyVkDevice()
+	{
+		m_logicalDevice.waitIdle();
+
+		m_onDeviceShutdown.Broadcast(*this);
+
+		m_logicalDevice.destroy();
 	}
 
 
@@ -248,11 +267,11 @@ namespace moe
 			deviceCreateInfo.ppEnabledLayerNames = VulkanValidationLayers::Names().data();
 		}
 
-		m_logicalDevice = m_physicalDevice.createDeviceUnique(deviceCreateInfo);
-		MOE_ASSERT((bool)m_logicalDevice.get());
+		m_logicalDevice = m_physicalDevice.createDevice(deviceCreateInfo);
+		MOE_ASSERT((bool)m_logicalDevice);
 
-		m_graphicsQueue = m_logicalDevice->getQueue(m_queueIndices.GraphicsFamilyIdx.value(), 0);
-		m_presentQueue = m_logicalDevice->getQueue(m_queueIndices.PresentFamilyIdx.value(), 0);
+		m_graphicsQueue = m_logicalDevice.getQueue(m_queueIndices.GraphicsFamilyIdx.value(), 0);
+		m_presentQueue = m_logicalDevice.getQueue(m_queueIndices.PresentFamilyIdx.value(), 0);
 
 		return true;
 	}
@@ -270,7 +289,7 @@ namespace moe
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		vk::UniqueImageView imageView = m_logicalDevice->createImageViewUnique(createInfo);
+		vk::UniqueImageView imageView = m_logicalDevice.createImageViewUnique(createInfo);
 		MOE_ASSERT(imageView.get());
 
 		return imageView;
@@ -302,14 +321,14 @@ namespace moe
 			vk::FenceCreateFlagBits()
 		};
 
-		vk::UniqueFence submitFence = m_logicalDevice->createFenceUnique(fenceCreateInfo);
+		vk::UniqueFence submitFence = m_logicalDevice.createFenceUnique(fenceCreateInfo);
 
 		GraphicsQueue().submit(1, &submitInfo, submitFence.get());
 
 		// Now wait for the operation to complete
 		static const bool WAIT_ALL = true;
 		static const auto NO_TIMEOUT = UINT64_MAX;
-		m_logicalDevice->waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT);
+		m_logicalDevice.waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT);
 
 		// The operation is over !
 	}

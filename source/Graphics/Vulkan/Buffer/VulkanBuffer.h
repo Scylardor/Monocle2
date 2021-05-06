@@ -10,7 +10,6 @@ namespace moe
 
 	struct BufferHandles
 	{
-		void	Free(MyVkDevice& device);
 
 		vk::Buffer				Buffer{};
 		VulkanMemoryBlock		MemoryBlock{};
@@ -24,13 +23,8 @@ namespace moe
 
 		VulkanBuffer() = default;
 
-		~VulkanBuffer();
+		~VulkanBuffer() = default;
 
-		VulkanBuffer(const VulkanBuffer&) = delete;
-		VulkanBuffer(VulkanBuffer&& other) noexcept;
-
-		VulkanBuffer& operator=(const VulkanBuffer& rhs) = delete;
-		VulkanBuffer& operator=(VulkanBuffer&& rhs) noexcept;
 
 		VulkanBuffer(BufferHandles buffer, BufferHandles staging, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::DeviceSize size, vk::DeviceSize offset = 0);
 
@@ -44,6 +38,8 @@ namespace moe
 		};
 		void		Unmap(MyVkDevice& device, StagingTransfer transferMode = StagingTransfer::NoTransfer);
 
+
+		void	Free(MyVkDevice& device);
 
 		void	DeleteStagingBuffer(MyVkDevice& device);
 
@@ -90,7 +86,6 @@ namespace moe
 
 	private:
 
-		MyVkDevice*		m_device{ nullptr};
 		BufferHandles	m_buffer{};
 		BufferHandles	m_staging{};
 

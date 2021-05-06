@@ -29,7 +29,7 @@ namespace moe
 		auto& entry = m_registry.Mut(id);
 		auto refCount = entry.ReferenceCount--;
 
-		const bool isToBeDeleted = (refCount == 0 && !entry.Persistent);
+		const bool isToBeDeleted = (refCount == 0 && !entry.IsPersistent);
 		if (isToBeDeleted)
 			DeleteEntry(id);
 

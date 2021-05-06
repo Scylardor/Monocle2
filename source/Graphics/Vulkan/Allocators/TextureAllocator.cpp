@@ -7,6 +7,7 @@
 
 namespace moe
 {
+
 	VulkanTexture VulkanTextureAllocator::AllocateImage(VulkanTextureBuilder& builder)
 	{
 		// Try to figure out reasonable values given the provided parameters.
@@ -28,10 +29,10 @@ namespace moe
 			builder.ImageViewCreateInfo.subresourceRange.levelCount = builder.ImageCreateInfo.mipLevels;
 		}
 
-		vk::UniqueImage image = m_device->createImageUnique(builder.ImageCreateInfo);
+		vk::UniqueImage image = (*m_device)->createImageUnique(builder.ImageCreateInfo);
 		MOE_ASSERT(image);
 
-		VulkanMemoryBlock imageMemory = m_device.MemoryAllocator().AllocateTextureDeviceMemory(image.get());
+		VulkanMemoryBlock imageMemory = m_device->MemoryAllocator().AllocateTextureDeviceMemory(image.get());
 
 		builder.ImageViewCreateInfo.format = builder.ImageCreateInfo.format;
 
@@ -39,9 +40,9 @@ namespace moe
 
 		builder.ImageViewCreateInfo.image = image.get();
 
-		vk::UniqueImageView imgView = m_device->createImageViewUnique(builder.ImageViewCreateInfo);
+		vk::UniqueImageView imgView = (*m_device)->createImageViewUnique(builder.ImageViewCreateInfo);
 
-		return VulkanTexture(m_device, std::move(image), std::move(imgView), std::move(imageMemory), builder);
+		return VulkanTexture(*m_device, std::move(image), std::move(imgView), std::move(imageMemory), builder);
 	}
 
 
@@ -64,18 +65,18 @@ namespace moe
 
 	float VulkanTextureAllocator::GetMaxSupportedAnisotropy() const
 	{
-		return m_device.Properties().limits.maxSamplerAnisotropy;
+		return m_device->Properties().limits.maxSamplerAnisotropy;
 	}
 
 
 	vk::SampleCountFlagBits VulkanTextureAllocator::FindMaxUsableColorDepthSampleCount(bool useStencil) const
 	{
-		vk::SampleCountFlags limits = m_device.Properties().limits.framebufferColorSampleCounts;
+		vk::SampleCountFlags limits = m_device->Properties().limits.framebufferColorSampleCounts;
 
 		if (useStencil)
-			limits &= m_device.Properties().limits.framebufferStencilSampleCounts;
+			limits &= m_device->Properties().limits.framebufferStencilSampleCounts;
 		else
-			limits &= m_device.Properties().limits.framebufferDepthSampleCounts;
+			limits &= m_device->Properties().limits.framebufferDepthSampleCounts;
 
 		int& limitsi = reinterpret_cast<int&>(limits); // evil bit twiddling hack!!
 		limits &= vk::SampleCountFlagBits((~limitsi) >> 1); // filter and keep only the highest one
@@ -92,7 +93,7 @@ namespace moe
 
 		if (inserted) // not found : ask the API
 		{
-			m_device.PhysicalDevice().getFormatProperties(imageFormat, propsPtr);
+			m_device->PhysicalDevice().getFormatProperties(imageFormat, propsPtr);
 		}
 
 		return *propsPtr;

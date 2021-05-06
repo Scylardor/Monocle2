@@ -32,8 +32,8 @@ namespace moe
 
 	struct ModelMesh
 	{
-		Resource<VulkanMesh>		Mesh{};
-		Resource<VulkanMaterial>	Material{};
+		MeshResource		Mesh;
+		MaterialResource	Material;
 	};
 
 	struct ModelNode
@@ -69,6 +69,11 @@ namespace moe
 	{
 	public:
 
+		Model(uint32_t expectedMeshes = 0) :
+			m_meshes(expectedMeshes)
+		{
+		}
+
 		ModelNode&	NewNode(uint32_t parentIdx, uint32_t expectedChildrenCount, uint32_t numMeshes)
 		{
 			auto& node = m_nodes.emplace_back(parentIdx, expectedChildrenCount);
@@ -80,13 +85,14 @@ namespace moe
 			return node;
 		}
 
+		void	ReserveNodes(uint32_t nbReserved)
+		{
+			m_nodes.reserve(nbReserved);
+		}
+
+
 		MeshData&	MutMesh(uint32_t meshIdx)
 		{
-			// if This mesh idx is higher than our current size, just allocate everything in between
-			// (we're supposed to import them sooner or later anyway)
-			if (m_meshes.size() <= meshIdx)
-				m_meshes.resize(meshIdx + 1);
-
 			return m_meshes[meshIdx];
 		}
 

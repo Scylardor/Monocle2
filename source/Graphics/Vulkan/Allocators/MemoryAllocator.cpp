@@ -7,16 +7,17 @@
 namespace moe
 {
 	VulkanMemoryAllocator::VulkanMemoryAllocator(MyVkDevice& device):
-		m_device(device)
+		m_device(&device)
 	{
-		m_memProps = m_device.PhysicalDevice().getMemoryProperties();
+		m_memProps = m_device->PhysicalDevice().getMemoryProperties();
 	}
+
 
 	// For now, this function naively allocates a new device memory each time and does not attempt to reuse freed memory.
 	VulkanMemoryBlock VulkanMemoryAllocator::AllocateBufferDeviceMemory(vk::Buffer buffer, vk::MemoryPropertyFlags memPropertiesFlags) const
 	{
 		// First retrieve the memory requirements for this buffer and properties
-		const auto memRequirements = m_device->getBufferMemoryRequirements(buffer);
+		const auto memRequirements = (*m_device)->getBufferMemoryRequirements(buffer);
 
 		// Now we need to find the right memory type index for the returned requirements...
 		uint32_t memTypeIndex = FindSuitableMemoryTypeIndex(memRequirements.memoryTypeBits, memPropertiesFlags);
@@ -36,7 +37,7 @@ namespace moe
 			memTypeIndex
 		};
 
-		auto bufferMemory = m_device->allocateMemory(allocInfo);
+		auto bufferMemory = (*m_device)->allocateMemory(allocInfo);
 		MOE_ASSERT(bufferMemory);
 
 		return VulkanMemoryBlock{ bufferMemory, 0 };
@@ -46,7 +47,7 @@ namespace moe
 	VulkanMemoryBlock VulkanMemoryAllocator::AllocateTextureDeviceMemory(vk::Image image, vk::MemoryPropertyFlags memoryProperties) const
 	{
 		// First retrieve the memory requirements for this image and properties
-		const auto memRequirements = m_device->getImageMemoryRequirements(image);
+		const auto memRequirements = (*m_device)->getImageMemoryRequirements(image);
 
 		// Now we need to find the right memory type index for the returned requirements...
 		uint32_t memTypeIndex = FindSuitableMemoryTypeIndex(memRequirements.memoryTypeBits, memoryProperties);
@@ -58,10 +59,10 @@ namespace moe
 			memTypeIndex
 		};
 
-		auto imageMemory = m_device->allocateMemory(allocInfo);
+		auto imageMemory = (*m_device)->allocateMemory(allocInfo);
 		MOE_ASSERT(imageMemory);
 
-		m_device->bindImageMemory(image, imageMemory, 0);
+		(*m_device)->bindImageMemory(image, imageMemory, 0);
 
 		return VulkanMemoryBlock{ imageMemory, 0 };
 	}
@@ -69,7 +70,7 @@ namespace moe
 
 	void VulkanMemoryAllocator::FreeBufferDeviceMemory(VulkanMemoryBlock& block)
 	{
-		m_device->freeMemory(block.Memory);
+		(*m_device)->freeMemory(block.Memory);
 		block.Memory = vk::DeviceMemory();
 	}
 
@@ -81,7 +82,7 @@ namespace moe
 
 		void* mapping;
 
-		m_device->mapMemory(block.Memory, offset, size, flags, &mapping);
+		(*m_device)->mapMemory(block.Memory, offset, size, flags, &mapping);
 
 		return mapping;
 	}
@@ -92,7 +93,7 @@ namespace moe
 		MOE_ASSERT(block.IsMapped);
 		block.IsMapped = false;
 
-		m_device->unmapMemory(block.Memory);
+		(*m_device)->unmapMemory(block.Memory);
 	}
 
 

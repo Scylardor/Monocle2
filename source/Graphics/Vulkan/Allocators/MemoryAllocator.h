@@ -80,6 +80,8 @@ namespace moe
 	class VulkanMemoryAllocator
 	{
 	public:
+		VulkanMemoryAllocator() = default;
+
 		VulkanMemoryAllocator(MyVkDevice& device);
 
 
@@ -101,7 +103,7 @@ namespace moe
 
 		uint32_t	FindSuitableMemoryTypeIndex(uint32_t typeFilterBits, vk::MemoryPropertyFlags memoryProperties) const;
 
-		MyVkDevice& m_device;
+		MyVkDevice*	m_device;
 
 		vk::PhysicalDeviceMemoryProperties	m_memProps;
 	};

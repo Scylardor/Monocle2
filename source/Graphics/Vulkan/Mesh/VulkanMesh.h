@@ -11,16 +11,13 @@ namespace moe
 
 		VulkanMesh() = default;
 
-		VulkanMesh(const VulkanMesh&) = delete;
-
-		VulkanMesh(VulkanMesh&& other);
 
 		explicit VulkanMesh(MyVkDevice& device, size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType);
 
-		VulkanMesh& operator=(VulkanMesh&& rhs) noexcept;
-
 		void	Draw(vk::CommandBuffer drawCmdBuffer) const;
+
+		void	Free(MyVkDevice& device);
 
 	protected:
 

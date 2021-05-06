@@ -13,9 +13,13 @@ namespace moe
 	{
 	public:
 
+		VulkanBufferAllocator() = default;
+
 		VulkanBufferAllocator(MyVkDevice& device) :
-			m_device(device)
+			m_device(&device)
 		{}
+
+
 
 		VulkanBuffer	Create(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties);
 
@@ -31,7 +35,7 @@ namespace moe
 		BufferHandles	CreateBufferHandles(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties) const;
 
 
-		MyVkDevice&	m_device;
+		MyVkDevice*		m_device;
 	};
 }
 

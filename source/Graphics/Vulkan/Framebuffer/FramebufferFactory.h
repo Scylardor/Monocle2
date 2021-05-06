@@ -31,6 +31,8 @@ namespace moe
 
 		typedef std::unordered_map<FramebufferID, std::vector<SwapchainFramebufferAttachment>>	SwapchainAttachmentsLookup;
 
+		~FramebufferFactory();
+
 
 		bool	Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain);
 
@@ -86,7 +88,7 @@ namespace moe
 		SwapchainAttachmentsLookup			m_framebuffersWithSwapchainAttachments;
 
 		// TODO: Technically should be an object pool...
-		std::vector<vk::UniqueFramebuffer>	m_framebuffers;
+		std::vector<vk::Framebuffer>	m_framebuffers;
 
 
 	};

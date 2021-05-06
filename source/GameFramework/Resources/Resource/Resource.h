@@ -1,19 +1,30 @@
 #pragma once
 
-#include "Core/Containers/AssetRegistry/ObjectRegistry.h"
+#include "Core/Resource/ResourceFactory.h"
+#include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
+#include "Graphics/Vulkan/Factories/VulkanMaterialFactory.h"
 
 namespace moe
 {
+	class IMeshFactory;
 
+	template <typename TFactory, typename TRsc>
 	class IResource
 	{
 	public:
 
 		IResource() = default;
 
-		IResource(IRegistry& registry, RegistryID myID) :
-			m_registry(&registry), m_ID(myID)
+		IResource(TFactory& factory, RegistryID myID) :
+			m_myFactory(&factory), m_ID(myID)
 		{}
+
+
+		~IResource()
+		{
+			if (m_myFactory && m_ID != INVALID_ENTRY)
+				m_myFactory->DecrementReference(m_ID);
+		}
 
 
 		IResource(IResource&& other) noexcept
@@ -26,14 +37,43 @@ namespace moe
 			if (&other == this)
 				return *this;
 
-			m_registry = other.m_registry;
-			other.m_registry = nullptr;
-			MOE_ASSERT(m_registry);
+			m_myFactory = other.m_myFactory;
+			other.m_myFactory = nullptr;
 
 			m_ID = other.m_ID;
 			other.m_ID = INVALID_ENTRY;
 
 			return *this;
+		}
+
+		IResource& operator=(const IResource& other)
+		{
+			if (&other == this)
+				return *this;
+
+			m_myFactory = other.m_myFactory;
+			m_ID = other.m_ID;
+
+			if (ID() != INVALID_ENTRY)
+				m_myFactory->IncrementReference(ID());
+
+			return *this;
+		}
+
+
+		[[nodiscard]] TRsc* operator->()
+		{
+			IMeshFactory* factory = static_cast<IMeshFactory*>(m_myFactory);
+			auto& mesh = factory->MutateResource(m_ID);
+			return &mesh;
+		}
+
+
+		[[nodiscard]] const TRsc* operator->() const
+		{
+			IMeshFactory* factory = static_cast<IMeshFactory*>(m_myFactory);
+			auto& mesh = factory->GetResource(m_ID);
+			return &mesh;
 		}
 
 
@@ -44,77 +84,32 @@ namespace moe
 
 	protected:
 
-		template <typename T>
-		ObjectRegistry<T>& Registry()
-		{
-			MOE_ASSERT(m_registry);
-			return static_cast<ObjectRegistry<T>&>(*m_registry);
-		}
-
-	private:
-
-		IRegistry*	m_registry{nullptr};
+		TFactory* m_myFactory{ nullptr };
 		RegistryID	m_ID{ 0 };
 	};
 
 
-	template <typename T>
-	class Resource : public IResource
+
+
+	class MeshResource : public IResource<IMeshFactory, VulkanMesh>
 	{
 	public:
 
-		Resource() = default;
+		MeshResource() = default;
 
-		Resource(ObjectRegistry<T>& registry, RegistryID myID) :
-			IResource(registry, myID)
+		MeshResource(IMeshFactory& factory, RegistryID id) :
+			IResource(factory, id)
 		{}
 
+	};
 
-		Resource(const Resource& other)
-		{
-			*this = other;
-		}
+	class MaterialResource : public IResource<IMaterialFactory, VulkanMaterial>
+	{
+	public:
 
-
-		Resource(Resource&& other) noexcept :
-			IResource(std::move(other))
-		{
-		}
-
-
-		~Resource()
-		{
-			if (ID() != INVALID_ENTRY)
-				Registry<T>().DecrementReference(ID());
-		}
-
-
-		Resource& operator=(const Resource& other)
-		{
-			if (&other == this)
-				return *this;
-
-			if (ID() != INVALID_ENTRY)
-				Registry<T>().IncrementReference(ID());
-
-			return *this;
-		}
-
-
-
-		[[nodiscard]] T* operator->()
-		{
-			T& object = Registry<T>().MutEntry(ID());
-			return &object;
-		}
-
-
-		[[nodiscard]] const T* operator->() const
-		{
-			const T& object = Registry<T>().GetEntry(ID());
-			return &object;
-		}
-
+		MaterialResource(IMaterialFactory& factory, RegistryID id) :
+			IResource(factory, id)
+		{}
 	};
 
 }

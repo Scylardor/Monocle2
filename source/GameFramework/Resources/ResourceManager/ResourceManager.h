@@ -5,9 +5,8 @@
 
 
 #include "GameFramework/Resources/AssetImporter/AssimpAssetImporter.h"
-#include "GameFramework/Resources/Factories/ResourceFactory.h"
-
-
+#include "Core/Resource/ResourceFactory.h"
+#include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
 
 
 namespace moe
@@ -26,33 +25,6 @@ namespace moe
 
 	};
 
-
-	class IMeshFactory : public ResourceFactory<VulkanMesh>
-	{
-	public:
-
-		virtual ~IMeshFactory() = default;
-
-		virtual Resource<VulkanMesh> CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, vk::IndexType indexType) = 0;
-
-	};
-
-	class VulkanMeshFactory : public IMeshFactory
-	{
-	public:
-
-		VulkanMeshFactory(MyVkDevice& device) :
-			m_device(device)
-		{}
-
-		Resource<VulkanMesh> CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, vk::IndexType indexType) override;
-
-	private:
-		MyVkDevice& m_device;
-
-	};
 
 
 
@@ -126,21 +98,21 @@ namespace moe
 
 
 		template <typename TMesh>
-		Resource<TMesh>	LoadMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
+		MeshResource	LoadMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType)
 		{
 			if (m_meshFactory == nullptr)
 				return {};
-			return m_meshFactory->CreateMesh(vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
+
+			auto ID = m_meshFactory->CreateMesh(vertexSize, numVertices, vertexData, numIndices, indexData, indexType); (void)ID;
+			return {};
 		}
 
 
 
-		template <typename TFac, typename... Ts>
-		TFac& EmplaceMeshFactory(Ts&&... args)
+		void SetMeshFactory(IMeshFactory& factory)
 		{
-			m_meshFactory = std::make_unique<TFac>(std::forward<Ts>(args)...);
-			return static_cast<TFac&>(*m_meshFactory.get());
+			m_meshFactory = &factory;
 		}
 
 
@@ -163,9 +135,9 @@ namespace moe
 		std::vector<std::unique_ptr<IResourceFactory>>	m_factories;
 
 
-		std::vector<IResource*>	m_resources;
 
-		std::unique_ptr<IMeshFactory>	m_meshFactory{ nullptr };
+
+		IMeshFactory*	m_meshFactory{nullptr};
 
 		std::unique_ptr<AssetImporter>	m_assetImporter{nullptr};
 	};

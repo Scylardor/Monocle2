@@ -1,14 +1,18 @@
 #pragma once
-#include "Graphics/Vulkan/Allocators/TextureAllocator.h"
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 
 #include "Graphics/Vulkan/Framebuffer/FramebufferFactory.h"
+#include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
 
 #include "Graphics/Vulkan/Allocators/BufferAllocator.h"
 
 #include "Graphics/Vulkan/Allocators/MemoryAllocator.h"
+
+#include "Core/Delegates/event.h"
+
+#include "Graphics/Vulkan/Allocators/TextureAllocator.h"
 
 #include <optional>
 
@@ -27,6 +31,8 @@ namespace moe
 		};
 
 		MyVkDevice(vk::PhysicalDevice&& physDev);
+
+		~MyVkDevice();
 
 		const auto& Properties() const
 		{
@@ -106,24 +112,29 @@ namespace moe
 			return m_physicalDevice;
 		}
 
+		using ShutdownEvent = Event<void(MyVkDevice&)>;
+		ShutdownEvent&	OnDeviceShutdownEvent()
+		{
+			return m_onDeviceShutdown;
+		}
 
 
 		const vk::Device* operator->() const
 		{
-			MOE_ASSERT(m_logicalDevice.get());
-			return &m_logicalDevice.get();
+			MOE_ASSERT(m_logicalDevice);
+			return &m_logicalDevice;
 		}
 
 		vk::Device operator*() const
 		{
-			MOE_ASSERT(m_logicalDevice.get());
-			return m_logicalDevice.get();
+			MOE_ASSERT(m_logicalDevice);
+			return m_logicalDevice;
 		}
 
 		explicit operator vk::Device() const
 		{
-			MOE_ASSERT(m_logicalDevice.get());
-			return m_logicalDevice.get();
+			MOE_ASSERT(m_logicalDevice);
+			return m_logicalDevice;
 		}
 
 
@@ -156,7 +167,7 @@ namespace moe
 
 		// No Unique handle for Physical Device because it doesn't need to be destroyed
 		vk::PhysicalDevice	m_physicalDevice;
-		vk::UniqueDevice	m_logicalDevice;
+		vk::Device			m_logicalDevice;
 
 		vk::PhysicalDeviceProperties			m_properties;
 		std::vector <vk::ExtensionProperties>	m_extensionProperties;
@@ -181,11 +192,12 @@ namespace moe
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 
+		ShutdownEvent	m_onDeviceShutdown;
 
 	public:
 
-
 		FramebufferFactory	FramebufferFactory;
+		VulkanMeshFactory	MeshFactory;
 
 	};
 

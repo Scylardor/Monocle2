@@ -12,8 +12,6 @@ set(Monocle_GameFramework_SOURCES
 ./Resources/Factories/Texture/OpenGL/GL4TextureFactory.h
 ./Resources/Factories/Texture/OpenGL/GLTextureFactory.h
 ./Resources/Factories/Texture/TextureFactory.h
-./Resources/Factories/Vulkan/VulkanMeshFactory.cpp
-./Resources/Factories/Vulkan/VulkanMeshFactory.h
 ./Resources/Resource/GLTextureResource.h
 ./Resources/Resource/Resource.h
 ./Resources/Resource/TextureResource.h

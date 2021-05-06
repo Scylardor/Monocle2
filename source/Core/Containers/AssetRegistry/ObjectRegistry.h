@@ -21,12 +21,12 @@ namespace moe
 
 		void		SetPersistent(bool isPersistent)
 		{
-			Persistent = isPersistent;
+			IsPersistent = isPersistent;
 		}
 
 		TEntry		Asset;
 		uint32_t	ReferenceCount = 0;
-		bool		Persistent = false; // If true, won't get deleted even if reference count drops to 0.
+		bool		IsPersistent = false; // If true, won't get deleted even if reference count drops to 0.
 	};
 
 
@@ -65,10 +65,15 @@ namespace moe
 		}
 
 
-		uint32_t IncrementReference(RegistryID id);
+		uint32_t	IncrementReference(RegistryID id);
 
 
-		bool DecrementReference(RegistryID id);
+		bool		DecrementReference(RegistryID id);
+
+		[[nodiscard]] uint32_t GetReferenceCount(RegistryID id) const
+		{
+			return m_registry.Get(id).ReferenceCount;
+		}
 
 
 		[[nodiscard]] TEntry& MutEntry(RegistryID id)
@@ -86,6 +91,12 @@ namespace moe
 		[[nodiscard]] auto	Size() const
 		{
 			return m_registry.Size();
+		}
+
+
+		[[nodiscard]] bool IsPersistent(RegistryID id) const
+		{
+			return m_registry.Get(id).IsPersistent;
 		}
 
 

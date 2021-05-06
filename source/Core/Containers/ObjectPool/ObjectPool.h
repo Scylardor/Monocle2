@@ -26,13 +26,36 @@ namespace moe
 		{}
 
 
+		PoolBlock(const PoolBlock& other) noexcept
+		{
+			NextFreeBlock = other.NextFreeBlock;
+			Object = other.Object;
+		}
 
-		PoolBlock(const PoolBlock&) = delete;
+		PoolBlock& operator=(const PoolBlock& other) noexcept
+		{
+			if (&other != this)
+			{
+				NextFreeBlock = other.NextFreeBlock;
+				Object = other.Object;
+			}
+			return *this;
+		}
 
 		PoolBlock(PoolBlock&& other) noexcept
 		{
 			NextFreeBlock = other.NextFreeBlock;
 			Object = std::move(other.Object);
+		}
+
+		PoolBlock& operator=(PoolBlock&& other) noexcept
+		{
+			if (&other != this)
+			{
+				NextFreeBlock = other.NextFreeBlock;
+				Object = std::move(other.Object);
+			}
+			return *this;
 		}
 
 
@@ -215,6 +238,13 @@ namespace moe
 			m_objects.reserve(reserved);
 			m_usedIndexes.reserve(reserved);
 		}
+
+
+		//DynamicObjectPool(DynamicObjectPool&& other)
+		//{
+		//	m_objects = std::move(other);
+		//	m_used
+		//}
 
 
 		void	SetMaximumAllowedGrowth(uint32_t maxGrowth)

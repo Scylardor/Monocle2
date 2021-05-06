@@ -2,15 +2,9 @@
 
 #include "VulkanMesh.h"
 
-#include "Core/Misc/Types.h"
-
 
 namespace moe
 {
-	VulkanMesh::VulkanMesh(VulkanMesh&& other)
-	{
-		*this = std::move(other);
-	}
 
 
 	VulkanMesh::VulkanMesh(MyVkDevice& device, size_t vertexSize, size_t numVertices, const void* vertexData,
@@ -38,21 +32,6 @@ namespace moe
 	}
 
 
-	VulkanMesh& VulkanMesh::operator=(VulkanMesh&& rhs) noexcept
-	{
-		if (&rhs == this)
-			return *this;
-
-		MOE_MOVE(m_vertexBuffer);
-		MOE_MOVE(m_nbVertices  );
-		MOE_MOVE(m_indexBuffer );
-		MOE_MOVE(m_indexType   );
-		MOE_MOVE(m_nbIndices   );
-
-		return *this;
-	}
-
-
 	void VulkanMesh::Draw(vk::CommandBuffer drawCmdBuffer) const
 	{
 		vk::DeviceSize offset = 0;
@@ -72,6 +51,11 @@ namespace moe
 	}
 
 
+	void VulkanMesh::Free(MyVkDevice& device)
+	{
+		m_vertexBuffer.Free(device);
+		m_indexBuffer.Free(device);
+	}
 }
 
 

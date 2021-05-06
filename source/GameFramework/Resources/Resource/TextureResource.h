@@ -5,16 +5,16 @@
 
 namespace moe
 {
-	class TextureResource : public IResource
-	{
+	//class TextureResource : public IResource
+	//{
 
-	public:
-
-
-	private:
+	//public:
 
 
-	};
+	//private:
+
+
+	//};
 
 
 

@@ -8,53 +8,6 @@
 
 namespace moe
 {
-	void BufferHandles::Free(MyVkDevice& device)
-	{
-		device->destroyBuffer(Buffer);
-		device.MemoryAllocator().FreeBufferDeviceMemory(MemoryBlock);
-	}
-
-
-	VulkanBuffer::~VulkanBuffer()
-	{
-		if (m_buffer.Buffer && m_buffer.MemoryBlock)
-		{
-			m_device->BufferAllocator().ReleaseBufferHandles(m_buffer);
-		}
-		if (m_staging.Buffer && m_staging.MemoryBlock)
-		{
-			m_device->BufferAllocator().ReleaseBufferHandles(m_staging);
-		}
-	}
-
-
-	VulkanBuffer::VulkanBuffer(VulkanBuffer&& rhs) noexcept
-	{
-		*this = std::move(rhs);
-	}
-
-
-	VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& rhs) noexcept
-	{
-		if (this == &rhs)
-			return *this;
-
-		MOE_MOVE(m_device);
-		rhs.m_device = nullptr;
-		MOE_MOVE(m_buffer);
-		rhs.m_buffer = {};
-		MOE_MOVE(m_staging);
-		rhs.m_staging = {};
-		MOE_MOVE(m_usage);
-		MOE_MOVE(m_memoryProperties);
-		MOE_MOVE(m_size);
-		MOE_MOVE(m_descriptor);
-		MOE_MOVE(m_mapping);
-
-
-		return *this;
-	}
-
 
 	VulkanBuffer::VulkanBuffer(BufferHandles buffer, BufferHandles staging, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::DeviceSize size, vk::DeviceSize offset) :
 		m_buffer(std::move(buffer)), m_staging(std::move(staging)), m_usage(usage), m_memoryProperties(memoryProperties), m_size(size)
@@ -112,6 +65,13 @@ namespace moe
 	}
 
 
+	void VulkanBuffer::Free(MyVkDevice& device)
+	{
+		device.BufferAllocator().ReleaseBufferHandles(m_buffer);
+		device.BufferAllocator().ReleaseBufferHandles(m_staging);
+	}
+
+
 	void VulkanBuffer::DeleteStagingBuffer(MyVkDevice& device)
 	{
 		if (m_staging.Buffer && m_staging.MemoryBlock)
@@ -124,8 +84,6 @@ namespace moe
 	VulkanBuffer VulkanBuffer::NewBuffer(MyVkDevice& device, VkDeviceSize bufferSize, const void* bufferData, vk::BufferUsageFlagBits specificUsageFlags, StagingTransfer transferMode, vk::MemoryPropertyFlags memoryProperties)
 	{
 		VulkanBuffer buffer = device.BufferAllocator().Create(bufferSize, specificUsageFlags, memoryProperties);
-
-		buffer.m_device = &device;
 
 		MOE_ASSERT((bufferSize != 0 && bufferData != nullptr) || (bufferSize == 0 && bufferData == nullptr));
 		if (bufferData != nullptr)

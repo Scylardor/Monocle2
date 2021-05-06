@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "GameFramework/Resources/Factories/ResourceFactory.h"
+#include "Core/Resource/ResourceFactory.h"
 #include "GameFramework/Resources/Resource/TextureResource.h"
 #include "GameFramework/Resources/ResourceManager/ResourceManager.h"
 #include "Graphics/Texture/TextureDescription.h"
@@ -19,7 +19,7 @@ namespace moe
 	public:
 
 		ITextureFactory(ResourceManager& rscMgr) :
-			IResourceFactory(&rscMgr)
+			m_ResourceManager(&rscMgr)
 		{}
 
 		virtual ~ITextureFactory() = default;
@@ -46,13 +46,13 @@ namespace moe
 
 	};
 
-	template <>
-	inline TextureResource* ResourceManager::CreateResource(const Tex2DDescriptor& tex2dDesc)
-	{
-		auto* texFactory = EditFactory<ITextureFactory>(ResourceType::Texture);
-		texFactory->CreateTexture2D(tex2dDesc);
-		return nullptr;
-	}
+	//template <>
+	//inline TextureResource* ResourceManager::CreateResource(const Tex2DDescriptor& tex2dDesc)
+	//{
+	//	auto* texFactory = EditFactory<ITextureFactory>(ResourceType::Texture);
+	//	texFactory->CreateTexture2D(tex2dDesc);
+	//	return nullptr;
+	//}
 
 
 }

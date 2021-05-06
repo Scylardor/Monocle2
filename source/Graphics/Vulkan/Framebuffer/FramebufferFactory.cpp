@@ -7,6 +7,15 @@
 
 namespace moe
 {
+	FramebufferFactory::~FramebufferFactory()
+	{
+		for (auto framebuffer : m_framebuffers)
+		{
+			Device()->destroyFramebuffer(framebuffer);
+		}
+	}
+
+
 	bool FramebufferFactory::Initialize(const MyVkDevice& device, const VulkanSwapchain& swapChain)
 	{
 		MOE_ASSERT(m_device == nullptr && m_swapChain == nullptr);
@@ -70,14 +79,14 @@ namespace moe
 			fbIndex += m_swapChain->GetImageInFlightIndex();
 		}
 
-		return m_framebuffers[fbIndex].get();
+		return m_framebuffers[fbIndex];
 	}
 
 
 	FramebufferFactory::FramebufferID FramebufferFactory::CreateNewFramebuffer(const vk::FramebufferCreateInfo& fbInfo)
 	{
 		FramebufferID newFbID = GetNewFramebufferID();
-		m_framebuffers.push_back(Device()->createFramebufferUnique(fbInfo));
+		m_framebuffers.push_back(Device()->createFramebuffer(fbInfo));
 		return newFbID;
 	}
 

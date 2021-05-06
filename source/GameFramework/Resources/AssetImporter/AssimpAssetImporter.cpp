@@ -23,19 +23,19 @@ void moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 		return;
 	}
 
-	Model importedModel{};
+	// Expect the given number of meshes
+	Model importedModel{scene->mNumMeshes};
 
 	ProcessSceneNode(*scene->mRootNode, *scene, importedModel);
 
 	ImportModelResources(importedModel);
-
 }
 
 
 void moe::AssimpImporter::ImportModelResources(Model& importedModel)
 {
 	// First import the meshes
-	std::vector<Resource<VulkanMesh>> meshResources;
+	std::vector<MeshResource> meshResources;
 	meshResources.reserve(importedModel.MeshesCount());
 
 	for (const auto& mesh : importedModel.GetMeshes())
@@ -56,6 +56,8 @@ void moe::AssimpImporter::ImportModelResources(Model& importedModel)
 
 void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex)
 {
+	importedModel.ReserveNodes((uint32_t) importedModel.NodeCount() + node.mNumChildren); // reserve memory for this node + children
+
 	ModelNode& myNode = importedModel.NewNode(parentIndex, node.mNumChildren, node.mNumMeshes);
 	const auto childrenParentIndex = (uint32_t) importedModel.NodeCount() - 1;
 
@@ -143,6 +145,9 @@ aiPostProcessSteps moe::AssimpImporter::ComputeAssimpPostProcessFlags() const
 	unsigned ppFlags{};
 	if (Triangulate)
 		ppFlags |= aiProcess_Triangulate;
+
+	if (FlipUVs)
+		ppFlags |= aiProcess_FlipUVs;
 
 	switch (GenerateNormals)
 	{
