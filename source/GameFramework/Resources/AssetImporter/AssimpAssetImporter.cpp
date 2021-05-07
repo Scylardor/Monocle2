@@ -7,20 +7,35 @@
 #include <assimp/scene.h>
 
 
-void moe::AssimpImporter::ImportModel(std::string_view modelFilename)
+void moe::Model::ImportMeshResources(ResourceManager& manager)
+{
+	meshResources.reserve(MeshesCount());
+
+	for (const auto& mesh : GetMeshes())
+	{
+		meshResources.emplace_back(
+			manager.LoadMesh<VulkanMesh>(
+				sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
+				mesh.Indices.size(), mesh.Indices.data(), vk::IndexType::eUint32)
+		);
+	}
+}
+
+
+moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 {
 	aiPostProcessSteps ppFlags = ComputeAssimpPostProcessFlags();
 	const aiScene* scene = m_importer.ReadFile(modelFilename.data(), ppFlags);
 	if (scene == nullptr)
 	{
 		MOE_ERROR(moe::ChanDefault, "Could not import model file %s (%s).", modelFilename.data(), m_importer.GetErrorString());
-		return;
+		return {};
 	}
 
 	if (scene->mRootNode == nullptr)
 	{
 		MOE_WARNING(moe::ChanDefault, "Tried to import an empty model file (%s).", modelFilename.data());
-		return;
+		return {};
 	}
 
 	// Expect the given number of meshes
@@ -29,23 +44,16 @@ void moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 	ProcessSceneNode(*scene->mRootNode, *scene, importedModel);
 
 	ImportModelResources(importedModel);
+
+	return importedModel;
 }
 
 
 void moe::AssimpImporter::ImportModelResources(Model& importedModel)
 {
 	// First import the meshes
-	std::vector<MeshResource> meshResources;
-	meshResources.reserve(importedModel.MeshesCount());
+	importedModel.ImportMeshResources(m_manager);
 
-	for (const auto& mesh : importedModel.GetMeshes())
-	{
-		meshResources.emplace_back(
-			m_manager.LoadMesh<VulkanMesh>(
-				sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
-				mesh.Indices.size(), mesh.Indices.data(), vk::IndexType::eUint32)
-		);
-	}
 
 
 	// Then the materials

@@ -101,7 +101,12 @@ namespace moe
 		m_manager.SetMeshFactory(m_renderer.GraphicsDevice().MeshFactory);
 
 		AssimpImporter& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>();
-		assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
+		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
+
+		for (const moe::MeshResource& rsc : m_backpack.GetMeshResources())
+		{
+			m_scene.Emplace(rsc.ID(), 0);
+		}
 	}
 
 	void BasicVkApp::Update()

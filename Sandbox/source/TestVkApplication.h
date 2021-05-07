@@ -58,6 +58,8 @@ namespace moe
 		Mat4	m_view;
 		Mat4	m_projection;
 
+		moe::Model m_backpack;
+
 		ResourceManager	m_manager;
 	};
 }

@@ -26,7 +26,7 @@ target_link_libraries(${GRAPHICS_TARGET}
 # Integrate GLAD OpenGL function pointer loader into Graphics library if we wanna use OpenGL.
 if(${PROJECT_NAME}_USE_OPENGL)
 	find_package(OpenGL REQUIRED)
-	
+
 	# It should be possible to make this link private...
 	target_link_libraries(${GRAPHICS_TARGET} PUBLIC GLAD)
 endif()

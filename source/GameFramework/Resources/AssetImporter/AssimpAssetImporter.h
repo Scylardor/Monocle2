@@ -17,6 +17,7 @@ struct aiNode;
 
 namespace moe
 {
+	class ResourceManager;
 
 	struct MeshData
 	{
@@ -90,6 +91,8 @@ namespace moe
 			m_nodes.reserve(nbReserved);
 		}
 
+		void	ImportMeshResources(ResourceManager& manager);
+
 
 		MeshData&	MutMesh(uint32_t meshIdx)
 		{
@@ -115,10 +118,16 @@ namespace moe
 		}
 
 
-	private:
-		std::vector<ModelNode>	m_nodes;
-		std::vector<MeshData>	m_meshes;
+		const std::vector<MeshResource>& GetMeshResources() const
+		{
+			return meshResources;
+		}
 
+
+	private:
+		std::vector<ModelNode>		m_nodes;
+		std::vector<MeshData>		m_meshes;
+		std::vector<MeshResource>	meshResources;
 	};
 
 
@@ -149,7 +158,7 @@ namespace moe
 		{}
 
 
-		void	ImportModel(std::string_view modelFilename);
+		Model	ImportModel(std::string_view modelFilename);
 
 
 	private:

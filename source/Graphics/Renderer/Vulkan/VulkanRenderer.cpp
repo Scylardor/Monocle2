@@ -304,18 +304,21 @@ namespace moe
 		renderPassCommandBuffer.setViewport(0, (uint32_t)m_pipeline.Viewports().size(), m_pipeline.Viewports().data());
 		renderPassCommandBuffer.setScissor(0, (uint32_t)m_pipeline.Scissors().size(), m_pipeline.Scissors().data());
 
+		uint32_t lastMatID = ~0u;
+
 		for (const auto& drawable : renderedScene)
 		{
 			auto matID = drawable.GetMaterialID();
-			if (matID == 0)
+			if (lastMatID != matID && matID == 0)
+			{
 				m_material.Bind(renderPassCommandBuffer);
+				lastMatID = matID;
+			}
+
 
 			drawable.BindTransform(m_pipeline, renderPassCommandBuffer);
-			//const VulkanMesh& drawableMesh = m_meshStorage[drawable.GetMeshID()];
-			const VulkanMesh& drawable2 = m_meshes.GetEntry(drawable.GetMeshID());
+			const VulkanMesh& drawable2 = m_graphicsDevice->MeshFactory.GetResource(drawable.GetMeshID());
 			drawable2.Draw(renderPassCommandBuffer);
-
-			(void)drawable2;
 		}
 
 		rp.End(renderPassCommandBuffer);

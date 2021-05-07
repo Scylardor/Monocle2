@@ -105,7 +105,7 @@ namespace moe
 				return {};
 
 			auto ID = m_meshFactory->CreateMesh(vertexSize, numVertices, vertexData, numIndices, indexData, indexType); (void)ID;
-			return {};
+			return MeshResource{*m_meshFactory, ID};
 		}
 
 
