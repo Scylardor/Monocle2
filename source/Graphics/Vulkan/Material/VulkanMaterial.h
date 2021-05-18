@@ -3,6 +3,8 @@
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 #include "Core/Containers/ObjectPool/ObjectPool.h"
+#include "Math/Vec4.h"
+#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
 
 namespace moe
 {
@@ -12,6 +14,45 @@ namespace moe
 	class MyVkDevice;
 	class VulkanSwapchain;
 
+
+	enum class ResourceSet : uint8_t
+	{
+		PER_FRAME,
+		PER_VIEW,
+		PER_MATERIAL,
+		PER_OBJECT
+	};
+
+
+	enum class MaterialMaps : uint8_t
+	{
+		AMBIENT,
+		DIFFUSE,
+		ALBEDO = DIFFUSE,
+		SPECULAR,
+		NORMAL,
+		AMBIENT_OCCLUSION,
+		LIGHTMAP = AMBIENT_OCCLUSION,
+		SHININESS,
+		ROUGHNESS = SHININESS,
+		METALLIC,
+		EMISSIVE
+	};
+
+
+	enum MaterialSetBindings : uint8_t
+	{
+		REFLECTANCE_PARAMS,
+		_MATERIAL_MAPS_, // Keep at the end
+	};
+
+
+	struct ReflectanceParameters
+	{
+		Vec4	Ambient{ 0.f };
+		Vec4	Diffuse{ 0.f }; // AKA "albedo"
+		Vec4	Specular{ 0.f };
+	};
 
 
 
@@ -73,6 +114,12 @@ namespace moe
 
 		VulkanMaterial& BindStorageBuffer(uint32_t set, uint32_t binding, const VulkanBuffer& buff);
 
+		VulkanMaterial& PushUniformBufferBindingSize(uint8_t set, uint8_t binding, size_t size);
+
+		template <typename T>
+		T&				BindAs(uint8_t set, uint8_t binding);
+
+
 		void	UpdateDescriptorSets(const MyVkDevice& device) ;
 
 		void	Bind(vk::CommandBuffer recordingBuffer) const;
@@ -81,18 +128,20 @@ namespace moe
 
 	private:
 
-		void	CreateDescriptorSetPool(const MyVkDevice& device, uint32_t maxInstances);
+		void		CreateDescriptorSetPool(const MyVkDevice& device, uint32_t maxInstances);
 
-
-		void	AllocateDescriptorSets(const MyVkDevice& device);
+		void		AllocateDescriptorSets(const MyVkDevice& device);
 
 		uint32_t	FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const;
 
 
-		VulkanPipeline*					m_pipeline{ nullptr };
-		VulkanDescriptorPoolList		m_pools{};
-		std::vector<vk::DescriptorSet>	m_sets;
-		std::vector<vk::WriteDescriptorSet>	m_writeSets{};
+		VulkanPipeline*							m_pipeline{ nullptr };
+		VulkanDescriptorPoolList				m_pools{};
+		std::vector<vk::DescriptorSet>			m_sets;
+		std::vector<vk::WriteDescriptorSet>		m_writeSets{};
+
+		std::unordered_map<uint16_t, size_t>	m_uniformBindingOffsets{};
+		size_t									m_requiredUniformDataSize{ 0 };
 
 	};
 
@@ -117,6 +166,32 @@ namespace moe
 
 
 	};
+
+
+
+	class VulkanMaterialInstance
+	{
+	public:
+
+
+		template <typename TParam>
+		void	SetMaterialParam(uint32_t binding, const TParam& parameter)
+		{
+
+		}
+
+
+	protected:
+
+		VulkanMaterial* m_baseMaterial = nullptr;
+
+		VulkanBuffer	m_uniformData;
+
+	};
+
+
+
+
 
 	class VulkanMaterial_old : public VulkanBaseMaterial
 	{

@@ -2,7 +2,7 @@
 
 #ifdef MOE_VULKAN
 
-#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
+#include "Graphics/Vulkan/Material/VulkanMaterial.h"
 #include "Core/Resource/ResourceFactory.h"
 
 namespace moe
@@ -25,8 +25,15 @@ namespace moe
 			m_device(&device)
 		{}
 
-		RegistryID	IncrementReference(RegistryID id) override;
-		void		DecrementReference(RegistryID id) override;
+		RegistryID	IncrementReference(RegistryID id) override
+		{
+			return m_materials.IncrementReference(id);
+		}
+
+		void		DecrementReference(RegistryID id) override
+		{
+			m_materials.DecrementReference(id);
+		}
 
 
 		[[nodiscard]] VulkanMaterial& MutateResource(RegistryID id) override
@@ -49,15 +56,7 @@ namespace moe
 	};
 
 
-	inline RegistryID VulkanMaterialFactory::IncrementReference(RegistryID id)
-	{
-		return m_materials.IncrementReference(id);
-	}
 
-	inline void VulkanMaterialFactory::DecrementReference(RegistryID id)
-	{
-		m_materials.DecrementReference(id);
-	}
 }
 
 #endif

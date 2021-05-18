@@ -9,7 +9,7 @@
 #include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
 #include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
-#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
+#include "Graphics/Vulkan/Material/VulkanMaterial.h"
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
 
 #include "Graphics/Device/Vulkan/VulkanDevice.h"
@@ -112,9 +112,6 @@ namespace moe
 
 		void	RenderFrame(const RenderScene& renderedScene);
 
-		uint32_t	EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, vk::IndexType indexType);
-
 
 		MyVkDevice&	GraphicsDevice()
 		{
@@ -155,9 +152,6 @@ namespace moe
 
 		VulkanTexture	m_materialTexture{};
 
-		std::vector<VulkanMesh>	m_meshStorage;
-
-		ObjectRegistry<VulkanMesh>	m_meshes;
 
 	};
 

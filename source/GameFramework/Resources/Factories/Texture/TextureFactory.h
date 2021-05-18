@@ -14,15 +14,15 @@
 namespace moe
 {
 
-	class Monocle_GameFramework_API ITextureFactory  : public IResourceFactory
+	class Monocle_GameFramework_API ITextureFactory2  : public IResourceFactory
 	{
 	public:
 
-		ITextureFactory(ResourceManager& rscMgr) :
+		ITextureFactory2(ResourceManager& rscMgr) :
 			m_ResourceManager(&rscMgr)
 		{}
 
-		virtual ~ITextureFactory() = default;
+		virtual ~ITextureFactory2() = default;
 
 
 		virtual TexHandle	CreateTexture2D(const Tex2DDescriptor& tex2dDesc) = 0;
@@ -36,6 +36,7 @@ namespace moe
 
 
 		virtual void			DeleteTexture(TexHandle deletedTexture) = 0;
+
 
 	protected:
 		ResourceManager* m_ResourceManager = nullptr;

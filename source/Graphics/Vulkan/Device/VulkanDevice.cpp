@@ -21,7 +21,8 @@ namespace moe
 		m_bufferAllocator(*this),
 		m_textureAllocator(*this),
 		m_memAllocator(*this),
-		MeshFactory(*this)
+		MeshFactory(*this),
+		TextureFactory(*this)
 	{
 	}
 
@@ -277,7 +278,7 @@ namespace moe
 	}
 
 
-	vk::UniqueImageView MyVkDevice::CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const
+	vk::ImageView MyVkDevice::CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const
 	{
 		vk::ImageViewCreateInfo createInfo{};
 		createInfo.image = image;
@@ -289,8 +290,8 @@ namespace moe
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		vk::UniqueImageView imageView = m_logicalDevice.createImageViewUnique(createInfo);
-		MOE_ASSERT(imageView.get());
+		vk::ImageView imageView = m_logicalDevice.createImageView(createInfo);
+		MOE_ASSERT(imageView);
 
 		return imageView;
 	}

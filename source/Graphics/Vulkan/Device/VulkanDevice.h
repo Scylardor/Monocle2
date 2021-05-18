@@ -10,6 +10,8 @@
 
 #include "Graphics/Vulkan/Allocators/MemoryAllocator.h"
 
+#include "Graphics/Vulkan/Texture/VulkanTextureFactory.h"
+
 #include "Core/Delegates/event.h"
 
 #include "Graphics/Vulkan/Allocators/TextureAllocator.h"
@@ -61,7 +63,7 @@ namespace moe
 		bool		CreateLogicalDevice();
 
 		// TODO: temporary, to move somewhere else...
-		vk::UniqueImageView		CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
+		vk::ImageView			CreateImageView(vk::Image image, vk::Format format, vk::ImageAspectFlagBits aspectFlags, uint32_t mipLevels) const;
 
 		void					ImmediateCommandSubmit(std::function<void(vk::CommandBuffer)> pushFunction) const;
 
@@ -196,8 +198,9 @@ namespace moe
 
 	public:
 
-		FramebufferFactory	FramebufferFactory;
-		VulkanMeshFactory	MeshFactory;
+		FramebufferFactory		FramebufferFactory;
+		VulkanMeshFactory		MeshFactory;
+		VulkanTextureFactory	TextureFactory;
 
 	};
 

@@ -14,7 +14,7 @@
 namespace moe
 {
 	GL4TextureFactory::GL4TextureFactory(ResourceManager& rscMgr, bool verticalFlipLoadedTextures) :
-		ITextureFactory(rscMgr), m_verticalFlipLoadedImages(verticalFlipLoadedTextures)
+		ITextureFactory2(rscMgr), m_verticalFlipLoadedImages(verticalFlipLoadedTextures)
 	{
 		stbi_set_flip_vertically_on_load(m_verticalFlipLoadedImages);
 	}

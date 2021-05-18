@@ -14,6 +14,8 @@ namespace moe
 
 		void	AcquireFence(vk::Device device, vk::Fence newInFlightFence);
 
+		void	Free(MyVkDevice& device);
+
 		VulkanSwapchainTexture	Texture;
 		vk::Fence				InFlightFence{}; // a reference to a fence in one of the swapchain frames
 	};

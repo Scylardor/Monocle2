@@ -60,6 +60,10 @@ namespace moe
 
 		moe::Model m_backpack;
 
+		MeshResource m_planes;
+
+		TextureResource m_statue;
+
 		ResourceManager	m_manager;
 	};
 }

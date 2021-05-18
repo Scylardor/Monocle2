@@ -9,7 +9,7 @@
 
 namespace moe
 {
-	class Monocle_GameFramework_API GL4TextureFactory : public ITextureFactory
+	class Monocle_GameFramework_API GL4TextureFactory : public ITextureFactory2
 	{
 	public:
 		GL4TextureFactory(ResourceManager& rscMgr, bool verticalFlipLoadedTextures = true);

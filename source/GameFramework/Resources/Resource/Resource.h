@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Core/Resource/ResourceFactory.h"
+#include "Graphics/Vulkan/Texture/VulkanTextureFactory.h"
 #include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
-#include "Graphics/Vulkan/Factories/VulkanMaterialFactory.h"
+#include "Graphics/Vulkan/Material/VulkanMaterialFactory.h"
 
 namespace moe
 {
@@ -61,22 +62,6 @@ namespace moe
 		}
 
 
-		[[nodiscard]] TRsc* operator->()
-		{
-			IMeshFactory* factory = static_cast<IMeshFactory*>(m_myFactory);
-			auto& mesh = factory->MutateResource(m_ID);
-			return &mesh;
-		}
-
-
-		[[nodiscard]] const TRsc* operator->() const
-		{
-			IMeshFactory* factory = static_cast<IMeshFactory*>(m_myFactory);
-			auto& mesh = factory->GetResource(m_ID);
-			return &mesh;
-		}
-
-
 		[[nodiscard]] RegistryID	ID() const
 		{
 			return m_ID;
@@ -101,6 +86,49 @@ namespace moe
 			IResource(factory, id)
 		{}
 
+
+		[[nodiscard]] VulkanMesh* operator->()
+		{
+			IMeshFactory* factory = static_cast<IMeshFactory*>(m_myFactory);
+			auto& mesh = factory->MutateResource(m_ID);
+			return &mesh;
+		}
+
+
+		[[nodiscard]] const VulkanMesh* operator->() const
+		{
+			IMeshFactory* factory = static_cast<IMeshFactory*>(m_myFactory);
+			auto& mesh = factory->GetResource(m_ID);
+			return &mesh;
+		}
+	};
+
+
+	class TextureResource : public IResource<ITextureFactory, VulkanTexture>
+	{
+	public:
+
+		TextureResource() = default;
+
+		TextureResource(ITextureFactory& factory, RegistryID id) :
+			IResource(factory, id)
+		{}
+
+
+		[[nodiscard]] VulkanTexture* operator->()
+		{
+			auto* factory = static_cast<ITextureFactory*>(m_myFactory);
+			auto& tex = factory->MutateResource(m_ID);
+			return &tex;
+		}
+
+
+		[[nodiscard]] const VulkanTexture* operator->() const
+		{
+			auto* factory = static_cast<ITextureFactory*>(m_myFactory);
+			auto& tex = factory->GetResource(m_ID);
+			return &tex;
+		}
 	};
 
 	class MaterialResource : public IResource<IMaterialFactory, VulkanMaterial>

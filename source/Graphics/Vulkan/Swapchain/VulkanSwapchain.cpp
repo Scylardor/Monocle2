@@ -11,6 +11,18 @@ namespace moe
 	const uint32_t VulkanSwapchain::MAX_FRAMES_IN_FLIGHT = 2;
 
 
+	VulkanSwapchain::~VulkanSwapchain()
+	{
+		m_depthStencilAttachment.Free(Device());
+		m_multisampleAttachment.Free(Device());
+
+		for (auto& swapchainImage : m_imagesInFlight)
+		{
+			swapchainImage.Free(Device());
+		}
+	}
+
+
 	bool VulkanSwapchain::Initialize(vk::Instance instance, MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface, vk::SampleCountFlags numSamples)
 	{
 		MOE_ASSERT(m_surfaceProvider == nullptr); // should not get called twice on the same swapchain !

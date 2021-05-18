@@ -30,11 +30,18 @@ namespace moe
 		static const auto MAX_SAMPLES = (vk::SampleCountFlagBits)0;
 
 		VulkanTexture() = default;
-		~VulkanTexture();
 
 		VulkanTexture(MyVkDevice& device, const VulkanTextureBuilder& builder);
 
-		VulkanTexture(MyVkDevice& device, vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
+		VulkanTexture(MyVkDevice& device, std::string_view filename, VulkanTextureBuilder& builder);
+
+		VulkanTexture(MyVkDevice& device, vk::Image img, vk::ImageView imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
+
+
+		~VulkanTexture() = default;
+
+		VulkanTexture(VulkanTexture const& other) = delete;
+		VulkanTexture& operator=(VulkanTexture const& rhs) = delete;
 
 		VulkanTexture(VulkanTexture&& other);
 		VulkanTexture& operator=(VulkanTexture&& rhs);
@@ -48,6 +55,9 @@ namespace moe
 		[[nodiscard]] static VulkanTexture	Create2DFromFile(MyVkDevice& device, std::string_view filename, VulkanTextureBuilder& builder);
 
 		[[nodiscard]] static VulkanTexture	Create2DFromData(MyVkDevice& device, const byte_t* imageData, size_t imageSize, VulkanTextureBuilder& builder);
+
+
+		void	Free(MyVkDevice& device);
 
 		void	FillStagingBuffer(MyVkDevice& device, const byte_t* imageData, vk::DeviceSize imageSize);
 
@@ -75,7 +85,7 @@ namespace moe
 
 		[[nodiscard]] vk::ImageView	View() const
 		{
-			return m_imageView.get();
+			return m_imageView;
 		}
 
 		[[nodiscard]] static uint32_t					ComputeNumberOfMipmapsForDimensions(uint32_t width, uint32_t height);
@@ -92,11 +102,14 @@ namespace moe
 
 		void	UpdateDescriptorInfo();
 
+		static int	FindFormatDesiredChannels(vk::Format format);
+
+
 		MyVkDevice*				m_device{ nullptr };
-		vk::UniqueImage			m_image{};
+		vk::Image				m_image{};
 		VulkanMemoryBlock		m_imageMemory;
-		vk::UniqueImageView		m_imageView{};
-		vk::UniqueSampler		m_sampler{};
+		vk::ImageView			m_imageView{};
+		vk::Sampler				m_sampler{};
 
 		BufferHandles			m_staging{}; // Needed for (possibly asynchronous) memory transfers. The buffer has to live until the transfer command is sent.
 		vk::DescriptorImageInfo	m_descriptorInfo{};
@@ -125,8 +138,8 @@ namespace moe
 
 			// There is no reason not to use this unless performance is a concern.
 			// Instead of enforcing the availability of anisotropic filtering, it's also possible to simply not use it by conditionally setting:
-			//		samplerInfo.anisotropyEnable = VK_FALSE;
-			//		samplerInfo.maxAnisotropy = 1.0f;
+			//  SamplerCreateInfo.anisotropyEnable = VK_FALSE;
+			//  SamplerCreateInfo.maxAnisotropy = 1.0f;
 			SamplerCreateInfo.anisotropyEnable = true;
 			SamplerCreateInfo.maxAnisotropy = VulkanTexture::MAX_ANISOTROPY;
 

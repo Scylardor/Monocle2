@@ -11,6 +11,8 @@
 
 namespace moe
 {
+	class ITextureFactory;
+
 	template <typename TRsc>
 	class ResourceFactory
 	{
@@ -97,17 +99,25 @@ namespace moe
 		}
 
 
-		template <typename TMesh>
 		MeshResource	LoadMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType)
 		{
 			if (m_meshFactory == nullptr)
 				return {};
 
-			auto ID = m_meshFactory->CreateMesh(vertexSize, numVertices, vertexData, numIndices, indexData, indexType); (void)ID;
+			auto ID = m_meshFactory->CreateMesh(vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
 			return MeshResource{*m_meshFactory, ID};
 		}
 
+
+		TextureResource	LoadTextureFile(std::string_view filename, VulkanTextureBuilder& builder)
+		{
+			if (m_textureFactory == nullptr)
+				return {};
+
+			auto ID = m_textureFactory->CreateTextureFromFile(filename, builder);
+			return TextureResource{ *m_textureFactory, ID };
+		}
 
 
 		void SetMeshFactory(IMeshFactory& factory)
@@ -115,6 +125,11 @@ namespace moe
 			m_meshFactory = &factory;
 		}
 
+
+		void SetTextureFactory(ITextureFactory& factory)
+		{
+			m_textureFactory = &factory;
+		}
 
 	protected:
 
@@ -137,9 +152,11 @@ namespace moe
 
 
 
-		IMeshFactory*	m_meshFactory{nullptr};
-
+		IMeshFactory*		m_meshFactory{nullptr};
+		ITextureFactory*	m_textureFactory{ nullptr };
 		std::unique_ptr<AssetImporter>	m_assetImporter{nullptr};
+
+		std::unordered_map<size_t, RegistryID>	m_resourceIDs{};
 	};
 
 }

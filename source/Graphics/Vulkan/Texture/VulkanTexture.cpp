@@ -13,16 +13,10 @@
 
 namespace moe
 {
-	VulkanTexture::~VulkanTexture()
-	{
-		if (m_device)
-		{
-			if (m_imageMemory)
-				m_device->MemoryAllocator().FreeBufferDeviceMemory(m_imageMemory);
 
-			if (m_staging.Buffer && m_staging.MemoryBlock)
-				m_device->BufferAllocator().ReleaseBufferHandles(m_staging);
-		}
+	VulkanTexture::VulkanTexture(VulkanTexture&& other)
+	{
+		*this = std::move(other);
 	}
 
 
@@ -38,21 +32,51 @@ namespace moe
 	}
 
 
-	VulkanTexture::VulkanTexture(MyVkDevice& device, vk::UniqueImage&& img, vk::UniqueImageView&& imgView, VulkanMemoryBlock&& memory,
-		const VulkanTextureBuilder& builder) :
+	VulkanTexture::VulkanTexture(MyVkDevice& device, std::string_view filename, VulkanTextureBuilder& builder)
+	{
+		const auto requiredChannels = FindFormatDesiredChannels(builder.ImageCreateInfo.format);
+
+		const bool isRadianceHDR = (builder.ImageCreateInfo.format == vk::Format::eR32G32B32Sfloat);
+
+		int width, height, nrChannels;
+
+		void* const imageData =
+			isRadianceHDR ?	(void*)stbi_loadf(filename.data(), &width, &height, &nrChannels, requiredChannels)
+			:				(void*)stbi_load(filename.data(), &width, &height, &nrChannels, requiredChannels);
+
+		if (imageData == nullptr)
+		{
+			MOE_ERROR(ChanGraphics, "Unable to initialize texture : could not open file %s.",
+				filename.data());
+			return;
+		}
+
+		if (nrChannels != requiredChannels)
+		{
+			MOE_WARNING(ChanGraphics, "Texture file %s contains %d channels vs. %d required channels. Possible inconsistency, please check.",
+				filename.data(), nrChannels, requiredChannels);
+		}
+
+		const vk::DeviceSize imageSize = width * height * requiredChannels;
+
+		builder.SetDimensions(width, height);
+
+		*this = Create2DFromData(device, (const byte_t*)imageData, imageSize, builder);
+
+		// Don't forget to clean up the original pixel array now
+		stbi_image_free((void*)imageData);
+	}
+
+
+	VulkanTexture::VulkanTexture(MyVkDevice& device, vk::Image img, vk::ImageView imgView, VulkanMemoryBlock&& memory,
+	                             const VulkanTextureBuilder& builder) :
 		VulkanTexture(device, builder)
 	{
-		m_image = std::move(img);
-		m_imageView = std::move(imgView);
+		m_image = img;
+		m_imageView = imgView;
 		m_imageMemory = std::move(memory);
 	}
 
-
-	VulkanTexture::VulkanTexture(VulkanTexture&& other)
-	{
-		*this = std::move(other);
-
-	}
 
 
 	VulkanTexture VulkanTexture::Create2DTexture(MyVkDevice& device, VulkanTextureBuilder& builder)
@@ -154,6 +178,25 @@ namespace moe
 	}
 
 
+	void VulkanTexture::Free(MyVkDevice& device)
+	{
+		if (m_imageMemory)
+			device.MemoryAllocator().FreeBufferDeviceMemory(m_imageMemory);
+
+		if (m_staging.Buffer && m_staging.MemoryBlock)
+			device.BufferAllocator().ReleaseBufferHandles(m_staging);
+
+		if (m_imageView)
+			device->destroyImageView(m_imageView);
+
+		if (m_image)
+			device->destroyImage(m_image);
+
+		if (m_sampler)
+			device->destroySampler(m_sampler);
+	}
+
+
 	void VulkanTexture::FillStagingBuffer(MyVkDevice& device, const byte_t* imageData, vk::DeviceSize imageSize)
 	{
 		if (!m_staging.Buffer)
@@ -180,7 +223,7 @@ namespace moe
 			{0, 0, 0}, m_dimensions
 		};
 
-		commandBuffer.copyBufferToImage(m_staging.Buffer, m_image.get(), m_layout, { copyRegion });
+		commandBuffer.copyBufferToImage(m_staging.Buffer, m_image, m_layout, { copyRegion });
 	}
 
 
@@ -190,7 +233,7 @@ namespace moe
 		vk::ImageMemoryBarrier barrier{};
 		barrier.oldLayout = m_layout;
 		barrier.newLayout = newLayout;
-		barrier.image = m_image.get();
+		barrier.image = m_image;
 
 		// If you are using the barrier to transfer queue family ownership, then these two fields should be the indices of the queue families.
 		// They must be set to VK_QUEUE_FAMILY_IGNORED if you don't want to do this (not the default value!).
@@ -267,7 +310,7 @@ namespace moe
 	void VulkanTexture::CreateSampler(MyVkDevice& device, VulkanTextureBuilder& builder)
 	{
 		const float maxAniso = device.TextureAllocator().GetMaxSupportedAnisotropy();
-		if (builder.SamplerCreateInfo.maxAnisotropy == VulkanTexture::MAX_ANISOTROPY)
+		if (builder.SamplerCreateInfo.maxAnisotropy == MAX_ANISOTROPY)
 		{
 			// replace the magic number by the maximum supported anisotropy value
 			builder.SamplerCreateInfo.maxAnisotropy = maxAniso;
@@ -276,24 +319,50 @@ namespace moe
 		{
 			MOE_WARNING(moe::ChanGraphics, "Provided anisotropy value %.2f overflows max supported anisotropy (%.2f), clamping to that value.",
 				builder.SamplerCreateInfo.maxAnisotropy, maxAniso);
-			builder.SamplerCreateInfo.maxAnisotropy = maxAniso;
 		}
-		m_sampler = device->createSamplerUnique(builder.SamplerCreateInfo);
+
+		builder.SamplerCreateInfo.maxAnisotropy = std::min(std::max(builder.SamplerCreateInfo.maxAnisotropy, 0.f), maxAniso);
+
+		m_sampler = device->createSampler(builder.SamplerCreateInfo);
 	}
 
 
 	void VulkanTexture::UpdateDescriptorInfo()
 	{
 		m_descriptorInfo = vk::DescriptorImageInfo{
-	m_sampler.get(), m_imageView.get(), m_layout
+	m_sampler, m_imageView, m_layout
 		};
+
+	}
+
+
+	int VulkanTexture::FindFormatDesiredChannels(vk::Format format)
+	{
+		// Doesn't manage all formats on earth, but sufficient for now.
+		switch (format)
+		{
+		case vk::Format::eR8Unorm:
+		case vk::Format::eR8Srgb:
+			return STBI_grey;
+		case vk::Format::eR8G8Unorm:
+		case vk::Format::eR8G8Srgb:
+			return STBI_grey_alpha;
+		case vk::Format::eR8G8B8Unorm:
+		case vk::Format::eR8G8B8Srgb:
+			return STBI_rgb;
+		case vk::Format::eR8G8B8A8Unorm:
+		case vk::Format::eR8G8B8A8Srgb:
+			return STBI_rgb_alpha;
+		default:
+			return STBI_default;
+		}
 
 	}
 
 
 	void VulkanTexture::TransitionLayout(MyVkDevice& device, vk::ImageLayout newLayout, vk::CommandBuffer* commandBuffer)
 	{
-		MOE_ASSERT(m_image.get());
+		MOE_ASSERT(m_image);
 
 		// If a pre-existing command buffer is supplied, use this one - otherwise, just start an immediate command submit.
 		if (commandBuffer != nullptr)
@@ -338,7 +407,7 @@ namespace moe
 		int32_t mipHeight = m_dimensions.height;
 
 		vk::ImageMemoryBarrier imgBarrier{};
-		imgBarrier.image = m_image.get();
+		imgBarrier.image = m_image;
 		imgBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		imgBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		imgBarrier.subresourceRange.aspectMask = FindImageAspect(m_usage, m_format);
@@ -364,7 +433,7 @@ namespace moe
 			commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
 				vk::DependencyFlags{}, 0, nullptr, 0, nullptr, 1, &imgBarrier);
 
-			imgBarrier.subresourceRange.levelCount = 1; // alter only one mip at a time again.
+			imgBarrier.subresourceRange.levelCount = 1; // don't forget to reset it to 1 to alter only one mip at a time.
 		}
 
 		for (int iMip = 1; iMip < (int)m_mipLevels; iMip++)
@@ -373,7 +442,7 @@ namespace moe
 			// This transition will wait for level i - 1 to be filled, either from the previous blit command, or from vkCmdCopyBufferToImage.
 			// The current blit command will wait on this transition.
 			imgBarrier.subresourceRange.baseMipLevel = iMip - 1;
-			imgBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal; // mip0 is actually in shader read only layout but should be OK
+			imgBarrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
 			imgBarrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
 			imgBarrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
 			imgBarrier.dstAccessMask = vk::AccessFlagBits::eTransferRead;
@@ -390,8 +459,8 @@ namespace moe
 			blit.dstSubresource.mipLevel = iMip;
 			blit.dstOffsets[1] = vk::Offset3D{ mipWidth >> iMip, mipHeight >> iMip, 1 };
 
-			commandBuffer.blitImage(m_image.get(), vk::ImageLayout::eTransferSrcOptimal,
-				m_image.get(), vk::ImageLayout::eTransferDstOptimal,
+			commandBuffer.blitImage(m_image, vk::ImageLayout::eTransferSrcOptimal,
+				m_image, vk::ImageLayout::eTransferDstOptimal,
 				1, &blit, vk::Filter::eLinear); // enable linear filter for interpolation
 
 			// This barrier transitions mip level i - 1 to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
@@ -491,6 +560,7 @@ namespace moe
 		MOE_MOVE(m_format);
 		MOE_MOVE(m_usage);
 		MOE_MOVE(m_layout);
+
 		return *this;
 	}
 }

@@ -4,8 +4,4 @@
 
 namespace moe
 {
-	VulkanTextureFactory::VulkanTextureFactory(MyVkDevice& device) :
-		m_device(device)
-	{
-	}
 }

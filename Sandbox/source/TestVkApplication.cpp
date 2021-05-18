@@ -1,5 +1,10 @@
 #include "TestVkApplication.h"
 
+#include "Graphics/Vulkan/RenderScene/RenderScene.h"
+
+
+#include "GameFramework/Resources/Resource/Resource.h"
+#include "Graphics/Vertex/VertexFormats.h"
 
 #include <chrono>
 
@@ -17,9 +22,6 @@ namespace moe
 
 	void TestVkApplication::Run()
 	{
-
-
-
 
 		while (WindowIsOpened())
 		{
@@ -57,6 +59,9 @@ namespace moe
 		TestVkApplication(appDesc)
 	{
 
+		m_manager.SetMeshFactory(m_renderer.GraphicsDevice().MeshFactory);
+		m_manager.SetTextureFactory(m_renderer.GraphicsDevice().TextureFactory);
+
 		const std::vector<moe::BasicVertex> vertices =
 		{
 	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
@@ -76,16 +81,20 @@ namespace moe
 			4, 5, 6, 6, 7, 4
 		};
 
-		VkDeviceSize vertexSize = sizeof(vertices[0]) * vertices.size();
-		auto meshID = m_renderer.EmplaceMesh(vertexSize, vertices.size(), vertices.data(), indices.size(), indices.data(), vk::IndexType::eUint16);
+		m_planes =  m_manager.LoadMesh(
+			sizeof(moe::BasicVertex), vertices.size(), vertices.data(),
+			indices.size(), indices.data(), vk::IndexType::eUint16);
+		m_scene.Emplace(m_planes.ID(), 0);
 
-		m_scene.Emplace(meshID, 0);
+		VulkanTextureBuilder builder;
+		m_statue = m_manager.LoadTextureFile("Sandbox/assets/textures/texture.jpg", builder);
 
-		Vec3 cameraPos{0.1f,0.5f, 1.f};
+
+		Vec3 cameraPos{0.1f,0.5f, 10.f};
 		m_view = Mat4::LookAtMatrix(cameraPos, Vec3::ZeroVector(), Vec3{ 0, 0, 1 });
 
 		float aspectRatio = GetWindowWidth() / (float)GetWindowHeight();
-		m_projection = Mat4::PerspectiveZeroOne(45_degf, aspectRatio, 0.1f, 10.f);
+		m_projection = Mat4::PerspectiveZeroOne(45_degf, aspectRatio, 0.1f, 100.f);
 
 
 		//GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.
@@ -94,19 +103,22 @@ namespace moe
 		// TODO : I think it's simpler to just use a negative viewport size in Vulkan instead.
 		m_projection[1][1] *= -1;
 
-		Mat4 model = Mat4::Identity();// Rotation(Degs_f{ 45.f }, Vec3{ 0, 0, 1 });
+		Mat4 model = Mat4::Rotation(Degs_f{ 45.f }, Vec3{ 0, 0, 1 });
 
 		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 
-		m_manager.SetMeshFactory(m_renderer.GraphicsDevice().MeshFactory);
 
 		AssimpImporter& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>();
 		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 
-		for (const moe::MeshResource& rsc : m_backpack.GetMeshResources())
+		model = Mat4::Identity();
+		for (const MeshResource& rsc : m_backpack.GetMeshResources())
 		{
-			m_scene.Emplace(rsc.ID(), 0);
+			auto drawID = m_scene.Emplace(rsc.ID(), 0);
+
+			m_scene.MutObject(drawID).MutateMVP() = m_projection * m_view * model;
 		}
+
 	}
 
 	void BasicVkApp::Update()
@@ -114,11 +126,11 @@ namespace moe
 		TestVkApplication::Update();
 
 
-		//float time = GetElapsedSecondsSinceCreation();
-		//
-		//Mat4 model = Mat4::Rotation(Degs_f{ time * 90.f }, Vec3{ 0, 0, 1 });
-		//
-		//m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
+		float time = GetElapsedSecondsSinceCreation();
+
+		Mat4 model = Mat4::Rotation(Degs_f{ time * 90.f }, Vec3{ 0, 0, 1 });
+
+		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 	}
 
 }

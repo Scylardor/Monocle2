@@ -59,6 +59,8 @@ namespace moe
 	void VulkanRenderer::Shutdown()
 	{
 		(*m_graphicsDevice)->waitIdle();
+
+		m_materialTexture.Free(GraphicsDevice());
 	}
 
 	ShaderProgramHandle VulkanRenderer::CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc)
@@ -315,7 +317,6 @@ namespace moe
 				lastMatID = matID;
 			}
 
-
 			drawable.BindTransform(m_pipeline, renderPassCommandBuffer);
 			const VulkanMesh& drawable2 = m_graphicsDevice->MeshFactory.GetResource(drawable.GetMeshID());
 			drawable2.Draw(renderPassCommandBuffer);
@@ -331,14 +332,6 @@ namespace moe
 	}
 
 
-	uint32_t VulkanRenderer::EmplaceMesh(size_t vertexSize, size_t numVertices, const void* vertexData, size_t numIndices, const void* indexData, vk::IndexType indexType)
-	{
-		auto ID2 = m_meshes.EmplaceEntry(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
-
-		//auto ID = m_meshStorage.size();
-		//m_meshStorage.emplace_back(*m_graphicsDevice, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
-		return (uint32_t)ID2;
-	}
 }
 #pragma warning( pop )
 

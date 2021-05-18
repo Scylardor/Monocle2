@@ -21,7 +21,7 @@ namespace moe
 
 
 		VulkanSwapchain() = default;
-		~VulkanSwapchain() = default;
+		~VulkanSwapchain();
 
 		bool		Initialize(vk::Instance instance, class MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface, vk::SampleCountFlags numSamples = VulkanTexture::MAX_SAMPLES);
 

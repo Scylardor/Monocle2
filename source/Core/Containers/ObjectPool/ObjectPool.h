@@ -29,7 +29,7 @@ namespace moe
 		PoolBlock(const PoolBlock& other) noexcept
 		{
 			NextFreeBlock = other.NextFreeBlock;
-			Object = other.Object;
+			std::memcpy(&Object, &other.Object, sizeof(TObj));
 		}
 
 		PoolBlock& operator=(const PoolBlock& other) noexcept
@@ -37,7 +37,7 @@ namespace moe
 			if (&other != this)
 			{
 				NextFreeBlock = other.NextFreeBlock;
-				Object = other.Object;
+				std::memcpy(&Object, &other.Object, sizeof(TObj));
 			}
 			return *this;
 		}
@@ -96,13 +96,13 @@ namespace moe
 
 		[[nodiscard]] auto	Size() const
 		{
-			return MOE_CRTP_IMPL(Size,);
+			return MOE_CRTP_IMPL(Size);
 		}
 
 
 		[[nodiscard]] bool	Empty() const
 		{
-			return MOE_CRTP_IMPL(Empty,);
+			return MOE_CRTP_IMPL(Empty);
 		}
 
 

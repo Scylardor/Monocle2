@@ -57,7 +57,7 @@ namespace moe
 		}
 
 		template <typename... Ts>
-		[[nodiscard]] RegistryID EmplacePersistenEntry(Ts&&... args);
+		[[nodiscard]] RegistryID EmplacePersistentEntry(Ts&&... args);
 
 		void	DeleteEntry(RegistryID id)
 		{
@@ -98,6 +98,7 @@ namespace moe
 		{
 			return m_registry.Get(id).IsPersistent;
 		}
+
 
 
 	private:

@@ -15,7 +15,9 @@ namespace moe
 	{
 	public:
 
-		VulkanSwapchainTexture(MyVkDevice& device, vk::Image image, vk::UniqueImageView&& view, const VulkanTextureBuilder& builder);
+		VulkanSwapchainTexture(MyVkDevice& device, vk::Image image, vk::ImageView view, const VulkanTextureBuilder& builder);
+
+		void	Free(MyVkDevice& device);
 
 		// not a UniqueImage? This isn't a mistake!
 		// because those images are retrieved via getSwapchainImagesKHR, they get automatically freed by the UniqueSwapchain handle dtor!

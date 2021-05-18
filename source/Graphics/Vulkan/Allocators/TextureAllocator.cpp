@@ -29,20 +29,20 @@ namespace moe
 			builder.ImageViewCreateInfo.subresourceRange.levelCount = builder.ImageCreateInfo.mipLevels;
 		}
 
-		vk::UniqueImage image = (*m_device)->createImageUnique(builder.ImageCreateInfo);
+		vk::Image image = (*m_device)->createImage(builder.ImageCreateInfo);
 		MOE_ASSERT(image);
 
-		VulkanMemoryBlock imageMemory = m_device->MemoryAllocator().AllocateTextureDeviceMemory(image.get());
+		VulkanMemoryBlock imageMemory = m_device->MemoryAllocator().AllocateTextureDeviceMemory(image);
 
 		builder.ImageViewCreateInfo.format = builder.ImageCreateInfo.format;
 
 		builder.ImageViewCreateInfo.subresourceRange.aspectMask = VulkanTexture::FindImageAspect(builder.ImageCreateInfo.usage, builder.ImageCreateInfo.format);
 
-		builder.ImageViewCreateInfo.image = image.get();
+		builder.ImageViewCreateInfo.image = image;
 
-		vk::UniqueImageView imgView = (*m_device)->createImageViewUnique(builder.ImageViewCreateInfo);
+		vk::ImageView imgView = (*m_device)->createImageView(builder.ImageViewCreateInfo);
 
-		return VulkanTexture(*m_device, std::move(image), std::move(imgView), std::move(imageMemory), builder);
+		return VulkanTexture(*m_device, image, imgView, std::move(imageMemory), builder);
 	}
 
 

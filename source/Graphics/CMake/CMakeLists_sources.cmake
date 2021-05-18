@@ -278,8 +278,6 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Device/VulkanDevice.h
 ./Vulkan/Device/VulkanDeviceList.cpp
 ./Vulkan/Device/VulkanDeviceList.h
-./Vulkan/Factories/VulkanMaterialFactory.cpp
-./Vulkan/Factories/VulkanMaterialFactory.h
 ./Vulkan/Factories/VulkanMeshFactory.cpp
 ./Vulkan/Factories/VulkanMeshFactory.h
 ./Vulkan/Factories/VulkanShaderFactory.cpp
@@ -294,8 +292,10 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/FrameGraph/VulkanFrameGraph.h
 ./Vulkan/Instance/VulkanInstance.cpp
 ./Vulkan/Instance/VulkanInstance.h
-./Vulkan/MaterialLibrary/VulkanMaterial.cpp
-./Vulkan/MaterialLibrary/VulkanMaterial.h
+./Vulkan/Material/VulkanMaterial.cpp
+./Vulkan/Material/VulkanMaterial.h
+./Vulkan/Material/VulkanMaterialFactory.cpp
+./Vulkan/Material/VulkanMaterialFactory.h
 ./Vulkan/Mesh/VulkanMesh.cpp
 ./Vulkan/Mesh/VulkanMesh.h
 ./Vulkan/Model/VulkanModel.cpp
@@ -319,6 +319,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Swapchain/VulkanSwapchainTexture.h
 ./Vulkan/Texture/VulkanTexture.cpp
 ./Vulkan/Texture/VulkanTexture.h
+./Vulkan/Texture/VulkanTextureFactory.cpp
+./Vulkan/Texture/VulkanTextureFactory.h
 ./Vulkan/ValidationLayers/VulkanValidationLayers.h
 ./Vulkan/VulkanMacros.h
 	)

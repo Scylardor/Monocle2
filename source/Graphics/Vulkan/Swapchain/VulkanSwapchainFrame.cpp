@@ -28,6 +28,12 @@ namespace moe
 	}
 
 
+	void VulkanSwapchainImage::Free(MyVkDevice& device)
+	{
+		Texture.Free(device);
+	}
+
+
 	VulkanSwapchainFrame::VulkanSwapchainFrame(const MyVkDevice& device)
 	{
 		RenderCompleteSemaphore = device->createSemaphoreUnique(vk::SemaphoreCreateInfo{});

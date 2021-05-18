@@ -33,6 +33,7 @@ namespace moe
 
 		AllocateDescriptorSets(device);
 
+
 		return *this;
 	}
 
@@ -86,6 +87,15 @@ namespace moe
 
 		return *this;
 	}
+
+
+	VulkanMaterial& VulkanMaterial::PushUniformBufferBindingSize(uint8_t set, uint8_t binding, size_t size)
+	{
+		m_uniformBindingOffsets[(set << 8) | binding] = size;
+		m_requiredUniformDataSize += size;
+		return *this;
+	}
+
 
 	void VulkanMaterial::UpdateDescriptorSets(const MyVkDevice& device)
 	{
@@ -180,6 +190,7 @@ namespace moe
 
 		return setWriteIndex;
 	}
+
 
 
 	// TODO : This is a simplistic example using only one descriptor set.
