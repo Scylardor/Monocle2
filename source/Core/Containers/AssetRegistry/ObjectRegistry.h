@@ -14,8 +14,7 @@ namespace moe
 
 		template <typename... Ts>
 		RegistryEntry(Ts&&... args) :
-			Asset(std::forward<Ts>(args)...),
-			ReferenceCount(1)
+			Asset(std::forward<Ts>(args)...)
 		{}
 
 

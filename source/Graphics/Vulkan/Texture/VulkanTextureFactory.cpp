@@ -6,13 +6,6 @@ namespace moe
 {
 	VulkanTextureFactory::~VulkanTextureFactory()
 	{
-		//ObjectRegistry<VulkanTexture>::VisitorFn func =
-		//	[this](VulkanTexture& tex)
-		//{
-		////	tex.Free(*m_device);
-		//};
-		//
-		//m_textures.ForEach(func);
 	}
 
 

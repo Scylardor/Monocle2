@@ -18,7 +18,10 @@ namespace moe
 
 		IResource(TFactory& factory, RegistryID myID) :
 			m_myFactory(&factory), m_ID(myID)
-		{}
+		{
+			if (m_myFactory && m_ID != INVALID_ENTRY)
+				m_myFactory->IncrementReference(m_ID);
+		}
 
 
 		~IResource()

@@ -14,10 +14,11 @@ void moe::Model::ImportMeshResources(ResourceManager& manager)
 	for (const auto& mesh : GetMeshes())
 	{
 		meshResources.emplace_back(
-			manager.LoadMesh<VulkanMesh>(
+			manager.LoadMesh(
 				sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
 				mesh.Indices.size(), mesh.Indices.data(), vk::IndexType::eUint32)
 		);
+
 	}
 }
 
@@ -54,13 +55,10 @@ void moe::AssimpImporter::ImportModelResources(Model& importedModel)
 	// First import the meshes
 	importedModel.ImportMeshResources(m_manager);
 
-
-
 	// Then the materials
 
 
 }
-
 
 void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex)
 {
