@@ -12,8 +12,10 @@ namespace moe
 	}
 
 
-	void VulkanMeshFactory::DecrementReference(RegistryID id)
+	bool VulkanMeshFactory::DecrementReference(RegistryID id)
 	{
+		const bool toBeFreed = m_meshes.GetReferenceCount(id) == 1 && false == m_meshes.IsPersistent(id);
+
 		if (m_meshes.GetReferenceCount(id) == 1 && false == m_meshes.IsPersistent(id))
 		{
 			// Last ref : free the mesh
@@ -22,6 +24,8 @@ namespace moe
 		}
 
 		m_meshes.DecrementReference(id);
+
+		return toBeFreed;
 	}
 
 

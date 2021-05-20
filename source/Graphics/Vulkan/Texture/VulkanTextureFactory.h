@@ -32,7 +32,7 @@ namespace moe
 
 
 		RegistryID	IncrementReference(RegistryID id) override;
-		void		DecrementReference(RegistryID id) override;
+		bool		DecrementReference(RegistryID id) override;
 
 
 		RegistryID	CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder) override;

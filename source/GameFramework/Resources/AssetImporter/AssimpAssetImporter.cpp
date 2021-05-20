@@ -6,6 +6,8 @@
 
 #include <assimp/scene.h>
 
+#include "Graphics/Vulkan/Texture/VulkanTexture.h"
+
 
 void moe::Model::ImportMeshResources(ResourceManager& manager)
 {
@@ -15,6 +17,7 @@ void moe::Model::ImportMeshResources(ResourceManager& manager)
 	{
 		meshResources.emplace_back(
 			manager.LoadMesh(
+				mesh.Name,
 				sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
 				mesh.Indices.size(), mesh.Indices.data(), vk::IndexType::eUint32)
 		);
@@ -39,10 +42,13 @@ moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 		return {};
 	}
 
+	// The model name is going to be the filename stripped of the extension
+	FilePath modelPath = FilePath(modelFilename).remove_filename().make_preferred();
+
 	// Expect the given number of meshes
 	Model importedModel{scene->mNumMeshes};
 
-	ProcessSceneNode(*scene->mRootNode, *scene, importedModel);
+	ProcessSceneNode(*scene->mRootNode, *scene, importedModel, modelPath);
 
 	ImportModelResources(importedModel);
 
@@ -60,7 +66,7 @@ void moe::AssimpImporter::ImportModelResources(Model& importedModel)
 
 }
 
-void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex)
+void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, const FilePath& modelPath, uint32_t parentIndex)
 {
 	importedModel.ReserveNodes((uint32_t) importedModel.NodeCount() + node.mNumChildren); // reserve memory for this node + children
 
@@ -74,22 +80,60 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 		aiMesh& meshRef = *mesh;
 
 		MeshData& thisMesh = importedModel.MutMesh(node.mMeshes[iMesh]);
-		// Skip computing vertices and indices if this mesh has data (we already processed it)
-		if (thisMesh.Vertices.empty())
-			thisMesh.Vertices = ComputeMeshVertices(meshRef);
+		// Skip computing mesh data if we have the vertices (we already processed it)
+		if (thisMesh.HasVertices())
+			continue;
 
-		if (thisMesh.Indices.empty())
-			thisMesh.Indices = ComputeMeshIndices(meshRef);
+		thisMesh.Vertices = ComputeMeshVertices(meshRef);
+
+		thisMesh.Indices = ComputeMeshIndices(meshRef);
+
+		thisMesh.Name = meshRef.mName.C_Str();
 
 		myNode.Meshes.assign(node.mMeshes, node.mMeshes + node.mNumMeshes);
+
+		MOE_ASSERT(scene.HasMaterials() && meshRef.mMaterialIndex < scene.mNumMaterials);
+		aiMaterial* meshMat = scene.mMaterials[meshRef.mMaterialIndex];
+		MOE_ASSERT(meshMat);
+		ExtractMaterialTextures(modelPath, *meshMat);
 	}
-
-
 
 	// Do the same for all the children
 	for (auto iChild = 0u; iChild < node.mNumChildren; ++iChild)
 	{
-		ProcessSceneNode(*node.mChildren[iChild], scene, importedModel, childrenParentIndex);
+		ProcessSceneNode(*node.mChildren[iChild], scene, importedModel, modelPath, childrenParentIndex);
+	}
+}
+
+
+void moe::AssimpImporter::ExtractMaterialTextures(const FilePath& basePath, const aiMaterial& material)
+{
+	// Technical limitation of the importer : we expect only one texture per type.
+	// We also expect the texture filename to be relative to the base path.
+	// For an OBJ for example, it means we expect the .obj and .mtl files to be together.
+	static const auto SUPPORTED_TEXTURES_TYPES = {
+		aiTextureType_AMBIENT,
+		aiTextureType_DIFFUSE,
+		aiTextureType_SPECULAR,
+		aiTextureType_NORMALS,
+		aiTextureType_HEIGHT,
+		aiTextureType_EMISSIVE,
+		aiTextureType_SHININESS,
+		aiTextureType_LIGHTMAP
+	};
+
+	VulkanTextureBuilder builder;
+
+	for (auto texType : SUPPORTED_TEXTURES_TYPES)
+	{
+		if (material.GetTextureCount(texType) > 0)
+		{
+			aiString texPath{};
+			material.GetTexture(texType, 0, &texPath);
+			const FilePath textureFilePath = basePath / texPath.C_Str();
+
+			m_manager.LoadTextureFile(textureFilePath.string(), builder);
+		}
 	}
 }
 

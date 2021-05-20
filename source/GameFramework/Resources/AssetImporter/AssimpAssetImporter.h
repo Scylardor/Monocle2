@@ -1,17 +1,15 @@
 #pragma once
 
-#include "GameFramework/Resources/Resource/Resource.h"
-
-
+#include "Core/Resource/Resource.h"
 
 #include "Graphics/Vertex/VertexFormats.h"
-#include "Graphics/Vulkan/MaterialLibrary/VulkanMaterial.h"
-#include "Graphics/Vulkan/Mesh/VulkanMesh.h"
-
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
+#include <filesystem>
+
+struct aiMaterial;
 struct aiMesh;
 struct aiNode;
 
@@ -27,8 +25,14 @@ namespace moe
 			Vertices(std::move(verts)), Indices(std::move(indices))
 		{}
 
+		[[nodiscard]] bool	HasVertices() const
+		{
+			return !Vertices.empty();
+		}
+
 		std::vector<BasicVertex>	Vertices;
 		std::vector<uint32_t>		Indices;
+		std::string					Name{};
 	};
 
 	struct ModelMesh
@@ -36,6 +40,13 @@ namespace moe
 		MeshResource		Mesh;
 		MaterialResource	Material;
 	};
+
+
+	struct ModelMaterial
+	{
+
+	};
+
 
 	struct ModelNode
 	{
@@ -112,13 +123,13 @@ namespace moe
 		}
 
 
-		const std::vector<MeshData>&	GetMeshes() const
+		[[nodiscard]] const std::vector<MeshData>&	GetMeshes() const
 		{
 			return m_meshes;
 		}
 
 
-		const std::vector<MeshResource>& GetMeshResources() const
+		[[nodiscard]] const std::vector<MeshResource>& GetMeshResources() const
 		{
 			return meshResources;
 		}
@@ -131,26 +142,11 @@ namespace moe
 	};
 
 
-	class AssetImporter
+
+	class AssimpImporter : public IAssetImporter
 	{
+		using FilePath = std::filesystem::path;
 
-	public:
-
-		enum class NormalsGeneration
-		{
-			Enabled,
-			SmoothEnabled,
-			Disabled
-		};
-
-		bool				Triangulate{ true };
-		bool				FlipUVs{ false };
-		NormalsGeneration	GenerateNormals{NormalsGeneration::Disabled};
-	};
-
-
-	class AssimpImporter : public AssetImporter
-	{
 	public:
 
 		AssimpImporter(class ResourceManager& manager) :
@@ -165,16 +161,18 @@ namespace moe
 
 		void	ImportModelResources(Model& importedModel);
 
-
-		static void						ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex = ModelNode::ROOT_INDEX);
-
-		static std::vector<BasicVertex>	ComputeMeshVertices(const aiMesh& mesh);
-		static std::vector<uint32_t>	ComputeMeshIndices(const aiMesh& mesh);
+		void	ExtractMaterialTextures(const FilePath& basePath, const aiMaterial& material);
 
 
-		aiPostProcessSteps	ComputeAssimpPostProcessFlags() const;
+		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, const FilePath& modelPath, uint32_t parentIndex = ModelNode::ROOT_INDEX);
 
-		ResourceManager& m_manager;
+
+		[[nodiscard]] static std::vector<BasicVertex>	ComputeMeshVertices(const aiMesh& mesh);
+		[[nodiscard]] static std::vector<uint32_t>		ComputeMeshIndices(const aiMesh& mesh);
+
+		[[nodiscard]] aiPostProcessSteps				ComputeAssimpPostProcessFlags() const;
+
+		ResourceManager&	m_manager;
 
 		Assimp::Importer	m_importer{};
 

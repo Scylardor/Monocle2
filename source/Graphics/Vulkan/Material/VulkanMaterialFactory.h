@@ -30,9 +30,10 @@ namespace moe
 			return m_materials.IncrementReference(id);
 		}
 
-		void		DecrementReference(RegistryID id) override
+		bool		DecrementReference(RegistryID id) override
 		{
 			m_materials.DecrementReference(id);
+			return false;
 		}
 
 

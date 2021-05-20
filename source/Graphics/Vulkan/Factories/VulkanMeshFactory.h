@@ -28,7 +28,7 @@ namespace moe
 		{}
 
 		RegistryID	IncrementReference(RegistryID id) override;
-		void		DecrementReference(RegistryID id) override;
+		bool		DecrementReference(RegistryID id) override;
 
 
 		RegistryID	CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,

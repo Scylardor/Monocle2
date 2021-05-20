@@ -151,14 +151,11 @@ namespace moe
 			{
 				availableID = m_firstFreeBlock;
 
-				//m_freeIndices.pop();
 				auto* block = (PoolBlock<ValueType>*) & m_objects[availableID];
 
 				m_firstFreeBlock = block->NextFreeBlock;
 
 				new (&m_objects[availableID]) ValueType(std::forward<Ts>(args)...);
-
-				return availableID;
 			}
 			else
 			{

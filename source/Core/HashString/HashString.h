@@ -80,6 +80,13 @@ namespace moe
 		{
 			m_id = HashPolicy::Hash(m_str);
 		}
+
+
+		explicit HashStringT(std::string_view str) :
+			m_str(str)
+		{
+			m_id = HashPolicy::Hash(m_str);
+		}
 		#endif
 
 		explicit HashStringT(HashID id) :

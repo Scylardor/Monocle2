@@ -2,8 +2,6 @@
 
 
 #include "Core/Resource/ResourceFactory.h"
-#include "GameFramework/Resources/Resource/TextureResource.h"
-#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
 #include "Graphics/Texture/TextureDescription.h"
 
 #include "Graphics/Texture/TextureHandle.h"
@@ -13,6 +11,7 @@
 
 namespace moe
 {
+	class ResourceManager;
 
 	class Monocle_GameFramework_API ITextureFactory2  : public IResourceFactory
 	{

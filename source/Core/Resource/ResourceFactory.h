@@ -13,7 +13,7 @@ namespace moe
 
 		virtual RegistryID	IncrementReference(RegistryID id) = 0;
 
-		virtual void		DecrementReference(RegistryID id) = 0;
+		virtual bool		DecrementReference(RegistryID id) = 0;
 
 
 

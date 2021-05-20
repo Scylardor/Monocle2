@@ -13,7 +13,6 @@ set(Monocle_GameFramework_SOURCES
 ./Resources/Factories/Texture/OpenGL/GLTextureFactory.h
 ./Resources/Factories/Texture/TextureFactory.h
 ./Resources/Resource/GLTextureResource.h
-./Resources/Resource/Resource.h
 ./Resources/Resource/TextureResource.h
 ./Resources/ResourceManager/ResourceManager.cpp
 ./Resources/ResourceManager/ResourceManager.h
