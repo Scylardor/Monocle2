@@ -5,63 +5,28 @@
 
 #include <vector>
 #include <array>
-
+#include <variant>
 
 namespace moe
 {
 
 	static uint32_t const INVALID_BLOCK = UINT32_MAX;
 
-	template <typename TObj>
-	union PoolBlock
+	struct PoolBlock
 	{
-		PoolBlock()
-		{
-		}
-
-		// Necessary to declare it or it won't compile.
-		// (cannot make it "= default" since compiler doesn't know what to do)
-		// Trust the object pool to call the destructor of used objects.
-		~PoolBlock()
+		PoolBlock() = default;
+		PoolBlock(uint32_t nfb) :
+			NextFreeBlock(nfb)
 		{}
 
-
-		PoolBlock(const PoolBlock& other) noexcept
-		{
-			NextFreeBlock = other.NextFreeBlock;
-			std::memcpy(&Object, &other.Object, sizeof(TObj));
-		}
-
-		PoolBlock& operator=(const PoolBlock& other) noexcept
-		{
-			if (&other != this)
-			{
-				NextFreeBlock = other.NextFreeBlock;
-				std::memcpy(&Object, &other.Object, sizeof(TObj));
-			}
-			return *this;
-		}
-
-		PoolBlock(PoolBlock&& other) noexcept
-		{
-			NextFreeBlock = other.NextFreeBlock;
-			Object = std::move(other.Object);
-		}
-
-		PoolBlock& operator=(PoolBlock&& other) noexcept
-		{
-			if (&other != this)
-			{
-				NextFreeBlock = other.NextFreeBlock;
-				Object = std::move(other.Object);
-			}
-			return *this;
-		}
-
-
 		uint32_t	NextFreeBlock{ INVALID_BLOCK };
-		TObj		Object;
+
 	};
+
+
+	template <typename TObj>
+	using PoolBlockVar = std::variant<PoolBlock, TObj>;
+
 
 
 	template <typename ValueType, class Top>
@@ -125,15 +90,7 @@ namespace moe
 
 	public:
 
-		~AObjectPool()
-		{
-			// Call the destructor for each item still in use in the container.
-			for (auto usedIdx : m_usedIndexes)
-			{
-				auto* object = (ValueType*)&m_objects[usedIdx];
-				object->~ValueType();
-			}
-		}
+		~AObjectPool() = default;
 
 
 	protected:
@@ -151,18 +108,18 @@ namespace moe
 			{
 				availableID = m_firstFreeBlock;
 
-				auto* block = (PoolBlock<ValueType>*) & m_objects[availableID];
+				// chain to the next free block
+				PoolBlock& block = std::get<PoolBlock>(m_objects[availableID]);
 
-				m_firstFreeBlock = block->NextFreeBlock;
+				m_firstFreeBlock = block.NextFreeBlock;
 
-				new (&m_objects[availableID]) ValueType(std::forward<Ts>(args)...);
+				m_objects[availableID].template emplace<ValueType>(std::forward<Ts>(args)...);
 			}
 			else
 			{
 				availableID = this->Underlying().Append(std::forward<Ts>(args)...);
 			}
 
-			m_usedIndexes.push_back(availableID);
 
 			return availableID;
 		}
@@ -170,31 +127,21 @@ namespace moe
 
 		void	FreeImpl(uint32_t freedObjectID)
 		{
-			// Call the destructor
-			auto* object = (ValueType*)&m_objects[freedObjectID];
-			object->~ValueType();
-
 			// chain to the next free block
-			auto* block = (PoolBlock<ValueType>*)object;
-			block->NextFreeBlock = m_firstFreeBlock;
+			m_objects[freedObjectID].template emplace<PoolBlock>(m_firstFreeBlock);
 			m_firstFreeBlock = freedObjectID;
 
-			// Remove this block from the used index list
-			auto indexIt = std::find(m_usedIndexes.begin(), m_usedIndexes.end(), freedObjectID);
-			MOE_ASSERT(indexIt != m_usedIndexes.end());
-			std::iter_swap(indexIt, m_usedIndexes.end() - 1);
-			m_usedIndexes.pop_back();
 		}
 
 
 		[[nodiscard]] const ValueType& GetImpl(uint32_t id) const
 		{
-			return m_objects[id].Object;
+			return std::get<ValueType>(m_objects[id]);
 		}
 
 		[[nodiscard]] ValueType& MutImpl(uint32_t id)
 		{
-			return m_objects[id].Object;
+			return std::get<ValueType>(m_objects[id]);
 		}
 
 		[[nodiscard]] auto	SizeImpl() const
@@ -218,12 +165,11 @@ namespace moe
 		Container				m_objects;
 		uint32_t				m_firstFreeBlock{ INVALID_BLOCK };
 
-		std::vector<uint32_t>	m_usedIndexes{}; // mostly used to clear
 	};
 
 
 	template<typename TObj>
-	class DynamicObjectPool : public AObjectPool<std::vector<PoolBlock<TObj>>, TObj, DynamicObjectPool<TObj >>
+	class DynamicObjectPool : public AObjectPool<std::vector<PoolBlockVar<TObj>>, TObj, DynamicObjectPool<TObj>>
 	{
 		using Base = ObjectPool<TObj, DynamicObjectPool<TObj>>;
 		friend Base;
@@ -233,15 +179,7 @@ namespace moe
 		DynamicObjectPool(uint32_t reserved = 0)
 		{
 			m_objects.reserve(reserved);
-			m_usedIndexes.reserve(reserved);
 		}
-
-
-		//DynamicObjectPool(DynamicObjectPool&& other)
-		//{
-		//	m_objects = std::move(other);
-		//	m_used
-		//}
 
 
 		void	SetMaximumAllowedGrowth(uint32_t maxGrowth)
@@ -257,9 +195,7 @@ namespace moe
 				return INVALID_BLOCK;
 
 			auto id = (uint32_t)m_objects.size();
-			auto& block = m_objects.emplace_back();
-			auto* object = (TObj*)&block;
-			new (object) TObj(std::forward<Ts>(args)...);
+			m_objects.emplace_back(std::in_place_type<TObj>, std::forward<Ts>(args)...);
 
 			return id;
 		}
@@ -273,7 +209,7 @@ namespace moe
 
 
 	template<typename TObj, size_t TSize>
-	class FixedObjectPool : public AObjectPool<std::array<PoolBlock<TObj>, TSize>, TObj, FixedObjectPool<TObj, TSize>>
+	class FixedObjectPool : public AObjectPool<std::array<PoolBlockVar<TObj>, TSize>, TObj, FixedObjectPool<TObj, TSize>>
 	{
 		using Base = ObjectPool<TObj, FixedObjectPool<TObj, TSize>>;
 		friend Base;
@@ -281,11 +217,8 @@ namespace moe
 	public:
 		FixedObjectPool()
 		{
-			auto* block = (PoolBlock<TObj>*) & m_objects[0];
-			block->NextFreeBlock = INVALID_BLOCK;
+			std::get<PoolBlock>(m_objects[0]) = INVALID_BLOCK;
 			m_firstFreeBlock = 0;
-
-			m_usedIndexes.reserve(TSize);
 		}
 
 	protected:
@@ -305,31 +238,29 @@ namespace moe
 			availableID = m_firstFreeBlock;
 
 			// chain to the next free block
-			auto* block = (PoolBlock<TObj>*) & m_objects[availableID];
+			PoolBlock& block = std::get<PoolBlock>(m_objects[availableID]);
 
-			if (block->NextFreeBlock == INVALID_BLOCK) // we were the last : bump the free block number
+			if (block.NextFreeBlock == INVALID_BLOCK) // we were the last : bump the free block number
 			{
 				if (m_highestFreeBlock + 1 < TSize) // Do we need to push up the high water mark ?
 				{
 					m_highestFreeBlock++;
 					m_firstFreeBlock = m_highestFreeBlock;
-					block = (PoolBlock<TObj>*) & m_objects[m_firstFreeBlock];
-					block->NextFreeBlock = INVALID_BLOCK;
+					// Don't forget to set the new high water mark's next to INVALID
+					PoolBlock& highestBlock = std::get<PoolBlock>(m_objects[m_firstFreeBlock]);
+					highestBlock.NextFreeBlock = INVALID_BLOCK;
 				}
-				else
+				else // this is the last available block : any subsequent Emplace without a Free will crash!
 				{
 					m_firstFreeBlock = INVALID_BLOCK;
 				}
 			}
-			else
+			else // this block is going to be used: mark the next free block as the new first one
 			{
-				m_firstFreeBlock = block->NextFreeBlock;
+				m_firstFreeBlock = block.NextFreeBlock;
 			}
 
-			new (&m_objects[availableID]) TObj(std::forward<Ts>(args)...);
-
-			// Don't forget to add this to used indexes
-			m_usedIndexes.push_back(availableID);
+			m_objects[availableID].emplace<TObj>(std::forward<Ts>(args)...);
 
 			return availableID;
 		}

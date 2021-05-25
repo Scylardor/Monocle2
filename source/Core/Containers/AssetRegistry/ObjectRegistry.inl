@@ -33,6 +33,6 @@ namespace moe
 		if (isToBeDeleted)
 			DeleteEntry(id);
 
-		return refCount;
+		return isToBeDeleted;
 	}
 }
