@@ -81,14 +81,20 @@ namespace moe
 			4, 5, 6, 6, 7, 4
 		};
 
-		m_planes =  m_manager.LoadMesh(
+		m_planes =  m_manager.LoadMesh("Planes",
 			sizeof(moe::BasicVertex), vertices.size(), vertices.data(),
 			indices.size(), indices.data(), vk::IndexType::eUint16);
 		m_scene.Emplace(m_planes.ID(), 0);
 
 		VulkanTextureBuilder builder;
-		m_statue = m_manager.LoadTextureFile("Sandbox/assets/textures/texture.jpg", builder);
+		m_statue = m_manager.Load<TextureResource>(HashString("StatueTex"), m_renderer.GraphicsDevice().TextureFactory, "Sandbox/assets/textures/texture.jpg", builder);
+		Ref<TextureResource> dup = m_manager.Load<TextureResource>(HashString("StatueTex"), m_renderer.GraphicsDevice().TextureFactory, "Sandbox/assets/textures/texture.jpg", builder);
 
+		{
+			VulkanTextureBuilder builder3;
+			Ref<TextureResource> block = m_manager.Load<TextureResource>(HashString("Blockc"), m_renderer.GraphicsDevice().TextureFactory, "Sandbox/assets/textures/block.png", builder3);
+			(void)block;
+		}
 
 		Vec3 cameraPos{0.1f,0.5f, 10.f};
 		m_view = Mat4::LookAtMatrix(cameraPos, Vec3::ZeroVector(), Vec3{ 0, 0, 1 });
@@ -108,7 +114,7 @@ namespace moe
 		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 
 
-		AssimpImporter& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>();
+		AssimpImporter& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>(m_renderer.GraphicsDevice());
 		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 
 		model = Mat4::Identity();

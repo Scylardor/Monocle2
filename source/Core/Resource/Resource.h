@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Core/Resource/ResourceFactory.h"
+#include "Core/Resource/BaseResource.h"
 #include "Core/HashString/HashString.h"
-#include "Graphics/Vulkan/Texture/VulkanTextureFactory.h"
 #include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
 #include "Graphics/Vulkan/Material/VulkanMaterialFactory.h"
 
@@ -21,7 +21,7 @@ namespace moe
 
 
 	template <typename TFactory, typename TRsc>
-	class IResource
+	class IResource : public IBaseResource
 	{
 	public:
 
@@ -62,6 +62,11 @@ namespace moe
 
 			m_myFactory = other.m_myFactory;
 			other.m_myFactory = nullptr;
+
+			m_myManager = other.m_myManager;
+			other.m_myManager = nullptr;
+
+			m_rscHash = std::move(other.m_rscHash);
 
 			m_ID = other.m_ID;
 			other.m_ID = INVALID_ENTRY;
@@ -128,31 +133,37 @@ namespace moe
 	};
 
 
-	class TextureResource : public IResource<ITextureFactory, VulkanTexture>
+
+	class TextureResource : public IBaseResource
 	{
 	public:
 
 		TextureResource() = default;
 
-		TextureResource(IResourceManager& manager, HashString&& rscHash, ITextureFactory& factory, RegistryID id) :
-			IResource(manager,  std::move(rscHash), factory, id)
-		{}
+		~TextureResource() override = default;
+
+	};
 
 
-		[[nodiscard]] VulkanTexture* operator->()
-		{
-			auto* factory = static_cast<ITextureFactory*>(m_myFactory);
-			auto& tex = factory->MutateResource(m_ID);
-			return &tex;
-		}
+	class ShaderResource : public IBaseResource
+	{
+	public:
+
+		ShaderResource() = default;
+
+		~ShaderResource() override = default;
+
+	};
 
 
-		[[nodiscard]] const VulkanTexture* operator->() const
-		{
-			auto* factory = static_cast<ITextureFactory*>(m_myFactory);
-			auto& tex = factory->GetResource(m_ID);
-			return &tex;
-		}
+	class ShaderProgramResource : public IBaseResource
+	{
+	public:
+
+		ShaderProgramResource() = default;
+
+		~ShaderProgramResource() override = default;
+
 	};
 
 	class MaterialResource : public IResource<IMaterialFactory, VulkanMaterial>

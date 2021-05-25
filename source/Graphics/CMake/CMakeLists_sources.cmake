@@ -308,6 +308,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/RenderPass/VulkanRenderPassBuilder.h
 ./Vulkan/RenderScene/RenderScene.cpp
 ./Vulkan/RenderScene/RenderScene.h
+./Vulkan/Shader/VulkanShaderFactory.cpp
+./Vulkan/Shader/VulkanShaderFactory.h
 ./Vulkan/Shader/VulkanShaderProgram.cpp
 ./Vulkan/Shader/VulkanShaderProgram.h
 ./Vulkan/Surface/VulkanSurfaceProvider.h

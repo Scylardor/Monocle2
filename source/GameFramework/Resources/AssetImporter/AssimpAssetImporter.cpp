@@ -6,22 +6,34 @@
 
 #include <assimp/scene.h>
 
+#include "Graphics/Vulkan/Device/VulkanDevice.h"
 #include "Graphics/Vulkan/Texture/VulkanTexture.h"
+
+
+moe::ModelNode& moe::Model::NewNode(uint32_t parentIdx, uint32_t expectedChildrenCount, uint32_t numMeshes)
+{
+	auto& node = m_nodes.emplace_back(parentIdx, expectedChildrenCount);
+
+	if (parentIdx != ModelNode::ROOT_INDEX)
+		m_nodes[parentIdx].Children.emplace_back(m_nodes.size() - 1);
+
+	node.Meshes.reserve(numMeshes);
+	return node;
+}
 
 
 void moe::Model::ImportMeshResources(ResourceManager& manager)
 {
-	meshResources.reserve(MeshesCount());
+	m_meshResources.reserve(MeshesCount());
 
 	for (const auto& mesh : GetMeshes())
 	{
-		meshResources.emplace_back(
+		m_meshResources.emplace_back(
 			manager.LoadMesh(
 				mesh.Name,
 				sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
 				mesh.Indices.size(), mesh.Indices.data(), vk::IndexType::eUint32)
 		);
-
 	}
 }
 
@@ -42,11 +54,15 @@ moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 		return {};
 	}
 
+	FilePath modelPath(modelFilename);
 	// The model name is going to be the filename stripped of the extension
-	FilePath modelPath = FilePath(modelFilename).remove_filename().make_preferred();
+	const std::string modelName = modelPath.filename().replace_extension("").string();
 
 	// Expect the given number of meshes
-	Model importedModel{scene->mNumMeshes};
+	Model importedModel{ modelName, scene->mNumMeshes, scene->mNumMaterials};
+
+	// We will need the "base path" to go search for textures (mtl files use relative paths)
+	modelPath.remove_filename().make_preferred();
 
 	ProcessSceneNode(*scene->mRootNode, *scene, importedModel, modelPath);
 
@@ -73,6 +89,8 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 	ModelNode& myNode = importedModel.NewNode(parentIndex, node.mNumChildren, node.mNumMeshes);
 	const auto childrenParentIndex = (uint32_t) importedModel.NodeCount() - 1;
 
+	myNode.Meshes.assign(node.mMeshes, node.mMeshes + node.mNumMeshes);
+
 	for (auto iMesh = 0u; iMesh < node.mNumMeshes; ++iMesh)
 	{
 		aiMesh* mesh = scene.mMeshes[node.mMeshes[iMesh]];
@@ -90,12 +108,13 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 
 		thisMesh.Name = meshRef.mName.C_Str();
 
-		myNode.Meshes.assign(node.mMeshes, node.mMeshes + node.mNumMeshes);
+		thisMesh.Material = meshRef.mMaterialIndex;
 
 		MOE_ASSERT(scene.HasMaterials() && meshRef.mMaterialIndex < scene.mNumMaterials);
-		aiMaterial* meshMat = scene.mMaterials[meshRef.mMaterialIndex];
-		MOE_ASSERT(meshMat);
-		ExtractMaterialTextures(modelPath, *meshMat);
+		if (false == importedModel.IsMaterialInitialized(meshRef.mMaterialIndex))
+		{
+			ImportModelMaterial(scene, meshRef.mMaterialIndex, importedModel, modelPath);
+		}
 	}
 
 	// Do the same for all the children
@@ -106,35 +125,70 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 }
 
 
-void moe::AssimpImporter::ExtractMaterialTextures(const FilePath& basePath, const aiMaterial& material)
+void moe::AssimpImporter::ImportModelMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath)
 {
-	// Technical limitation of the importer : we expect only one texture per type.
-	// We also expect the texture filename to be relative to the base path.
-	// For an OBJ for example, it means we expect the .obj and .mtl files to be together.
-	static const auto SUPPORTED_TEXTURES_TYPES = {
-		aiTextureType_AMBIENT,
-		aiTextureType_DIFFUSE,
-		aiTextureType_SPECULAR,
-		aiTextureType_NORMALS,
-		aiTextureType_HEIGHT,
-		aiTextureType_EMISSIVE,
-		aiTextureType_SHININESS,
-		aiTextureType_LIGHTMAP
-	};
+	aiMaterial* assimpMat = scene.mMaterials[materialIndex];
+	MOE_ASSERT(assimpMat);
 
-	VulkanTextureBuilder builder;
+	ModelMaterial& modelMat = importedModel.MutMaterial(materialIndex);
+	MOE_ASSERT(modelMat.Initialized == false);
 
-	for (auto texType : SUPPORTED_TEXTURES_TYPES)
+	// First import the textures
 	{
-		if (material.GetTextureCount(texType) > 0)
-		{
-			aiString texPath{};
-			material.GetTexture(texType, 0, &texPath);
-			const FilePath textureFilePath = basePath / texPath.C_Str();
+		// Technical limitation of the importer : we expect only one texture per type.
+		// We also expect the texture filename to be relative to the base path.
+		// For an OBJ for example, it means we expect the .obj and .mtl files to be together.
+		static const auto SUPPORTED_TEXTURES_TYPES = {
+			aiTextureType_AMBIENT,		// For ambient / AO
+			aiTextureType_DIFFUSE,		// For diffuse / albedo
+			aiTextureType_SPECULAR,		// For specular / roughness
+			aiTextureType_NORMALS,		// For normal maps (this should be the preferred way)
+			aiTextureType_HEIGHT,		// For height / normal maps (depends on the case)
+			aiTextureType_EMISSIVE,		// Emissive map
+			aiTextureType_SHININESS,	// For specular exponent maps (Blinn-Phong) or metallic (PBR)
+			aiTextureType_LIGHTMAP,		// For lightmapping
+		};
 
-			m_manager.LoadTextureFile(textureFilePath.string(), builder);
+		VulkanTextureBuilder builder;
+
+		for (auto texType : SUPPORTED_TEXTURES_TYPES)
+		{
+			if (assimpMat->GetTextureCount(texType) > 0)
+			{
+				aiString texPath{};
+				assimpMat->GetTexture(texType, 0, &texPath);
+				const FilePath textureFilePath = basePath / texPath.C_Str();
+
+				std::string texPathStr = textureFilePath.string();
+				Ref<TextureResource> texRef = m_manager.Load<TextureResource>(HashString(texPathStr), m_gfxDevice.TextureFactory, texPathStr, builder);
+				modelMat.Textures.emplace_back(texType, std::move(texRef));
+			}
 		}
 	}
+
+	// Then the reflectivity parameters
+	static const auto SetVec4Parameter = [&](Vec4& matParam, auto... materialKey)
+	{
+		aiColor4D color{ 0.f };
+		aiGetMaterialColor(assimpMat, materialKey..., &color);
+		matParam = { color.r, color.g, color.b, color.a };
+	};
+
+	SetVec4Parameter(modelMat.ReflectivityParams.Ambient, AI_MATKEY_COLOR_AMBIENT);
+	SetVec4Parameter(modelMat.ReflectivityParams.Diffuse, AI_MATKEY_COLOR_DIFFUSE);
+	SetVec4Parameter(modelMat.ReflectivityParams.Specular, AI_MATKEY_COLOR_SPECULAR);
+	SetVec4Parameter(modelMat.ReflectivityParams.Emissive, AI_MATKEY_COLOR_EMISSIVE);
+
+	static const auto SetFloatParameter = [&](float& matParam, auto... materialKey)
+	{
+		float param;
+		aiGetMaterialFloat(assimpMat, materialKey..., &param);
+		matParam = param;
+	};
+	SetFloatParameter(modelMat.ReflectivityParams.SpecularExponent, AI_MATKEY_SHININESS);
+	SetFloatParameter(modelMat.ReflectivityParams.Opacity, AI_MATKEY_OPACITY);
+
+	modelMat.Initialized = true;
 }
 
 

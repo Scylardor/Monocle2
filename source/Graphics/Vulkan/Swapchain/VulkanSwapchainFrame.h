@@ -12,6 +12,23 @@ namespace moe
 	{
 		VulkanSwapchainImage(MyVkDevice& device, vk::Image swapchainImage, const VulkanTextureBuilder & swapchainTextureBuilder);
 
+		VulkanSwapchainImage(VulkanSwapchainImage&& other)
+		{
+			*this = std::move(other);
+		}
+
+		VulkanSwapchainImage& operator=(VulkanSwapchainImage&& other)
+		{
+			if (this != &other)
+			{
+				Texture = std::move(other.Texture);
+				InFlightFence = other.InFlightFence;
+			}
+
+			return *this;
+		}
+
+
 		void	AcquireFence(vk::Device device, vk::Fence newInFlightFence);
 
 		void	Free(MyVkDevice& device);
@@ -28,9 +45,11 @@ namespace moe
 
 		bool	WaitForSubmitFence(const MyVkDevice& device);
 
-		vk::UniqueSemaphore		PresentCompleteSemaphore{};
-		vk::UniqueSemaphore		RenderCompleteSemaphore{};
-		vk::UniqueFence			QueueSubmitFence{};
+		void	Free(const MyVkDevice& device);
+
+		vk::Semaphore		PresentCompleteSemaphore{};
+		vk::Semaphore		RenderCompleteSemaphore{};
+		vk::Fence			QueueSubmitFence{};
 
 	private:
 

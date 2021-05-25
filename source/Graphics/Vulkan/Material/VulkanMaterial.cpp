@@ -13,10 +13,21 @@ namespace moe
 		const vk::DescriptorPoolCreateInfo poolCreateInfo{
 			vk::DescriptorPoolCreateFlags(), maxSets, (uint32_t) poolSizes.size(), poolSizes.data() };
 
-		m_pool = device->createDescriptorPoolUnique(poolCreateInfo);
+		m_pool = device->createDescriptorPool(poolCreateInfo);
 
 	}
 
+
+	VulkanMaterial::~VulkanMaterial()
+	{
+		if (m_device)
+		{
+			for (auto& pool : m_pools.List)
+			{
+				(*m_device)->destroyDescriptorPool(pool.Handle()); // will cleanup the allocated descriptor sets.
+			}
+		}
+	}
 
 
 	void VulkanMaterial::BindPipeline(VulkanPipeline& pipeline)
@@ -26,13 +37,14 @@ namespace moe
 
 	VulkanMaterial& VulkanMaterial::Initialize(const MyVkDevice& device, VulkanPipeline& pipeline, uint32_t maxInstances)
 	{
+		m_device = &device;
+
 		BindPipeline(pipeline);
 
 		// Initialize our descriptor pools based on our shader program descriptor layouts.
 		CreateDescriptorSetPool(device, maxInstances);
 
 		AllocateDescriptorSets(device);
-
 
 		return *this;
 	}

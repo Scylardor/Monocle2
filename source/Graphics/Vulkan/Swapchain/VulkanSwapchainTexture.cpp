@@ -14,12 +14,17 @@ namespace moe
 	}
 
 
-	void VulkanSwapchainTexture::Free(MyVkDevice& device)
+	VulkanSwapchainTexture::~VulkanSwapchainTexture()
 	{
 		// we don't need to destroy the image and there is no sampler for swapchain images.
 		if (m_imageView)
-			device->destroyImageView(m_imageView);
+			(*m_device)->destroyImageView(m_imageView);
+
+		// set to nullptr so the vulkan texture won't try to free itself
+		m_device = nullptr;
 	}
+
+
 }
 
 

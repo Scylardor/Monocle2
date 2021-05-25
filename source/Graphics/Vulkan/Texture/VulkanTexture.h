@@ -1,6 +1,8 @@
 #pragma once
 #ifdef MOE_VULKAN
 
+#include "Core/Resource/Resource.h"
+
 #include "Graphics/Vulkan/VulkanMacros.h"
 #include "Graphics/Vulkan/Allocators/MemoryAllocator.h"
 
@@ -11,7 +13,7 @@ namespace moe
 	struct VulkanTextureBuilder;
 
 
-	class VulkanTexture
+	class VulkanTexture : public TextureResource
 	{
 	public:
 		// if this anisotropy value is set,
@@ -37,14 +39,13 @@ namespace moe
 
 		VulkanTexture(MyVkDevice& device, vk::Image img, vk::ImageView imgView, VulkanMemoryBlock&& memory, const VulkanTextureBuilder& builder);
 
-
-		~VulkanTexture() = default;
+		~VulkanTexture();
 
 		VulkanTexture(VulkanTexture const& other) = delete;
 		VulkanTexture& operator=(VulkanTexture const& rhs) = delete;
 
-		VulkanTexture(VulkanTexture&& other);
-		VulkanTexture& operator=(VulkanTexture&& rhs);
+		VulkanTexture(VulkanTexture&& other) noexcept;
+		VulkanTexture& operator=(VulkanTexture&& rhs) noexcept;
 
 		[[nodiscard]] static VulkanTexture	Create2DTexture(MyVkDevice& device, VulkanTextureBuilder& builder);
 		[[nodiscard]] static VulkanTexture	Create3DTexture(MyVkDevice& device, VulkanTextureBuilder& builder);

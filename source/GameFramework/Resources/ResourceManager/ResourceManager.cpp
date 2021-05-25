@@ -13,13 +13,5 @@ namespace moe
 		return FindOrCreateResource<MeshResource>(meshID.data(), m_meshFactory, createRscFun);
 	}
 
-	TextureResource ResourceManager::LoadTextureFile(std::string_view filename, VulkanTextureBuilder& builder)
-	{
-		auto createRscFun = [&]()
-		{
-			return m_textureFactory->CreateTextureFromFile(filename, builder);
-		};
 
-		return FindOrCreateResource<TextureResource>(filename.data(), m_textureFactory, createRscFun);
-	}
 }

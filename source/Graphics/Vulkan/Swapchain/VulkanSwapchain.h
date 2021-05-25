@@ -21,6 +21,12 @@ namespace moe
 
 
 		VulkanSwapchain() = default;
+
+
+		VulkanSwapchain(VulkanSwapchain const& other) = delete;
+		VulkanSwapchain& operator=(VulkanSwapchain const& rhs) = delete;
+
+
 		~VulkanSwapchain();
 
 		bool		Initialize(vk::Instance instance, class MyVkDevice& compatibleDevice, IVulkanSurfaceProvider& surfaceProvider, vk::SurfaceKHR presentSurface, vk::SampleCountFlags numSamples = VulkanTexture::MAX_SAMPLES);
@@ -138,17 +144,17 @@ namespace moe
 
 		const vk::Semaphore*	GetCurrentFramePresentCompleteSemaphore() const
 		{
-			return &m_swapChainFrames[m_currentFrameIdx].PresentCompleteSemaphore.get();
+			return &m_swapChainFrames[m_currentFrameIdx].PresentCompleteSemaphore;
 		}
 
 		const vk::Semaphore* GetCurrentFrameRenderCompleteSemaphore() const
 		{
-			return &m_swapChainFrames[m_currentFrameIdx].RenderCompleteSemaphore.get();
+			return &m_swapChainFrames[m_currentFrameIdx].RenderCompleteSemaphore;
 		}
 
 		vk::Fence GetCurrentFrameQueueSubmitFence() const
 		{
-			return m_swapChainFrames[m_currentFrameIdx].QueueSubmitFence.get();
+			return m_swapChainFrames[m_currentFrameIdx].QueueSubmitFence;
 		}
 
 		vk::SwapchainCreateInfoKHR			GenerateSwapchainCreateInfo(const MyVkDevice& compatibleDevice, vk::SurfaceKHR surface);

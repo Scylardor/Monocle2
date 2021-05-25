@@ -13,12 +13,9 @@ namespace moe
 
 	VulkanSwapchain::~VulkanSwapchain()
 	{
-		m_depthStencilAttachment.Free(Device());
-		m_multisampleAttachment.Free(Device());
-
-		for (auto& swapchainImage : m_imagesInFlight)
+		for (auto& frame : m_swapChainFrames)
 		{
-			swapchainImage.Free(Device());
+			frame.Free(Device());
 		}
 	}
 

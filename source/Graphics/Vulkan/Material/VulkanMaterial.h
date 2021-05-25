@@ -47,11 +47,14 @@ namespace moe
 	};
 
 
-	struct ReflectanceParameters
+	struct MaterialReflectivityParameters
 	{
 		Vec4	Ambient{ 0.f };
 		Vec4	Diffuse{ 0.f }; // AKA "albedo"
 		Vec4	Specular{ 0.f };
+		Vec4	Emissive{ 0.f };
+		float	Opacity = 0.f; // ranges between 0 and 1
+		float	SpecularExponent = 0.f; // ranges between 0 and 1000
 	};
 
 
@@ -66,15 +69,16 @@ namespace moe
 
 		vk::DescriptorPool	Handle() const
 		{
-			return m_pool.get();
+			return m_pool;
 		}
 
 	private:
 
-		vk::UniqueDescriptorPool	m_pool{};
+		vk::DescriptorPool	m_pool{};
 	};
 
-	class VulkanDescriptorPoolList
+
+	struct VulkanDescriptorPoolList
 	{
 	public:
 
@@ -102,6 +106,9 @@ namespace moe
 			uint32_t	Binding{};
 			size_t		Size{};
 		};
+
+
+		~VulkanMaterial();
 
 		void	BindPipeline(VulkanPipeline& pipeline);
 
@@ -135,6 +142,7 @@ namespace moe
 		uint32_t	FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const;
 
 
+		const MyVkDevice*						m_device{ nullptr };
 		VulkanPipeline*							m_pipeline{ nullptr };
 		VulkanDescriptorPoolList				m_pools{};
 		std::vector<vk::DescriptorSet>			m_sets;

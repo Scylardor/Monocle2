@@ -59,8 +59,6 @@ namespace moe
 	void VulkanRenderer::Shutdown()
 	{
 		(*m_graphicsDevice)->waitIdle();
-
-		m_materialTexture.Free(GraphicsDevice());
 	}
 
 	ShaderProgramHandle VulkanRenderer::CreateShaderProgramFromSource(const ShaderProgramDescriptor& shaProDesc)

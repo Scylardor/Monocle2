@@ -36,12 +36,12 @@ namespace moe
 
 	VulkanSwapchainFrame::VulkanSwapchainFrame(const MyVkDevice& device)
 	{
-		RenderCompleteSemaphore = device->createSemaphoreUnique(vk::SemaphoreCreateInfo{});
-		PresentCompleteSemaphore = device->createSemaphoreUnique(vk::SemaphoreCreateInfo{});
+		RenderCompleteSemaphore = device->createSemaphore(vk::SemaphoreCreateInfo{});
+		PresentCompleteSemaphore = device->createSemaphore(vk::SemaphoreCreateInfo{});
 
 		vk::FenceCreateInfo createInfo{};
 		createInfo.flags = vk::FenceCreateFlagBits::eSignaled; // Create the fence in 'signaled' state or waiting for it the first time will hang forever.
-		QueueSubmitFence = device->createFenceUnique(createInfo);
+		QueueSubmitFence = device->createFence(createInfo);
 	}
 
 
@@ -50,11 +50,19 @@ namespace moe
 		static const auto NO_TIMEOUT = UINT64_MAX;
 		static const auto waitAll = VK_TRUE;
 
-		vk::Fence* imageSubmitFence = &QueueSubmitFence.get();
+		vk::Fence* imageSubmitFence = &QueueSubmitFence;
 		MOE_VK_CHECK(device->waitForFences(1, imageSubmitFence, waitAll, NO_TIMEOUT));
 
 
 		return true;
+	}
+
+
+	void VulkanSwapchainFrame::Free(const MyVkDevice& device)
+	{
+		device->destroySemaphore(PresentCompleteSemaphore);
+		device->destroySemaphore(RenderCompleteSemaphore);
+		device->destroyFence(QueueSubmitFence);
 	}
 }
 

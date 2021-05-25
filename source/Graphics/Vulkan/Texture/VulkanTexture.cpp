@@ -14,7 +14,7 @@
 namespace moe
 {
 
-	VulkanTexture::VulkanTexture(VulkanTexture&& other)
+	VulkanTexture::VulkanTexture(VulkanTexture&& other) noexcept
 	{
 		*this = std::move(other);
 	}
@@ -78,6 +78,12 @@ namespace moe
 	}
 
 
+	VulkanTexture::~VulkanTexture()
+	{
+		if (m_device)
+			Free(*m_device);
+	}
+
 
 	VulkanTexture VulkanTexture::Create2DTexture(MyVkDevice& device, VulkanTextureBuilder& builder)
 	{
@@ -117,7 +123,7 @@ namespace moe
 		if (false == IsADepthFormat(builder.ImageCreateInfo.format))
 		{
 			// If user explicitly provided a depth format, trust them on that. Otherwise, use a reasonable default.
-			builder.ImageCreateInfo.format = vk::Format::eD32Sfloat;
+			builder.ImageCreateInfo.format = vk::Format::eD24UnormS8Uint;
 		}
 
 		builder.SetMipmapsCount(1); // no mipmaps for an attachment
@@ -540,7 +546,7 @@ namespace moe
 		return std::find(SUPPORTED_DEPTH_FORMATS.begin(), SUPPORTED_DEPTH_FORMATS.end(), format) != SUPPORTED_DEPTH_FORMATS.end();
 	}
 
-	VulkanTexture& VulkanTexture::operator=(VulkanTexture&& rhs)
+	VulkanTexture& VulkanTexture::operator=(VulkanTexture&& rhs) noexcept
 	{
 		if (&rhs == this)
 			return *this;

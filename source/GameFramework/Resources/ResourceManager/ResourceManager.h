@@ -1,20 +1,20 @@
 #pragma once
 
-#include <memory> // unique_ptr
-
 #include "Core/HashString/HashString.h"
 #include "GameFramework/Resources/AssetImporter/AssimpAssetImporter.h"
 #include "Core/Resource/ResourceFactory.h"
-#include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
+
+#include "ResourceRef.h"
+
+#include <memory> // unique_ptr
+
+#include <optional>
 
 
 namespace moe
 {
 	class ITextureFactory;
-
-
-
-
+	class IMeshFactory;
 
 	enum class ResourceType
 	{
@@ -89,8 +89,6 @@ namespace moe
 		                      size_t numIndices, const void* indexData, vk::IndexType indexType);
 
 
-		TextureResource LoadTextureFile(std::string_view filename, VulkanTextureBuilder& builder);
-
 
 		void SetMeshFactory(IMeshFactory& factory)
 		{
@@ -109,11 +107,75 @@ namespace moe
 			m_resourceIDs.erase(hash);
 		}
 
+
+
+		template <typename TResource, typename TFactory, typename... Args>
+		Ref<TResource> Load(HashString rscHandle, TFactory& factory, Args&&... args)
+		{
+			// if it already exists :
+			std::optional<Ref<TResource>> existingRef = FindResource<TResource>(rscHandle);
+			if (existingRef.has_value())
+			{
+				Ref<TResource>&& rsc = std::move(existingRef.value());
+				return rsc;
+			}
+
+			// if it needs to be created:
+			std::unique_ptr<TResource> newResource = factory(std::forward<Args>(args)...);
+			MOE_ASSERT(newResource != nullptr);
+			TResource* rsc = newResource.get(); // get the ptr before it gets moved
+			auto entryID = m_resourcesData.EmplaceEntry(std::move(newResource));
+
+			// Make sure the bookkeeping is uptodate
+			m_rscHandleToID.emplace(rscHandle, entryID);
+			m_rscIDToHandle.emplace(entryID, rscHandle);
+
+			return Ref(*this, *rsc, entryID);
+		}
+
+
+		uint32_t	IncrementReference(RegistryID rscID)
+		{
+			return m_resourcesData.IncrementReference(rscID);
+		}
+
+
+		void	DecrementReference(RegistryID rscID)
+		{
+			bool deleted = m_resourcesData.DecrementReference(rscID);
+			if (deleted)
+			{
+				// remove the hash string references too.
+				auto handleIt = m_rscIDToHandle.find(rscID);
+				MOE_ASSERT(handleIt != m_rscIDToHandle.end());
+				m_rscHandleToID.erase(handleIt->second);
+				m_rscIDToHandle.erase(handleIt);
+			}
+		}
+
+
 	protected:
 
 
 
 	private:
+
+		template <typename TRsc>
+		std::optional<Ref<TRsc>>	FindResource(const HashString& rscHandle)
+		{
+			auto idIt = m_rscHandleToID.find(rscHandle);
+			if (idIt != m_rscHandleToID.end())
+			{
+				const auto& rscPtr = m_resourcesData.GetEntry(idIt->second);
+				TRsc* rsc = static_cast<TRsc*>(rscPtr.get());
+				return Ref<TRsc>(*this, *rsc, idIt->second);
+			}
+
+			return {};
+		}
+
+
+
 
 		template <typename TFactory>
 		TFactory*	EditFactory(ResourceType factoryType)
@@ -137,6 +199,10 @@ namespace moe
 		std::unique_ptr<IAssetImporter>	m_assetImporter{nullptr};
 
 		std::unordered_map<HashString, RegistryID>	m_resourceIDs{};
+
+		std::unordered_map<HashString, RegistryID>		m_rscHandleToID{};
+		std::unordered_map<RegistryID, HashString>		m_rscIDToHandle{};
+		ObjectRegistry<std::unique_ptr<IBaseResource>>	m_resourcesData{};
 	};
 
 
@@ -165,4 +231,8 @@ namespace moe
 
 		return TRsc{ *this, std::move(HashedStr), *factory, rscID};
 	}
+
+
+
+
 }

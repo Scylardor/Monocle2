@@ -43,6 +43,7 @@ namespace moe
 
 		RenderScene	m_scene;
 
+		ResourceManager	m_manager;
 	};
 
 
@@ -62,9 +63,8 @@ namespace moe
 
 		MeshResource m_planes;
 
-		TextureResource m_statue;
 
-		ResourceManager	m_manager;
+		Ref<TextureResource> m_statue;
 	};
 }
 #endif

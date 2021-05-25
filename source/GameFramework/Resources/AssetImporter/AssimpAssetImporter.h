@@ -4,8 +4,11 @@
 
 #include "Graphics/Vertex/VertexFormats.h"
 
+#include "GameFramework/Resources/ResourceManager/ResourceRef.h"
+
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
+#include <assimp/material.h>
 
 #include <filesystem>
 
@@ -33,6 +36,7 @@ namespace moe
 		std::vector<BasicVertex>	Vertices;
 		std::vector<uint32_t>		Indices;
 		std::string					Name{};
+		uint32_t					Material{ 0 };
 	};
 
 	struct ModelMesh
@@ -42,9 +46,12 @@ namespace moe
 	};
 
 
+
 	struct ModelMaterial
 	{
-
+		bool															Initialized{ false };
+		std::vector<std::pair<aiTextureType, Ref<TextureResource>>>	Textures{};
+		MaterialReflectivityParameters									ReflectivityParams{};
 	};
 
 
@@ -81,21 +88,14 @@ namespace moe
 	{
 	public:
 
-		Model(uint32_t expectedMeshes = 0) :
-			m_meshes(expectedMeshes)
+		Model(std::string_view name = "", uint32_t expectedMeshes = 0, uint32_t expectedMaterials = 0) :
+			m_name(name),
+			m_meshes(expectedMeshes),
+			m_materials(expectedMaterials)
 		{
 		}
 
-		ModelNode&	NewNode(uint32_t parentIdx, uint32_t expectedChildrenCount, uint32_t numMeshes)
-		{
-			auto& node = m_nodes.emplace_back(parentIdx, expectedChildrenCount);
-
-			if (parentIdx != ModelNode::ROOT_INDEX)
-				m_nodes[parentIdx].Children.emplace_back(m_nodes.size()-1);
-
-			node.Meshes.reserve(numMeshes);
-			return node;
-		}
+		ModelNode& NewNode(uint32_t parentIdx, uint32_t expectedChildrenCount, uint32_t numMeshes);
 
 		void	ReserveNodes(uint32_t nbReserved)
 		{
@@ -122,6 +122,23 @@ namespace moe
 			return m_meshes.size();
 		}
 
+		[[nodiscard]] size_t	NumMaterials() const
+		{
+			return m_materials.size();
+		}
+
+		[[nodiscard]] bool	IsMaterialInitialized(uint32_t matIndex) const
+		{
+			MOE_ASSERT(matIndex < m_materials.size());
+			return m_materials[matIndex].Initialized;
+		}
+
+		[[nodiscard]] ModelMaterial&	MutMaterial(uint32_t matIndex)
+		{
+			MOE_ASSERT(matIndex < m_materials.size());
+			return m_materials[matIndex];
+		}
+
 
 		[[nodiscard]] const std::vector<MeshData>&	GetMeshes() const
 		{
@@ -131,14 +148,16 @@ namespace moe
 
 		[[nodiscard]] const std::vector<MeshResource>& GetMeshResources() const
 		{
-			return meshResources;
+			return m_meshResources;
 		}
 
 
 	private:
+		std::string					m_name{};
 		std::vector<ModelNode>		m_nodes;
 		std::vector<MeshData>		m_meshes;
-		std::vector<MeshResource>	meshResources;
+		std::vector<MeshResource>	m_meshResources;
+		std::vector<ModelMaterial>	m_materials;
 	};
 
 
@@ -149,8 +168,9 @@ namespace moe
 
 	public:
 
-		AssimpImporter(class ResourceManager& manager) :
-			m_manager(manager)
+		AssimpImporter(class ResourceManager& manager, MyVkDevice& device) :
+			m_manager(manager),
+			m_gfxDevice(device)
 		{}
 
 
@@ -161,7 +181,7 @@ namespace moe
 
 		void	ImportModelResources(Model& importedModel);
 
-		void	ExtractMaterialTextures(const FilePath& basePath, const aiMaterial& material);
+		void	ImportModelMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath);
 
 
 		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, const FilePath& modelPath, uint32_t parentIndex = ModelNode::ROOT_INDEX);
@@ -173,6 +193,7 @@ namespace moe
 		[[nodiscard]] aiPostProcessSteps				ComputeAssimpPostProcessFlags() const;
 
 		ResourceManager&	m_manager;
+		MyVkDevice&			m_gfxDevice;
 
 		Assimp::Importer	m_importer{};
 

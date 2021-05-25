@@ -28,7 +28,8 @@ namespace moe
 			m_device(&device)
 		{}
 
-		~VulkanTextureFactory();
+
+		~VulkanTextureFactory() override = default;
 
 
 		RegistryID	IncrementReference(RegistryID id) override;
@@ -38,23 +39,28 @@ namespace moe
 		RegistryID	CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder) override;
 
 
-		[[nodiscard]] VulkanTexture& MutateResource(RegistryID id) override
+		[[nodiscard]] VulkanTexture& MutateResource(RegistryID ) override
 		{
-			return m_textures.MutEntry(id);
+			return dummy;
 		}
 
 
-		[[nodiscard]] const VulkanTexture& GetResource(RegistryID id) const override
+		[[nodiscard]] const VulkanTexture& GetResource(RegistryID ) const override
 		{
-			return m_textures.GetEntry(id);
+			return dummy;
 		}
 
+
+		[[nodiscard]] std::unique_ptr<VulkanTexture> operator()(std::string_view filename, VulkanTextureBuilder& textureBuilder) const
+		{
+			return std::make_unique<VulkanTexture>(*m_device, filename, textureBuilder);
+		}
 
 	private:
 
 		MyVkDevice* m_device{ nullptr };
 
-		ObjectRegistry<VulkanTexture>	m_textures;
+		inline static VulkanTexture dummy; // TODO : remove, waiting for TextureFactory to be refactored.
 	};
 }
 
