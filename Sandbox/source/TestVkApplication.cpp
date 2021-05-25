@@ -86,14 +86,24 @@ namespace moe
 			indices.size(), indices.data(), vk::IndexType::eUint16);
 		m_scene.Emplace(m_planes.ID(), 0);
 
-		VulkanTextureBuilder builder;
-		m_statue = m_manager.Load<TextureResource>(HashString("StatueTex"), m_renderer.GraphicsDevice().TextureFactory, "Sandbox/assets/textures/texture.jpg", builder);
-		Ref<TextureResource> dup = m_manager.Load<TextureResource>(HashString("StatueTex"), m_renderer.GraphicsDevice().TextureFactory, "Sandbox/assets/textures/texture.jpg", builder);
+		auto textureFileLoaderFn = [this](std::string_view filename)
+		{
+			return [&]()
+			{
+				VulkanTextureBuilder builder;
+				return m_renderer.GraphicsDevice().TextureFactory.CreateTextureFromFile(filename, builder);
+			};
+		};
+
+		m_statue = m_manager.Load<TextureResource>(HashString("StatueTex"), textureFileLoaderFn("Sandbox/assets/textures/texture.jpg"));
+		Ref<TextureResource> dup = m_manager.Load<TextureResource>(HashString("StatueTex"), textureFileLoaderFn("Sandbox/assets/textures/texture.jpg"));
 
 		{
-			VulkanTextureBuilder builder3;
-			Ref<TextureResource> block = m_manager.Load<TextureResource>(HashString("Blockc"), m_renderer.GraphicsDevice().TextureFactory, "Sandbox/assets/textures/block.png", builder3);
+			Ref<TextureResource> block = m_manager.Load<TextureResource>(HashString("Blockc"), textureFileLoaderFn("Sandbox/assets/textures/block.png"));
 			(void)block;
+
+			auto testshader = m_manager.Load<ShaderResource>(HashString("defaultVert"),
+				[&]() { return m_renderer.GraphicsDevice().ShaderFactory.LoadShaderBytecode("source/Graphics/Resources/shaders/Vulkan/vert.spv", vk::ShaderStageFlagBits::eVertex); });
 		}
 
 		Vec3 cameraPos{0.1f,0.5f, 10.f};

@@ -3,19 +3,18 @@
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 
-#include "Graphics/Vulkan/Framebuffer/FramebufferFactory.h"
-#include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
-
 #include "Graphics/Vulkan/Allocators/BufferAllocator.h"
 
 #include "Graphics/Vulkan/Allocators/MemoryAllocator.h"
 
-#include "Graphics/Vulkan/Texture/VulkanTextureFactory.h"
-
-#include "Core/Delegates/event.h"
-
 #include "Graphics/Vulkan/Allocators/TextureAllocator.h"
 
+#include "Graphics/Vulkan/Framebuffer/FramebufferFactory.h"
+#include "Graphics/Vulkan/Factories/VulkanMeshFactory.h"
+#include "Graphics/Vulkan/Texture/VulkanTextureFactory.h"
+#include "Graphics/Vulkan/Shader/VulkanShaderFactory.h"
+
+#include "Core/Delegates/event.h"
 #include <optional>
 
 namespace moe
@@ -201,7 +200,7 @@ namespace moe
 		FramebufferFactory		FramebufferFactory;
 		VulkanMeshFactory		MeshFactory;
 		VulkanTextureFactory	TextureFactory;
-
+		VulkanShaderFactory		ShaderFactory;
 	};
 
 

@@ -22,7 +22,8 @@ namespace moe
 		m_textureAllocator(*this),
 		m_memAllocator(*this),
 		MeshFactory(*this),
-		TextureFactory(*this)
+		TextureFactory(*this),
+		ShaderFactory(*this)
 	{
 	}
 

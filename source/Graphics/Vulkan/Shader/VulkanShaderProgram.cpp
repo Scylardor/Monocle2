@@ -9,8 +9,49 @@
 
 namespace moe
 {
-	bool VulkanShaderProgram::Compile(const MyVkDevice& device)
+	VulkanShaderProgram::VulkanShaderProgram(VulkanShaderProgram&& other) noexcept
 	{
+		*this = std::move(other);
+	}
+
+
+	VulkanShaderProgram& VulkanShaderProgram::operator=(VulkanShaderProgram&& rhs) noexcept
+	{
+		if (this != &rhs)
+		{
+			m_device = rhs.m_device;
+			rhs.m_device = nullptr;
+
+			MOE_MOVE(m_vertexBindings);
+			MOE_MOVE(m_vertexAttributes);
+			MOE_MOVE(m_descriptorSetLayoutInfos);
+			MOE_MOVE(m_descriptorSetLayouts);
+			MOE_MOVE(m_shaders);
+			MOE_MOVE(m_pushConstants);
+			MOE_MOVE(m_compiled);
+		}
+
+		return *this;
+	}
+
+
+	VulkanShaderProgram::~VulkanShaderProgram()
+	{
+		if (m_device)
+		{
+			for (vk::DescriptorSetLayout layout : m_descriptorSetLayouts)
+				(*m_device)->destroyDescriptorSetLayout(layout);
+
+			for (auto& shader : m_shaders)
+				(*m_device)->destroyShaderModule(shader.Module);
+		}
+	}
+
+
+	bool VulkanShaderProgram::Compile(MyVkDevice& device)
+	{
+		m_device = &device;
+
 		m_descriptorSetLayouts.reserve(m_descriptorSetLayoutInfos.size());
 
 		for (auto& layoutInfo : m_descriptorSetLayoutInfos)
@@ -18,10 +59,8 @@ namespace moe
 			layoutInfo.LayoutInfo.bindingCount = (uint32_t) layoutInfo.LayoutBindings.size();
 			layoutInfo.LayoutInfo.pBindings = layoutInfo.LayoutBindings.data();
 
-			layoutInfo.LayoutHandle = device->createDescriptorSetLayoutUnique(layoutInfo.LayoutInfo);
-			MOE_ASSERT(layoutInfo.LayoutHandle);
-
-			m_descriptorSetLayouts.push_back(layoutInfo.LayoutHandle.get());
+			m_descriptorSetLayouts.push_back(device->createDescriptorSetLayout(layoutInfo.LayoutInfo));
+			MOE_ASSERT(m_descriptorSetLayouts.back());
 		}
 
 		m_compiled = true;
@@ -36,7 +75,7 @@ namespace moe
 		createInfos.reserve(m_shaders.size());
 		for (const auto& shader : m_shaders)
 		{
-			createInfos.emplace_back(vk::PipelineShaderStageCreateFlags{}, shader.Stage, shader.Module.get(), shader.EntryPoint.c_str());
+			createInfos.emplace_back(vk::PipelineShaderStageCreateFlags{}, shader.Stage, shader.Module, shader.EntryPoint.c_str());
 		}
 
 		return createInfos;
@@ -73,17 +112,17 @@ namespace moe
 		createInfo.codeSize = shaderCode->size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode->data());
 
-		vk::UniqueShaderModule shaderModule = device->createShaderModuleUnique(createInfo);
+		vk::ShaderModule shaderModule = device->createShaderModule(createInfo);
 		MOE_ASSERT(shaderModule);
 
 		// add the new shader or replace the existing one.
 		if (replaceExisting)
 		{
-			*existingIt = VulkanShader{ std::move(shaderModule), stage, entryPoint };
+			*existingIt = VulkanShader{ shaderModule, stage, entryPoint };
 		}
 		else
 		{
-			m_shaders.emplace_back(std::move(shaderModule), stage, entryPoint);
+			m_shaders.emplace_back(shaderModule, stage, entryPoint);
 		}
 	}
 

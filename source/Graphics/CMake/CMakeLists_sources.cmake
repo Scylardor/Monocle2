@@ -280,8 +280,6 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Device/VulkanDeviceList.h
 ./Vulkan/Factories/VulkanMeshFactory.cpp
 ./Vulkan/Factories/VulkanMeshFactory.h
-./Vulkan/Factories/VulkanShaderFactory.cpp
-./Vulkan/Factories/VulkanShaderFactory.h
 ./Vulkan/Factories/VulkanTextureFactory.cpp
 ./Vulkan/Factories/VulkanTextureFactory.h
 ./Vulkan/Framebuffer/FramebufferFactory.cpp
@@ -310,6 +308,7 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/RenderScene/RenderScene.h
 ./Vulkan/Shader/VulkanShaderFactory.cpp
 ./Vulkan/Shader/VulkanShaderFactory.h
+./Vulkan/Shader/VulkanShaderModule.h
 ./Vulkan/Shader/VulkanShaderProgram.cpp
 ./Vulkan/Shader/VulkanShaderProgram.h
 ./Vulkan/Surface/VulkanSurfaceProvider.h

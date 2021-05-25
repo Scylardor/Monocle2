@@ -69,7 +69,22 @@ namespace moe
 
 		TRsc* operator->()
 		{
-			return &m_resource;
+			return m_resource;
+		}
+
+		const TRsc* operator->() const
+		{
+			return m_resource;
+		}
+
+		TRsc& operator*()
+		{
+			return *m_resource;
+		}
+
+		const TRsc& operator*() const
+		{
+			return *m_resource;
 		}
 
 

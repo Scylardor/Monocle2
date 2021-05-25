@@ -23,7 +23,7 @@ namespace moe
 	class VulkanShaderResource : public ShaderResource
 	{
 
-		
+
 	};
 
 
@@ -49,7 +49,7 @@ namespace moe
 		~VulkanShaderFactory() override = default;
 
 
-		[[nodiscard]] std::unique_ptr<ShaderResource>	LoadShaderBytecode(std::string_view filename, vk::ShaderStageFlagBits shaderStage) override;
+		[[nodiscard]] std::unique_ptr<ShaderResource>	LoadShaderBytecode(std::string_view bytecodeFile, vk::ShaderStageFlagBits shaderStage) override;
 
 		RegistryID	IncrementReference(RegistryID id) override;
 		bool		DecrementReference(RegistryID id) override;
@@ -58,10 +58,14 @@ namespace moe
 
 	private:
 
+		MyVkDevice&	Device()
+		{
+			MOE_ASSERT(m_device);
+			return *m_device;
+		}
+
 		MyVkDevice* m_device{ nullptr };
 
-		ObjectRegistry<vk::ShaderModule>	m_shaders;
-		ObjectRegistry<VulkanShaderProgram>	m_programs;
 
 	};
 }

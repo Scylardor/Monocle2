@@ -10,7 +10,7 @@
 
 namespace moe
 {
-	std::optional<std::string> ReadFile(const std::string_view fileName, bool binary)
+	std::optional<std::string> ReadFile(const std::string_view& fileName, bool binary)
 	{
 		// std::ios_base::in inputFile always set for ifstream
 		const std::ios_base::openmode mode = (binary ? std::ios::binary : std::ios::in);

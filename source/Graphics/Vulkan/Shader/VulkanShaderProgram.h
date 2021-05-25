@@ -10,14 +10,13 @@ namespace moe
 	class VulkanShaderProgram;
 	class MyVkDevice;
 
-	// TODO : I'd like to get rid of the vk::UniqueShaderModule so I can directly store PipelineShaderStageCreateInfo's and get rid of GenerateShaderStageCreateInfo()!
 	struct VulkanShader
 	{
-		VulkanShader(vk::UniqueShaderModule module, vk::ShaderStageFlagBits stage, std::string_view entryPoint) :
-			Module(std::move(module)), Stage(stage), EntryPoint(entryPoint)
+		VulkanShader(vk::ShaderModule module, vk::ShaderStageFlagBits stage, std::string_view entryPoint) :
+			Module(module), Stage(stage), EntryPoint(entryPoint)
 		{}
 
-		vk::UniqueShaderModule	Module{};
+		vk::ShaderModule		Module{};
 		vk::ShaderStageFlagBits	Stage{};
 		std::string				EntryPoint{ "main" };
 	};
@@ -25,9 +24,9 @@ namespace moe
 
 	struct DescriptorSetLayoutInfo
 	{
+
 		vk::DescriptorSetLayoutCreateInfo			LayoutInfo{};
 		std::vector<vk::DescriptorSetLayoutBinding>	LayoutBindings{};
-		vk::UniqueDescriptorSetLayout				LayoutHandle{}; // TODO: Get rid of the unique handles so that there's no duplication with m_descriptorSetLayouts.
 	};
 
 
@@ -39,7 +38,14 @@ namespace moe
 		using DescriptorLayoutInfos = std::vector<DescriptorSetLayoutInfo>;
 		using PushConstantRanges = std::vector<vk::PushConstantRange>;
 
-		bool	Compile(const MyVkDevice& device);
+		VulkanShaderProgram() = default;
+
+		VulkanShaderProgram(VulkanShaderProgram&& other) noexcept;
+		VulkanShaderProgram& operator=(VulkanShaderProgram&& other) noexcept;
+
+		~VulkanShaderProgram();
+
+		bool	Compile(MyVkDevice& device);
 
 
 		[[nodiscard]] std::vector< vk::PipelineShaderStageCreateInfo >	GenerateShaderStageCreateInfo();
@@ -71,17 +77,19 @@ namespace moe
 
 	private:
 
+		MyVkDevice*											m_device{nullptr};
+
 		std::vector<vk::VertexInputBindingDescription>		m_vertexBindings{};
 		std::vector<vk::VertexInputAttributeDescription>	m_vertexAttributes{};
 
 		DescriptorLayoutInfos								m_descriptorSetLayoutInfos{};
 		DescriptorSetLayouts								m_descriptorSetLayouts{};
 
-		std::vector<VulkanShader>	m_shaders{};
+		std::vector<VulkanShader>							m_shaders{};
 
-		PushConstantRanges			m_pushConstants{};
+		PushConstantRanges									m_pushConstants{};
 
-		bool	m_compiled = false;
+		bool												m_compiled = false;
 	};
 }
 

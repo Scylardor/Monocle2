@@ -133,6 +133,29 @@ namespace moe
 			return Ref(*this, *rsc, entryID);
 		}
 
+		template <typename TResource, typename FactoryFunc>
+		Ref<TResource> Load(HashString rscHandle, FactoryFunc&& factoryFn)
+		{
+			// if it already exists :
+			std::optional<Ref<TResource>> existingRef = FindResource<TResource>(rscHandle);
+			if (existingRef.has_value())
+			{
+				Ref<TResource>&& rsc = std::move(existingRef.value());
+				return rsc;
+			}
+
+			// if it needs to be created:
+			std::unique_ptr<TResource> newResource = factoryFn();
+			MOE_ASSERT(newResource != nullptr);
+			TResource* rsc = newResource.get(); // get the ptr before it gets moved
+			auto entryID = m_resourcesData.EmplaceEntry(std::move(newResource));
+
+			// Make sure the bookkeeping is uptodate
+			m_rscHandleToID.emplace(rscHandle, entryID);
+			m_rscIDToHandle.emplace(entryID, rscHandle);
+
+			return Ref(*this, *rsc, entryID);
+		}
 
 		uint32_t	IncrementReference(RegistryID rscID)
 		{

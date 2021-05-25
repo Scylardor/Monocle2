@@ -11,7 +11,7 @@ namespace moe
 	{
 	public:
 
-		virtual RegistryID	CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder) = 0;
+		virtual std::unique_ptr<TextureResource>	CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder) = 0;
 
 
 		[[nodiscard]] virtual VulkanTexture&		MutateResource(RegistryID id) = 0;
@@ -36,7 +36,7 @@ namespace moe
 		bool		DecrementReference(RegistryID id) override;
 
 
-		RegistryID	CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder) override;
+		[[nodiscard]] std::unique_ptr<TextureResource>	CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder) override;
 
 
 		[[nodiscard]] VulkanTexture& MutateResource(RegistryID ) override

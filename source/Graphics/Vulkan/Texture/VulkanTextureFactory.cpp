@@ -26,10 +26,9 @@ namespace moe
 		return false;
 	}
 
-	RegistryID VulkanTextureFactory::CreateTextureFromFile(std::string_view /*filename*/, VulkanTextureBuilder& /*textureBuilder*/)
+	std::unique_ptr<TextureResource> VulkanTextureFactory::CreateTextureFromFile(std::string_view filename, VulkanTextureBuilder& textureBuilder)
 	{
-		//auto ID = m_textures.EmplaceEntry(*m_device, filename, textureBuilder);
-		return {};
+		return std::make_unique<VulkanTexture>(*m_device, filename, textureBuilder);
 	}
 }
 
