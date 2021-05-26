@@ -22,7 +22,7 @@
 
 #include "Core/Misc/moeFile.h"
 #include "GameFramework/Resources/Factories/Texture/OpenGL/GL4TextureFactory.h"
-#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
+#include "Core/Resource/ResourceManager.h"
 
 
 #include "Graphics/SceneGraph/SceneGraph.h"

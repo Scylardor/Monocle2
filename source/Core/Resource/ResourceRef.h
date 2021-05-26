@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Core/Resource/BaseResource.h"
+#include "Core/Resource/Resource.h"
+
+#include "Core/Containers/AssetRegistry/ObjectRegistry.h"
 
 namespace moe
 {
@@ -31,7 +33,6 @@ namespace moe
 				m_manager = other.m_manager;
 				m_resource = other.m_resource;
 				m_rscID = other.m_rscID;
-				other.m_rscID = INVALID_ENTRY;
 
 				Increment();
 			}
@@ -50,6 +51,8 @@ namespace moe
 		{
 			if (this != &other)
 			{
+				Decrement();
+
 				m_manager = other.m_manager;
 				m_resource = other.m_resource;
 				m_rscID = other.m_rscID;
@@ -64,6 +67,32 @@ namespace moe
 		~Ref()
 		{
 			Decrement();
+		}
+
+
+		RegistryID	ID() const
+		{
+			return m_rscID;
+		}
+
+
+		void	Reset()
+		{
+			*this = Ref();
+		}
+
+		template <typename Derived>
+		Derived& As()
+		{
+			static_assert(std::is_base_of_v<TRsc, Derived>);
+			return *static_cast<Derived*>(m_resource);
+		}
+
+		template <typename Derived>
+		const Derived& As() const
+		{
+			static_assert(std::is_base_of_v<TRsc, Derived>);
+			return *static_cast<const Derived*>(m_resource);
 		}
 
 
@@ -87,21 +116,10 @@ namespace moe
 			return *m_resource;
 		}
 
-
-		template <typename Derived>
-		TRsc& As()
+		operator bool() const
 		{
-			static_assert(std::is_base_of_v<TRsc, Derived>);
-			return *static_cast<Derived*>(m_resource);
+			return (m_rscID != INVALID_ENTRY);
 		}
-
-		template <typename Derived>
-		const TRsc& As() const
-		{
-			static_assert(std::is_base_of_v<TRsc, Derived>);
-			return *static_cast<const Derived*>(m_resource);
-		}
-
 
 
 	protected:
@@ -109,7 +127,7 @@ namespace moe
 		friend ResourceManager;
 
 
-		Ref(ResourceManager& mgr, TRsc& rsc, RegistryID id) :
+		Ref(IResourceManager& mgr, TRsc& rsc, RegistryID id) :
 			m_manager(&mgr),
 			m_resource(&rsc),
 			m_rscID(id)
@@ -140,8 +158,9 @@ namespace moe
 
 
 	private:
-
-		ResourceManager*	m_manager{ nullptr };
+		// TODO : Maybe couple ResourceRef and ResourceManager together
+		// so that we don't have to rely on this IResourceManager virtual abstraction
+		IResourceManager*	m_manager{ nullptr };
 		TRsc*				m_resource{ nullptr };
 		RegistryID			m_rscID{ INVALID_ENTRY };
 	};

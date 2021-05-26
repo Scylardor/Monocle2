@@ -2,15 +2,17 @@
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
+#include "Core/Resource/Resource.h"
 
 namespace moe
 {
-	class VulkanMesh
+	class VulkanMesh : public MeshResource
 	{
 	public:
 
 		VulkanMesh() = default;
 
+		~VulkanMesh();
 
 		explicit VulkanMesh(MyVkDevice& device, size_t vertexSize, size_t numVertices, const void* vertexData,
 			size_t numIndices, const void* indexData, vk::IndexType indexType);
@@ -23,6 +25,10 @@ namespace moe
 
 	private:
 
+		MOE_VK_DEVICE_GETTER()
+
+
+		MyVkDevice*		m_device{ nullptr };
 		VulkanBuffer	m_vertexBuffer{};
 		uint32_t		m_nbVertices{ 0 };
 

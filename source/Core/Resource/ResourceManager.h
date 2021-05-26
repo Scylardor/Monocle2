@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Core/HashString/HashString.h"
-#include "GameFramework/Resources/AssetImporter/AssimpAssetImporter.h"
-#include "Core/Resource/ResourceFactory.h"
+#include "Core/Resource/Resource.h"
 
 #include "ResourceRef.h"
 
@@ -39,7 +38,7 @@ namespace moe
 	public:
 		ResourceManager()
 		{
-			m_factories.resize((size_t) ResourceType::_MAX_);
+			m_factories.resize((size_t)ResourceType::_MAX_);
 		}
 
 
@@ -76,7 +75,7 @@ namespace moe
 
 
 		template <typename TImporter, typename... Ts>
-		TImporter&	EmplaceAssetImporter(Ts&&... args)
+		TImporter& EmplaceAssetImporter(Ts&&... args)
 		{
 			static_assert(std::is_base_of_v<IAssetImporter, TImporter>, "Only supports derived classes of IAssetImporter.");
 			m_assetImporter = std::make_unique<TImporter>(*this, std::forward<Ts>(args)...);
@@ -84,9 +83,6 @@ namespace moe
 			return static_cast<TImporter&>(*m_assetImporter.get());
 		}
 
-
-		MeshResource LoadMesh(std::string_view meshID, size_t vertexSize, size_t numVertices, const void* vertexData,
-		                      size_t numIndices, const void* indexData, vk::IndexType indexType);
 
 
 
@@ -107,6 +103,7 @@ namespace moe
 			m_resourceIDs.erase(hash);
 		}
 
+		void	ShutdownAndFreeAllResources();
 
 
 		template <typename TResource, typename TFactory, typename... Args>
@@ -133,8 +130,15 @@ namespace moe
 			return Ref(*this, *rsc, entryID);
 		}
 
+
+		enum class Persistent
+		{
+			No,
+			Yes
+		};
+
 		template <typename TResource, typename FactoryFunc>
-		Ref<TResource> Load(HashString rscHandle, FactoryFunc&& factoryFn)
+		Ref<TResource> Load(HashString rscHandle, FactoryFunc&& factoryFn, Persistent isPersistent = Persistent::No)
 		{
 			// if it already exists :
 			std::optional<Ref<TResource>> existingRef = FindResource<TResource>(rscHandle);
@@ -148,8 +152,9 @@ namespace moe
 			std::unique_ptr<TResource> newResource = factoryFn();
 			MOE_ASSERT(newResource != nullptr);
 			TResource* rsc = newResource.get(); // get the ptr before it gets moved
-			auto entryID = m_resourcesData.EmplaceEntry(std::move(newResource));
-
+			auto entryID = isPersistent == Persistent::No ?
+				m_resourcesData.EmplaceEntry(std::move(newResource)) :
+				m_resourcesData.EmplacePersistentEntry(std::move(newResource));
 			// Make sure the bookkeeping is uptodate
 			m_rscHandleToID.emplace(rscHandle, entryID);
 			m_rscIDToHandle.emplace(entryID, rscHandle);
@@ -157,13 +162,31 @@ namespace moe
 			return Ref(*this, *rsc, entryID);
 		}
 
-		uint32_t	IncrementReference(RegistryID rscID)
+
+		template <typename TRsc>
+		[[nodiscard]] const TRsc&	GetResourceAs(RegistryID rscID) const
+		{
+			const auto& rscPtr = m_resourcesData.GetEntry(rscID);
+			MOE_ASSERT(rscPtr);
+			return static_cast<const TRsc&>(*rscPtr.get());
+		}
+
+		template <typename TRsc>
+		[[nodiscard]] TRsc& MutResourceAs(RegistryID rscID)
+		{
+			auto& rscPtr = m_resourcesData.MutEntry(rscID);
+			MOE_ASSERT(rscPtr);
+			return static_cast<TRsc&>(*rscPtr.get());
+		}
+
+
+		uint32_t	IncrementReference(RegistryID rscID) override
 		{
 			return m_resourcesData.IncrementReference(rscID);
 		}
 
 
-		void	DecrementReference(RegistryID rscID)
+		void	DecrementReference(RegistryID rscID) override
 		{
 			bool deleted = m_resourcesData.DecrementReference(rscID);
 			if (deleted)
@@ -176,6 +199,16 @@ namespace moe
 			}
 		}
 
+
+		template <typename TRsc>
+		Ref<TRsc>	FindExisting(const HashString& rscHandle)
+		{
+			// Resource MUST be existing, otherwise the program crashes.
+			auto rscOpt = FindResource<TRsc>(rscHandle);
+			MOE_ASSERT(rscOpt.has_value());
+
+			return std::move(*rscOpt);
+		}
 
 	protected:
 
@@ -226,6 +259,8 @@ namespace moe
 		std::unordered_map<HashString, RegistryID>		m_rscHandleToID{};
 		std::unordered_map<RegistryID, HashString>		m_rscIDToHandle{};
 		ObjectRegistry<std::unique_ptr<IBaseResource>>	m_resourcesData{};
+
+		bool	m_shutdown{ false }; // The manager has shut down and won't service any more resource requests.
 	};
 
 

@@ -7,10 +7,11 @@ namespace moe
 	{
 	public:
 
+		IBaseResource() = default;
+
+
 		virtual ~IBaseResource()
 		{}
-
-
 
 
 	};

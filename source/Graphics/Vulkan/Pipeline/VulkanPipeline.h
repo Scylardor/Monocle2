@@ -8,7 +8,7 @@ namespace moe
 {
 	class VulkanSwapchain;
 
-	class VulkanPipeline
+	class VulkanPipeline : public ShaderPipelineResource
 	{
 	public:
 

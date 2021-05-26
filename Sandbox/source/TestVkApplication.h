@@ -6,7 +6,8 @@
 
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
 
-#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
+#include "Core/Resource/ResourceManager.h"
+#include "GameFramework/Resources/AssetImporter/AssimpAssetImporter.h"
 
 
 #include <chrono>
@@ -41,7 +42,7 @@ namespace moe
 		float		m_deltaTime{ 0.f };
 
 
-		RenderScene	m_scene;
+		RenderScene		m_scene;
 
 		ResourceManager	m_manager;
 	};
@@ -61,10 +62,11 @@ namespace moe
 
 		moe::Model m_backpack;
 
-		MeshResource m_planes;
+		Ref<MeshResource> m_planes;
 
 
 		Ref<TextureResource> m_statue;
+
 	};
 }
 #endif

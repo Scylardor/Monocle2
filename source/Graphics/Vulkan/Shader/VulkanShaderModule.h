@@ -3,11 +3,11 @@
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 #include "Core/Resource/Resource.h"
-#include "Graphics/Vulkan/Device/VulkanDevice.h"
-
 
 namespace moe
 {
+	class MyVkDevice;
+
 	class VulkanShaderModule : public ShaderResource
 	{
 	public:
@@ -18,10 +18,18 @@ namespace moe
 			m_pipelineStageInfo(vk::PipelineShaderStageCreateFlags{}, stageFlags, module, m_entryPoint.data())
 		{}
 
-		~VulkanShaderModule()
+		~VulkanShaderModule();
+
+
+		vk::ShaderModule	Module() const
 		{
-			if (m_device && m_pipelineStageInfo.module)
-				(*m_device)->destroyShaderModule(m_pipelineStageInfo.module);
+			return m_pipelineStageInfo.module;
+		}
+
+
+		const vk::PipelineShaderStageCreateInfo&	GetCreateInfo() const
+		{
+			return m_pipelineStageInfo;
 		}
 
 	private:

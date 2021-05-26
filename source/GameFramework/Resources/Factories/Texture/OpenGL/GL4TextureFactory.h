@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameFramework/Resources/Factories/Texture/TextureFactory.h"
-#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
+#include "Core/Resource/ResourceManager.h"
 
 #include "Core/Containers/SparseArray/SparseArray.h"
 

@@ -1,8 +1,9 @@
 
 #ifdef MOE_VULKAN
 
-#include "Core/Misc/moeFile.h"
 #include "VulkanRenderer.h"
+
+#include "Core/Resource/ResourceManager.h"
 #include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
 
 #include "Graphics/Vulkan/Shader/VulkanShaderProgram.h"
@@ -209,7 +210,6 @@ namespace moe
 		ok = m_frameGraph.CreateMainRenderPass(*m_graphicsDevice, m_swapchain);
 		MOE_ASSERT(ok);
 
-		CreateMainMaterial();
 
 		CreateCommandPools();
 
@@ -225,8 +225,19 @@ namespace moe
 
 		VulkanShaderProgram program;
 
-		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/vert.spv", vk::ShaderStageFlagBits::eVertex);
-		program.AddShaderFile(*m_graphicsDevice, "source/Graphics/Resources/shaders/Vulkan/frag.spv", vk::ShaderStageFlagBits::eFragment);
+		const auto shaderBytecodeLoaderFn = [this](std::string_view filename, vk::ShaderStageFlagBits shaderStage)
+		{
+			return [this, filename, shaderStage]()
+			{
+				return GraphicsDevice().ShaderFactory.LoadShaderBytecode(filename, shaderStage);
+			};
+		};
+		auto vertShader = m_resourceManager->Load<ShaderResource>(HashString("vert.spv"), shaderBytecodeLoaderFn("source/Graphics/Resources/shaders/Vulkan/vert.spv", vk::ShaderStageFlagBits::eVertex));
+		auto fragShader = m_resourceManager->Load<ShaderResource>(HashString("frag.spv"), shaderBytecodeLoaderFn("source/Graphics/Resources/shaders/Vulkan/frag.spv", vk::ShaderStageFlagBits::eFragment));
+
+
+		program.AddShader(std::move(vertShader));
+		program.AddShader(std::move(fragShader));
 		program.AddPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4)); // object mvp
 		program.AddVertexBinding(vk::VertexInputRate::eVertex)
 			.AddVertexAttribute(0, offsetof(BasicVertex, Position), sizeof(BasicVertex::Position), vk::Format::eR32G32B32Sfloat)
@@ -237,7 +248,12 @@ namespace moe
 				.AddNewDescriptorBinding(0, 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment)
 			.Compile(*m_graphicsDevice);
 
-		m_pipeline.SetShaderProgram(std::move(program))
+		auto pipelineRef = m_resourceManager->Load<ShaderPipelineResource>(HashString("DefaultPipeline"), [&]()
+			{
+				return std::make_unique<VulkanPipeline>();
+			});
+
+		pipelineRef.As<VulkanPipeline>().SetShaderProgram(std::move(program))
 			.SetDepthFeatures(true, true)
 			.SetDepthParameters(vk::CompareOp::eLess)
 			.SetTopology(vk::PrimitiveTopology::eTriangleList, VK_FALSE)
@@ -250,7 +266,7 @@ namespace moe
 			.SetRenderPass(m_frameGraph.MainRenderPass(), 0)
 			.Build(*m_graphicsDevice);
 
-		m_material.Initialize(*m_graphicsDevice, m_pipeline)
+		m_material.Initialize(*m_graphicsDevice, std::move(pipelineRef))
 			.BindTexture(0, 1, m_materialTexture)
 			.UpdateDescriptorSets(*m_graphicsDevice);
 	}
@@ -301,8 +317,10 @@ namespace moe
 
 		rp.Begin(renderPassCommandBuffer, m_swapchain.GetImageInFlightIndex());
 
-		renderPassCommandBuffer.setViewport(0, (uint32_t)m_pipeline.Viewports().size(), m_pipeline.Viewports().data());
-		renderPassCommandBuffer.setScissor(0, (uint32_t)m_pipeline.Scissors().size(), m_pipeline.Scissors().data());
+		const VulkanPipeline& pipeline = m_material.GetPipeline();
+
+		renderPassCommandBuffer.setViewport(0, (uint32_t)pipeline.Viewports().size(), pipeline.Viewports().data());
+		renderPassCommandBuffer.setScissor(0, (uint32_t)pipeline.Scissors().size(), pipeline.Scissors().data());
 
 		uint32_t lastMatID = ~0u;
 
@@ -315,9 +333,11 @@ namespace moe
 				lastMatID = matID;
 			}
 
-			drawable.BindTransform(m_pipeline, renderPassCommandBuffer);
-			const VulkanMesh& drawable2 = m_graphicsDevice->MeshFactory.GetResource(drawable.GetMeshID());
-			drawable2.Draw(renderPassCommandBuffer);
+			drawable.BindTransform(pipeline, renderPassCommandBuffer);
+
+			const auto& drawableMesh = m_resourceManager->GetResourceAs< VulkanMesh >(drawable.GetMeshID());
+
+			drawableMesh.Draw(renderPassCommandBuffer);
 		}
 
 		rp.End(renderPassCommandBuffer);

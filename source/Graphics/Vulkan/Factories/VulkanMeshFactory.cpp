@@ -30,9 +30,16 @@ namespace moe
 
 
 	RegistryID VulkanMeshFactory::CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-	                                         size_t numIndices, const void* indexData, vk::IndexType indexType)
+	                                         size_t numIndices, const void* indexData, VertexIndexType indexType)
 	{
-		auto newMeshID = m_meshes.EmplaceEntry(*m_device, vertexSize, numVertices, vertexData, numIndices, indexData, indexType);
+		auto newMeshID = m_meshes.EmplaceEntry(*m_device, vertexSize, numVertices, vertexData, numIndices, indexData, (vk::IndexType) indexType);
 		return newMeshID;
+	}
+
+
+	std::unique_ptr<MeshResource> VulkanMeshFactory::NewMesh(size_t vertexSize, size_t numVertices,
+		const void* vertexData, size_t numIndices, const void* indexData, VertexIndexType indexType)
+	{
+		return std::make_unique<VulkanMesh>(*m_device, vertexSize, numVertices, vertexData, numIndices, indexData, (vk::IndexType) indexType);
 	}
 }

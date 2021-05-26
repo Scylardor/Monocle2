@@ -1,10 +1,14 @@
 #pragma once
 #ifdef MOE_VULKAN
 
+#include "Core/Resource/Resource.h"
+#include "Core/Resource/ResourceRef.h"
+
 #include "Graphics/Vulkan/VulkanMacros.h"
 #include "Core/Containers/ObjectPool/ObjectPool.h"
 #include "Math/Vec4.h"
 #include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
+#include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
 namespace moe
 {
@@ -110,10 +114,8 @@ namespace moe
 
 		~VulkanMaterial();
 
-		void	BindPipeline(VulkanPipeline& pipeline);
 
-
-		VulkanMaterial& Initialize(const MyVkDevice& device, VulkanPipeline& pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
+		VulkanMaterial& Initialize(const MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
 
 		VulkanMaterial& BindTexture(uint32_t set, uint32_t binding, const VulkanTexture& tex);
 
@@ -131,6 +133,11 @@ namespace moe
 
 		void	Bind(vk::CommandBuffer recordingBuffer) const;
 
+		[[nodiscard]] const VulkanPipeline& GetPipeline() const
+		{
+			return m_pipeline.As<VulkanPipeline>();
+		}
+
 	protected:
 
 	private:
@@ -143,7 +150,7 @@ namespace moe
 
 
 		const MyVkDevice*						m_device{ nullptr };
-		VulkanPipeline*							m_pipeline{ nullptr };
+		Ref<ShaderPipelineResource>				m_pipeline{};
 		VulkanDescriptorPoolList				m_pools{};
 		std::vector<vk::DescriptorSet>			m_sets;
 		std::vector<vk::WriteDescriptorSet>		m_writeSets{};

@@ -5,11 +5,18 @@
 
 namespace moe
 {
+	VulkanMesh::~VulkanMesh()
+	{
+		Free(Device());
+	}
 
 
 	VulkanMesh::VulkanMesh(MyVkDevice& device, size_t vertexSize, size_t numVertices, const void* vertexData,
 	                       size_t numIndices, const void* indexData, vk::IndexType indexType) :
-		m_indexType(indexType), m_nbVertices((uint32_t) numVertices), m_nbIndices((uint32_t) numIndices)
+		m_device(&device),
+		m_indexType(indexType),
+		m_nbVertices((uint32_t) numVertices),
+		m_nbIndices((uint32_t) numIndices)
 	{
 		MOE_ASSERT(numVertices < UINT32_MAX && numIndices < UINT32_MAX); // assert if there was an overflow !
 

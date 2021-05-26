@@ -71,6 +71,9 @@ set(Monocle_Core_SOURCES
 ./Resource/BaseResource.h
 ./Resource/Resource.h
 ./Resource/ResourceFactory.h
+./Resource/ResourceManager.cpp
+./Resource/ResourceManager.h
+./Resource/ResourceRef.h
 ./StringFormat/moeStringFormat.h
 ./StringFormat/Private/moeStringFormat.internal.hpp
 	)

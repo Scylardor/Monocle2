@@ -2,12 +2,13 @@
 
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
 
-
-#include "GameFramework/Resources/Resource/Resource.h"
 #include "Graphics/Vertex/VertexFormats.h"
+
 
 #include <chrono>
 
+
+#include <vector>
 namespace moe
 {
 
@@ -18,6 +19,10 @@ namespace moe
 	{
 		m_appClockStart = m_clock.now();
 		m_frameClockStart = m_appClockStart;
+
+		m_renderer.AttachResourceManager(m_manager);
+
+		m_renderer.CreateMainMaterial();
 	}
 
 	void TestVkApplication::Run()
@@ -81,9 +86,16 @@ namespace moe
 			4, 5, 6, 6, 7, 4
 		};
 
-		m_planes =  m_manager.LoadMesh("Planes",
-			sizeof(moe::BasicVertex), vertices.size(), vertices.data(),
-			indices.size(), indices.data(), vk::IndexType::eUint16);
+
+
+		m_planes = m_manager.Load<MeshResource>(HashString("Planes"),
+			[&]()
+			{
+				return m_renderer.GraphicsDevice().MeshFactory.NewMesh(sizeof(moe::BasicVertex), vertices.size(), vertices.data(),
+					indices.size(), indices.data(), VertexIndexType::eUint16);
+			});
+
+
 		m_scene.Emplace(m_planes.ID(), 0);
 
 		auto textureFileLoaderFn = [this](std::string_view filename)
@@ -124,17 +136,16 @@ namespace moe
 		m_scene.MutObject(0).MutateMVP() = m_projection * m_view * model;
 
 
-		AssimpImporter& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>(m_renderer.GraphicsDevice());
+		auto& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>(m_renderer.GraphicsDevice());
 		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 
 		model = Mat4::Identity();
-		for (const MeshResource& rsc : m_backpack.GetMeshResources())
+		for (const auto& meshRef : m_backpack.GetMeshResources())
 		{
-			auto drawID = m_scene.Emplace(rsc.ID(), 0);
+			auto drawID = m_scene.Emplace(meshRef.ID(), 0);
 
 			m_scene.MutObject(drawID).MutateMVP() = m_projection * m_view * model;
 		}
-
 	}
 
 	void BasicVkApp::Update()

@@ -30,16 +30,11 @@ namespace moe
 	}
 
 
-	void VulkanMaterial::BindPipeline(VulkanPipeline& pipeline)
-	{
-		m_pipeline = &pipeline;
-	}
-
-	VulkanMaterial& VulkanMaterial::Initialize(const MyVkDevice& device, VulkanPipeline& pipeline, uint32_t maxInstances)
+	VulkanMaterial& VulkanMaterial::Initialize(const MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances)
 	{
 		m_device = &device;
 
-		BindPipeline(pipeline);
+		m_pipeline = std::move(pipeline);
 
 		// Initialize our descriptor pools based on our shader program descriptor layouts.
 		CreateDescriptorSetPool(device, maxInstances);
@@ -52,7 +47,7 @@ namespace moe
 
 	VulkanMaterial& VulkanMaterial::BindTexture(uint32_t set, uint32_t binding, const VulkanTexture& tex)
 	{
-		auto bindingIndex = FindBindingDescriptorSetWriteIndex(set, binding);
+		const auto bindingIndex = FindBindingDescriptorSetWriteIndex(set, binding);
 		MOE_ASSERT(m_writeSets.size() > bindingIndex);
 
 		vk::WriteDescriptorSet& writeSet = m_writeSets[bindingIndex];
@@ -116,8 +111,9 @@ namespace moe
 
 	void VulkanMaterial::Bind(vk::CommandBuffer recordingBuffer) const
 	{
-		recordingBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_pipeline->PipelineHandle());
-		recordingBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipeline->PipelineLayout(),
+		const auto& vkPipeline = m_pipeline.As<VulkanPipeline>();
+		recordingBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, vkPipeline.PipelineHandle());
+		recordingBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, vkPipeline.PipelineLayout(),
 			0, (uint32_t) m_sets.size(), m_sets.data(), 0, nullptr);
 	}
 
@@ -131,7 +127,8 @@ namespace moe
 		static const uint32_t numberOfDescriptorTypes = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT + 1;
 		std::array<uint32_t, numberOfDescriptorTypes> descriptorCounts{ };
 
-		for (const auto& layoutInfo : m_pipeline->GetDescriptorSetLayoutInfos())
+		auto& vkPipeline = m_pipeline.As<VulkanPipeline>();
+		for (const auto& layoutInfo : vkPipeline.GetDescriptorSetLayoutInfos())
 		{
 			for (const auto& binding : layoutInfo.LayoutBindings)
 			{
@@ -159,7 +156,9 @@ namespace moe
 	{
 		vk::DescriptorPool pool = m_pools.List[0].Handle();
 
-		const auto& layouts = m_pipeline->GetDescriptorSetLayouts();
+		const auto& vkPipeline = m_pipeline.As<VulkanPipeline>();
+
+		const auto& layouts = vkPipeline.GetDescriptorSetLayouts();
 
 		m_sets.resize(layouts.size());
 
@@ -171,7 +170,7 @@ namespace moe
 
 		// Calculate how many descriptor set write we need. It's basically the sum of binding counts across all sets
 		auto totalBindingsNbr = 0u;
-		for (const auto& layoutInfo : m_pipeline->GetDescriptorSetLayoutInfos())
+		for (const auto& layoutInfo : vkPipeline.GetDescriptorSetLayoutInfos())
 		{
 			totalBindingsNbr += (uint32_t) layoutInfo.LayoutBindings.size();
 		}
@@ -183,7 +182,8 @@ namespace moe
 	uint32_t VulkanMaterial::FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const
 	{
 		MOE_ASSERT(m_pipeline);
-		const auto& layoutInfos = m_pipeline->GetDescriptorSetLayoutInfos();
+		const auto& vkPipeline = m_pipeline.As<VulkanPipeline>();
+		const auto& layoutInfos = vkPipeline.GetDescriptorSetLayoutInfos();
 		MOE_ASSERT(layoutInfos.size() > set);
 
 		uint32_t setWriteIndex = 0u;

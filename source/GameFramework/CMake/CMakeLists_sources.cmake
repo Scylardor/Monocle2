@@ -14,9 +14,6 @@ set(Monocle_GameFramework_SOURCES
 ./Resources/Factories/Texture/TextureFactory.h
 ./Resources/Resource/GLTextureResource.h
 ./Resources/Resource/TextureResource.h
-./Resources/ResourceManager/ResourceManager.cpp
-./Resources/ResourceManager/ResourceManager.h
-./Resources/ResourceManager/ResourceRef.h
 ./Threading/Render/GLFW/GlfwRenderThread.cpp
 ./Threading/Render/GLFW/GlfwRenderThread.h
 ./Threading/Render/RenderThread.h

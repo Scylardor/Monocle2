@@ -1,16 +1,17 @@
 #pragma once
 
-#include "Core/Resource/Resource.h"
 
 #include "Graphics/Vertex/VertexFormats.h"
 
-#include "GameFramework/Resources/ResourceManager/ResourceRef.h"
+#include "Core/Resource/ResourceRef.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include <assimp/material.h>
 
 #include <filesystem>
+
+#include "Graphics/Vulkan/Material/VulkanMaterial.h"
 
 struct aiMaterial;
 struct aiMesh;
@@ -19,6 +20,7 @@ struct aiNode;
 namespace moe
 {
 	class ResourceManager;
+	class MyVkDevice;
 
 	struct MeshData
 	{
@@ -41,17 +43,17 @@ namespace moe
 
 	struct ModelMesh
 	{
-		MeshResource		Mesh;
-		MaterialResource	Material;
+		Ref<MeshResource>		Mesh;
+		Ref<MaterialResource>	Material;
 	};
 
 
 
 	struct ModelMaterial
 	{
-		bool															Initialized{ false };
+		bool														Initialized{ false };
 		std::vector<std::pair<aiTextureType, Ref<TextureResource>>>	Textures{};
-		MaterialReflectivityParameters									ReflectivityParams{};
+		MaterialReflectivityParameters								ReflectivityParams{};
 	};
 
 
@@ -102,7 +104,7 @@ namespace moe
 			m_nodes.reserve(nbReserved);
 		}
 
-		void	ImportMeshResources(ResourceManager& manager);
+		void	ImportMeshResources(ResourceManager& manager, MyVkDevice& gfxDevice);
 
 
 		MeshData&	MutMesh(uint32_t meshIdx)
@@ -146,18 +148,18 @@ namespace moe
 		}
 
 
-		[[nodiscard]] const std::vector<MeshResource>& GetMeshResources() const
+		[[nodiscard]] const std::vector<Ref<MeshResource>>& GetMeshResources() const
 		{
 			return m_meshResources;
 		}
 
 
 	private:
-		std::string					m_name{};
-		std::vector<ModelNode>		m_nodes;
-		std::vector<MeshData>		m_meshes;
-		std::vector<MeshResource>	m_meshResources;
-		std::vector<ModelMaterial>	m_materials;
+		std::string						m_name{};
+		std::vector<ModelNode>			m_nodes;
+		std::vector<MeshData>			m_meshes;
+		std::vector<Ref<MeshResource>>	m_meshResources;
+		std::vector<ModelMaterial>		m_materials;
 	};
 
 

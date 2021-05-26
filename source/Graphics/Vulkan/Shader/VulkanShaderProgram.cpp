@@ -42,8 +42,6 @@ namespace moe
 			for (vk::DescriptorSetLayout layout : m_descriptorSetLayouts)
 				(*m_device)->destroyDescriptorSetLayout(layout);
 
-			for (auto& shader : m_shaders)
-				(*m_device)->destroyShaderModule(shader.Module);
 		}
 	}
 
@@ -73,9 +71,11 @@ namespace moe
 	{
 		std::vector<vk::PipelineShaderStageCreateInfo> createInfos;
 		createInfos.reserve(m_shaders.size());
+
+		// At the moment, make copies. Maybe find a better way to do it later
 		for (const auto& shader : m_shaders)
 		{
-			createInfos.emplace_back(vk::PipelineShaderStageCreateFlags{}, shader.Stage, shader.Module, shader.EntryPoint.c_str());
+			createInfos.push_back(shader.As<VulkanShaderModule>().GetCreateInfo());
 		}
 
 		return createInfos;
@@ -88,43 +88,13 @@ namespace moe
 	}
 
 
-	void VulkanShaderProgram::AddShaderFile(const MyVkDevice& device, std::string_view SPIRV_filename, vk::ShaderStageFlagBits stage, bool replaceExisting,
-		std::string_view entryPoint)
+
+
+	void VulkanShaderProgram::AddShader(Ref<ShaderResource> addedShaderModule)
 	{
-		// check that a shader for the same stage doesn't already exist for this program.
-		auto existingIt = std::find_if(m_shaders.begin(), m_shaders.end(), [stage](const auto& shader)
-			{
-				return (shader.Stage == stage);
-			});
-
-		if (existingIt != m_shaders.end() && !replaceExisting)
-		{
-			MOE_ERROR(moe::ChanGraphics, "Adding a new shader for a stage that already has one for this stage (replaceExisting = false).");
-			MOE_ASSERT(false);
-			return;
-		}
-
-		// read the SPIRV bytecode and create the shader module.
-		auto shaderCode = ReadFile(SPIRV_filename, true);
-		MOE_ASSERT(shaderCode.has_value());
-
-		vk::ShaderModuleCreateInfo createInfo{};
-		createInfo.codeSize = shaderCode->size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode->data());
-
-		vk::ShaderModule shaderModule = device->createShaderModule(createInfo);
-		MOE_ASSERT(shaderModule);
-
-		// add the new shader or replace the existing one.
-		if (replaceExisting)
-		{
-			*existingIt = VulkanShader{ shaderModule, stage, entryPoint };
-		}
-		else
-		{
-			m_shaders.emplace_back(shaderModule, stage, entryPoint);
-		}
+		m_shaders.push_back(std::move(addedShaderModule));
 	}
+
 
 	VulkanShaderProgram& VulkanShaderProgram::AddVertexBinding(vk::VertexInputRate inputRate)
 	{

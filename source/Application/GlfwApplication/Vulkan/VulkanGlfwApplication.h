@@ -12,6 +12,8 @@
 #include "Graphics/Renderer/Vulkan/VulkanRenderer.h"
 #include "Graphics/Vulkan/Surface/VulkanSurfaceProvider.h"
 
+#include "Core/Resource/ResourceManager.h"
+
 
 namespace moe
 {
@@ -57,8 +59,8 @@ namespace moe
 		SurfaceDimensions	GetSurfaceDimensions() override;
 		void				RegisterSurfaceResizeCallback(SurfaceResizeCallback&& cb) override;
 
-		// TODO : change that to use Vulkan instead.
-		// This is super ugly and basically should never have happened in the first place :'(
+
+		ResourceManager			m_manager;
 		VulkanRenderer			m_renderer;
 
 		VulkanGlfwAppDescriptor	m_description;

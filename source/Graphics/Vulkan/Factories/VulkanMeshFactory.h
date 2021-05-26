@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Resource/Resource.h"
 #include "Core/Resource/ResourceFactory.h"
 #include "Graphics/Vulkan/Mesh/VulkanMesh.h"
 
@@ -10,7 +11,7 @@ namespace moe
 	public:
 
 		virtual RegistryID	CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, vk::IndexType indexType) = 0;
+			size_t numIndices, const void* indexData, VertexIndexType indexType) = 0;
 
 
 		[[nodiscard]] virtual VulkanMesh&		MutateResource(RegistryID id) = 0;
@@ -32,8 +33,10 @@ namespace moe
 
 
 		RegistryID	CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, vk::IndexType indexType) override;
+			size_t numIndices, const void* indexData, VertexIndexType indexType) override;
 
+		std::unique_ptr<MeshResource>	NewMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
+			size_t numIndices, const void* indexData, VertexIndexType indexType);
 
 		[[nodiscard]] VulkanMesh& MutateResource(RegistryID id) override
 		{

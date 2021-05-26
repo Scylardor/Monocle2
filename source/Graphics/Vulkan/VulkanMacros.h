@@ -24,4 +24,19 @@
 	} while (0)
 
 
+#define MOE_VK_DEVICE_GETTER() \
+	const MyVkDevice&	Device() const \
+	{ \
+		MOE_ASSERT(m_device); \
+		return *m_device; \
+	} \
+	MyVkDevice& Device() \
+	{ \
+		MOE_ASSERT(m_device); \
+		return *m_device; \
+	}
+
+
+
+
 #endif // MOE_VULKAN

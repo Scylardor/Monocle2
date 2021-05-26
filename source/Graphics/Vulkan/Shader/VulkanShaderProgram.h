@@ -1,7 +1,9 @@
 #pragma once
 #ifdef MOE_VULKAN
 
+#include "Core/Resource/ResourceRef.h"
 #include "Graphics/Vulkan/VulkanMacros.h"
+#include "VulkanShaderModule.h"
 
 #include <string_view>
 
@@ -9,18 +11,6 @@ namespace moe
 {
 	class VulkanShaderProgram;
 	class MyVkDevice;
-
-	struct VulkanShader
-	{
-		VulkanShader(vk::ShaderModule module, vk::ShaderStageFlagBits stage, std::string_view entryPoint) :
-			Module(module), Stage(stage), EntryPoint(entryPoint)
-		{}
-
-		vk::ShaderModule		Module{};
-		vk::ShaderStageFlagBits	Stage{};
-		std::string				EntryPoint{ "main" };
-	};
-
 
 	struct DescriptorSetLayoutInfo
 	{
@@ -52,7 +42,7 @@ namespace moe
 
 		void	AddPushConstant(vk::ShaderStageFlags stage, uint32_t offset, uint32_t size);
 
-		void	AddShaderFile(const MyVkDevice& device, std::string_view SPIRV_filename, vk::ShaderStageFlagBits stage, bool replaceExisting = false, std::string_view entryPoint = "main");
+		void	AddShader(Ref<ShaderResource> addedShaderModule);
 
 		VulkanShaderProgram&	AddVertexBinding(vk::VertexInputRate inputRate = vk::VertexInputRate::eVertex);
 		VulkanShaderProgram&	AddVertexAttribute(uint32_t location, uint32_t offset, uint32_t size, vk::Format attributeFormat);
@@ -85,7 +75,7 @@ namespace moe
 		DescriptorLayoutInfos								m_descriptorSetLayoutInfos{};
 		DescriptorSetLayouts								m_descriptorSetLayouts{};
 
-		std::vector<VulkanShader>							m_shaders{};
+		std::vector<Ref<ShaderResource>>					m_shaders{};
 
 		PushConstantRanges									m_pushConstants{};
 

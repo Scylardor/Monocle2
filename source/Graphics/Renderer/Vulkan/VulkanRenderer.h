@@ -34,7 +34,7 @@ namespace moe
 
 		VulkanRenderer();
 
-		bool Initialize(IGraphicsRenderer::GraphicsContextSetup setupFunction) override;
+		bool Initialize(GraphicsContextSetup setupFunction) override;
 
 		void Shutdown() override;
 
@@ -119,6 +119,11 @@ namespace moe
 			return *m_graphicsDevice;
 		}
 
+		void	AttachResourceManager(ResourceManager& manager)
+		{
+			m_resourceManager = &manager;
+		}
+
 	protected:
 
 		[[nodiscard]] const IGraphicsDevice& GetDevice() const override
@@ -148,11 +153,10 @@ namespace moe
 
 		VulkanMaterial	m_material;
 
-		VulkanPipeline	m_pipeline;
 
 		VulkanTexture	m_materialTexture{};
 
-
+		ResourceManager* m_resourceManager{ nullptr };
 	};
 
 

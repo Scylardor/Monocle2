@@ -2,7 +2,7 @@
 
 #include "Graphics/Vertex/VertexFormats.h"
 
-#include "GameFramework/Resources/ResourceManager/ResourceManager.h"
+#include "Core/Resource/ResourceManager.h"
 
 #include <assimp/scene.h>
 
@@ -22,18 +22,23 @@ moe::ModelNode& moe::Model::NewNode(uint32_t parentIdx, uint32_t expectedChildre
 }
 
 
-void moe::Model::ImportMeshResources(ResourceManager& manager)
+void moe::Model::ImportMeshResources(ResourceManager& manager, MyVkDevice& gfxDevice)
 {
 	m_meshResources.reserve(MeshesCount());
 
+	const auto meshLoadFn = [&](const MeshData& mesh)
+	{
+		return [&]()
+		{
+			return gfxDevice.MeshFactory.NewMesh(sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
+				mesh.Indices.size(), mesh.Indices.data(), VertexIndexType::eUint32);
+		};
+	};
+
 	for (const auto& mesh : GetMeshes())
 	{
-		m_meshResources.emplace_back(
-			manager.LoadMesh(
-				mesh.Name,
-				sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
-				mesh.Indices.size(), mesh.Indices.data(), vk::IndexType::eUint32)
-		);
+		auto meshRef = manager.Load<MeshResource>(HashString(mesh.Name), meshLoadFn(mesh));
+		m_meshResources.push_back(std::move(meshRef));
 	}
 }
 
@@ -75,7 +80,8 @@ moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 void moe::AssimpImporter::ImportModelResources(Model& importedModel)
 {
 	// First import the meshes
-	importedModel.ImportMeshResources(m_manager);
+
+	importedModel.ImportMeshResources(m_manager, m_gfxDevice);
 
 	// Then the materials
 
