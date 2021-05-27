@@ -20,9 +20,7 @@ namespace moe
 		m_appClockStart = m_clock.now();
 		m_frameClockStart = m_appClockStart;
 
-		m_renderer.AttachResourceManager(m_manager);
 
-		m_renderer.CreateMainMaterial();
 	}
 
 	void TestVkApplication::Run()
@@ -63,9 +61,21 @@ namespace moe
 	BasicVkApp::BasicVkApp(const moe::VulkanGlfwAppDescriptor& appDesc) :
 		TestVkApplication(appDesc)
 	{
+		auto textureFileLoaderFn = [this](std::string_view filename)
+		{
+			return [&]()
+			{
+				VulkanTextureBuilder builder;
+				return m_renderer.GraphicsDevice().TextureFactory.CreateTextureFromFile(filename, builder);
+			};
+		};
 
-		m_manager.SetMeshFactory(m_renderer.GraphicsDevice().MeshFactory);
-		m_manager.SetTextureFactory(m_renderer.GraphicsDevice().TextureFactory);
+		// Need to load the statue tex before creating the main material (yup, will have to change that later!)
+		m_statue = m_manager.Load<TextureResource>(HashString("StatueTex"), textureFileLoaderFn("Sandbox/assets/textures/texture.jpg"));
+
+		m_renderer.AttachResourceManager(m_manager);
+
+		m_renderer.CreateMainMaterial();
 
 		const std::vector<moe::BasicVertex> vertices =
 		{
@@ -98,25 +108,7 @@ namespace moe
 
 		m_scene.Emplace(m_planes.ID(), 0);
 
-		auto textureFileLoaderFn = [this](std::string_view filename)
-		{
-			return [&]()
-			{
-				VulkanTextureBuilder builder;
-				return m_renderer.GraphicsDevice().TextureFactory.CreateTextureFromFile(filename, builder);
-			};
-		};
 
-		m_statue = m_manager.Load<TextureResource>(HashString("StatueTex"), textureFileLoaderFn("Sandbox/assets/textures/texture.jpg"));
-		Ref<TextureResource> dup = m_manager.Load<TextureResource>(HashString("StatueTex"), textureFileLoaderFn("Sandbox/assets/textures/texture.jpg"));
-
-		{
-			Ref<TextureResource> block = m_manager.Load<TextureResource>(HashString("Blockc"), textureFileLoaderFn("Sandbox/assets/textures/block.png"));
-			(void)block;
-
-			auto testshader = m_manager.Load<ShaderResource>(HashString("defaultVert"),
-				[&]() { return m_renderer.GraphicsDevice().ShaderFactory.LoadShaderBytecode("source/Graphics/Resources/shaders/Vulkan/vert.spv", vk::ShaderStageFlagBits::eVertex); });
-		}
 
 		Vec3 cameraPos{0.1f,0.5f, 10.f};
 		m_view = Mat4::LookAtMatrix(cameraPos, Vec3::ZeroVector(), Vec3{ 0, 0, 1 });

@@ -69,26 +69,34 @@ moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 	// We will need the "base path" to go search for textures (mtl files use relative paths)
 	modelPath.remove_filename().make_preferred();
 
-	ProcessSceneNode(*scene->mRootNode, *scene, importedModel, modelPath);
+	ProcessSceneNode(*scene->mRootNode, *scene, importedModel);
 
-	ImportModelResources(importedModel);
+	ImportSceneResources(*scene, importedModel, modelPath);
 
 	return importedModel;
 }
 
 
-void moe::AssimpImporter::ImportModelResources(Model& importedModel)
+void moe::AssimpImporter::ImportSceneResources(const aiScene& scene, Model& importedModel, const FilePath& modelPath)
 {
 	// First import the meshes
 
 	importedModel.ImportMeshResources(m_manager, m_gfxDevice);
 
 	// Then the materials
+	for (auto iMat = 0u; iMat < scene.mNumMaterials; ++iMat)
+	{
+		ImportSceneMaterial(scene, iMat, importedModel, modelPath);
+	}
 
+	Ref<MaterialResource> mat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
 
+	auto clonedMat = mat->Clone();
+
+	//m_manager.InsertResource(HashString, std::move(clonedMat));
 }
 
-void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, const FilePath& modelPath, uint32_t parentIndex)
+void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex)
 {
 	importedModel.ReserveNodes((uint32_t) importedModel.NodeCount() + node.mNumChildren); // reserve memory for this node + children
 
@@ -112,32 +120,27 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 
 		thisMesh.Indices = ComputeMeshIndices(meshRef);
 
-		thisMesh.Name = meshRef.mName.C_Str();
+		thisMesh.Name.resize(importedModel.GetName().size() + meshRef.mName.length + 1);
+		moe::StringFormat(thisMesh.Name, "%s_%s", importedModel.GetName(), meshRef.mName.C_Str());
 
 		thisMesh.Material = meshRef.mMaterialIndex;
-
-		MOE_ASSERT(scene.HasMaterials() && meshRef.mMaterialIndex < scene.mNumMaterials);
-		if (false == importedModel.IsMaterialInitialized(meshRef.mMaterialIndex))
-		{
-			ImportModelMaterial(scene, meshRef.mMaterialIndex, importedModel, modelPath);
-		}
+		MOE_ASSERT(meshRef.mMaterialIndex < scene.mNumMaterials);
 	}
 
 	// Do the same for all the children
 	for (auto iChild = 0u; iChild < node.mNumChildren; ++iChild)
 	{
-		ProcessSceneNode(*node.mChildren[iChild], scene, importedModel, modelPath, childrenParentIndex);
+		ProcessSceneNode(*node.mChildren[iChild], scene, importedModel, childrenParentIndex);
 	}
 }
 
 
-void moe::AssimpImporter::ImportModelMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath)
+void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath)
 {
 	aiMaterial* assimpMat = scene.mMaterials[materialIndex];
 	MOE_ASSERT(assimpMat);
 
 	ModelMaterial& modelMat = importedModel.MutMaterial(materialIndex);
-	MOE_ASSERT(modelMat.Initialized == false);
 
 	// First import the textures
 	{
@@ -194,7 +197,11 @@ void moe::AssimpImporter::ImportModelMaterial(const aiScene& scene, uint32_t mat
 	SetFloatParameter(modelMat.ReflectivityParams.SpecularExponent, AI_MATKEY_SHININESS);
 	SetFloatParameter(modelMat.ReflectivityParams.Opacity, AI_MATKEY_OPACITY);
 
-	modelMat.Initialized = true;
+	aiString matName;
+	aiGetMaterialString(assimpMat, AI_MATKEY_NAME, &matName);
+
+	modelMat.Name.resize(importedModel.GetName().size() + matName.length +6); // +6: accounts for additional chars and \0
+	moe::StringFormat(modelMat.Name, "M_%s_%s", importedModel.GetName(), matName.C_Str());
 }
 
 

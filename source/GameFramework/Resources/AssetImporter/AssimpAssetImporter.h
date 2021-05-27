@@ -51,9 +51,10 @@ namespace moe
 
 	struct ModelMaterial
 	{
-		bool														Initialized{ false };
+		std::string													Name{};
 		std::vector<std::pair<aiTextureType, Ref<TextureResource>>>	Textures{};
 		MaterialReflectivityParameters								ReflectivityParams{};
+		Ref<MaterialResource>										MaterialResource{};
 	};
 
 
@@ -129,12 +130,6 @@ namespace moe
 			return m_materials.size();
 		}
 
-		[[nodiscard]] bool	IsMaterialInitialized(uint32_t matIndex) const
-		{
-			MOE_ASSERT(matIndex < m_materials.size());
-			return m_materials[matIndex].Initialized;
-		}
-
 		[[nodiscard]] ModelMaterial&	MutMaterial(uint32_t matIndex)
 		{
 			MOE_ASSERT(matIndex < m_materials.size());
@@ -151,6 +146,12 @@ namespace moe
 		[[nodiscard]] const std::vector<Ref<MeshResource>>& GetMeshResources() const
 		{
 			return m_meshResources;
+		}
+
+
+		[[nodiscard]] const std::string&	GetName() const
+		{
+			return m_name;
 		}
 
 
@@ -181,12 +182,12 @@ namespace moe
 
 	private:
 
-		void	ImportModelResources(Model& importedModel);
+		void	ImportSceneResources(const aiScene& scene, Model& importedModel, const FilePath& modelPath);
 
-		void	ImportModelMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath);
+		void	ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath);
 
 
-		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, const FilePath& modelPath, uint32_t parentIndex = ModelNode::ROOT_INDEX);
+		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex = ModelNode::ROOT_INDEX);
 
 
 		[[nodiscard]] static std::vector<BasicVertex>	ComputeMeshVertices(const aiMesh& mesh);

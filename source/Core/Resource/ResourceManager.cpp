@@ -2,8 +2,4 @@
 
 namespace moe
 {
-	void ResourceManager::ShutdownAndFreeAllResources()
-	{
-		
-	}
 }

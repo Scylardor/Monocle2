@@ -14,8 +14,6 @@ namespace moe
 	public:
 		virtual ~IResourceManager() = default;
 
-		virtual void		RemoveResource(const HashString& hash) = 0;
-
 		virtual uint32_t	IncrementReference(RegistryID rscID) = 0;
 
 		virtual void		DecrementReference(RegistryID rscID) = 0;

@@ -44,7 +44,6 @@ namespace moe
 
 		RenderScene		m_scene;
 
-		ResourceManager	m_manager;
 	};
 
 

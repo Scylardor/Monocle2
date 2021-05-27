@@ -84,30 +84,26 @@ namespace moe
 		}
 
 
-
-
-		void SetMeshFactory(IMeshFactory& factory)
+		template <typename TRsc>
+		Ref<TRsc>	InsertResource(const HashString& rscHandle, std::unique_ptr<TRsc>&& rsc)
 		{
-			m_meshFactory = &factory;
+			static_assert(std::is_base_of_v<IBaseResource, TRsc>);
+
+			MOE_ASSERT(rsc != nullptr);
+			TRsc* rscPtr = rsc.get(); // get the ptr before it gets moved
+			auto entryID = m_resourcesData.EmplaceEntry(std::move(rsc));
+
+			// Make sure the bookkeeping is uptodate
+			auto [_, inserted] = m_rscHandleToID.emplace(rscHandle, entryID);
+			auto [__, inserted2] = m_rscIDToHandle.emplace(entryID, rscHandle);
+			MOE_ASSERT(inserted && inserted2); // make sure there is no duplicate (or something is very wrong)
+
+			return std::move(Ref(*this, *rscPtr, entryID));
 		}
-
-
-		void SetTextureFactory(ITextureFactory& factory)
-		{
-			m_textureFactory = &factory;
-		}
-
-
-		void	RemoveResource(const HashString& hash) override
-		{
-			m_resourceIDs.erase(hash);
-		}
-
-		void	ShutdownAndFreeAllResources();
 
 
 		template <typename TResource, typename TFactory, typename... Args>
-		Ref<TResource> Load(HashString rscHandle, TFactory& factory, Args&&... args)
+		Ref<TResource> Load(const HashString& rscHandle, TFactory& factory, Args&&... args)
 		{
 			// if it already exists :
 			std::optional<Ref<TResource>> existingRef = FindResource<TResource>(rscHandle);
@@ -119,15 +115,8 @@ namespace moe
 
 			// if it needs to be created:
 			std::unique_ptr<TResource> newResource = factory(std::forward<Args>(args)...);
-			MOE_ASSERT(newResource != nullptr);
-			TResource* rsc = newResource.get(); // get the ptr before it gets moved
-			auto entryID = m_resourcesData.EmplaceEntry(std::move(newResource));
 
-			// Make sure the bookkeeping is uptodate
-			m_rscHandleToID.emplace(rscHandle, entryID);
-			m_rscIDToHandle.emplace(entryID, rscHandle);
-
-			return Ref(*this, *rsc, entryID);
+			return InsertResource(rscHandle, std::move(newResource));
 		}
 
 

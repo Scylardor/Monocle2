@@ -151,10 +151,8 @@ namespace moe
 
 		std::vector<VulkanCommandPool>	m_commandPools;
 
-		VulkanMaterial	m_material;
+		Ref<MaterialResource>	m_defaultMaterial;
 
-
-		VulkanTexture	m_materialTexture{};
 
 		ResourceManager* m_resourceManager{ nullptr };
 	};

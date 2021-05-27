@@ -219,10 +219,6 @@ namespace moe
 
 	void VulkanRenderer::CreateMainMaterial()
 	{
-		// First create our texture
-		VulkanTextureBuilder texBuilder{};
-		m_materialTexture = VulkanTexture::Create2DFromFile(*m_graphicsDevice, "Sandbox/assets/textures/texture.jpg", texBuilder);
-
 		VulkanShaderProgram program;
 
 		const auto shaderBytecodeLoaderFn = [this](std::string_view filename, vk::ShaderStageFlagBits shaderStage)
@@ -266,9 +262,18 @@ namespace moe
 			.SetRenderPass(m_frameGraph.MainRenderPass(), 0)
 			.Build(*m_graphicsDevice);
 
-		m_material.Initialize(*m_graphicsDevice, std::move(pipelineRef))
-			.BindTexture(0, 1, m_materialTexture)
-			.UpdateDescriptorSets(*m_graphicsDevice);
+
+		m_defaultMaterial = m_resourceManager->Load<MaterialResource>(HashString("DefaultMaterial"), [&]()
+		{
+				return std::make_unique<VulkanMaterial>();
+		});
+
+		auto texRef = m_resourceManager->FindExisting<TextureResource>(HashString("StatueTex"));
+
+
+		m_defaultMaterial.As<VulkanMaterial>().Initialize(*m_graphicsDevice, std::move(pipelineRef))
+			.BindTexture(0, 1, texRef.As<VulkanTexture>())
+			.UpdateAllDescriptorSets();
 	}
 
 
@@ -317,7 +322,9 @@ namespace moe
 
 		rp.Begin(renderPassCommandBuffer, m_swapchain.GetImageInFlightIndex());
 
-		const VulkanPipeline& pipeline = m_material.GetPipeline();
+
+		const VulkanMaterial& material = m_defaultMaterial.As<VulkanMaterial>();
+		const VulkanPipeline& pipeline = material.GetPipeline();
 
 		renderPassCommandBuffer.setViewport(0, (uint32_t)pipeline.Viewports().size(), pipeline.Viewports().data());
 		renderPassCommandBuffer.setScissor(0, (uint32_t)pipeline.Scissors().size(), pipeline.Scissors().data());
@@ -329,7 +336,7 @@ namespace moe
 			auto matID = drawable.GetMaterialID();
 			if (lastMatID != matID && matID == 0)
 			{
-				m_material.Bind(renderPassCommandBuffer);
+				material.Bind(renderPassCommandBuffer);
 				lastMatID = matID;
 			}
 
