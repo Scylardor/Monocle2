@@ -79,19 +79,20 @@ moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 
 void moe::AssimpImporter::ImportSceneResources(const aiScene& scene, Model& importedModel, const FilePath& modelPath)
 {
-	// First import the meshes
+	// First import the materials, then the meshes
+	Ref<MaterialResource> defaultMat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
+	MOE_ASSERT(defaultMat);
+
+	// Start material idx at 1 because 0 is the default material and we don't care about it.
+	for (auto iMat = 1u; iMat < scene.mNumMaterials; ++iMat)
+	{
+		ImportSceneMaterial(scene, iMat, importedModel, modelPath, defaultMat);
+	}
+
 
 	importedModel.ImportMeshResources(m_manager, m_gfxDevice);
 
 	// Then the materials
-	for (auto iMat = 0u; iMat < scene.mNumMaterials; ++iMat)
-	{
-		ImportSceneMaterial(scene, iMat, importedModel, modelPath);
-	}
-
-	Ref<MaterialResource> mat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
-
-	auto clonedMat = mat->Clone();
 
 	//m_manager.InsertResource(HashString, std::move(clonedMat));
 }
@@ -121,7 +122,7 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 		thisMesh.Indices = ComputeMeshIndices(meshRef);
 
 		thisMesh.Name.resize(importedModel.GetName().size() + meshRef.mName.length + 1);
-		moe::StringFormat(thisMesh.Name, "%s_%s", importedModel.GetName(), meshRef.mName.C_Str());
+		moe::StringFormat(thisMesh.Name, "SM_%s_%s", importedModel.GetName(), meshRef.mName.C_Str());
 
 		thisMesh.Material = meshRef.mMaterialIndex;
 		MOE_ASSERT(meshRef.mMaterialIndex < scene.mNumMaterials);
@@ -135,7 +136,7 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 }
 
 
-void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath)
+void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath, Ref<MaterialResource>& defaultMaterial)
 {
 	aiMaterial* assimpMat = scene.mMaterials[materialIndex];
 	MOE_ASSERT(assimpMat);
@@ -200,8 +201,24 @@ void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t mat
 	aiString matName;
 	aiGetMaterialString(assimpMat, AI_MATKEY_NAME, &matName);
 
-	modelMat.Name.resize(importedModel.GetName().size() + matName.length +6); // +6: accounts for additional chars and \0
+	modelMat.Name.resize(importedModel.GetName().size() + matName.length + 6); // +6: accounts for additional chars and \0
 	moe::StringFormat(modelMat.Name, "M_%s_%s", importedModel.GetName(), matName.C_Str());
+	auto newMat = defaultMaterial->Clone();
+	modelMat.MaterialResource = m_manager.Insert<MaterialResource>(HashString(modelMat.Name), std::move(newMat));
+	MOE_ASSERT(modelMat.MaterialResource);
+
+	auto& phongMaps = modelMat.MaterialResource->EmplaceModule<PhongReflectivityMapsMaterialModule>(0);
+	// TODO just sets diffuse for now
+	auto diffuseIt = std::find_if(modelMat.Textures.begin(), modelMat.Textures.end(),
+		[](auto& texInfo)
+		{
+			return texInfo.first == aiTextureType_DIFFUSE;
+		});
+	MOE_ASSERT(diffuseIt != modelMat.Textures.end());
+	auto diffuseIdx = diffuseIt - modelMat.Textures.begin();
+
+	phongMaps.Set(PhongMap::Diffuse, modelMat.Textures[diffuseIdx].second);
+	modelMat.MaterialResource->UpdateResources(0);
 }
 
 

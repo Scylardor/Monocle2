@@ -3,11 +3,26 @@
 #include "VulkanMaterial.h"
 
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
-#include "Graphics/Vulkan/Swapchain/VulkanSwapchain.h"
 #include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
 namespace moe
 {
+
+	void PhongReflectivityMaterialModule::UpdateResources(MaterialResource& /*updatedMaterial*/)
+	{
+	}
+
+
+	void PhongReflectivityMapsMaterialModule::UpdateResources(MaterialResource& updatedMaterial)
+	{
+		updatedMaterial.BindTextureResource(m_setNumber, (uint8_t)PhongMap::Diffuse, m_maps.Maps[(uint8_t)PhongMap::Diffuse]);
+		//for (uint8_t rscIdx = 0; rscIdx < (uint8_t)PhongMap::_COUNT_; ++rscIdx)
+		//{
+		//	updatedMaterial.BindTextureResource(m_setNumber, rscIdx, m_maps.Maps[rscIdx]);
+		//}
+	}
+
+
 	VulkanDescriptorPool::VulkanDescriptorPool(const MyVkDevice& device, const std::vector <vk::DescriptorPoolSize>& poolSizes, uint32_t maxSets)
 	{
 		const vk::DescriptorPoolCreateInfo poolCreateInfo{
@@ -30,7 +45,23 @@ namespace moe
 	}
 
 
-	VulkanMaterial& VulkanMaterial::Initialize(const MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances)
+	std::unique_ptr<MaterialResource> VulkanMaterial::Clone()
+	{
+		auto matPtr = std::make_unique<VulkanMaterial>();
+
+		matPtr->Initialize(Device(), m_pipeline);
+
+		return std::move(matPtr);
+	}
+
+
+	void VulkanMaterial::AddNewModule(std::unique_ptr<AMaterialModule> newModule)
+	{
+		m_modules.emplace_back(std::move(newModule));
+	}
+
+
+	VulkanMaterial& VulkanMaterial::Initialize(MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances)
 	{
 		m_device = &device;
 
@@ -104,10 +135,45 @@ namespace moe
 	}
 
 
-	void VulkanMaterial::UpdateDescriptorSets(const MyVkDevice& device)
+	void VulkanMaterial::UpdateDescriptorSet(uint32_t setNbr)
 	{
-		device->updateDescriptorSets((uint32_t) m_writeSets.size(), m_writeSets.data(), 0, nullptr);
+		Device()->updateDescriptorSets(1, m_writeSets.data() + setNbr, 0, nullptr);
 	}
+
+
+	void VulkanMaterial::UpdateAllDescriptorSets()
+	{
+		Device()->updateDescriptorSets((uint32_t) m_writeSets.size(), m_writeSets.data(), 0, nullptr);
+	}
+
+
+	void VulkanMaterial::UpdateResources(uint8_t resourceSet)
+	{
+		MOE_ASSERT(m_modules.size() > resourceSet);
+		auto& updatedModule = m_modules[resourceSet];
+		updatedModule->UpdateResources(*this);
+		UpdateDescriptorSet(resourceSet);
+	}
+
+
+	MaterialResource& VulkanMaterial::BindTextureResource(uint32_t set, uint32_t binding, const Ref<TextureResource>& tex)
+	{
+		const auto& vkTex = tex.As<VulkanTexture>();
+
+		const auto bindingIndex = FindBindingDescriptorSetWriteIndex(set, binding);
+		MOE_ASSERT(m_writeSets.size() > bindingIndex);
+
+		vk::WriteDescriptorSet& writeSet = m_writeSets[bindingIndex];
+		writeSet.dstSet = m_sets[set];
+		writeSet.dstBinding = binding;
+		writeSet.dstArrayElement = 0;
+		writeSet.descriptorType = vk::DescriptorType::eCombinedImageSampler; // TODO: manage other types of textures ?
+		writeSet.descriptorCount = 1;
+		writeSet.pImageInfo = &vkTex.DescriptorImageInfo();
+
+		return *this;
+	}
+
 
 	void VulkanMaterial::Bind(vk::CommandBuffer recordingBuffer) const
 	{
@@ -246,7 +312,7 @@ namespace moe
 
 
 	bool VulkanMaterial_old::InitializeOffsets(const MyVkDevice& device, const std::vector<vk::DescriptorSetLayoutCreateInfo>& layoutInfos, const DynamicSetsIndices& dynamicSetsIndices,
-	                                       const std::vector<BindingSize>& dynamicBindingSizes, uint32_t maxFramesInFlight, uint32_t maxInstances)
+										   const std::vector<BindingSize>& dynamicBindingSizes, uint32_t maxFramesInFlight, uint32_t maxInstances)
 	{
 		// I want to know which dynamic type it is (uniform or storage)
 		// TODO: this could have been done during dynamic set indices harvesting !

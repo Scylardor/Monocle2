@@ -274,6 +274,11 @@ namespace moe
 		m_defaultMaterial.As<VulkanMaterial>().Initialize(*m_graphicsDevice, std::move(pipelineRef))
 			.BindTexture(0, 1, texRef.As<VulkanTexture>())
 			.UpdateAllDescriptorSets();
+
+		auto& phongMapsModule = m_defaultMaterial->EmplaceModule<PhongReflectivityMapsMaterialModule>(0);
+		phongMapsModule.Set(PhongMap::Diffuse, texRef);
+
+		m_defaultMaterial->UpdateResources(0);
 	}
 
 
@@ -334,9 +339,18 @@ namespace moe
 		for (const auto& drawable : renderedScene)
 		{
 			auto matID = drawable.GetMaterialID();
-			if (lastMatID != matID && matID == 0)
+ 			if (lastMatID != matID)
 			{
-				material.Bind(renderPassCommandBuffer);
+				if (matID != 0)
+				{
+					const VulkanMaterial& drawableMaterial = m_resourceManager->GetResourceAs<VulkanMaterial>(matID);
+					drawableMaterial.Bind(renderPassCommandBuffer);
+				}
+				else
+				{
+					material.Bind(renderPassCommandBuffer);
+				}
+
 				lastMatID = matID;
 			}
 

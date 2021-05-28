@@ -2,6 +2,7 @@
 
 #include "Core/HashString/HashString.h"
 #include "Core/Resource/Resource.h"
+#include "ResourceManagerInterface.h"
 
 #include "ResourceRef.h"
 
@@ -36,42 +37,9 @@ namespace moe
 	class ResourceManager : public IResourceManager
 	{
 	public:
-		ResourceManager()
-		{
-			m_factories.resize((size_t)ResourceType::_MAX_);
-		}
+		ResourceManager() = default;
 
 
-		template <typename TFactory>
-		void	AddFactory(ResourceType factoryType, TFactory&& factory)
-		{
-			static_assert(std::is_base_of_v<IResourceFactory, TFactory>, "TFactory must be a subclass of IResourceFactory.");
-			if (factoryType == ResourceType::_MAX_)
-			{
-				MOE_ASSERT(false);
-				return;
-			}
-
-			m_factories[(size_t)factoryType] = std::make_unique<TFactory>(factory);
-		}
-
-
-		template <typename TFactory, typename... Args>
-		void	EmplaceFactory(ResourceType factoryType, Args&&... args)
-		{
-			static_assert(std::is_base_of_v<IResourceFactory, TFactory>, "TFactory must be a subclass of IResourceFactory.");
-			if (factoryType == ResourceType::_MAX_)
-			{
-				MOE_ASSERT(false);
-				return;
-			}
-
-			m_factories[(size_t)factoryType] = std::make_unique<TFactory>(*this, std::forward<Args>(args)...);
-		}
-
-
-		template <typename TResource, typename... Args>
-		TResource* CreateResource(Args&&... args);
 
 
 		template <typename TImporter, typename... Ts>
@@ -85,7 +53,7 @@ namespace moe
 
 
 		template <typename TRsc>
-		Ref<TRsc>	InsertResource(const HashString& rscHandle, std::unique_ptr<TRsc>&& rsc)
+		Ref<TRsc>	Insert(const HashString& rscHandle, std::unique_ptr<TRsc>&& rsc)
 		{
 			static_assert(std::is_base_of_v<IBaseResource, TRsc>);
 
@@ -116,7 +84,7 @@ namespace moe
 			// if it needs to be created:
 			std::unique_ptr<TResource> newResource = factory(std::forward<Args>(args)...);
 
-			return InsertResource(rscHandle, std::move(newResource));
+			return Insert(rscHandle, std::move(newResource));
 		}
 
 
@@ -221,23 +189,11 @@ namespace moe
 
 
 
-
-		template <typename TFactory>
-		TFactory*	EditFactory(ResourceType factoryType)
-		{
-			static_assert(std::is_base_of_v<IResourceFactory, TFactory>, "TFactory must be a subclass of IResourceFactory.");
-			TFactory* factory = static_cast<TFactory*>(m_factories[(size_t)factoryType].get());
-			MOE_ASSERT(factory != nullptr);
-			return factory;
-		}
-
-
 		using CreateResourceFunc = std::function<RegistryID ()>;
 		template <typename TRsc, typename TRscFactory>
 		TRsc FindOrCreateResource(std::string_view rscIdentifier, TRscFactory* factory, CreateResourceFunc createFunc);
 
 
-		std::vector<std::unique_ptr<IResourceFactory>>	m_factories;
 
 		IMeshFactory*		m_meshFactory{nullptr};
 		ITextureFactory*	m_textureFactory{ nullptr };

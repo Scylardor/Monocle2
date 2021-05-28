@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Core/Resource/Resource.h"
+#include "Core/Resource/BaseResource.h"
+#include "Core/Resource/ResourceManagerInterface.h"
 
 #include "Core/Containers/AssetRegistry/ObjectRegistry.h"
 

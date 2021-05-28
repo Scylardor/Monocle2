@@ -51,16 +51,83 @@ namespace moe
 	};
 
 
-	struct MaterialReflectivityParameters
+	struct PhongReflectivityParameters
 	{
 		Vec4	Ambient{ 0.f };
 		Vec4	Diffuse{ 0.f }; // AKA "albedo"
 		Vec4	Specular{ 0.f };
 		Vec4	Emissive{ 0.f };
-		float	Opacity = 0.f; // ranges between 0 and 1
+		float	Opacity = 1.f; // ranges between 0 and 1
 		float	SpecularExponent = 0.f; // ranges between 0 and 1000
 	};
 
+	enum class PhongMap : uint8_t
+	{
+		Ambient = 0,
+		_FIRST_ = Ambient,
+		Diffuse,
+		Specular,
+		Emissive,
+		Shininess,
+		_COUNT_
+	};
+
+	struct PhongReflectivityMaps
+	{
+		std::array<Ref<TextureResource>, (size_t)PhongMap::_COUNT_>	Maps{};
+	};
+
+
+	class PhongReflectivityMaterialModule : public AMaterialModule
+	{
+	public:
+		PhongReflectivityMaterialModule(uint8_t set) :
+			AMaterialModule(set)
+		{}
+
+
+		[[nodiscard]] PhongReflectivityParameters& operator*()
+		{
+			return m_params;
+		}
+
+		[[nodiscard]] const PhongReflectivityParameters& operator*() const
+		{
+			return m_params;
+		}
+
+		void	UpdateResources(MaterialResource& updatedMaterial) override;
+
+
+	private:
+
+		PhongReflectivityParameters	m_params;
+
+	};
+
+
+	class PhongReflectivityMapsMaterialModule : public AMaterialModule
+	{
+	public:
+		PhongReflectivityMapsMaterialModule(uint8_t set) :
+			AMaterialModule(set)
+		{}
+
+
+		void	Set(PhongMap type, const Ref<TextureResource>& tex)
+		{
+			m_maps.Maps[(uint8_t)type] = tex;
+		}
+
+		void	UpdateResources(MaterialResource& updatedMaterial) override;
+
+
+
+	private:
+
+		PhongReflectivityMaps	m_maps;
+
+	};
 
 
 	class VulkanDescriptorPool
@@ -95,7 +162,11 @@ namespace moe
 
 	};
 
-	class VulkanMaterial
+
+
+
+
+	class VulkanMaterial : public MaterialResource
 	{
 	public:
 
@@ -115,7 +186,18 @@ namespace moe
 		~VulkanMaterial();
 
 
-		VulkanMaterial& Initialize(const MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
+		/* MaterialResource interface */
+		std::unique_ptr<MaterialResource>	Clone() override;
+
+		void								AddNewModule(std::unique_ptr<AMaterialModule> newModule) override;
+
+		void								UpdateResources(uint8_t resourceSet) override;
+
+		MaterialResource&					BindTextureResource(uint32_t set, uint32_t binding, const Ref<TextureResource>& tex) override;
+		/* MaterialResource interface end */
+
+
+		VulkanMaterial& Initialize(MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);
 
 		VulkanMaterial& BindTexture(uint32_t set, uint32_t binding, const VulkanTexture& tex);
 
@@ -129,9 +211,11 @@ namespace moe
 		T&				BindAs(uint8_t set, uint8_t binding);
 
 
-		void	UpdateDescriptorSets(const MyVkDevice& device) ;
+		void	UpdateDescriptorSet(uint32_t setNbr);
+		void	UpdateAllDescriptorSets();
 
 		void	Bind(vk::CommandBuffer recordingBuffer) const;
+
 
 		[[nodiscard]] const VulkanPipeline& GetPipeline() const
 		{
@@ -142,14 +226,16 @@ namespace moe
 
 	private:
 
+		MOE_VK_DEVICE_GETTER()
+
 		void		CreateDescriptorSetPool(const MyVkDevice& device, uint32_t maxInstances);
 
 		void		AllocateDescriptorSets(const MyVkDevice& device);
 
-		uint32_t	FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const;
+		[[nodiscard]] uint32_t	FindBindingDescriptorSetWriteIndex(uint32_t set, uint32_t binding) const;
 
 
-		const MyVkDevice*						m_device{ nullptr };
+		MyVkDevice*								m_device{ nullptr };
 		Ref<ShaderPipelineResource>				m_pipeline{};
 		VulkanDescriptorPoolList				m_pools{};
 		std::vector<vk::DescriptorSet>			m_sets;
@@ -157,6 +243,8 @@ namespace moe
 
 		std::unordered_map<uint16_t, size_t>	m_uniformBindingOffsets{};
 		size_t									m_requiredUniformDataSize{ 0 };
+
+		std::vector<std::unique_ptr<AMaterialModule>>	m_modules{ };
 
 	};
 

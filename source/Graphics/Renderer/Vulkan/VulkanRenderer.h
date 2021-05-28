@@ -144,9 +144,6 @@ namespace moe
 
 		VulkanFrameGraph	m_frameGraph;
 
-		vk::UniqueShaderModule	m_vertexShader;
-		vk::UniqueShaderModule	m_fragmentShader;
-
 		RenderWorld		m_world;
 
 		std::vector<VulkanCommandPool>	m_commandPools;

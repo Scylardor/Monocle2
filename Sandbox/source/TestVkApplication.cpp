@@ -132,11 +132,35 @@ namespace moe
 		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 
 		model = Mat4::Identity();
-		for (const auto& meshRef : m_backpack.GetMeshResources())
-		{
-			auto drawID = m_scene.Emplace(meshRef.ID(), 0);
 
-			m_scene.MutObject(drawID).MutateMVP() = m_projection * m_view * model;
+		// In case we need it
+		Ref<MaterialResource> defaultMat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
+		MOE_ASSERT(defaultMat);
+
+		for (const auto& node : m_backpack.GetNodes())
+		{
+			for (size_t meshIdx : node.Meshes)
+			{
+				const MeshData& meshData = m_backpack.GetMeshes()[meshIdx];
+
+				RegistryID matID;
+				if (meshData.Material != 0) // 0 is "no material" for assimp so use the default one
+				{
+					const auto& meshMaterial = m_backpack.GetMaterialResources()[meshData.Material];
+					matID = meshMaterial.MaterialResource.ID();
+				}
+				else
+				{
+					matID = defaultMat.ID();
+				}
+
+				auto meshID = m_backpack.GetMeshResources()[meshIdx].ID();
+
+				auto drawID = m_scene.Emplace(meshID, matID);
+
+				m_scene.MutObject(drawID).MutateMVP() = m_projection * m_view * model;
+			}
+
 		}
 	}
 

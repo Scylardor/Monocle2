@@ -53,7 +53,7 @@ namespace moe
 	{
 		std::string													Name{};
 		std::vector<std::pair<aiTextureType, Ref<TextureResource>>>	Textures{};
-		MaterialReflectivityParameters								ReflectivityParams{};
+		PhongReflectivityParameters									ReflectivityParams{};
 		Ref<MaterialResource>										MaterialResource{};
 	};
 
@@ -149,6 +149,18 @@ namespace moe
 		}
 
 
+		[[nodiscard]] const std::vector<ModelMaterial>& GetMaterialResources() const
+		{
+			return m_materials;
+		}
+
+
+		[[nodiscard]] const std::vector<ModelNode>& GetNodes() const
+		{
+			return m_nodes;
+		}
+
+
 		[[nodiscard]] const std::string&	GetName() const
 		{
 			return m_name;
@@ -184,7 +196,7 @@ namespace moe
 
 		void	ImportSceneResources(const aiScene& scene, Model& importedModel, const FilePath& modelPath);
 
-		void	ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath);
+		void	ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath, Ref<MaterialResource>& defaultMaterial);
 
 
 		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex = ModelNode::ROOT_INDEX);

@@ -16,47 +16,6 @@ namespace moe
 	};
 
 
-	class VulkanMaterialFactory : public IMaterialFactory
-	{
-	public:
-		VulkanMaterialFactory() = default;
-
-		VulkanMaterialFactory(MyVkDevice& device) :
-			m_device(&device)
-		{}
-
-		RegistryID	IncrementReference(RegistryID id) override
-		{
-			return m_materials.IncrementReference(id);
-		}
-
-		bool		DecrementReference(RegistryID id) override
-		{
-			m_materials.DecrementReference(id);
-			return false;
-		}
-
-
-		[[nodiscard]] VulkanMaterial& MutateResource(RegistryID id) override
-		{
-			return m_materials.MutEntry(id);
-		}
-
-
-		[[nodiscard]] const VulkanMaterial& GetResource(RegistryID id) const override
-		{
-			return m_materials.GetEntry(id);
-		}
-
-
-	private:
-
-		MyVkDevice* m_device{nullptr};
-
-		ObjectRegistry<VulkanMaterial>	m_materials;
-	};
-
-
 
 }
 
