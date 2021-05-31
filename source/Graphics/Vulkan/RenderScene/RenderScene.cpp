@@ -9,9 +9,11 @@
 namespace moe
 {
 
-	void RenderScene::Initialize(uint32_t nbrActors)
+	void RenderScene::Initialize(MyVkDevice& device, uint32_t maxFrameCount, uint32_t nbrActors)
 	{
 		m_objects.Reserve(nbrActors);
+
+		m_cameras.Initialize(device, maxFrameCount);
 	}
 }
 

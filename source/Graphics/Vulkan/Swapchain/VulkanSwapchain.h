@@ -48,7 +48,7 @@ namespace moe
 		}
 
 
-		uint32_t	GetMaxFramesInFlight() const
+		static uint32_t	GetMaxFramesInFlight()
 		{
 			return MAX_FRAMES_IN_FLIGHT;
 		}

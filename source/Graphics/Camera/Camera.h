@@ -20,35 +20,75 @@ namespace moe
 	enum class CameraProjection : uint8_t
 	{
 		Orthographic,
-		Perspective
+		Orthographic_MinusOneToOne = Orthographic,
+		Orthographic_ZeroToOne,
+		Perspective,
+		Perspective_MinusOneToOne = Perspective,
+		Perspective_ZeroToOne,
+		Perspective_ZeroToOne_FlippedY
+	};
+
+	// TODO : Should use these enums instead of a big mixed one to avoid misconstructions.
+	enum class OrthographicProjection : uint8_t
+	{
+		MinusOneToOne,
+		ZeroToOne
 	};
 
 
-	struct OrthographicCameraDesc
+	enum class PerspectiveProjection : uint8_t
+	{
+		MinusOneToOne,
+		ZeroToOne
+	};
+
+	struct CameraDescription
+	{
+	};
+
+	struct OrthographicCameraDesc : CameraDescription
 	{
 		OrthographicCameraDesc() = default;
 
-		OrthographicCameraDesc(float cubeExtent, float near, float far) :
+		OrthographicCameraDesc(float cubeExtent, float near, float far, CameraProjection projType = CameraProjection::Orthographic) :
 			m_left(-cubeExtent), m_right(cubeExtent), m_bottom(-cubeExtent), m_top(cubeExtent),
-			m_near(near), m_far(far)
+			m_near(near), m_far(far), m_projType(projType)
 		{}
 
-		float	m_left = 0.0f;
-		float	m_right = 800.0f;
-		float	m_bottom = 0.0f;
-		float	m_top = 600.0f;
-		float	m_near = 0.1f;
-		float	m_far = 100.0f;
+		float				m_left = 0.0f;
+		float				m_right = 800.0f;
+		float				m_bottom = 0.0f;
+		float				m_top = 600.0f;
+		float				m_near = 0.1f;
+		float				m_far = 100.0f;
+		CameraProjection	m_projType = CameraProjection::Orthographic;
 	};
 
+	typedef OrthographicCameraDesc	OrthographicCamera;
 
-	struct PerspectiveCameraDesc
+
+	struct PerspectiveCameraDesc : CameraDescription
 	{
+		PerspectiveCameraDesc() = default;
+
+		PerspectiveCameraDesc(Degs_f fovy, float ar, float near, float far, CameraProjection projType = CameraProjection::Perspective) :
+			m_fovY(fovy),
+			m_aspectRatio(ar),
+			m_near(near),
+			m_far(far),
+			m_projType(projType)
+		{}
+
+
 		Degs_f				m_fovY{ 90.F };	// The perspective vertical field of view (Y), in degrees.
 		float				m_aspectRatio{ 1.f };	// The aspect ratio (width / height).
 		float				m_near = { 0.1f };
 		float				m_far = { 1000.f };
+		CameraProjection	m_projType = CameraProjection::Perspective;
 	};
+
+	typedef PerspectiveCameraDesc	PerspectiveCamera;
+
 
 	// A camera cannot be orthographic AND perspective at the same time, so let's share the data.
 	union CameraData
@@ -210,7 +250,7 @@ namespace moe
 
 		ViewportHandle	m_viewportHandle{0};
 
-		CameraProjection	m_projectionType{ CameraProjection::Perspective };
+		CameraProjection	m_projectionType;
 
 		Vec3	m_cameraFront{0, 0, -1};
 		Vec3	m_cameraRight{ 1, 0, 0 };

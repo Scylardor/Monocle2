@@ -268,12 +268,16 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/Buffer/VulkanBuffer.h
 ./Vulkan/BufferPoolAllocator/BufferPoolAllocator.cpp
 ./Vulkan/BufferPoolAllocator/BufferPoolAllocator.h
+./Vulkan/Camera/CameraSystem.cpp
+./Vulkan/Camera/CameraSystem.h
 ./Vulkan/CommandPipeline/VulkanCommandPipeline.cpp
 ./Vulkan/CommandPipeline/VulkanCommandPipeline.h
 ./Vulkan/CommandPool/VulkanCommandPool.cpp
 ./Vulkan/CommandPool/VulkanCommandPool.h
 ./Vulkan/DebugMessenger/VulkanDebugMessenger.cpp
 ./Vulkan/DebugMessenger/VulkanDebugMessenger.h
+./Vulkan/DescriptorSet/VulkanDescriptorSetAllocator.cpp
+./Vulkan/DescriptorSet/VulkanDescriptorSetAllocator.h
 ./Vulkan/Device/VulkanDevice.cpp
 ./Vulkan/Device/VulkanDevice.h
 ./Vulkan/Device/VulkanDeviceList.cpp

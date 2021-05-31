@@ -15,7 +15,7 @@ namespace moe
 
 		SparseArray() = default;
 
-		explicit SparseArray(std::size_t nbReserved)
+		explicit SparseArray(size_t nbReserved)
 		{
 			Reserve(nbReserved);
 		}
@@ -120,9 +120,20 @@ namespace moe
 		}
 
 
+		[[nodiscard]] auto	GetCapacity() const
+		{
+			return m_objects.capacity();
+		}
+
 		[[nodiscard]] bool	IsValidID(IDType id) const
 		{
 			return (id < m_objects.size() && id != ms_INVALID_ID);
+		}
+
+
+		[[nodiscard]] auto	DenseIndex(IDType id) const
+		{
+			return m_denseIndices[id];
 		}
 
 
@@ -161,9 +172,9 @@ namespace moe
 
 	private:
 
-		std::size_t	PushNewObjectIndices()
+		IDType	PushNewObjectIndices()
 		{
-			auto denseIdx = m_objects.size();
+			IDType denseIdx = (IDType) m_objects.size();
 
 			// Try to grab the index of the first free slot if there is one
 			auto sparseIdx = m_nextFreeSparseIndex;
@@ -178,11 +189,14 @@ namespace moe
 			else
 			{
 				// The free list is empty, so we'll just need to grow the array.
-				sparseIdx = m_denseIndices.size();
+				sparseIdx = (IDType) m_denseIndices.size();
 				m_denseIndices.push_back(denseIdx);
 			}
 
 			m_sparseIndices.push_back(sparseIdx);
+
+			// check for index type overflow (would wrap)
+			MOE_ASSERT(m_objects.size() <= std::numeric_limits<IDType>::max());
 
 			return sparseIdx;
 		}
@@ -191,14 +205,14 @@ namespace moe
 		ObjectArray		m_objects;
 
 		// Index into this to obtain dense indices (to index directly objects.)
-		std::vector<std::size_t>	m_denseIndices;
+		std::vector<IDType>	m_denseIndices;
 
 		// Index into this to obtain sparse indices (to index into dense indices array, which might contain holes.)
-		std::vector<std::size_t>	m_sparseIndices;
+		std::vector<IDType>	m_sparseIndices;
 
-		std::size_t m_nextFreeSparseIndex = ms_INVALID_ID;
+		IDType m_nextFreeSparseIndex = ms_INVALID_ID;
 
-		static const std::size_t ms_INVALID_ID = (std::size_t) -1;
+		static const IDType ms_INVALID_ID = (IDType) -1;
 	};
 
 

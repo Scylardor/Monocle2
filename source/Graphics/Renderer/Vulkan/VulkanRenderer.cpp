@@ -339,7 +339,7 @@ namespace moe
 		for (const auto& drawable : renderedScene)
 		{
 			auto matID = drawable.GetMaterialID();
- 			if (lastMatID != matID)
+			if (lastMatID != matID)
 			{
 				if (matID != 0)
 				{

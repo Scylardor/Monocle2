@@ -113,6 +113,12 @@ namespace moe
 		void	RenderFrame(const RenderScene& renderedScene);
 
 
+		auto	GetMaxFramesInFlight() const
+		{
+			return m_swapchain.GetMaxFramesInFlight();
+		}
+
+
 		MyVkDevice&	GraphicsDevice()
 		{
 			MOE_ASSERT(m_graphicsDevice);

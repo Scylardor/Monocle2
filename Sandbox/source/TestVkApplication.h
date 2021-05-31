@@ -56,16 +56,21 @@ namespace moe
 
 	private:
 
-		Mat4	m_view;
-		Mat4	m_projection;
+		void	LoadDefaultGraphicsResources();
+
+		void	CreateCamera();
+
+		void	CreateDefaultPlanesMesh();
+
+		void	LoadBackpackModel();
 
 		moe::Model m_backpack;
 
 		Ref<MeshResource> m_planes;
 
-
 		Ref<TextureResource> m_statue;
 
+		CameraRef	m_myCam;
 	};
 }
 #endif

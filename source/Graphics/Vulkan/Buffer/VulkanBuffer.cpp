@@ -85,7 +85,7 @@ namespace moe
 	{
 		VulkanBuffer buffer = device.BufferAllocator().Create(bufferSize, specificUsageFlags, memoryProperties);
 
-		MOE_ASSERT((bufferSize != 0 && bufferData != nullptr) || (bufferSize == 0 && bufferData == nullptr));
+		MOE_ASSERT(bufferSize != 0 || bufferData == nullptr);
 		if (bufferData != nullptr)
 		{
 			auto* ptr = buffer.Map(device);

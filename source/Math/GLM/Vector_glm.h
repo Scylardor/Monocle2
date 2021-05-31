@@ -467,6 +467,11 @@ namespace moe
 				return Vector(m_vec - rhs.m_vec);
 			}
 
+			Vector operator-() const
+			{
+				return Vector(-m_vec);
+			}
+
 			Vector& operator-=(ValT val)
 			{
 				m_vec -= val;

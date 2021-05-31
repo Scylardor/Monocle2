@@ -295,6 +295,17 @@ namespace moe
 
 
 			/**
+			 * \brief Sets the last column of the matrix to a new translation.
+			 */
+			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			void	SetTranslation(const Vec<3, ValT>& newTranslation)
+			{
+				std::memcpy(&m_mat[3], &newTranslation, sizeof(Vec<3, ValT>));
+			}
+
+
+
+			/**
 			 * \brief Adds a rotation based on the provided vector for axis and angle to the current matrix transformation.
 			 * GLM builds right-handed rotations by default.
 			 * This function is NOT const : the matrix is affected.

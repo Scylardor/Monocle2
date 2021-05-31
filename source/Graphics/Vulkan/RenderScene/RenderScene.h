@@ -4,6 +4,7 @@
 #include "Graphics/Vulkan/VulkanMacros.h"
 
 #include "Graphics/Drawable/Drawable.h"
+#include "Graphics/Vulkan/Camera/CameraSystem.h"
 
 #include "Core/Containers/SparseArray/SparseArray.h"
 
@@ -16,10 +17,9 @@ namespace moe
 		using DrawableID = uint32_t;
 		typedef SparseArray<Drawable> DrawableArray;
 
+		static const uint32_t DEFAULT_OBJECTS_NBR = 1024;
 
-		static const uint32_t DEFAULT_ACTORS = 1024;
-
-		void	Initialize(uint32_t nbrActors = DEFAULT_ACTORS);
+		void	Initialize(MyVkDevice& device, uint32_t maxFrameCount, uint32_t nbrActors = DEFAULT_OBJECTS_NBR);
 
 		const Drawable&	GetObject(DrawableID id) const
 		{
@@ -42,6 +42,14 @@ namespace moe
 		{
 			m_objects.Remove(id);
 		}
+
+
+		[[nodiscard]] VulkanCameraSystem&	CameraSystem()
+		{
+			return m_cameras;
+		}
+
+
 
 		// For C++11 range for syntax
 		auto	begin()
@@ -70,6 +78,8 @@ namespace moe
 	private:
 
 		SparseArray<Drawable>	m_objects;
+
+		VulkanCameraSystem	m_cameras{};
 
 	};
 }
