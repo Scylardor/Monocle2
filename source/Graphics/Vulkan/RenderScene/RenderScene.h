@@ -19,7 +19,9 @@ namespace moe
 
 		static const uint32_t DEFAULT_OBJECTS_NBR = 1024;
 
-		void	Initialize(MyVkDevice& device, uint32_t maxFrameCount, uint32_t nbrActors = DEFAULT_OBJECTS_NBR);
+		void	Initialize(MyVkDevice& device, const VulkanSwapchain& swapchain, uint32_t maxFrameCount, uint32_t nbrActors = DEFAULT_OBJECTS_NBR);
+
+		void	Update(uint32_t frameIndex);
 
 		const Drawable&	GetObject(DrawableID id) const
 		{
@@ -49,6 +51,11 @@ namespace moe
 			return m_cameras;
 		}
 
+
+		[[nodiscard]] const VulkanCameraSystem& GetCameraSystem() const
+		{
+			return m_cameras;
+		}
 
 
 		// For C++11 range for syntax

@@ -32,6 +32,34 @@ namespace moe
 		Vec4	m_cameraPos{ 0 };
 	};
 
+
+	struct ViewportDesc
+	{
+		ViewportDesc(float px, float py, float pw, float ph, float mind, float maxd) :
+			x(px), y(py), Width(pw), Height(ph), MinDepth(mind), MaxDepth(maxd)
+		{}
+
+		float	x{0}, y{0};
+		float	Width{ 0 }, Height{ 0 };
+		float	MinDepth{ 0 }, MaxDepth{ 1 };
+	};
+
+#define MOE_FULLSCREEN_VIEWPORT	ViewportDesc(0, 0, 1.f, 1.f, 0, 1)
+
+
+	struct ScissorDesc
+	{
+		ScissorDesc(int32_t px, int32_t py, uint32_t pw, uint32_t ph) :
+			x(px), y(py), Width(pw), Height(ph)
+		{}
+
+		int32_t		x{ 0 }, y{ 0 };
+		uint32_t	Width{ 0 }, Height{ 0 };
+	};
+
+#define MOE_FULLSCREEN_SCISSOR	ScissorDesc(0, 0, 1, 1)
+
+
 	// A camera cannot be orthographic AND perspective at the same time, so let's share the data.
 	struct CameraProjectionVar
 	{
@@ -64,7 +92,12 @@ namespace moe
 		Mat4				WorldTransform{ Mat4::Identity() };
 		Vec3				UpVector{ 0, 1, 0 };
 		Vec3				RightVector{ 1, 0, 0 };
+		Vec3				FrontVector{ 0, 0, -1 };
+		float				CameraSpeed{ 2.5f };
+		std::optional<Vec3>	LookatTarget{};
 		CameraProjectionVar	ProjectionData;
+		CameraID			ID{INVALID_CAMERA};
+		bool				UpdatedSinceLastRender{ false };
 	};
 
 
@@ -131,8 +164,16 @@ namespace moe
 		CameraRef&			SetAspectRatio(float ar);
 		[[nodiscard]] float	GetAspectRatio() const;
 
+		CameraRef&	SetViewport(const ViewportDesc& desc);
+		CameraRef&	SetScissor(const ScissorDesc& desc);
 
 		[[nodiscard]] const Mat4& GetViewProjection() const;
+
+		void	MoveForward(float dt);
+		void	MoveBackward(float dt);
+		void	StrafeLeft(float dt);
+		void	StrafeRight(float dt);
+
 
 	private:
 
@@ -156,18 +197,25 @@ namespace moe
 		~VulkanCameraSystem();
 
 
-		void	Initialize(MyVkDevice& device, uint32_t frameCount);
+		void	Initialize(MyVkDevice& device, const VulkanSwapchain& swapChain, uint32_t frameCount);
 
 		void	Update(uint32_t frameIndex);
 
 
 		template <typename TCam, typename... Args>
-		CameraRef	New(const Vec3& worldPos, Args&&... args)
+		CameraRef	New(const ViewportDesc& vpDesc, const ScissorDesc& scDesc, const Vec3& worldPos, Args&&... args)
 		{
 			TCam camDesc{ std::forward<Args>(args)... };
-			auto camID = m_cameras.Emplace(camDesc, worldPos);
+			auto camID = m_cameras.Emplace(std::move(camDesc), worldPos);
+			CameraDesc& cam = m_cameras.Mut(camID);
+			cam.ID = camID;
 
-			RecomputeViewProjection(camID);
+			InitializeViewportScissor(camID, vpDesc, scDesc);
+
+			AllocateCameraDescriptors(camID);
+
+			RecomputeGPUCamera(camID);
+
 			return { *this, camID };
 		}
 
@@ -181,7 +229,7 @@ namespace moe
 		void Lookat(CameraID camID, const Vec3& worldTarget);
 
 
-		void SetPosition(CameraID camID, const Vec3& worldPos);
+		void				SetPosition(CameraID camID, const Vec3& worldPos);
 		[[nodiscard]] Vec3	GetPosition(CameraID camID) const;
 
 
@@ -205,7 +253,6 @@ namespace moe
 		void				SetRightPlane(CameraID camID, float right);
 		[[nodiscard]] float	GetRightPlane(CameraID camID) const;
 
-		// TODO: Top and Bottom are missing!
 		void				SetTopPlane(CameraID camID, float top);
 		[[nodiscard]] float	GetTopPlane(CameraID camID) const;
 
@@ -214,7 +261,7 @@ namespace moe
 
 
 		// Perspective only
-		void SetFieldOfViewY(CameraID camID, Degs_f fovy);
+		void					SetFieldOfViewY(CameraID camID, Degs_f fovy);
 		[[nodiscard]] Degs_f	GetFieldOfViewY(CameraID camID) const;
 
 
@@ -222,7 +269,31 @@ namespace moe
 		[[nodiscard]] float	GetAspectRatio(CameraID camID) const;
 
 
+		void	SetViewport(CameraID camID, const ViewportDesc& desc);
+		void	SetScissor(CameraID camID, const ScissorDesc& desc);
+
 		[[nodiscard]] const Mat4& GetViewProjection(CameraID camID) const;
+
+		[[nodiscard]] const std::pair<vk::Viewport, vk::Rect2D>& GetCameraViewportScissor(CameraID camID) const
+		{
+			return m_cameraViewportScissor[camID];
+		}
+
+
+		void	MoveForward(CameraID camID, float dt);
+		void	MoveBackward(CameraID camID, float dt);
+		void	StrafeLeft(CameraID camID, float dt);
+		void	StrafeRight(CameraID camID, float dt);
+
+
+		template <typename TFunctor>
+		void	ForeachCamera(TFunctor&& visitorFn)
+		{
+			m_cameras.ForEach([&visitorFn](CameraDesc& camDesc)
+				{
+					visitorFn(camDesc);
+				});
+		}
 
 
 	protected:
@@ -231,37 +302,47 @@ namespace moe
 
 	private:
 
-		void	SetDirty()
+		void	InitializeGPUResources(MyVkDevice& device);
+
+		void	InitializeCameraUpdateInfos(MyVkDevice& device);
+
+		void	AllocateCameraDescriptors(CameraID camID);
+
+		void	InitializeViewportScissor(CameraID camId, const ViewportDesc& vpDesc, const ScissorDesc& scDesc);
+
+		void	ResetGPUUploadCounter()
 		{
-			m_dirtyCounter = m_frameCount;
+			m_uploadCounter = m_frameCount;
 		}
 
 
-		void	RecomputeViewProjection(CameraID camID);
+		void		RecomputeGPUCamera(CameraID camID);
 
 		void		RecomputeOrthographicMatrix(CameraID camID, const OrthographicCamera& orthoData);
 		static void	RecomputePerspectiveMatrix(GPUCamera& cameraMatrices, const PerspectiveCameraDesc& perspectiveData);
 
 
-		void	UpdateGPUCameras();
 
 		MOE_VK_DEVICE_GETTER()
 
-		MyVkDevice*		m_device{ nullptr };
+		MyVkDevice*				m_device{ nullptr };
+		const VulkanSwapchain*	m_swapChain{ nullptr };
 
 		SparseArray< CameraDesc, CameraID >	m_cameras{};
 
-		VulkanBuffer	m_cameraBuffer{};
+		VulkanBuffer			m_cameraBuffer{};
 		GPUCamera*				m_camerasDeviceMemory{ nullptr };	// The cameras sent on the GPU.
 		std::vector<GPUCamera>	m_camerasHostMemory;				// The cameras data read and written on the CPU.
 
-		std::vector<std::pair<CameraID, uint8_t>>	m_dirtyCounters{};
-		uint32_t		m_dirtyCounter{ 0 };	// Number of frames we should consider the GPU data 'dirty'.
+		uint32_t		m_uploadCounter{ 0 };	// Number of frames we should consider the GPU data 'dirty'.
 
 		uint32_t		m_frameCount{ 0 }; // Maximum number of frames in flight
 
 		VulkanDescriptorSetAllocator	m_setAllocator{};
 
+		std::vector<vk::DescriptorSet>	m_cameraDescriptors{};
+
+		std::vector<std::pair<vk::Viewport, vk::Rect2D>>	m_cameraViewportScissor{};
 	};
 }
 

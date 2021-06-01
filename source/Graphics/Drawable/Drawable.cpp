@@ -8,10 +8,9 @@
 namespace moe
 {
 
-	void Drawable::BindTransform(VulkanPipeline const& pipeline, vk::CommandBuffer command) const
+	void Drawable::BindPerObjectResources(VulkanPipeline const& pipeline, vk::CommandBuffer command) const
 	{
-		auto& mvp = MVP();
-		command.pushConstants(pipeline.PipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4), &mvp);
+		command.pushConstants(pipeline.PipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4), &m_mvp);
 	}
 
 }

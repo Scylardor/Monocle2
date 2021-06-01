@@ -119,9 +119,43 @@ namespace moe
 	}
 
 
+	CameraRef& CameraRef::SetViewport(const ViewportDesc& desc)
+	{
+		m_system->SetViewport(m_camID, desc);
+		return *this;
+	}
+
+	CameraRef& CameraRef::SetScissor(const ScissorDesc& desc)
+	{
+		m_system->SetScissor(m_camID, desc);
+		return *this;
+	}
+
+
 	const Mat4& CameraRef::GetViewProjection() const
 	{
 		return m_system->GetViewProjection(m_camID);
+	}
+
+
+	void CameraRef::MoveForward(float dt)
+	{
+		m_system->MoveForward(m_camID, dt);
+	}
+
+	void CameraRef::MoveBackward(float dt)
+	{
+		m_system->MoveBackward(m_camID, dt);
+	}
+
+	void CameraRef::StrafeLeft(float dt)
+	{
+		m_system->StrafeLeft(m_camID, dt);
+	}
+
+	void CameraRef::StrafeRight(float dt)
+	{
+		m_system->StrafeRight(m_camID, dt);
 	}
 
 
@@ -129,8 +163,7 @@ namespace moe
 	{
 		m_cameras.Reserve(DEFAULT_NUMBER_OF_CAMERAS);
 		m_camerasHostMemory.resize(DEFAULT_NUMBER_OF_CAMERAS);
-
-
+		m_cameraViewportScissor.resize(DEFAULT_NUMBER_OF_CAMERAS);
 	}
 
 
@@ -144,76 +177,28 @@ namespace moe
 	}
 
 
-	void VulkanCameraSystem::Initialize(MyVkDevice& device, uint32_t frameCount)
+	void VulkanCameraSystem::Initialize(MyVkDevice& device, const VulkanSwapchain& swapChain, uint32_t frameCount)
 	{
 		m_device = &device;
+		m_swapChain = &swapChain;
 		m_frameCount = frameCount;
 
-		// Create the cameras buffer.
-		m_cameraBuffer = VulkanBuffer::NewUniformBuffer(device, sizeof(GPUCamera) * m_cameras.GetCapacity() * frameCount,
-			nullptr, VulkanBuffer::NoTransfer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		InitializeGPUResources(device);
 
-		// Leave the buffer mapped forever.
-		m_camerasDeviceMemory = (GPUCamera*) m_cameraBuffer.Map(device);
+		InitializeCameraUpdateInfos(device);
 
-
-		vk::DescriptorSetLayoutBinding uboBinding{
-			0,
-			vk::DescriptorType::eUniformBuffer,
-			1,
-			vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
-		};
-
-		vk::DescriptorSetLayoutCreateInfo layoutCreateInfo{
-			vk::DescriptorSetLayoutCreateFlags(),
-			1,
-			&uboBinding
-		};
-
-		m_setAllocator.InitializePool(device, layoutCreateInfo, DEFAULT_NUMBER_OF_CAMERAS * VulkanSwapchain::GetMaxFramesInFlight());
-
-		auto allocatedSets = m_setAllocator.Allocate(VulkanSwapchain::GetMaxFramesInFlight());
-
-		std::vector<vk::WriteDescriptorSet> m_setUpdates;
-		m_setUpdates.reserve(allocatedSets.size());
-
-		std::vector <vk::DescriptorBufferInfo> m_buffInfos;
-		m_buffInfos.reserve(allocatedSets.size());
-
-		uint32_t camOffset = 0;
-		for (auto vkSet : allocatedSets)
-		{
-			m_buffInfos.emplace_back(
-				m_cameraBuffer.Handle(),
-				camOffset,
-				sizeof(GPUCamera)
-			);
-
-			camOffset += (uint32_t) (sizeof(GPUCamera) * m_camerasHostMemory.capacity());
-
-			vk::WriteDescriptorSet dscSetWrite{
-					vkSet,
-					0, 0, 1,
-					vk::DescriptorType::eUniformBuffer,
-					nullptr,
-					& m_buffInfos.back()
-			};
-
-			m_setUpdates.emplace_back(dscSetWrite);
-		}
-
-		device->updateDescriptorSets((uint32_t)m_setUpdates.size(), m_setUpdates.data(), 0, nullptr);
+		m_cameraDescriptors.reserve(DEFAULT_NUMBER_OF_CAMERAS * m_frameCount);
 	}
 
 
 	void VulkanCameraSystem::Update(uint32_t frameIndex)
 	{
-		if (m_dirtyCounter != 0)
+		if (m_uploadCounter != 0)
 		{
 			auto thisFrameOffset = (m_cameras.GetCapacity() * frameIndex);
 			GPUCamera* thisFrameCamerasBegin = m_camerasDeviceMemory + thisFrameOffset;
 			std::memcpy(thisFrameCamerasBegin, m_camerasHostMemory.data(), sizeof(GPUCamera) * m_camerasHostMemory.size());
-			m_dirtyCounter--;
+			m_uploadCounter--;
 		}
 	}
 
@@ -226,8 +211,11 @@ namespace moe
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
 		cam.WorldTransform = cameraMatrices.m_view.Invert();
+		cam.LookatTarget = worldTarget;
 
-		SetDirty();
+		cam.FrontVector = (worldTarget - cam.WorldTransform.GetTranslation()).GetNormalized();
+
+		ResetGPUUploadCounter();
 	}
 
 	void VulkanCameraSystem::SetPosition(CameraID camID, const Vec3& worldPos)
@@ -236,11 +224,19 @@ namespace moe
 		cam.WorldTransform.SetTranslation(worldPos);
 
 		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
-		// in case of SetPosition, no need to recompute the inverse, just set the last column
-		cameraMatrices.m_view.SetTranslation(-worldPos);
+
+		if (cam.LookatTarget)
+		{
+			cameraMatrices.m_view = Mat4::LookAtMatrix(worldPos, cam.LookatTarget.value(), cam.UpVector);
+		}
+		else
+		{
+			cameraMatrices.m_view = Mat4::LookAtMatrix(worldPos, worldPos + cam.FrontVector, cam.UpVector);
+		}
+
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	Vec3 VulkanCameraSystem::GetPosition(CameraID camID) const
@@ -294,7 +290,7 @@ namespace moe
 
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetNearPlane(CameraID camID) const
@@ -325,7 +321,7 @@ namespace moe
 
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetFarPlane(CameraID camID) const
@@ -342,7 +338,7 @@ namespace moe
 		ortho.m_left = left;
 
 		RecomputeOrthographicMatrix(camID, ortho);
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetLeftPlane(CameraID camID) const
@@ -358,7 +354,7 @@ namespace moe
 		ortho.m_right = right;
 
 		RecomputeOrthographicMatrix(camID, ortho);
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetRightPlane(CameraID camID) const
@@ -374,7 +370,7 @@ namespace moe
 		ortho.m_top = top;
 
 		RecomputeOrthographicMatrix(camID, ortho);
-		SetDirty();
+		ResetGPUUploadCounter();
 
 	}
 
@@ -391,7 +387,7 @@ namespace moe
 		ortho.m_bottom = bottom;
 
 		RecomputeOrthographicMatrix(camID, ortho);
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetBottomPlane(CameraID camID) const
@@ -410,7 +406,7 @@ namespace moe
 		RecomputePerspectiveMatrix(cameraMatrices, perspective);
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	Degs_f VulkanCameraSystem::GetFieldOfViewY(CameraID camID) const
@@ -429,7 +425,7 @@ namespace moe
 		RecomputePerspectiveMatrix(cameraMatrices, perspective);
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		SetDirty();
+		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetAspectRatio(CameraID camID) const
@@ -439,17 +435,169 @@ namespace moe
 	}
 
 
+	void VulkanCameraSystem::SetViewport(CameraID camID, const ViewportDesc& desc)
+	{
+		const auto fullScreenSize = m_swapChain->GetSwapchainImageExtent();
+
+		vk::Viewport& camViewport = m_cameraViewportScissor[camID].first;
+		camViewport.x = (desc.x <= 1.f ? fullScreenSize.width * desc.x : desc.x);
+		camViewport.y = (desc.x <= 1.f ? fullScreenSize.height * desc.y : desc.y);
+		camViewport.width = (desc.Width <= 1.f ? fullScreenSize.width * desc.Width : desc.Width);
+		camViewport.height = (desc.Height <= 1.f ? fullScreenSize.height * desc.Height : desc.Height);
+		camViewport.minDepth = desc.MinDepth;
+		camViewport.maxDepth = desc.MaxDepth;
+	}
+
+
+	void VulkanCameraSystem::SetScissor(CameraID camID, const ScissorDesc& desc)
+	{
+		const auto fullScreenSize = m_swapChain->GetSwapchainImageExtent();
+
+		vk::Rect2D& camScissor = m_cameraViewportScissor[camID].second;
+		camScissor.offset.x = (desc.x <= 1.f ? fullScreenSize.width * desc.x : desc.x);
+		camScissor.offset.x = (desc.x <= 1.f ? fullScreenSize.height * desc.y : desc.y);
+		camScissor.extent.width = (desc.Width <= 1.f ? fullScreenSize.width * desc.Width : desc.Width);
+		camScissor.extent.height = (desc.Height <= 1.f ? fullScreenSize.height * desc.Height : desc.Height);
+	}
+
+
 	const Mat4& VulkanCameraSystem::GetViewProjection(CameraID camID) const
 	{
 		return m_camerasHostMemory[camID].m_viewProj;
 	}
 
 
-	void VulkanCameraSystem::RecomputeViewProjection(CameraID camID)
+	void VulkanCameraSystem::MoveForward(CameraID camID, float dt)
+	{
+		const auto& cam = m_cameras.Get(camID);
+		Vec3 newPos = cam.WorldTransform.GetTranslation() + (cam.FrontVector * cam.CameraSpeed * dt);
+		SetPosition(camID, newPos);
+	}
+
+	void VulkanCameraSystem::MoveBackward(CameraID camID, float dt)
+	{
+		const auto& cam = m_cameras.Get(camID);
+		Vec3 newPos = cam.WorldTransform.GetTranslation() + (-cam.FrontVector * cam.CameraSpeed * dt);
+		SetPosition(camID, newPos);
+	}
+
+	void VulkanCameraSystem::StrafeLeft(CameraID camID, float dt)
+	{
+		const auto& cam = m_cameras.Get(camID);
+		Vec3 newPos = cam.WorldTransform.GetTranslation() + (-cam.RightVector * cam.CameraSpeed * dt);
+		SetPosition(camID, newPos);
+	}
+
+	void VulkanCameraSystem::StrafeRight(CameraID camID, float dt)
+	{
+		const auto& cam = m_cameras.Get(camID);
+		Vec3 newPos = cam.WorldTransform.GetTranslation() + (cam.RightVector * cam.CameraSpeed * dt);
+		SetPosition(camID, newPos);
+	}
+
+
+	void VulkanCameraSystem::InitializeGPUResources(MyVkDevice& device)
+	{
+		// Create the cameras buffer.
+		m_cameraBuffer = VulkanBuffer::NewUniformBuffer(device, sizeof(GPUCamera) * m_cameras.GetCapacity() * m_frameCount,
+			nullptr, VulkanBuffer::NoTransfer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+		// Leave the buffer mapped forever.
+		m_camerasDeviceMemory = (GPUCamera*)m_cameraBuffer.Map(device);
+
+		vk::DescriptorSetLayoutBinding uboBinding{
+			0,
+			vk::DescriptorType::eUniformBuffer,
+			1,
+			vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
+		};
+
+		vk::DescriptorSetLayoutCreateInfo layoutCreateInfo{
+			vk::DescriptorSetLayoutCreateFlags(),
+			1,
+			&uboBinding
+		};
+
+		m_setAllocator.InitializePool(device, layoutCreateInfo, DEFAULT_NUMBER_OF_CAMERAS * m_frameCount);
+	}
+
+
+	void VulkanCameraSystem::InitializeCameraUpdateInfos(MyVkDevice& device)
+	{
+		auto allocatedSets = m_setAllocator.Allocate(m_frameCount);
+
+		std::vector<vk::WriteDescriptorSet> m_setUpdates;
+		m_setUpdates.reserve(allocatedSets.size());
+
+		std::vector <vk::DescriptorBufferInfo> m_buffInfos;
+		m_buffInfos.reserve(allocatedSets.size());
+
+		uint32_t camOffset = 0;
+		for (auto vkSet : allocatedSets)
+		{
+			m_buffInfos.emplace_back(
+				m_cameraBuffer.Handle(),
+				camOffset,
+				sizeof(GPUCamera)
+			);
+
+			camOffset += (uint32_t)(sizeof(GPUCamera) * m_camerasHostMemory.capacity());
+
+			m_setUpdates.emplace_back(vkSet,
+				0, 0, 1,
+				vk::DescriptorType::eUniformBuffer,
+				nullptr,
+				&m_buffInfos.back());
+		}
+
+		device->updateDescriptorSets((uint32_t)m_setUpdates.size(), m_setUpdates.data(), 0, nullptr);
+	}
+
+
+	void VulkanCameraSystem::AllocateCameraDescriptors(CameraID camID)
+	{
+		const auto minWantedDescriptors = std::max(m_cameraDescriptors.size(), m_cameraDescriptors.size() + (camID + 1) * m_frameCount);
+		m_cameraDescriptors.resize(minWantedDescriptors);
+		auto cameraSets = m_setAllocator.Allocate(m_frameCount);
+
+		std::memcpy(&m_cameraDescriptors[camID * m_frameCount], cameraSets.data(), sizeof(vk::DescriptorSet) * m_frameCount);
+
+		const auto minWantedCameras = std::max(m_camerasHostMemory.size(), (size_t)camID + 1);
+		m_camerasHostMemory.resize(minWantedCameras);
+	}
+
+
+	void VulkanCameraSystem::InitializeViewportScissor(CameraID camID, const ViewportDesc& vpDesc, const ScissorDesc& scDesc)
+	{
+		const auto minWantedCameras = std::max(m_cameraViewportScissor.size(), (size_t)camID + 1);
+
+		m_cameraViewportScissor.resize(minWantedCameras);
+
+		const auto fullScreenSize = m_swapChain->GetSwapchainImageExtent();
+
+		vk::Viewport& camViewport = m_cameraViewportScissor[camID].first;
+		camViewport.x = (vpDesc.x <= 1.f ? (float)fullScreenSize.width * vpDesc.x : vpDesc.x);
+		camViewport.y = (vpDesc.x <= 1.f ? (float)fullScreenSize.height * vpDesc.y : vpDesc.y);
+		camViewport.width = (vpDesc.Width <= 1.f ? (float)fullScreenSize.width * vpDesc.Width : vpDesc.Width);
+		camViewport.height = (vpDesc.Height <= 1.f ? (float)fullScreenSize.height * vpDesc.Height : vpDesc.Height);
+		camViewport.minDepth = vpDesc.MinDepth;
+		camViewport.maxDepth = vpDesc.MaxDepth;
+
+		vk::Rect2D& camScissor = m_cameraViewportScissor[camID].second;
+		camScissor.offset.x = int32_t(scDesc.x <= 1.f ? (float)fullScreenSize.width * scDesc.x : scDesc.x);
+		camScissor.offset.x = int32_t(scDesc.x <= 1.f ? (float)fullScreenSize.height * scDesc.y : scDesc.y);
+		camScissor.extent.width = uint32_t(scDesc.Width <= 1.f ? (float)fullScreenSize.width * scDesc.Width : scDesc.Width);
+		camScissor.extent.height = uint32_t(scDesc.Height <= 1.f ? (float)fullScreenSize.height * scDesc.Height : scDesc.Height);
+	}
+
+
+	void VulkanCameraSystem::RecomputeGPUCamera(CameraID camID)
 	{
 		auto& cam = m_cameras.Mut(camID);
 
 		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
+
+		cameraMatrices.m_view = cam.WorldTransform.GetInverse();
 
 		std::visit(overloaded{
 			[&cameraMatrices](OrthographicCamera& ortho)
@@ -464,7 +612,9 @@ namespace moe
 
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		SetDirty();
+		cameraMatrices.m_cameraPos = Vec4{ cam.WorldTransform.GetTranslation(), 1.f };
+
+		ResetGPUUploadCounter();
 	}
 
 	void VulkanCameraSystem::RecomputeOrthographicMatrix(CameraID camID, const OrthographicCamera& orthoData)
@@ -496,10 +646,6 @@ namespace moe
 		}
 	}
 
-	void VulkanCameraSystem::UpdateGPUCameras()
-	{
-
-	}
 }
 
 

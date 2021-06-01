@@ -10,8 +10,8 @@ namespace moe
 	{
 		if (m_device)
 		{
-			if (m_layouts.empty() == false)
-				Device()->destroyDescriptorSetLayout(m_layouts[0]); // it contains copies of the same layout
+			if (m_allocatedLayout)
+				Device()->destroyDescriptorSetLayout(m_allocatedLayout); // it contains copies of the same layout
 
 			for (vk::DescriptorPool pool : m_pools)
 				Device()->destroyDescriptorPool(pool); // will free the descriptor sets
@@ -32,10 +32,8 @@ namespace moe
 	{
 		m_layoutCreateInfo = layoutCreateInfo;
 
-		vk::DescriptorSetLayout allocatedLayout = Device()->createDescriptorSetLayout(m_layoutCreateInfo);
-		MOE_ASSERT(allocatedLayout);
-
-		m_layouts.resize(m_maxSetsPerPool * m_frameCount, allocatedLayout);
+		m_allocatedLayout = Device()->createDescriptorSetLayout(m_layoutCreateInfo);
+		MOE_ASSERT(m_allocatedLayout);
 
 		// Based on the layout information, compute how many pool sizes we need and how many descriptors there are.
 		for (uint32_t iBind = 0u; iBind < m_layoutCreateInfo.bindingCount; iBind++)
@@ -66,13 +64,17 @@ namespace moe
 
 		if (m_availableDescriptorSets.empty() == false)
 		{
-			// Capture as much available descriptor sets as we can. Start from end to use the most recently freed first.
-			// Since we know vk::DescriptorSets are pointers, we can just make a bulk memcpy + resize.
-			auto extractedSets = std::min((uint32_t) m_availableDescriptorSets.size(), nbWantedSets);
-			const auto* srcPtr = &m_availableDescriptorSets[m_availableDescriptorSets.size() - extractedSets];
+			// First copy as much available sets as we can
+			// (Start from end to use the most recently freed first)
+			const auto extractedSets = std::min((uint32_t) m_availableDescriptorSets.size(), nbWantedSets);
+			const auto newAvailableSetSize = m_availableDescriptorSets.size() - extractedSets;
+			const auto* srcPtr = &m_availableDescriptorSets[newAvailableSetSize];
 
 			allocatedSets.resize(extractedSets);
 			std::memcpy(allocatedSets.data(), srcPtr, sizeof(vk::DescriptorSet) * extractedSets);
+
+			// Then erase the taken ones
+			m_availableDescriptorSets.resize(m_availableDescriptorSets.size() - extractedSets);
 		}
 
 		if (allocatedSets.size() != nbWantedSets)
@@ -90,6 +92,10 @@ namespace moe
 			};
 
 			m_pools.emplace_back(Device()->createDescriptorPool(poolCreateInfo));
+
+			// In our case we will create one descriptor set for each swap chain image, all with the same layout.
+			// Unfortunately we do need all the copies of the layout because the next function expects an array matching the number of sets.
+			const std::vector<vk::DescriptorSetLayout> m_layouts(m_maxSetsPerPool, m_allocatedLayout);
 
 			vk::DescriptorSetAllocateInfo descSetAllocInfo{
 				m_pools.back(),

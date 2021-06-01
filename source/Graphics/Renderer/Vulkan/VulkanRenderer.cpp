@@ -309,10 +309,11 @@ namespace moe
 
 
 
-
-	void VulkanRenderer::RenderFrame(const RenderScene& renderedScene)
+	void VulkanRenderer::RenderFrame(RenderScene& renderedScene)
 	{
 		m_swapchain.PrepareNewFrame();
+
+		renderedScene.Update(m_swapchain.GetFrameIndex());
 
 		auto& thisFrameCommandPool = m_commandPools[m_swapchain.GetFrameIndex()];
 		thisFrameCommandPool.Reset(*m_graphicsDevice);
@@ -321,45 +322,16 @@ namespace moe
 		MOE_ASSERT(optCb);
 		vk::CommandBuffer renderPassCommandBuffer = optCb.value();
 
-		renderPassCommandBuffer.begin(vk::CommandBufferBeginInfo{  });
+		renderPassCommandBuffer.begin(vk::CommandBufferBeginInfo{});
 
 		auto& rp = m_frameGraph.MutMainRenderPass();
 
 		rp.Begin(renderPassCommandBuffer, m_swapchain.GetImageInFlightIndex());
 
-
-		const VulkanMaterial& material = m_defaultMaterial.As<VulkanMaterial>();
-		const VulkanPipeline& pipeline = material.GetPipeline();
-
-		renderPassCommandBuffer.setViewport(0, (uint32_t)pipeline.Viewports().size(), pipeline.Viewports().data());
-		renderPassCommandBuffer.setScissor(0, (uint32_t)pipeline.Scissors().size(), pipeline.Scissors().data());
-
-		uint32_t lastMatID = ~0u;
-
-		for (const auto& drawable : renderedScene)
-		{
-			auto matID = drawable.GetMaterialID();
-			if (lastMatID != matID)
+		renderedScene.CameraSystem().ForeachCamera([&](CameraDesc& camera)
 			{
-				if (matID != 0)
-				{
-					const VulkanMaterial& drawableMaterial = m_resourceManager->GetResourceAs<VulkanMaterial>(matID);
-					drawableMaterial.Bind(renderPassCommandBuffer);
-				}
-				else
-				{
-					material.Bind(renderPassCommandBuffer);
-				}
-
-				lastMatID = matID;
-			}
-
-			drawable.BindTransform(pipeline, renderPassCommandBuffer);
-
-			const auto& drawableMesh = m_resourceManager->GetResourceAs< VulkanMesh >(drawable.GetMeshID());
-
-			drawableMesh.Draw(renderPassCommandBuffer);
-		}
+				RenderSceneWithCamera(renderedScene, renderPassCommandBuffer, camera);
+			});
 
 		rp.End(renderPassCommandBuffer);
 
@@ -371,6 +343,55 @@ namespace moe
 	}
 
 
+	void VulkanRenderer::RenderSceneWithCamera(RenderScene& renderScene, vk::CommandBuffer commandBuffer, CameraDesc& camera)
+	{
+		const auto& camViewportScissor = renderScene.GetCameraSystem().GetCameraViewportScissor(camera.ID);
+		// get the view proj in case we need to recompute drawable's MVP
+		const Mat4& cameraViewProj = renderScene.GetCameraSystem().GetViewProjection(camera.ID);
+
+		commandBuffer.setViewport(0, 1, &camViewportScissor.first);
+		commandBuffer.setScissor(0, 1, &camViewportScissor.second);
+
+		uint32_t lastMatID = ~0u;
+		const VulkanMaterial& defaultMaterial = m_defaultMaterial.As<VulkanMaterial>();
+		const VulkanMaterial* currentMaterial = nullptr;
+
+		for (auto& drawable : renderScene)
+		{
+			auto matID = drawable.GetMaterialID();
+			if (lastMatID != matID)
+			{
+				if (matID != 0)
+				{
+					const auto& drawableMaterial = m_resourceManager->GetResourceAs<VulkanMaterial>(matID);
+					currentMaterial = &drawableMaterial;
+					drawableMaterial.Bind(commandBuffer);
+				}
+				else
+				{
+					currentMaterial = &defaultMaterial;
+				}
+
+				currentMaterial->Bind(commandBuffer);
+
+				lastMatID = matID;
+			}
+
+			MOE_ASSERT(currentMaterial != nullptr);
+			if (camera.UpdatedSinceLastRender || drawable.WasUpdatedSinceLastRender())
+			{
+				drawable.SetMVP(cameraViewProj * drawable.GetModelMatrix());
+			}
+
+			drawable.BindPerObjectResources(currentMaterial->GetPipeline(), commandBuffer);
+
+			const auto& drawableMesh = m_resourceManager->GetResourceAs< VulkanMesh >(drawable.GetMeshID());
+
+			drawableMesh.Draw(commandBuffer);
+		}
+
+		camera.UpdatedSinceLastRender = false;
+	}
 }
 #pragma warning( pop )
 

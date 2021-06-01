@@ -41,9 +41,7 @@ namespace moe
 		std::vector<vk::DescriptorSet>	m_availableDescriptorSets;
 
 		vk::DescriptorSetLayout			m_allocatedLayout{};
-		// In our case we will create one descriptor set for each swap chain image, all with the same layout.
-		// Unfortunately we do need all the copies of the layout because the next function expects an array matching the number of sets.
-		std::vector<vk::DescriptorSetLayout>	m_layouts;
+
 
 		VkDescriptorSetLayoutCreateInfo	m_layoutCreateInfo{};
 

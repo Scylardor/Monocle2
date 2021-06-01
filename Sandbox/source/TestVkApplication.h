@@ -27,6 +27,8 @@ namespace moe
 
 		virtual void	Update();
 
+		virtual void	UpdateInputs() {}
+
 		float	GetElapsedSecondsSinceCreation() const;
 
 	protected:
@@ -54,11 +56,18 @@ namespace moe
 
 		void Update() override;
 
+		void	UpdateInputs() override;
+
 	private:
 
 		void	LoadDefaultGraphicsResources();
 
 		void	CreateCamera();
+		void	SetupCameraInputs();
+		void	CameraMoveForward();
+		void	CameraMoveBackwards();
+		void	CameraMoveStrafeLeft();
+		void	CameraMoveStrafeRight();
 
 		void	CreateDefaultPlanesMesh();
 
@@ -71,6 +80,10 @@ namespace moe
 		Ref<TextureResource> m_statue;
 
 		CameraRef	m_myCam;
+		bool		m_moveForward = false;
+		bool		m_moveBackward = false;
+		bool		m_strafeLeft = false;
+		bool		m_strafeRight = false;
 	};
 }
 #endif

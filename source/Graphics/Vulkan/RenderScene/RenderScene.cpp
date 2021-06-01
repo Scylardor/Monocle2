@@ -2,18 +2,21 @@
 
 #include "RenderScene.h"
 
-#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
-
-#include "Core/Containers/ObjectPool/ObjectPool.h"
 
 namespace moe
 {
 
-	void RenderScene::Initialize(MyVkDevice& device, uint32_t maxFrameCount, uint32_t nbrActors)
+	void RenderScene::Initialize(MyVkDevice& device, const VulkanSwapchain& swapchain, uint32_t maxFrameCount, uint32_t nbrActors)
 	{
 		m_objects.Reserve(nbrActors);
 
-		m_cameras.Initialize(device, maxFrameCount);
+		m_cameras.Initialize(device, swapchain, maxFrameCount);
+	}
+
+
+	void RenderScene::Update(uint32_t frameIndex)
+	{
+		m_cameras.Update(frameIndex);
 	}
 }
 

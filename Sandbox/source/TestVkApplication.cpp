@@ -6,10 +6,13 @@
 
 #include "Graphics/Vulkan/Camera/CameraSystem.h"
 
+
 #include <chrono>
 
 
 #include <vector>
+#include <glfw3/include/GLFW/glfw3.h>
+
 namespace moe
 {
 
@@ -50,7 +53,9 @@ namespace moe
 		//std::cout << "dt milli : " << dtms << std::endl;
 		//std::cout << "dt sec : " << m_deltaTime << std::endl;
 
+		UpdateInputs();
 	}
+
 
 
 	float TestVkApplication::GetElapsedSecondsSinceCreation() const
@@ -79,12 +84,35 @@ namespace moe
 
 		Mat4 model = Mat4::Rotation(Degs_f{ time * 90.f }, Vec3{ 0, 0, 1 });
 
-		m_scene.MutObject(0).MutateMVP() = m_myCam.GetViewProjection() * model;
+		m_scene.MutObject(0).SetModelMatrix(model);
+	}
+
+
+
+	void BasicVkApp::UpdateInputs()
+	{
+		if (m_moveForward)
+		{
+			CameraMoveForward();
+		}
+		else if (m_moveBackward)
+		{
+			CameraMoveBackwards();
+		}
+
+		if (m_strafeLeft)
+		{
+			CameraMoveStrafeLeft();
+		}
+		else if (m_strafeRight)
+		{
+			CameraMoveStrafeRight();
+		}
 	}
 
 	void BasicVkApp::LoadDefaultGraphicsResources()
 	{
-		m_scene.Initialize(m_renderer.GraphicsDevice(), m_renderer.GetMaxFramesInFlight());
+		m_scene.Initialize(m_renderer.GraphicsDevice(), m_renderer.GetSwapchain(), m_renderer.GetMaxFramesInFlight());
 
 		auto textureFileLoaderFn = [this](std::string_view filename)
 		{
@@ -106,9 +134,50 @@ namespace moe
 	void BasicVkApp::CreateCamera()
 	{
 		const float aspectRatio = GetWindowWidth() / (float)GetWindowHeight();
-		m_myCam = m_scene.CameraSystem().New<PerspectiveCamera>(Vec3{ 0.1f, 0.5f, 10.f }, 45_degf, aspectRatio, 0.1f, 100.f, CameraProjection::Perspective_ZeroToOne_FlippedY);
-		m_myCam.SetUpVector({ 0, 0, 1 });
-		m_myCam.Lookat(Vec3::ZeroVector());
+		m_myCam = m_scene.CameraSystem().New<PerspectiveCamera>(MOE_FULLSCREEN_VIEWPORT, MOE_FULLSCREEN_SCISSOR,
+			Vec3{ 0.1f, 0.5f, 10.f }, 45_degf, aspectRatio, 0.1f, 100.f, CameraProjection::Perspective_ZeroToOne_FlippedY);
+		m_myCam.SetUpVector({ 0, 0, 1 })
+			.Lookat(Vec3::ZeroVector());
+
+		SetupCameraInputs();
+	}
+
+
+	void BasicVkApp::SetupCameraInputs()
+	{
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_PRESS, [this]() { this->m_moveForward = true; });
+		SetInputKeyMapping(GLFW_KEY_W, GLFW_RELEASE, [this]() { this->m_moveForward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_PRESS, [this]() { this->m_moveBackward = true; });
+		SetInputKeyMapping(GLFW_KEY_S, GLFW_RELEASE, [this]() { this->m_moveBackward = false; });
+
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_PRESS, [this]() { this->m_strafeLeft = true; });
+		SetInputKeyMapping(GLFW_KEY_A, GLFW_RELEASE, [this]() { this->m_strafeLeft = false; });
+
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
+		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+	}
+
+	void BasicVkApp::CameraMoveForward()
+	{
+		m_myCam.MoveForward(m_deltaTime);
+	}
+
+	void BasicVkApp::CameraMoveBackwards()
+	{
+		m_myCam.MoveBackward(m_deltaTime);
+	}
+
+	void BasicVkApp::CameraMoveStrafeLeft()
+	{
+		m_myCam.StrafeLeft(m_deltaTime);
+
+	}
+
+	void BasicVkApp::CameraMoveStrafeRight()
+	{
+		m_myCam.StrafeRight(m_deltaTime);
+
 	}
 
 	void BasicVkApp::CreateDefaultPlanesMesh()
@@ -143,15 +212,13 @@ namespace moe
 
 		Mat4 model = Mat4::Rotation(Degs_f{ 45.f }, Vec3{ 0, 0, 1 });
 
-		m_scene.MutObject(0).MutateMVP() = m_myCam.GetViewProjection() * model;
+		m_scene.MutObject(0).SetModelMatrix(model);
 	}
 
 	void BasicVkApp::LoadBackpackModel()
 	{
 		auto& assimp = m_manager.EmplaceAssetImporter<AssimpImporter>(m_renderer.GraphicsDevice());
 		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
-
-		Mat4 model = Mat4::Identity();
 
 		// In case we need it
 		Ref<MaterialResource> defaultMat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
@@ -176,9 +243,8 @@ namespace moe
 
 				auto meshID = m_backpack.GetMeshResources()[meshIdx].ID();
 
-				auto drawID = m_scene.Emplace(meshID, matID);
+				m_scene.Emplace(meshID, matID);
 
-				m_scene.MutObject(drawID).MutateMVP() = m_myCam.GetViewProjection() * model;
 			}
 		}
 	}

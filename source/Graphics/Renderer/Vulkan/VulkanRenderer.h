@@ -110,7 +110,9 @@ namespace moe
 		}
 
 
-		void	RenderFrame(const RenderScene& renderedScene);
+		void	RenderFrame(RenderScene& renderedScene);
+
+		void	RenderSceneWithCamera(RenderScene& renderScene, vk::CommandBuffer commandBuffer, CameraDesc& camera);
 
 
 		auto	GetMaxFramesInFlight() const
@@ -124,6 +126,13 @@ namespace moe
 			MOE_ASSERT(m_graphicsDevice);
 			return *m_graphicsDevice;
 		}
+
+
+		[[nodiscard]] const VulkanSwapchain&	GetSwapchain() const
+		{
+			return m_swapchain;
+		}
+
 
 		void	AttachResourceManager(ResourceManager& manager)
 		{
