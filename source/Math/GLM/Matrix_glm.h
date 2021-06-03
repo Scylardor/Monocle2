@@ -386,7 +386,7 @@ namespace moe
 			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
 			Matrix&	LookAt(const Vec<3, ValT>& cameraPosWorld, const Vec<3, ValT>& lookatPointWorld, const Vec<3, ValT>& upWorld)
 			{
-				m_mat = Matrix(glm::lookAt(cameraPosWorld, lookatPointWorld, upWorld));
+				m_mat = glm::lookAt(cameraPosWorld.glmVector(), lookatPointWorld.glmVector(), upWorld.glmVector());
 				return *this;
 			}
 
@@ -425,7 +425,7 @@ namespace moe
 			 * \param axis The axis you want to rotate about
 			 * \return A rotation matrix encoding the wanted rotation.
 			 */
-			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
+			template<typename = std::enable_if_t<ColsT >= 3 && RowsT >= 3>>
 			[[nodiscard]] static Matrix Rotation(Degs<ValT> angle, const Vector<3, ValT>& axis)
 			{
 				return Matrix(glm::rotate((ValT)Rads<ValT>(angle), axis.glmVector()));
