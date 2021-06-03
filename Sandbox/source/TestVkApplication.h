@@ -69,6 +69,8 @@ namespace moe
 		void	CameraMoveStrafeLeft();
 		void	CameraMoveStrafeRight();
 
+		void	CameraRotate(double xpos, double ypos);
+
 		void	CreateDefaultPlanesMesh();
 
 		void	LoadBackpackModel();
@@ -84,6 +86,10 @@ namespace moe
 		bool		m_moveBackward = false;
 		bool		m_strafeLeft = false;
 		bool		m_strafeRight = false;
+
+		inline static const double UNINTIALIZED_MOUSE_COORDINATE = (float)~0;
+		double		m_lastMouseX = UNINTIALIZED_MOUSE_COORDINATE;
+		double		m_lastMouseY = UNINTIALIZED_MOUSE_COORDINATE;
 	};
 }
 #endif

@@ -135,9 +135,8 @@ namespace moe
 	{
 		const float aspectRatio = GetWindowWidth() / (float)GetWindowHeight();
 		m_myCam = m_scene.CameraSystem().New<PerspectiveCamera>(MOE_FULLSCREEN_VIEWPORT, MOE_FULLSCREEN_SCISSOR,
-			Vec3{ 0.1f, 0.5f, 10.f }, 45_degf, aspectRatio, 0.1f, 100.f, CameraProjection::Perspective_ZeroToOne_FlippedY);
-		m_myCam.SetUpVector({ 0, 0, 1 })
-			.Lookat(Vec3::ZeroVector());
+			Vec3{ 0.1f, 10.5f, 10.f }, 45_degf, aspectRatio, 0.1f, 100.f, CameraProjection::Perspective_ZeroToOne_FlippedY);
+		m_myCam.Lookat(Vec3::ZeroVector());
 
 		SetupCameraInputs();
 	}
@@ -156,6 +155,9 @@ namespace moe
 
 		SetInputKeyMapping(GLFW_KEY_D, GLFW_PRESS, [this]() { this->m_strafeRight = true; });
 		SetInputKeyMapping(GLFW_KEY_D, GLFW_RELEASE, [this]() { this->m_strafeRight = false; });
+
+		SetInputMouseMoveMapping([this](double xpos, double ypos) { CameraRotate(xpos, ypos); });
+
 	}
 
 	void BasicVkApp::CameraMoveForward()
@@ -177,6 +179,26 @@ namespace moe
 	void BasicVkApp::CameraMoveStrafeRight()
 	{
 		m_myCam.StrafeRight(m_deltaTime);
+
+	}
+
+	void BasicVkApp::CameraRotate(double xpos, double ypos)
+	{
+		static const auto sensitivity = 0.1;
+
+		if (m_lastMouseX == UNINTIALIZED_MOUSE_COORDINATE && m_lastMouseY == UNINTIALIZED_MOUSE_COORDINATE)
+		{
+			m_lastMouseX = xpos;
+			m_lastMouseY = ypos;
+		}
+
+		const auto offsetX = (xpos - m_lastMouseX) * sensitivity;
+		const auto offsetY = (m_lastMouseY - ypos) * sensitivity;
+
+		m_lastMouseX = xpos;
+		m_lastMouseY = ypos;
+
+		m_myCam.Rotate((float)offsetX, (float)offsetY);
 
 	}
 

@@ -30,26 +30,18 @@ namespace moe
 		return m_system->GetPosition(m_camID);
 	}
 
-	CameraRef& CameraRef::SetUpVector(const Vec3& upVec)
-	{
-		m_system->SetUpVector(m_camID, upVec);
-		return *this;
-	}
-
 	const Vec3& CameraRef::GetUpVector() const
 	{
 		return m_system->GetUpVector(m_camID);
 	}
-
-	CameraRef& CameraRef::SetRightVector(const Vec3& rightVec)
-	{
-		m_system->SetRightVector(m_camID, rightVec);
-		return *this;
-	}
-
 	const Vec3& CameraRef::GetRightVector() const
 	{
 		return m_system->GetRightVector(m_camID);
+	}
+
+	const Vec3& CameraRef::GetFrontVector() const
+	{
+		return m_system->GetFrontVector(m_camID);
 	}
 
 	CameraRef& CameraRef::SetNearPlane(float near)
@@ -158,6 +150,11 @@ namespace moe
 		m_system->StrafeRight(m_camID, dt);
 	}
 
+	void CameraRef::Rotate(float yawOffset, float pitchOffset)
+	{
+		m_system->Rotate(m_camID, yawOffset, pitchOffset);
+	}
+
 
 	VulkanCameraSystem::VulkanCameraSystem()
 	{
@@ -206,50 +203,29 @@ namespace moe
 	void VulkanCameraSystem::Lookat(CameraID camID, const Vec3& worldTarget)
 	{
 		auto& cam = m_cameras.Mut(camID);
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
-		cameraMatrices.m_view = Mat4::LookAtMatrix(cam.WorldTransform.GetTranslation(), worldTarget, cam.UpVector);
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		cam.WorldTransform = cameraMatrices.m_view.Invert();
-		cam.LookatTarget = worldTarget;
+		cam.FrontVector = (worldTarget - cam.WorldPosition).GetNormalized();
+		cam.RotationPitch = Rads_f(std::asinf(cam.FrontVector.y()));
+		cam.RotationYaw = Rads_f(std::atan2(cam.FrontVector.y(), cam.FrontVector.x()));
 
-		cam.FrontVector = (worldTarget - cam.WorldTransform.GetTranslation()).GetNormalized();
-
-		ResetGPUUploadCounter();
+		RecomputeViewVectors(cam);
 	}
 
 	void VulkanCameraSystem::SetPosition(CameraID camID, const Vec3& worldPos)
 	{
 		auto& cam = m_cameras.Mut(camID);
-		cam.WorldTransform.SetTranslation(worldPos);
 
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
+		cam.WorldPosition = worldPos;
 
-		if (cam.LookatTarget)
-		{
-			cameraMatrices.m_view = Mat4::LookAtMatrix(worldPos, cam.LookatTarget.value(), cam.UpVector);
-		}
-		else
-		{
-			cameraMatrices.m_view = Mat4::LookAtMatrix(worldPos, worldPos + cam.FrontVector, cam.UpVector);
-		}
-
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
-
-		ResetGPUUploadCounter();
+		RecomputeViewMatrices(cam);
 	}
 
 	Vec3 VulkanCameraSystem::GetPosition(CameraID camID) const
 	{
 		const auto& cam = m_cameras.Get(camID);
-		return cam.WorldTransform.GetTranslation();
+		return cam.WorldPosition;
 	}
 
-	void VulkanCameraSystem::SetUpVector(CameraID camID, const Vec3& upVec)
-	{
-		auto& cam = m_cameras.Mut(camID);
-		cam.UpVector = upVec;
-	}
 
 	const Vec3& VulkanCameraSystem::GetUpVector(CameraID camID) const
 	{
@@ -257,10 +233,11 @@ namespace moe
 		return cam.UpVector;
 	}
 
-	void VulkanCameraSystem::SetRightVector(CameraID camID, const Vec3& rightVec)
+
+	const Vec3& VulkanCameraSystem::GetFrontVector(CameraID camID) const
 	{
-		auto& cam = m_cameras.Mut(camID);
-		cam.RightVector = rightVec;
+		const auto& cam = m_cameras.Get(camID);
+		return cam.FrontVector;
 	}
 
 	const Vec3& VulkanCameraSystem::GetRightVector(CameraID camID) const
@@ -273,24 +250,18 @@ namespace moe
 	{
 		auto& cam = m_cameras.Mut(camID);
 
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
-
 		std::visit(overloaded{
-			[near, &cameraMatrices](OrthographicCamera& ortho)
+			[&](OrthographicCamera& ortho)
 			{
 				ortho.m_near = near;
-				cameraMatrices.m_proj = Mat4::Orthographic(ortho.m_left, ortho.m_right, ortho.m_bottom, ortho.m_top, ortho.m_near, ortho.m_far);
+				RecomputeOrthographicMatrix(cam, ortho);
 			},
-			[near, &cameraMatrices](PerspectiveCameraDesc& persp)
+			[&](PerspectiveCameraDesc& persp)
 			{
 				persp.m_near = near;
-				RecomputePerspectiveMatrix(cameraMatrices, persp);
+				RecomputePerspectiveMatrix(cam, persp);
 			}
 		}, cam.ProjectionData.m_projection);
-
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
-
-		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetNearPlane(CameraID camID) const
@@ -304,24 +275,19 @@ namespace moe
 	{
 		auto& cam = m_cameras.Mut(camID);
 
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
 
 		std::visit(overloaded{
-			[far, &cameraMatrices](OrthographicCamera& ortho)
+			[&](OrthographicCamera& ortho)
 			{
 				ortho.m_far = far;
-				cameraMatrices.m_proj = Mat4::Orthographic(ortho.m_left, ortho.m_right, ortho.m_bottom, ortho.m_top, ortho.m_near, ortho.m_far);
+				RecomputeOrthographicMatrix(cam, ortho);
 			},
-			[far, &cameraMatrices](PerspectiveCameraDesc& persp)
+			[&](PerspectiveCameraDesc& persp)
 			{
 				persp.m_far = far;
-				RecomputePerspectiveMatrix(cameraMatrices, persp);
+				RecomputePerspectiveMatrix(cam, persp);
 			}
 			}, cam.ProjectionData.m_projection);
-
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
-
-		ResetGPUUploadCounter();
 	}
 
 	float VulkanCameraSystem::GetFarPlane(CameraID camID) const
@@ -337,8 +303,7 @@ namespace moe
 		auto& ortho = std::get<OrthographicCamera>(cam.ProjectionData.m_projection);
 		ortho.m_left = left;
 
-		RecomputeOrthographicMatrix(camID, ortho);
-		ResetGPUUploadCounter();
+		RecomputeOrthographicMatrix(cam, ortho);
 	}
 
 	float VulkanCameraSystem::GetLeftPlane(CameraID camID) const
@@ -353,8 +318,7 @@ namespace moe
 		auto& ortho = std::get<OrthographicCamera>(cam.ProjectionData.m_projection);
 		ortho.m_right = right;
 
-		RecomputeOrthographicMatrix(camID, ortho);
-		ResetGPUUploadCounter();
+		RecomputeOrthographicMatrix(cam, ortho);
 	}
 
 	float VulkanCameraSystem::GetRightPlane(CameraID camID) const
@@ -369,8 +333,7 @@ namespace moe
 		auto& ortho = std::get<OrthographicCamera>(cam.ProjectionData.m_projection);
 		ortho.m_top = top;
 
-		RecomputeOrthographicMatrix(camID, ortho);
-		ResetGPUUploadCounter();
+		RecomputeOrthographicMatrix(cam, ortho);
 
 	}
 
@@ -386,8 +349,7 @@ namespace moe
 		auto& ortho = std::get<OrthographicCamera>(cam.ProjectionData.m_projection);
 		ortho.m_bottom = bottom;
 
-		RecomputeOrthographicMatrix(camID, ortho);
-		ResetGPUUploadCounter();
+		RecomputeOrthographicMatrix(cam, ortho);
 	}
 
 	float VulkanCameraSystem::GetBottomPlane(CameraID camID) const
@@ -402,11 +364,7 @@ namespace moe
 		auto& perspective = std::get<PerspectiveCamera>(cam.ProjectionData.m_projection);
 		perspective.m_fovY = fovy;
 
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
-		RecomputePerspectiveMatrix(cameraMatrices, perspective);
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
-
-		ResetGPUUploadCounter();
+		RecomputePerspectiveMatrix(cam, perspective);
 	}
 
 	Degs_f VulkanCameraSystem::GetFieldOfViewY(CameraID camID) const
@@ -421,11 +379,7 @@ namespace moe
 		auto& perspective = std::get<PerspectiveCamera>(cam.ProjectionData.m_projection);
 		perspective.m_aspectRatio = ar;
 
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
-		RecomputePerspectiveMatrix(cameraMatrices, perspective);
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
-
-		ResetGPUUploadCounter();
+		RecomputePerspectiveMatrix(cam,  perspective);
 	}
 
 	float VulkanCameraSystem::GetAspectRatio(CameraID camID) const
@@ -440,10 +394,10 @@ namespace moe
 		const auto fullScreenSize = m_swapChain->GetSwapchainImageExtent();
 
 		vk::Viewport& camViewport = m_cameraViewportScissor[camID].first;
-		camViewport.x = (desc.x <= 1.f ? fullScreenSize.width * desc.x : desc.x);
-		camViewport.y = (desc.x <= 1.f ? fullScreenSize.height * desc.y : desc.y);
-		camViewport.width = (desc.Width <= 1.f ? fullScreenSize.width * desc.Width : desc.Width);
-		camViewport.height = (desc.Height <= 1.f ? fullScreenSize.height * desc.Height : desc.Height);
+		camViewport.x = (desc.x <= 1.f ? (float)fullScreenSize.width * desc.x : desc.x);
+		camViewport.y = (desc.x <= 1.f ? (float)fullScreenSize.height * desc.y : desc.y);
+		camViewport.width = (desc.Width <= 1.f ? (float)fullScreenSize.width * desc.Width : desc.Width);
+		camViewport.height = (desc.Height <= 1.f ? (float)fullScreenSize.height * desc.Height : desc.Height);
 		camViewport.minDepth = desc.MinDepth;
 		camViewport.maxDepth = desc.MaxDepth;
 	}
@@ -454,10 +408,10 @@ namespace moe
 		const auto fullScreenSize = m_swapChain->GetSwapchainImageExtent();
 
 		vk::Rect2D& camScissor = m_cameraViewportScissor[camID].second;
-		camScissor.offset.x = (desc.x <= 1.f ? fullScreenSize.width * desc.x : desc.x);
-		camScissor.offset.x = (desc.x <= 1.f ? fullScreenSize.height * desc.y : desc.y);
-		camScissor.extent.width = (desc.Width <= 1.f ? fullScreenSize.width * desc.Width : desc.Width);
-		camScissor.extent.height = (desc.Height <= 1.f ? fullScreenSize.height * desc.Height : desc.Height);
+		camScissor.offset.x =	int32_t(desc.x <= 1.f ? (float)fullScreenSize.width * desc.x : desc.x);
+		camScissor.offset.x =	int32_t(desc.x <= 1.f ? (float)fullScreenSize.height * desc.y : desc.y);
+		camScissor.extent.width =	uint32_t(desc.Width <= 1.f ? (float)fullScreenSize.width * desc.Width : desc.Width);
+		camScissor.extent.height =	uint32_t(desc.Height <= 1.f ? (float)fullScreenSize.height * desc.Height : desc.Height);
 	}
 
 
@@ -470,29 +424,49 @@ namespace moe
 	void VulkanCameraSystem::MoveForward(CameraID camID, float dt)
 	{
 		const auto& cam = m_cameras.Get(camID);
-		Vec3 newPos = cam.WorldTransform.GetTranslation() + (cam.FrontVector * cam.CameraSpeed * dt);
+		Vec3 newPos = cam.WorldPosition + (cam.FrontVector * cam.MoveSpeed * dt);
 		SetPosition(camID, newPos);
 	}
 
 	void VulkanCameraSystem::MoveBackward(CameraID camID, float dt)
 	{
 		const auto& cam = m_cameras.Get(camID);
-		Vec3 newPos = cam.WorldTransform.GetTranslation() + (-cam.FrontVector * cam.CameraSpeed * dt);
+		Vec3 newPos = cam.WorldPosition - (cam.FrontVector * cam.MoveSpeed * dt);
 		SetPosition(camID, newPos);
 	}
 
 	void VulkanCameraSystem::StrafeLeft(CameraID camID, float dt)
 	{
 		const auto& cam = m_cameras.Get(camID);
-		Vec3 newPos = cam.WorldTransform.GetTranslation() + (-cam.RightVector * cam.CameraSpeed * dt);
+		Vec3 newPos = cam.WorldPosition - (cam.RightVector * cam.MoveSpeed * dt);
 		SetPosition(camID, newPos);
 	}
 
 	void VulkanCameraSystem::StrafeRight(CameraID camID, float dt)
 	{
 		const auto& cam = m_cameras.Get(camID);
-		Vec3 newPos = cam.WorldTransform.GetTranslation() + (cam.RightVector * cam.CameraSpeed * dt);
+		Vec3 newPos = cam.WorldPosition + (cam.RightVector * cam.MoveSpeed * dt);
 		SetPosition(camID, newPos);
+	}
+
+
+	void VulkanCameraSystem::Rotate(CameraID camID, float yawOffset, float pitchOffset)
+	{
+		auto& cam = m_cameras.Mut(camID);
+
+		cam.RotationYaw += yawOffset;
+
+		cam.RotationPitch += pitchOffset;
+		if (cam.RotationPitch > 89.f)
+		{
+			cam.RotationPitch = 89_degf;
+		}
+		else if (cam.RotationPitch < -89.f)
+		{
+			cam.RotationPitch = -89_degf;
+		}
+
+		RecomputeViewVectors(cam);
 	}
 
 
@@ -564,6 +538,9 @@ namespace moe
 
 		const auto minWantedCameras = std::max(m_camerasHostMemory.size(), (size_t)camID + 1);
 		m_camerasHostMemory.resize(minWantedCameras);
+
+		const auto& cam = m_cameras.Get(camID);
+		m_camerasHostMemory[camID].m_view = Mat4::Translation(cam.WorldPosition);
 	}
 
 
@@ -591,43 +568,73 @@ namespace moe
 	}
 
 
-	void VulkanCameraSystem::RecomputeGPUCamera(CameraID camID)
+	void VulkanCameraSystem::RecomputeViewVectors(CameraDesc& cam)
 	{
-		auto& cam = m_cameras.Mut(camID);
+		const Rads_f yawRads{ cam.RotationYaw };
+		const Rads_f pitchRads{ cam.RotationPitch };
 
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
+		// Calculate the new Front vector
+		cam.FrontVector = Vec3{
+			cosf(yawRads) * cosf(pitchRads),
+			sinf(pitchRads),
+			sinf(yawRads) * cosf(pitchRads)
+		}.GetNormalized();
 
-		cameraMatrices.m_view = cam.WorldTransform.GetInverse();
+		// Also re-calculate the Right and Up vector
+		// Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		const Vec3 worldUp{ 0, 1, 0 };
+		cam.RightVector = cam.FrontVector.Cross(worldUp).GetNormalized();
+		cam.UpVector = cam.RightVector.Cross(cam.FrontVector).GetNormalized();
 
-		std::visit(overloaded{
-			[&cameraMatrices](OrthographicCamera& ortho)
-			{
-				cameraMatrices.m_proj = Mat4::Orthographic(ortho.m_left, ortho.m_right, ortho.m_bottom, ortho.m_top, ortho.m_near, ortho.m_far);
-			},
-			[ &cameraMatrices](PerspectiveCameraDesc& persp)
-			{
-				RecomputePerspectiveMatrix(cameraMatrices, persp);
-			}
-			}, cam.ProjectionData.m_projection);
+		RecomputeViewMatrices(cam);
+	}
 
+
+	void VulkanCameraSystem::RecomputeViewMatrices(CameraDesc& cam)
+	{
+		GPUCamera& cameraMatrices = m_camerasHostMemory[cam.ID];
+
+		cameraMatrices.m_view.LookAt(cam.WorldPosition, cam.WorldPosition + cam.FrontVector, cam.UpVector);
 		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
 
-		cameraMatrices.m_cameraPos = Vec4{ cam.WorldTransform.GetTranslation(), 1.f };
-
+		cam.UpdatedSinceLastRender = true;
 		ResetGPUUploadCounter();
 	}
 
-	void VulkanCameraSystem::RecomputeOrthographicMatrix(CameraID camID, const OrthographicCamera& orthoData)
+
+	void VulkanCameraSystem::RecomputeProjectionMatrices(CameraID camID)
 	{
-		GPUCamera& cameraMatrices = m_camerasHostMemory[camID];
-		cameraMatrices.m_proj = Mat4::Orthographic(orthoData.m_left, orthoData.m_right, orthoData.m_bottom, orthoData.m_top, orthoData.m_near, orthoData.m_far);
-		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
+		auto& cam = m_cameras.Mut(camID);
+
+		std::visit(overloaded{
+	[&](OrthographicCamera& ortho)
+			{
+				RecomputeOrthographicMatrix(cam, ortho);
+			},
+			[&](PerspectiveCameraDesc& persp)
+			{
+				RecomputePerspectiveMatrix(cam, persp);
+			}
+		}, cam.ProjectionData.m_projection);
 
 	}
 
 
-	void VulkanCameraSystem::RecomputePerspectiveMatrix(GPUCamera& cameraMatrices, const PerspectiveCameraDesc& perspectiveData)
+	void VulkanCameraSystem::RecomputeOrthographicMatrix(CameraDesc& cam, const OrthographicCamera& orthoData)
 	{
+		GPUCamera& cameraMatrices = m_camerasHostMemory[cam.ID];
+		cameraMatrices.m_proj = Mat4::Orthographic(orthoData.m_left, orthoData.m_right, orthoData.m_bottom, orthoData.m_top, orthoData.m_near, orthoData.m_far);
+		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
+
+		cam.UpdatedSinceLastRender = true;
+		ResetGPUUploadCounter();
+	}
+
+
+	void VulkanCameraSystem::RecomputePerspectiveMatrix(CameraDesc& cam, const PerspectiveCameraDesc& perspectiveData)
+	{
+		GPUCamera& cameraMatrices = m_camerasHostMemory[cam.ID];
+
 		switch (perspectiveData.m_projType)
 		{
 		case CameraProjection::Perspective_MinusOneToOne:
@@ -644,6 +651,10 @@ namespace moe
 			MOE_ASSERT(false);
 			break;
 		}
+		cameraMatrices.m_viewProj = cameraMatrices.m_proj * cameraMatrices.m_view;
+
+		cam.UpdatedSinceLastRender = true;
+		ResetGPUUploadCounter();
 	}
 
 }

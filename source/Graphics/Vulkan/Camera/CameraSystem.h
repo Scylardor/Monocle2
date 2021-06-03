@@ -80,21 +80,23 @@ namespace moe
 	struct CameraDesc
 	{
 		CameraDesc(const OrthographicCameraDesc& ortho, const Vec3& pos) :
-			WorldTransform(Mat4::Translation(pos)),
+			WorldPosition(pos),
 			ProjectionData(ortho)
 		{}
 
 		CameraDesc(const PerspectiveCameraDesc& persp, const Vec3& pos) :
-			WorldTransform(Mat4::Translation(pos)),
+			WorldPosition(pos),
 			ProjectionData(persp)
 		{}
 
-		Mat4				WorldTransform{ Mat4::Identity() };
-		Vec3				UpVector{ 0, 1, 0 };
-		Vec3				RightVector{ 1, 0, 0 };
-		Vec3				FrontVector{ 0, 0, -1 };
-		float				CameraSpeed{ 2.5f };
-		std::optional<Vec3>	LookatTarget{};
+		Vec3				WorldPosition{ Vec3::ZeroVector() };
+		float				MoveSpeed{ 2.5f };
+		Degs_f				RotationYaw{ -90.f }; // Point towards the negative Z-axis by default
+		Degs_f				RotationPitch{ 0.f };
+		Vec3				RightVector{ 1.f, 0.f, 0.f };
+		Vec3				UpVector{ 0.f, 1.f, 0.f };
+		Vec3				FrontVector{ 0.f, 0.f, 1.f };
+		//std::optional<Vec3>	LookatTarget{};
 		CameraProjectionVar	ProjectionData;
 		CameraID			ID{INVALID_CAMERA};
 		bool				UpdatedSinceLastRender{ false };
@@ -137,12 +139,11 @@ namespace moe
 		[[nodiscard]] Vec3	GetPosition() const;
 
 
-		CameraRef&					SetUpVector(const Vec3& upVec);
 		[[nodiscard]] const Vec3&	GetUpVector() const;
 
-		CameraRef&					SetRightVector(const Vec3& rightVec);
 		[[nodiscard]] const Vec3&	GetRightVector() const;
 
+		[[nodiscard]] const Vec3&	GetFrontVector() const;
 
 		CameraRef&			SetNearPlane(float near);
 		[[nodiscard]] float	GetNearPlane() const;
@@ -173,6 +174,8 @@ namespace moe
 		void	MoveBackward(float dt);
 		void	StrafeLeft(float dt);
 		void	StrafeRight(float dt);
+
+		void	Rotate(float yawOffset, float pitchOffset);
 
 
 	private:
@@ -214,7 +217,7 @@ namespace moe
 
 			AllocateCameraDescriptors(camID);
 
-			RecomputeGPUCamera(camID);
+			RecomputeProjectionMatrices(camID);
 
 			return { *this, camID };
 		}
@@ -233,10 +236,10 @@ namespace moe
 		[[nodiscard]] Vec3	GetPosition(CameraID camID) const;
 
 
-		void SetUpVector(CameraID camID, const Vec3& upVec);
 		[[nodiscard]] const Vec3& GetUpVector(CameraID camID) const;
 
-		void SetRightVector(CameraID camID, const Vec3& rightVec);
+		[[nodiscard]] const Vec3& GetFrontVector(CameraID camID) const;
+
 		[[nodiscard]] const Vec3& GetRightVector(CameraID camID) const;
 
 
@@ -285,6 +288,8 @@ namespace moe
 		void	StrafeLeft(CameraID camID, float dt);
 		void	StrafeRight(CameraID camID, float dt);
 
+		void	Rotate(CameraID camID, float yawOffset, float pitchOffset);
+
 
 		template <typename TFunctor>
 		void	ForeachCamera(TFunctor&& visitorFn)
@@ -316,10 +321,12 @@ namespace moe
 		}
 
 
-		void		RecomputeGPUCamera(CameraID camID);
+		void	RecomputeViewVectors(CameraDesc& cam);
+		void	RecomputeViewMatrices(CameraDesc& cam);
+		void	RecomputeProjectionMatrices(CameraID camID);
 
-		void		RecomputeOrthographicMatrix(CameraID camID, const OrthographicCamera& orthoData);
-		static void	RecomputePerspectiveMatrix(GPUCamera& cameraMatrices, const PerspectiveCameraDesc& perspectiveData);
+		void	RecomputeOrthographicMatrix(CameraDesc& cam, const OrthographicCamera& orthoData);
+		void	RecomputePerspectiveMatrix(CameraDesc& cam, const PerspectiveCameraDesc& perspectiveData);
 
 
 
@@ -344,6 +351,8 @@ namespace moe
 
 		std::vector<std::pair<vk::Viewport, vk::Rect2D>>	m_cameraViewportScissor{};
 	};
+
+
 }
 
 
