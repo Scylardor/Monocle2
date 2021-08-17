@@ -103,10 +103,10 @@ namespace moe
 
 	protected:
 
-		template <typename... Ts>
+		template <typename TObj = ValueType, typename... Ts>
 		[[nodiscard]] uint32_t	Append(Ts&&... args)
 		{
-			return MOE_CRTP_IMPL_VARIADIC(Append, Ts, args);
+			return MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Append, TObj, Ts, args);
 		}
 
 	};
@@ -143,11 +143,25 @@ namespace moe
 
 				m_firstFreeBlock = block.NextFreeBlock;
 
-				m_objects[availableID].template emplace<ValueType>(std::forward<Ts>(args)...);
+				if constexpr (is_unique_pointer<ValueType>::value)
+				{
+					if constexpr (std::is_same_v<ValueType, TObj>)
+					{
+						m_objects[availableID].template emplace<ValueType>(std::make_unique<ValueType::element_type>(std::forward<Ts>(args)...));
+					}
+					else
+					{
+						m_objects[availableID].template emplace<ValueType>(std::make_unique<TObj>(std::forward<Ts>(args)...));
+					}
+				}
+				else
+				{
+					m_objects[availableID].template emplace<ValueType>(std::forward<Ts>(args)...);
+				}
 			}
 			else
 			{
-				availableID = this->Underlying().Append(std::forward<Ts>(args)...);
+				availableID = this->Underlying().template Append<TObj>(std::forward<Ts>(args)...);
 			}
 
 			return availableID;
@@ -184,7 +198,7 @@ namespace moe
 			return m_objects.empty();
 		}
 
-		template <typename... Ts>
+		template <typename TObj, typename... Ts>
 		[[nodiscard]] uint32_t	AppendImpl(Ts&&...)
 		{
 			MOE_ASSERT(false); // unimplemented!
@@ -218,14 +232,29 @@ namespace moe
 		}
 
 	protected:
-		template <typename... Ts>
+		template <typename ValueType, typename... Ts>
 		[[nodiscard]] uint32_t	AppendImpl(Ts&&... args)
 		{
 			if (m_objects.size() == GetMaxAllowedGrowth())
 				return INVALID_BLOCK;
 
 			auto id = (uint32_t)m_objects.size();
-			m_objects.emplace_back(std::in_place_type<TObj>, std::forward<Ts>(args)...);
+
+			if constexpr (is_unique_pointer<TObj>::value)
+			{
+				if constexpr (std::is_same_v<TObj, ValueType>)
+				{
+					m_objects.emplace_back(std::in_place_type<TObj>, std::make_unique<TObj::element_type>(std::forward<Ts>(args)...));
+				}
+				else
+				{
+					m_objects.emplace_back(std::in_place_type<TObj>, std::make_unique<ValueType>(std::forward<Ts>(args)...));
+				}
+			}
+			else
+			{
+				m_objects.emplace_back(std::in_place_type<TObj>, std::forward<Ts>(args)...);
+			}
 
 			return id;
 		}
@@ -335,7 +364,7 @@ namespace moe
 			return availableID;
 		}
 
-		template <typename... Ts>
+		template <typename ValueType, typename... Ts>
 		[[nodiscard]] uint32_t	AppendImpl(Ts&&...)
 		{
 			MOE_ASSERT(false); // unimplemented!
