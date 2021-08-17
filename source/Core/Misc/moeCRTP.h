@@ -24,4 +24,11 @@ namespace moe
 	this->Underlying().Method##Impl(std::forward<Ts>(args)...)
 
 
+#define MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Method, T1, Ts, args) \
+	this->Underlying().template Method##Impl<T1>(std::forward<Ts>(args)...)
+
+
+#define MOE_CRTP_IMPL_VARIADIC_2(Method, Ts, param1, args) \
+	this->Underlying().Method##Impl(param1, std::forward<Ts>(args)...)
+
 }

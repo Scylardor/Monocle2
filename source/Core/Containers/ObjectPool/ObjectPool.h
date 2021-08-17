@@ -28,6 +28,35 @@ namespace moe
 	using PoolBlockVar = std::variant<PoolBlock, TObj>;
 
 
+	template<typename T, typename Enable = void>
+	struct is_unique_pointer
+	{
+		enum { value = false };
+	};
+
+	template<typename T>
+	struct is_unique_pointer<T,
+		typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, std::unique_ptr<typename T::element_type>>::value>::type>
+	{
+		enum { value = true };
+	};
+
+	template<typename TObj, typename ValueType, typename Enable = void>
+	struct is_polymorphic_type_compatible
+	{
+		enum { value = false };
+	};
+
+	template<typename ValueType, typename TObj>
+	struct is_polymorphic_type_compatible<ValueType, TObj,
+		typename std::enable_if<
+			is_unique_pointer<ValueType>::value
+			&& std::is_abstract_v<typename ValueType::element_type>
+			&& std::is_base_of_v<typename ValueType::element_type, TObj>>::type>
+	{
+		enum { value = true };
+	};
+
 
 	template <typename ValueType, class Top>
 	class ObjectPool : public CRTP<Top>
@@ -36,10 +65,11 @@ namespace moe
 
 		// The "pure virtual functions"
 
-		template <typename... Ts>
+		template <typename TObj = ValueType, typename... Ts>
 		[[nodiscard]] uint32_t	Emplace(Ts&&... args)
 		{
-			return MOE_CRTP_IMPL_VARIADIC(Emplace, Ts, args);
+			static_assert(std::is_same_v<TObj, ValueType> || is_polymorphic_type_compatible<ValueType, TObj>::value);
+			return MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
 		}
 
 
@@ -100,7 +130,7 @@ namespace moe
 			return m_firstFreeBlock != INVALID_BLOCK;
 		}
 
-		template <typename... Ts>
+		template <typename TObj, typename... Ts>
 		[[nodiscard]] uint32_t	EmplaceImpl(Ts&&... args)
 		{
 			uint32_t availableID;
@@ -119,7 +149,6 @@ namespace moe
 			{
 				availableID = this->Underlying().Append(std::forward<Ts>(args)...);
 			}
-
 
 			return availableID;
 		}
@@ -168,15 +197,16 @@ namespace moe
 	};
 
 
-	template<typename TObj>
-	class DynamicObjectPool : public AObjectPool<std::vector<PoolBlockVar<TObj>>, TObj, DynamicObjectPool<TObj>>
+
+	template<typename TObj, class Top>
+	class VectorObjectPool : public AObjectPool<std::vector<PoolBlockVar<TObj>>, TObj, Top>
 	{
-		using Base = ObjectPool<TObj, DynamicObjectPool<TObj>>;
+		using Base = ObjectPool<TObj, Top>;
 		friend Base;
 
 	public:
 
-		DynamicObjectPool(uint32_t reserved = 0)
+		VectorObjectPool(uint32_t reserved = 0)
 		{
 			m_objects.reserve(reserved);
 		}
@@ -191,7 +221,7 @@ namespace moe
 		template <typename... Ts>
 		[[nodiscard]] uint32_t	AppendImpl(Ts&&... args)
 		{
-			if (m_objects.size() == m_maxAllowedGrowth)
+			if (m_objects.size() == GetMaxAllowedGrowth())
 				return INVALID_BLOCK;
 
 			auto id = (uint32_t)m_objects.size();
@@ -200,10 +230,50 @@ namespace moe
 			return id;
 		}
 
+		auto	GetMaxAllowedGrowth() const
+		{
+			return m_maxAllowedGrowth;
+		}
 
 	private:
 
 		std::uint32_t	m_maxAllowedGrowth{ UINT32_MAX };
+	};
+
+
+	template<typename TObj>
+	class DynamicObjectPool : public VectorObjectPool<TObj, DynamicObjectPool<TObj>>
+	{
+		using Base = ObjectPool<TObj, DynamicObjectPool<TObj>>;
+		friend Base;
+
+	public:
+
+		DynamicObjectPool(uint32_t reserved = 0) :
+			VectorObjectPool(reserved)
+		{}
+	};
+
+
+	template<typename TObj>
+	class PolymorphicObjectPool : public VectorObjectPool<std::unique_ptr<TObj>, PolymorphicObjectPool<TObj>>
+	{
+		using ObjPtr = std::unique_ptr<TObj>;
+
+		using Base = ObjectPool<ObjPtr, PolymorphicObjectPool<TObj>>;
+		friend Base;
+
+
+	public:
+
+		PolymorphicObjectPool(uint32_t reserved = 0) :
+			VectorObjectPool(reserved)
+		{}
+
+	protected:
+
+
+
 	};
 
 
