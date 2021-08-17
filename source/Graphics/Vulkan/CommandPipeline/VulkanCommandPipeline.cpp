@@ -1,4 +1,6 @@
-﻿#include "VulkanCommandPipeline.h"
+﻿#ifdef MOE_VULKAN
+
+#include "VulkanCommandPipeline.h"
 
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
 
@@ -62,3 +64,4 @@ vk::CommandBuffer moe::VulkanCommandPipeline::GrabCommandBuffer(const MyVkDevice
 	return *cmdBuf;
 }
 
+#endif

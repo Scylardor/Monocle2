@@ -1,4 +1,4 @@
-
+#ifdef MOE_VULKAN
 #include "VulkanMeshFactory.h"
 
 #include "Graphics/Vulkan/Device/VulkanDevice.h"
@@ -43,3 +43,4 @@ namespace moe
 		return std::make_unique<VulkanMesh>(*m_device, vertexSize, numVertices, vertexData, numIndices, indexData, (vk::IndexType) indexType);
 	}
 }
+#endif

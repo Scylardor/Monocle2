@@ -1,17 +1,18 @@
 #pragma once
 
-
+#ifdef MOE_VULKAN
 #include "Graphics/Vertex/VertexFormats.h"
 
 #include "Core/Resource/ResourceRef.h"
+
+#include "Core/Resource/Resource.h"
+#include "Graphics/Vulkan/Material/VulkanMaterial.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include <assimp/material.h>
 
 #include <filesystem>
-
-#include "Graphics/Vulkan/Material/VulkanMaterial.h"
 
 struct aiMaterial;
 struct aiMesh;
@@ -214,3 +215,5 @@ namespace moe
 
 	};
 }
+
+#endif

@@ -1,3 +1,5 @@
+
+#ifdef MOE_VULKAN
 #include "Drawable.h"
 
 #include "Graphics/Vulkan/VulkanMacros.h"
@@ -14,3 +16,4 @@ namespace moe
 	}
 
 }
+#endif

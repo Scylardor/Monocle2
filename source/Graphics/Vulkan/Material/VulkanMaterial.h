@@ -1,23 +1,8 @@
 #pragma once
-#ifdef MOE_VULKAN
-
-#include "Core/Resource/Resource.h"
-#include "Core/Resource/ResourceRef.h"
-
-#include "Graphics/Vulkan/VulkanMacros.h"
-#include "Core/Containers/ObjectPool/ObjectPool.h"
 #include "Math/Vec4.h"
-#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
-#include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
 namespace moe
 {
-	class VulkanBuffer;
-	class VulkanTexture;
-	class VulkanPipeline;
-	class MyVkDevice;
-	class VulkanSwapchain;
-
 
 	enum class ResourceSet : uint8_t
 	{
@@ -128,6 +113,31 @@ namespace moe
 		PhongReflectivityMaps	m_maps;
 
 	};
+
+
+
+}
+
+
+
+#ifdef MOE_VULKAN
+
+#include "Core/Resource/Resource.h"
+#include "Core/Resource/ResourceRef.h"
+
+#include "Graphics/Vulkan/VulkanMacros.h"
+#include "Core/Containers/ObjectPool/ObjectPool.h"
+#include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
+#include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
+
+namespace moe
+{
+	class VulkanBuffer;
+	class VulkanTexture;
+	class VulkanPipeline;
+	class MyVkDevice;
+	class VulkanSwapchain;
+
 
 
 	class VulkanDescriptorPool

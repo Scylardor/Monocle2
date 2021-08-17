@@ -1,3 +1,5 @@
+#ifdef MOE_VULKAN
+
 #include "AssimpAssetImporter.h"
 
 #include "Graphics/Vertex/VertexFormats.h"
@@ -296,3 +298,4 @@ aiPostProcessSteps moe::AssimpImporter::ComputeAssimpPostProcessFlags() const
 
 	return (aiPostProcessSteps)ppFlags;
 }
+#endif

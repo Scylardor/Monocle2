@@ -1,3 +1,5 @@
+#ifdef MOE_VULKAN
+
 #include "TestVkApplication.h"
 
 #include "Graphics/Vulkan/RenderScene/RenderScene.h"
@@ -272,3 +274,5 @@ namespace moe
 	}
 
 }
+
+#endif
