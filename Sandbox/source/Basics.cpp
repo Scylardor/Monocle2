@@ -275,53 +275,60 @@ namespace moe
 
 	}
 
+	// Suitable for GL_TRIANGLES, no index buffer. Counterclockwise vertex ordering
 	Array<HelloQuadVertex, 36>	CreateHelloQuadVertexCube(float halfExtent)
 	{
 		const ColorRGBAf white = 0xffffffff_rgbaf;
 		const Vec4 whiteAsVec4 = Vec4(white.R(), white.G(), white.B(), white.A());
 
 		return {
-			{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 0.0f}},
-			{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
-			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 1.0f}},
-			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 1.0f}},
-			{Vec3{-halfExtent,  halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
-			{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 0.0f}},
+			// back
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
+			{Vec3{ -halfExtent, halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 1.0f}},
+			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
+			{Vec3{ halfExtent,  -halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 0.0f}},
+			{Vec3{-halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
+			{Vec3{halfExtent, halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
 
-			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
-			{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
-			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
+			// left
+			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{  -halfExtent, halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
+			{Vec3{  -halfExtent,  halfExtent,  -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
+			{Vec3{  -halfExtent,  -halfExtent,  -halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
+			{Vec3{ -halfExtent,  -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{  -halfExtent,  halfExtent,  -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
+
+			// front
+			{Vec3{ halfExtent,  -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{ halfExtent,  halfExtent, halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
+			{Vec3{ -halfExtent, halfExtent, halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
+			{Vec3{ -halfExtent, -halfExtent, halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
+			{Vec3{ halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
 			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
-			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
 
-			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-			{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
-			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
-			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
-			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
-			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-
-			{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
+			// right
+			{Vec3{ halfExtent,  -halfExtent,  -halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
 			{Vec3{ halfExtent,  halfExtent, -halfExtent}, whiteAsVec4, Vec2{1.0f, 1.0f}},
-			{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
-			{Vec3{ halfExtent, -halfExtent, -halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
-			{Vec3{ halfExtent, -halfExtent,  halfExtent}, whiteAsVec4, Vec2{0.0f, 0.0f}},
-			{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
+			{Vec3{ halfExtent, halfExtent, halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
+			{Vec3{ halfExtent, -halfExtent, halfExtent}, whiteAsVec4, Vec2{0.0f, 0.0f}},
+			{Vec3{ halfExtent, -halfExtent,  -halfExtent}, whiteAsVec4, Vec2{1.0f, 0.0f}},
+			{Vec3{ halfExtent,  halfExtent,  halfExtent}, whiteAsVec4, Vec2{0.0f, 1.0f}},
 
-			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
-			{Vec3{  halfExtent, -halfExtent, -halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
-			{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-			{Vec3{  halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-			{Vec3{ -halfExtent, -halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
-			{Vec3{ -halfExtent, -halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
+			// top
+			{Vec3{ halfExtent, halfExtent, halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{  halfExtent, halfExtent, -halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
+			{Vec3{  -halfExtent, halfExtent,  -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
+			{Vec3{  -halfExtent, halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
+			{Vec3{ halfExtent, halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{ -halfExtent, halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
 
-			{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
-			{Vec3{  halfExtent,  halfExtent, -halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
-			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-			{Vec3{  halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
-			{Vec3{ -halfExtent,  halfExtent,  halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
-			{Vec3{ -halfExtent,  halfExtent, -halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}}
+			// bottom
+			{Vec3{ halfExtent,  -halfExtent, -halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{  halfExtent,  -halfExtent, halfExtent}, whiteAsVec4,  Vec2{1.0f, 1.0f}},
+			{Vec3{  -halfExtent,  -halfExtent, halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}},
+			{Vec3{  -halfExtent,  -halfExtent,  -halfExtent}, whiteAsVec4,  Vec2{0.0f, 0.0f}},
+			{Vec3{ halfExtent,  -halfExtent,  -halfExtent}, whiteAsVec4,  Vec2{1.0f, 0.0f}},
+			{Vec3{ -halfExtent,  -halfExtent, halfExtent}, whiteAsVec4,  Vec2{0.0f, 1.0f}}
 		};
 
 	}
@@ -906,7 +913,11 @@ void TestApplication::Test3DPlane()
 
 	Mesh* helloQuadMeshHandle = renderWorld.CreateStaticMesh(helloQuad, helloIndices);
 
-	Camera* helloCamera = renderWorld.CreateCamera(persDesc, ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+	CameraSystem camSys(renderer.MutGraphicsDevice());
+
+	ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+	Camera* helloCamera = camSys.AddNewCamera(vpHandle, persDesc);
 
 	renderWorld.UseCamera(helloCamera);
 
@@ -952,7 +963,7 @@ void TestApplication::Test3DPlane()
 		helloPackedTriMeshHandle->AddTransform(Mat4::Rotation(Degs_f(timeValue), Vec3(0.0f, 0.0f, -1.f)));
 
 
-		//helloQuadMeshHandle->SetTransform(Mat4::Rotation(Degs_f(timeValue), Vec3(0.0f, 0.0f, 1.0f)));
+		helloQuadMeshHandle->SetTransform(Mat4::Rotation(Degs_f(timeValue), Vec3(0.0f, 0.0f, 1.0f)));
 
 		// update the uniform color
 		float greenValue = sinf(timeValue) / 2.0f + 0.5f;
@@ -1127,7 +1138,12 @@ void TestApplication::TestCubeWorld()
 
 	Mesh* helloQuadMeshHandle = renderWorld.CreateStaticMesh(helloQuad);
 
-	Camera* helloCamera = renderWorld.CreateCamera(persDesc, ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+	CameraSystem camSys(renderer.MutGraphicsDevice());
+
+	ViewportHandle vpHandle = m_renderer.MutGraphicsDevice().CreateViewport(ViewportDescriptor(0, 0, (float)GetWindowWidth(), (float)GetWindowHeight()));
+
+	Camera* helloCamera = camSys.AddNewCamera(vpHandle, persDesc);
 
 	renderWorld.UseCamera(helloCamera);
 
