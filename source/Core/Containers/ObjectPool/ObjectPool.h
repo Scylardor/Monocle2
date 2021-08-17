@@ -51,7 +51,7 @@ namespace moe
 	struct is_polymorphic_type_compatible<ValueType, TObj,
 		typename std::enable_if<
 			is_unique_pointer<ValueType>::value
-			&& std::is_abstract_v<typename ValueType::element_type>
+			&& (std::is_abstract_v<typename ValueType::element_type> || std::is_polymorphic_v<typename ValueType::element_type>)
 			&& std::is_base_of_v<typename ValueType::element_type, TObj>>::type>
 	{
 		enum { value = true };
@@ -61,37 +61,68 @@ namespace moe
 	template <typename ValueType, class Top>
 	class ObjectPool : public CRTP<Top>
 	{
-	public:	
+	public:
 
 		struct PoolRef
 		{
 		public:
 			PoolRef(ObjectPool& owner, uint32_t id) :
-				m_owner(owner),
+				m_owner(&owner),
 				m_id(id)
 			{}
 
-			~PoolRef()
-			{
-				m_owner.Free(m_id);
-			}
+			~PoolRef() = default;
 
 			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
 			typename ValueType::element_type* operator->()
 			{
-				auto& uniquePtr = m_owner.Mut(m_id);
+				auto& uniquePtr = m_owner->Mut(m_id);
 				return uniquePtr.get();
 			}
 
-			template <typename = std::enable_if_t<!is_unique_pointer<ValueType>::value>>
-			ValueType* operator->()
+			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			typename ValueType::element_type const* operator->() const
 			{
-				return &m_owner.Mut(m_id);
+				auto const& uniquePtr = m_owner->Get(m_id);
+				return uniquePtr.get();
 			}
 
+			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			typename ValueType::element_type* operator*()
+			{
+				auto& uniquePtr = m_owner->Mut(m_id);
+				return uniquePtr.get();
+			}
+
+			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			typename ValueType::element_type const* operator*() const
+			{
+				auto& uniquePtr = m_owner->Get(m_id);
+				return uniquePtr.get();
+			}
+
+			template <typename T>
+			ValueType* operator->()
+			{
+				return &m_owner->Mut(m_id);
+			}
+
+			template <typename T>
 			ValueType const* operator->() const
 			{
-				return &m_owner.Get(m_id);
+				return &m_owner->Get(m_id);
+			}
+
+			template <typename T>
+			ValueType& operator*()
+			{
+				return m_owner->Mut(m_id);
+			}
+
+			template <typename T>
+			ValueType const& operator*() const
+			{
+				return m_owner->Get(m_id);
 			}
 
 			[[nodiscard]] auto	GetID() const
@@ -99,10 +130,23 @@ namespace moe
 				return m_id;
 			}
 
-		private:
-			ObjectPool& m_owner;
+		protected:
+			ObjectPool* m_owner;
 			uint32_t	m_id;
 
+		};
+
+		struct UniqueRef : public PoolRef
+		{
+		public:
+			UniqueRef(ObjectPool& owner, uint32_t id) :
+				PoolRef(owner, id)
+			{}
+
+			~UniqueRef()
+			{
+				m_owner->Free(m_id);
+			}
 		};
 
 		// The "pure virtual functions"
@@ -116,7 +160,7 @@ namespace moe
 		}
 
 		template <typename TObj = ValueType, typename... Ts>
-		[[nodiscard]] PoolRef	EmplaceRef(Ts&&... args)
+		[[nodiscard]] UniqueRef	EmplaceRef(Ts&&... args)
 		{
 			static_assert(std::is_same_v<TObj, ValueType> || is_polymorphic_type_compatible<ValueType, TObj>::value);
 			auto id = MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
@@ -134,6 +178,11 @@ namespace moe
 			MOE_CRTP_IMPL(Free, poolRef.GetID());
 		}
 
+
+		[[nodiscard]] PoolRef MutRef(uint32_t id)
+		{
+			return { *this, id };
+		}
 
 		[[nodiscard]] const ValueType& Get(uint32_t id) const
 		{
