@@ -61,7 +61,49 @@ namespace moe
 	template <typename ValueType, class Top>
 	class ObjectPool : public CRTP<Top>
 	{
-	public:
+	public:	
+
+		struct PoolRef
+		{
+		public:
+			PoolRef(ObjectPool& owner, uint32_t id) :
+				m_owner(owner),
+				m_id(id)
+			{}
+
+			~PoolRef()
+			{
+				m_owner.Free(m_id);
+			}
+
+			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			typename ValueType::element_type* operator->()
+			{
+				auto& uniquePtr = m_owner.Mut(m_id);
+				return uniquePtr.get();
+			}
+
+			template <typename = std::enable_if_t<!is_unique_pointer<ValueType>::value>>
+			ValueType* operator->()
+			{
+				return &m_owner.Mut(m_id);
+			}
+
+			ValueType const* operator->() const
+			{
+				return &m_owner.Get(m_id);
+			}
+
+			[[nodiscard]] auto	GetID() const
+			{
+				return m_id;
+			}
+
+		private:
+			ObjectPool& m_owner;
+			uint32_t	m_id;
+
+		};
 
 		// The "pure virtual functions"
 
@@ -69,13 +111,27 @@ namespace moe
 		[[nodiscard]] uint32_t	Emplace(Ts&&... args)
 		{
 			static_assert(std::is_same_v<TObj, ValueType> || is_polymorphic_type_compatible<ValueType, TObj>::value);
-			return MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
+			auto id = MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
+			return id;
+		}
+
+		template <typename TObj = ValueType, typename... Ts>
+		[[nodiscard]] PoolRef	EmplaceRef(Ts&&... args)
+		{
+			static_assert(std::is_same_v<TObj, ValueType> || is_polymorphic_type_compatible<ValueType, TObj>::value);
+			auto id = MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
+			return { *this, id };
 		}
 
 
 		void	Free(uint32_t freedObjectID)
 		{
 			MOE_CRTP_IMPL(Free, freedObjectID);
+		}
+
+		void	FreeRef(PoolRef const& poolRef)
+		{
+			MOE_CRTP_IMPL(Free, poolRef.GetID());
 		}
 
 

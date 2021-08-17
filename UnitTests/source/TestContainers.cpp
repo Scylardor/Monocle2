@@ -413,5 +413,59 @@ TEST_CASE("Containers", "[Core]")
 	}
 
 
+
+	SECTION("Polymorphic Object Pool")
+	{
+		class titi
+		{
+		public:
+			virtual ~titi() {}
+
+			virtual void say() = 0;
+
+			int value = 0;
+		};
+
+		class toto : public titi
+		{
+		public:
+
+			~toto() override
+			{
+				printf("adieu monde cruel\n");
+			}
+
+			void say() override
+			{
+				value = 1;
+				printf("toto");
+			}
+		};
+
+		class tata : public titi
+		{
+		public:
+			~tata() override
+			{
+				printf("sayonara\n");
+			}
+
+			void say() override
+			{
+				value = 2;
+				printf("tata");
+			}
+		};
+
+		moe::PolymorphicObjectPool<titi> test;
+		auto totoRef = test.EmplaceRef<toto>();
+		totoRef->say();
+		REQUIRE(totoRef->value == 1);
+		test.FreeRef(totoRef);
+		auto tataRef = test.EmplaceRef<tata>();
+		tataRef->say();
+		REQUIRE(totoRef->value == 2);
+		test.FreeRef(tataRef);
+	}
  }
 
