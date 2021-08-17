@@ -1,0 +1,51 @@
+Wow. I was lurking Reddit chasing for news about this Anjuna Fan Mix thing, but wasn't expecting such a big array of fantastic mixes! I feel mine pales in comparison !
+Anyway here goes thed tracklist :
+
+05:05 Andrew Bayer - From the Past (Original Mix) - ANJ402SD
+09:05 Genix & Sue McLaren - Lose Yourself (Original Mix) - ANJ398D
+13:15 Above & Beyond - Sahara Love (Jason Ross Extended Mix) - ANJ539RD
+17:20 Mat Zo - Rush (Original Mix) - ANJ117D
+23:50 ilan Bluestone feat. Koven - Another Lover (Extended Mix) - ANJ463D
+28:00 Maor Levi - Shapes (Oliver Smith Remix) - ANJ096D
+34:00 Adam Nickey - Never Gone (David Forbes Remix) - ANJ093D
+39:30 Anjunabeats - Volume One (Anjuna Deep Mix) - ANJ001D
+46:00 Oliver Smith - Inside (Extended Mix) - ANJ467D
+51:30 Above & Beyond presents Oceanlab - Breaking Ties (Maor Levi Remix) - ANJ119D
+
+It was a great experience overall, inspired me to do some more in the future.
+
+
+
+- do not read slide text
+-why penalties are hard to classify because of low inter class variances ?
+
+- slide after penalty : hyper rapide et bcp de texte !
+
+- 9 : Performance weird symbol ?
+- code couleur pre-trained model / self-supervised ? red cross / green check
+
+- 10 : show better the causality effect
+
+- 11 : shorten the text
+
+- 12 : what is the problem ?
+
+- 13 : did not understand
+
+- 18 : not very clear
+
+- 22 : actually...
+	Relationship between penalty classification models and CNNs ?
+	Ajouter 1st step, 2nd step, 3rd step ?
+	
+	
+- 23 : LSTM ? MLP? multi layer perceptron
+
+- 24 : called using pose ?
+
+- 28/29 : Concatenation, diagram not clear
+
+
+
+
+

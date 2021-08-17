@@ -1,0 +1,9 @@
+newmtl padoru:BodySG
+illum 4
+Kd 0.55 0.55 0.55
+Ka 0.20 0.20 0.20
+Tf 1.00 1.00 1.00
+map_Kd padoru_atlas.png
+Ni 1.00
+Ks 0.10 0.10 0.10
+Ns 23.00

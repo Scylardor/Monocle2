@@ -294,6 +294,8 @@ set(Monocle_Graphics_SOURCES
 ./Vulkan/FrameGraph/VulkanFrameGraph.h
 ./Vulkan/Instance/VulkanInstance.cpp
 ./Vulkan/Instance/VulkanInstance.h
+./Vulkan/Light/VulkanLightSystem.cpp
+./Vulkan/Light/VulkanLightSystem.h
 ./Vulkan/Material/VulkanMaterial.cpp
 ./Vulkan/Material/VulkanMaterial.h
 ./Vulkan/Material/VulkanMaterialFactory.cpp
