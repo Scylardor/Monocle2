@@ -7,9 +7,11 @@
 #include "SceneNodeHandle.h"
 
 #include "Monocle_Graphics_Export.h"
+#include "Core/Containers/ObjectPool/ObjectPool.h"
 
 namespace moe
 {
+	class SceneGraph;
 	/**
 	 * \brief An implementation of an abstract scene node class.
 	 * It uses a LCRS (Left Child - Right Sibling) system to try to optimize memory usage and access patterns.
@@ -18,20 +20,24 @@ namespace moe
 	 */
 	class ASceneNode
 	{
+		friend SceneGraph;
+		using Handle = PolymorphicObjectPool<ASceneNode>::PoolRef;
+
+
 	public:
 		Monocle_Graphics_API ASceneNode(class SceneGraph& graph, SceneNodeHandle parentHandle = SceneNodeHandle::Null(),
-		           const Transform& localTransf = Transform());
+			const Transform& localTransf = Transform());
 
 		virtual ~ASceneNode() {}
 
 		template <typename T>
-		ASceneNode*	AddNode()
+		ASceneNode* AddNode()
 		{
 			return nullptr;
 		}
 
-		[[nodiscard]] const Transform&	GetWorldTransform() const { return m_worldTransform; }
-		[[nodiscard]] const Transform&	GetLocalTransform() const { return m_worldTransform; }
+		[[nodiscard]] const Transform& GetWorldTransform() const { return m_worldTransform; }
+		[[nodiscard]] const Transform& GetLocalTransform() const { return m_worldTransform; }
 
 		[[nodiscard]] Transform	GetInverseWorldTransform() const { return Transform(m_worldTransform.Matrix().GetInverse()); }
 
@@ -39,14 +45,11 @@ namespace moe
 		Monocle_Graphics_API void	SetWorldTransform(const Transform& newWorldTransf);
 
 		[[nodiscard]] bool					HasParent() const { return m_parentHandle.IsNotNull(); }
-		[[nodiscard]] const ASceneNode*		GetParent() const;
-		[[nodiscard]] ASceneNode*			MutParent();
+		[[nodiscard]] Handle MutParent();
 
 
 		void	AttachChild(SceneNodeHandle childHandle);
 		void	AttachChild(ASceneNode& childNode);
-
-		friend SceneGraph;
 
 	protected:
 
@@ -59,11 +62,10 @@ namespace moe
 		{
 			m_parentHandle = handle;
 		}
-
 		void	DetachChild(SceneNodeHandle childToBeDetachedHandle);
 
 
-		SceneGraph&		m_graph;
+		SceneGraph& m_graph;
 
 		SceneNodeHandle		m_parentHandle;
 		SceneNodeHandle		m_leftChildHandle;

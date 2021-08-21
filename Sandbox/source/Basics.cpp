@@ -7,6 +7,7 @@
 #include <Math/Vec3.h>
 #include <Math/Vec4.h>
 
+
 #include "Graphics/Shader/Module/ShaderModuleDescriptor.h"
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 
@@ -390,7 +391,6 @@ namespace moe
 
 void TestApplication::TestSceneGraph()
 {
-
 	SceneGraph graph(12);
 
 	SceneNodeHandle bodyHandle = graph.CreateNode<ASceneNode>(SceneGraph::GetRootHandle(), Transform::Translate({ 0, 35, 0 }));
@@ -403,7 +403,7 @@ void TestApplication::TestSceneGraph()
 	SceneNodeHandle rightFootHandle = graph.CreateNode<ASceneNode>(rightLegHandle, Transform::Translate({ 0, -35, 0 }));
 
 
-	ASceneNode* body = graph.MutSceneNode(bodyHandle);
+	auto body = graph.MutSceneNode(bodyHandle);
 	body->SetWorldTransform(Transform::Translate({ 10, 0, 0 }));
 
 

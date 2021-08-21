@@ -72,8 +72,33 @@ function(MONOCLE_INCLUDE_ASSIMP TARGET_NAME)
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different
 		${ASSIMP_DLL}
 		"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>")
+endfunction()
 
 
+function(MONOCLE_FIND_PACKAGE TARGET_NAME PACKAGE_NAME)
+	# Point to our CMake dir with some code to find external dependencies
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMake/")
+	
+	# Hint at our supposed ASSIMP installation location
+	find_package(${PACKAGE_NAME} REQUIRED)
+	
+	message(STATUS "Found ${PACKAGE_NAME} include dir: ${${PACKAGE_NAME}_INCLUDE_DIR}")
+	target_include_directories(${TARGET_NAME} PUBLIC ${${PACKAGE_NAME}_INCLUDE_DIR})
+	
+	if(DEFINED ${PACKAGE_NAME}_DEBUG) 
+		message(STATUS "Found ${PACKAGE_NAME} debug library: ${${PACKAGE_NAME}_DEBUG}")
+		target_link_libraries(${TARGET_NAME} PRIVATE debug  ${${PACKAGE_NAME}_DEBUG})
+	endif()
+	
+	if(DEFINED ${PACKAGE_NAME}_RELEASE)
+		message(STATUS "Found ${PACKAGE_NAME} release library: ${${PACKAGE_NAME}_RELEASE}")
+		target_link_libraries(${TARGET_NAME} PRIVATE optimized  ${${PACKAGE_NAME}_RELEASE})
+	endif()
+	
+	if(DEFINED ${PACKAGE_NAME}_LIBRARY)
+		message(STATUS "Found ${PACKAGE_NAME} library: ${${PACKAGE_NAME}_LIBRARY}")
+		target_link_libraries(${TARGET_NAME} PRIVATE ${${PACKAGE_NAME}_LIBRARY})
+	endif()
 endfunction()
 
 

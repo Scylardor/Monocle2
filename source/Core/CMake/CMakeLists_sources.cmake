@@ -1,7 +1,9 @@
 
 
 set(Monocle_Core_SOURCES
-	./Containers/Array/Array.h
+	./Config/YAMLConfig.cpp
+./Config/YAMLConfig.h
+./Containers/Array/Array.h
 ./Containers/AssetRegistry/ObjectRegistry.h
 ./Containers/AssetRegistry/ObjectRegistry.inl
 ./Containers/FreeList/detail/FreeListObject.h
@@ -78,6 +80,12 @@ set(Monocle_Core_SOURCES
 ./Resource/ResourceRef.h
 ./StringFormat/moeStringFormat.h
 ./StringFormat/Private/moeStringFormat.internal.hpp
+./Threading/Render/GLFW/GlfwRenderThread.cpp
+./Threading/Render/GLFW/GlfwRenderThread.h
+./Threading/Render/RenderThread.h
+./Threading/ThreadPool/ThreadPool.cpp
+./Threading/ThreadPool/ThreadPool.h
+./Threading/ThreadPool/ThreadPool.inl
 	)
 	
 if(WIN32)

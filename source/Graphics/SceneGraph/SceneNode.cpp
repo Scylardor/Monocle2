@@ -16,13 +16,21 @@ namespace moe
 		else
 		{
 			// Our world transform is parent's world transformed combined to our local transform.
-			const ASceneNode* parentNode = m_graph.GetSceneNode(m_parentHandle);
-			if (MOE_ASSERT(parentNode != nullptr))
+			auto const parentNode = m_graph.MutSceneNode(m_parentHandle);
+
+			if (MOE_ASSERT((*parentNode) != nullptr))
 			{
 				m_worldTransform = m_localTransform * parentNode->GetWorldTransform();
 			}
 		}
 	}
+
+
+	ASceneNode::Handle ASceneNode::MutParent()
+	{
+		return m_graph.MutSceneNode(m_parentHandle);
+	}
+
 
 
 	void ASceneNode::SetLocalTransform(const Transform& newLocalTransf)
@@ -50,13 +58,13 @@ namespace moe
 		SceneNodeHandle childHandle = m_leftChildHandle;
 		while (childHandle.IsNotNull())
 		{
-			ASceneNode* child = m_graph.MutSceneNode(childHandle);
+			auto child = m_graph.MutSceneNode(childHandle);
 			child->m_worldTransform = child->m_localTransform * m_worldTransform;
 
 			SceneNodeHandle siblingHandle = child->m_rightSiblingHandle;
 			while (siblingHandle.IsNotNull())
 			{
-				ASceneNode* sibling = m_graph.MutSceneNode(siblingHandle);
+				auto sibling = m_graph.MutSceneNode(siblingHandle);
 				sibling->m_worldTransform = child->m_localTransform * m_worldTransform;
 
 				// Recurse through each sibling
@@ -70,32 +78,21 @@ namespace moe
 	}
 
 
-	const ASceneNode* ASceneNode::GetParent() const
-	{
-		return m_graph.GetSceneNode(m_parentHandle);
-	}
-
-
-	ASceneNode* ASceneNode::MutParent()
-	{
-		return m_graph.MutSceneNode(m_parentHandle);
-	}
-
 
 	void ASceneNode::AttachChild(SceneNodeHandle childHandle)
 	{
-		ASceneNode* newChildNode = m_graph.MutSceneNode(childHandle);
+		auto newChildNode = m_graph.MutSceneNode(childHandle);
 
-		if (!MOE_ASSERT(newChildNode != nullptr))
+		if (!MOE_ASSERT(*newChildNode != nullptr))
 		{
 			return; // This child is either null or we are already its parent
 		}
 
 		if (newChildNode->m_parentHandle.IsNotNull() && newChildNode->m_parentHandle != SceneGraph::GetRootHandle())
 		{
-			ASceneNode* newChildCurrentParent = newChildNode->MutParent();
+			auto newChildCurrentParent = newChildNode->MutParent();
 
-			if (newChildCurrentParent == this)
+			if (*newChildCurrentParent == this)
 			{
 				return; // This child is either null or we are already its parent
 			}
@@ -110,7 +107,7 @@ namespace moe
 		}
 		else // we have to walk all our children until we find one with null next sibling.
 		{
-			ASceneNode* child = m_graph.MutSceneNode(m_leftChildHandle);
+			auto child = m_graph.MutSceneNode(m_leftChildHandle);
 			while (child->m_rightSiblingHandle.IsNotNull())
 			{
 				child = m_graph.MutSceneNode(child->m_rightSiblingHandle);
@@ -144,7 +141,7 @@ namespace moe
 		// When we update world transform, we need to keep local transform up-to-date.
 		if (m_parentHandle.IsNotNull())
 		{
-			const ASceneNode* parent = m_graph.GetSceneNode(m_parentHandle);
+			auto parent = m_graph.MutSceneNode(m_parentHandle);
 
 			// Update world transform.
 			m_worldTransform = m_localTransform * parent->GetWorldTransform();
@@ -164,7 +161,7 @@ namespace moe
 		// When we update world transform, we need to keep local transform up-to-date.
 		if (m_parentHandle.IsNotNull())
 		{
-			const ASceneNode* parent = m_graph.GetSceneNode(m_parentHandle);
+			auto parent = m_graph.MutSceneNode(m_parentHandle);
 
 			// Update local transform.
 			m_localTransform = parent->GetInverseWorldTransform() * m_worldTransform.Matrix();
@@ -179,8 +176,8 @@ namespace moe
 
 	void ASceneNode::DetachChild(SceneNodeHandle childToBeDetachedHandle)
 	{
-		ASceneNode* detachedChild = m_graph.MutSceneNode(childToBeDetachedHandle);
-		if (!MOE_ASSERT(detachedChild != nullptr) || !MOE_ASSERT(detachedChild->m_parentHandle.IsNotNull())) // we were passed an invalid handle, something is wrong
+		auto detachedChild = m_graph.MutSceneNode(childToBeDetachedHandle);
+		if (!MOE_ASSERT(*detachedChild != nullptr) || !MOE_ASSERT(detachedChild->m_parentHandle.IsNotNull())) // we were passed an invalid handle, something is wrong
 			return;
 
 		if (m_leftChildHandle == childToBeDetachedHandle) // It's our first child : easy
@@ -190,8 +187,8 @@ namespace moe
 		}
 		else // We have to walk our children until we find this one
 		{
-			ASceneNode* child = m_graph.MutSceneNode(m_leftChildHandle);
-			ASceneNode* previousChild = child;
+			auto child = m_graph.MutSceneNode(m_leftChildHandle);
+			auto previousChild = child;
 
 			while (child->m_rightSiblingHandle != childToBeDetachedHandle)
 			{

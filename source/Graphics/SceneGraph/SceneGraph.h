@@ -2,25 +2,26 @@
 
 #pragma once
 
-#include <Core/Containers/FreeList/PolymorphicFreelist.h>
-
 #include "SceneNode.h"
 
 
 #include "Monocle_Graphics_Export.h"
+#include "Core/Containers/ObjectPool/ObjectPool.h"
 
 namespace moe
 {
 	class SceneGraph
 	{
 	public:
-		Monocle_Graphics_API SceneGraph();
 
+		using Handle = PolymorphicObjectPool<ASceneNode>::PoolRef;
 
-		Monocle_Graphics_API SceneGraph(uint32_t reservedSize) :
-			SceneGraph()
+		Monocle_Graphics_API SceneGraph(uint32_t reservedSize = 1) :
+			m_nodes(reservedSize)
 		{
-			m_nodes.Reserve(reservedSize);
+			// Create the root
+			auto id = m_nodes.Emplace<ASceneNode>(*this);
+			(void)id; //dont need it
 		}
 
 		~SceneGraph()
@@ -32,7 +33,7 @@ namespace moe
 		template <typename Derived, typename... Args>
 		[[nodiscard]] SceneNodeHandle	CreateNode(SceneNodeHandle parentHandle, const Transform& localTransform, Args&&... args)
 		{
-			const FreelistID newNodeID = m_nodes.Add<Derived>(*this, std::forward<Args>(args)...);
+			const FreelistID newNodeID = m_nodes.Emplace<Derived>(*this, std::forward<Args>(args)...);
 
 			SceneNodeHandle newNodeHandle{ newNodeID.ToHandle<SceneNodeHandle>() };
 
@@ -43,17 +44,10 @@ namespace moe
 			return newNodeHandle;
 		}
 
-		ASceneNode*	MutSceneNode(SceneNodeHandle nodeHandle)
+		auto MutSceneNode(SceneNodeHandle nodeHandle)
 		{
-			return &m_nodes.Lookup(nodeHandle.Get() - 1);
+			return m_nodes.MutRef(nodeHandle.Get() - 1);
 		}
-
-
-		const ASceneNode*	GetSceneNode(SceneNodeHandle nodeHandle)
-		{
-			return &m_nodes.Lookup(nodeHandle.Get()-1);
-		}
-
 
 		Monocle_Graphics_API void	AddChild(SceneNodeHandle parentHandle, SceneNodeHandle childHandle);
 
@@ -62,21 +56,14 @@ namespace moe
 
 
 
-		ASceneNode*	MutRoot()
+		auto MutRoot()
 		{
-			return &m_nodes.Lookup(0);
+			return m_nodes.MutRef(0);
 		}
-
-
-		const ASceneNode*	GetRoot()
-		{
-			return &m_nodes.Lookup(0);
-		}
-
 
 		static SceneNodeHandle	GetRootHandle()
 		{
-			return SceneNodeHandle{1 };
+			return SceneNodeHandle{ 1 };
 		}
 
 
@@ -87,7 +74,7 @@ namespace moe
 
 
 
-		PolymorphicFreelist<ASceneNode>	m_nodes;
+		PolymorphicObjectPool<ASceneNode>	m_nodes;
 	};
 
 }

@@ -9,13 +9,19 @@
 #include "TestApplication.h"
 
 #include "Core/Misc/Literals.h"
+#include "GameFramework/Service/ConfigService/ConfigService.h"
+#include "GameFramework/Simulation/App3D/App3D.h"
 
 
 //#include "btBulletCollisionCommon.h"
 
 
-int main()
+int main(int argc, char **argv)
 {
+	moe::App3D app3d{ argc, argv };
+	std::optional<uint32_t> width = app3d.Get<moe::ConfigService>()->Get<uint32_t>("window:width");
+	std::optional<uint32_t> height = app3d.Get<moe::ConfigService>()->Get<uint32_t>("window:height");
+
 	//moe::VulkanGlfwAppDescriptor vkAppDesc(1024_width, 728_height, "Monocle Sandbox");
 
 	//moe::BasicVkApp vkApp(vkAppDesc);

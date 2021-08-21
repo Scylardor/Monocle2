@@ -29,28 +29,28 @@ namespace moe
 
 
 	template<typename T, typename Enable = void>
-	struct is_unique_pointer
+	struct IsUniquePointer
 	{
 		enum { value = false };
 	};
 
 	template<typename T>
-	struct is_unique_pointer<T,
+	struct IsUniquePointer<T,
 		typename std::enable_if<std::is_same<typename std::remove_cv<T>::type, std::unique_ptr<typename T::element_type>>::value>::type>
 	{
 		enum { value = true };
 	};
 
 	template<typename TObj, typename ValueType, typename Enable = void>
-	struct is_polymorphic_type_compatible
+	struct IsPolymorphicCompatible
 	{
 		enum { value = false };
 	};
 
 	template<typename ValueType, typename TObj>
-	struct is_polymorphic_type_compatible<ValueType, TObj,
+	struct IsPolymorphicCompatible<ValueType, TObj,
 		typename std::enable_if<
-			is_unique_pointer<ValueType>::value
+			IsUniquePointer<ValueType>::value
 			&& (std::is_abstract_v<typename ValueType::element_type> || std::is_polymorphic_v<typename ValueType::element_type>)
 			&& std::is_base_of_v<typename ValueType::element_type, TObj>>::type>
 	{
@@ -73,28 +73,28 @@ namespace moe
 
 			~PoolRef() = default;
 
-			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			template <typename = std::enable_if_t<IsUniquePointer<ValueType>::value>>
 			typename ValueType::element_type* operator->()
 			{
 				auto& uniquePtr = m_owner->Mut(m_id);
 				return uniquePtr.get();
 			}
 
-			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			template <typename = std::enable_if_t<IsUniquePointer<ValueType>::value>>
 			typename ValueType::element_type const* operator->() const
 			{
 				auto const& uniquePtr = m_owner->Get(m_id);
 				return uniquePtr.get();
 			}
 
-			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			template <typename = std::enable_if_t<IsUniquePointer<ValueType>::value>>
 			typename ValueType::element_type* operator*()
 			{
 				auto& uniquePtr = m_owner->Mut(m_id);
 				return uniquePtr.get();
 			}
 
-			template <typename = std::enable_if_t<is_unique_pointer<ValueType>::value>>
+			template <typename = std::enable_if_t<IsUniquePointer<ValueType>::value>>
 			typename ValueType::element_type const* operator*() const
 			{
 				auto& uniquePtr = m_owner->Get(m_id);
@@ -136,9 +136,8 @@ namespace moe
 
 		};
 
-		struct UniqueRef : public PoolRef
+		struct UniqueRef :  PoolRef
 		{
-		public:
 			UniqueRef(ObjectPool& owner, uint32_t id) :
 				PoolRef(owner, id)
 			{}
@@ -154,7 +153,7 @@ namespace moe
 		template <typename TObj = ValueType, typename... Ts>
 		[[nodiscard]] uint32_t	Emplace(Ts&&... args)
 		{
-			static_assert(std::is_same_v<TObj, ValueType> || is_polymorphic_type_compatible<ValueType, TObj>::value);
+			static_assert(std::is_same_v<TObj, ValueType> || IsPolymorphicCompatible<ValueType, TObj>::value);
 			auto id = MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
 			return id;
 		}
@@ -162,7 +161,7 @@ namespace moe
 		template <typename TObj = ValueType, typename... Ts>
 		[[nodiscard]] UniqueRef	EmplaceRef(Ts&&... args)
 		{
-			static_assert(std::is_same_v<TObj, ValueType> || is_polymorphic_type_compatible<ValueType, TObj>::value);
+			static_assert(std::is_same_v<TObj, ValueType> || IsPolymorphicCompatible<ValueType, TObj>::value);
 			auto id = MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
 			return { *this, id };
 		}
@@ -248,7 +247,7 @@ namespace moe
 
 				m_firstFreeBlock = block.NextFreeBlock;
 
-				if constexpr (is_unique_pointer<ValueType>::value)
+				if constexpr (IsUniquePointer<ValueType>::value)
 				{
 					if constexpr (std::is_same_v<ValueType, TObj>)
 					{
@@ -345,7 +344,7 @@ namespace moe
 
 			auto id = (uint32_t)m_objects.size();
 
-			if constexpr (is_unique_pointer<TObj>::value)
+			if constexpr (IsUniquePointer<TObj>::value)
 			{
 				if constexpr (std::is_same_v<TObj, ValueType>)
 				{

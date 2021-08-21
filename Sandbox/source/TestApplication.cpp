@@ -38,7 +38,7 @@
 
 #include "Core/Containers/SparseArray/SparseArray.h"
 
-#include "GameFramework/Threading/ThreadPool/ThreadPool.h"
+#include "Core/Threading/ThreadPool/ThreadPool.h"
 
 
 
@@ -222,8 +222,7 @@ namespace moe
 
 	void TestApplication::Run()
 	{
-
-		TestSSAO();
+		TestPBRIrradianceConversion();
 
 	}
 

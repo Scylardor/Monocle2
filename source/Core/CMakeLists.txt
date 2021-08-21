@@ -15,6 +15,10 @@ monocle_target_compile_config(${CORE_TARGET})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${CORE_TARGET}_SOURCES})
 
 # Core external dependencies
+
+set(YAMLCPP_ROOT "Unknown" CACHE PATH "Folder where the YamlCpp library can be found" )
+monocle_find_package(${CORE_TARGET} "YAMLCPP")
+
 set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/vendor/)
 
 # We use BetterEnums folder which is directly in the vendor directory, so use vendor as an include directory.
