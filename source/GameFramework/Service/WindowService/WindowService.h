@@ -18,7 +18,7 @@ namespace moe
 		{}
 
 
-		virtual std::unique_ptr<moe::IWindow> CreateWindow() = 0;
+		virtual IWindow* CreateWindow() = 0;
 
 
 	protected:

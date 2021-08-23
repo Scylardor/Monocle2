@@ -7,8 +7,8 @@ namespace moe
 	{
 		static_assert(std::is_base_of_v<IWindow, TWin>, "TWin is not a IWindow derived class");
 
-		m_windows.EmplaceBack(std::make_unique<T>(std::forward<Args>(args)...));
-		return m_windows.Back().get();
+		m_windows.EmplaceBack(std::make_unique<TWin>(std::forward<Args>(args)...));
+		return static_cast<TWin*>(m_windows.Back().get());
 	}
 
 	template <typename T, typename ... Args>

@@ -1,6 +1,8 @@
 #include "OpenGLApp3D.h"
 
 
+
+#include "Core/Exception/RuntimeException.h"
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/WindowService/GLFWService/OpenGLGLFWService.h"
 
@@ -22,5 +24,9 @@ moe::OpenGLApp3D::~OpenGLApp3D()
 
 void moe::OpenGLApp3D::Start()
 {
-	EditEngine()->EditService<WindowService>()->CreateWindow();
+	IWindow* window = EditEngine()->EditService<WindowService>()->CreateWindow();
+	if (window == nullptr)
+	{
+		throw RuntimeException("Could not create window");
+	}
 }

@@ -5,10 +5,14 @@
 		"height": 600,
 		"title" : "Hello Monocle",
 		"resizable": true,
+		"video_mode": "default",
 		"raw_mouse_motion": true,
-		"framebuffer":
-		{
-			"msaa": 4
-		}
+		"GL_major": 1,
+		"GL_minor": 0,
+		"cursor": "disabled"
+	},
+	"framebuffer":
+	{
+		"msaa": 4
 	}
 }

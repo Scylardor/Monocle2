@@ -28,6 +28,8 @@ set(Monocle_GameFramework_SOURCES
 ./Service/WindowService/GLFWService/OpenGLGLFWService.h
 ./Service/WindowService/Window/GLFWWindow.cpp
 ./Service/WindowService/Window/GLFWWindow.h
+./Service/WindowService/Window/OpenGLGLFWWindow.cpp
+./Service/WindowService/Window/OpenGLGLFWWindow.h
 ./Service/WindowService/Window/Window.h
 ./Service/WindowService/WindowService.h
 ./Service/WindowService/WindowService.inl

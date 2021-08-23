@@ -28,15 +28,14 @@ namespace moe
 
 	GLFWService::~GLFWService()
 	{
-
 		glfwTerminate();
 	}
 
 
 	void GLFWService::ErrorCallback(int code, const char* description)
 	{
-		MOE_DEBUG_ASSERT(false);
 		MOE_ERROR(moe::ChanWindowing, "GLFW error code %i: '%s'", code, description);
+		MOE_DEBUG_ASSERT(false);
 	}
 }
 

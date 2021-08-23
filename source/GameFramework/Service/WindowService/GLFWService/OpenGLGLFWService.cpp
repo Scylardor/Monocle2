@@ -2,10 +2,11 @@
 
 #if defined(MOE_GLFW ) && defined(MOE_OPENGL)
 
+#include "GameFramework/Engine/Engine.h"
 #include "OpenGLGLFWService.h"
 
-#endif
-#include "GameFramework/Service/WindowService/Window/GLFWWindow.h"
+#include "GameFramework/Service/ConfigService/ConfigService.h"
+#include "GameFramework/Service/WindowService/Window/OpenGLGLFWWindow.h"
 
 moe::OpenGLGLFWService::OpenGLGLFWService(Engine& engine) :
 	GLFWService(engine)
@@ -13,7 +14,20 @@ moe::OpenGLGLFWService::OpenGLGLFWService(Engine& engine) :
 }
 
 
-std::unique_ptr<moe::IWindow> moe::OpenGLGLFWService::CreateWindow()
+moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
 {
-	return std::make_unique<OpenGLGLFWWindow>(*this);
+	auto const* Config = EditEngine()->GetService<ConfigService>();
+	MOE_ASSERT(Config != nullptr);
+
+	auto const windowSection = Config->GetSection("window");
+	MOE_ASSERT(windowSection.IsValid());
+
+	auto* window = EmplaceWindow<OpenGLGLFWWindow>();
+
+	window->SetWindowHints(windowSection);
+	bool ok = window->Create(windowSection);
+	MOE_DEBUG_ASSERT(ok);
+
+	return window;
 }
+#endif

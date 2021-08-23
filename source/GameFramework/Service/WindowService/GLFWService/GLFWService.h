@@ -20,18 +20,9 @@ namespace moe
 		virtual ~GLFWService();
 
 
-	protected:
-
-		int	CheckGLFWError() const;
-
 	private:
 
 		static void	ErrorCallback(int code, const char* description);
-
-		/**
-		 * \brief The handle to our current window. Must be set with a call to CreateGlfwWindow.
-		 */
-		GLFWwindow* m_window = nullptr;
 
 
 	};

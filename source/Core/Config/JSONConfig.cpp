@@ -62,9 +62,9 @@ namespace moe
 
 		m_doc.ParseStream(is);
 
-		MOE_ASSERT(m_doc.IsObject());
-
 		fclose(fp);
+
+		MOE_ASSERT(m_doc.IsObject());
 
 		return {};
 	}

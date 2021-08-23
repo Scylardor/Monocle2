@@ -11,7 +11,7 @@ namespace moe
 	{
 	}
 
-	// TODO: return optional
+
 	ConfigSection ConfigService::GetSectionOf(std::string_view& configName) const
 	{
 		rapidjson::Value const* parent = &(*m_config);

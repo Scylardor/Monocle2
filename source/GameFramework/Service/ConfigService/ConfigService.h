@@ -40,8 +40,13 @@ namespace moe
 			return m_section;
 		}
 
+		[[nodiscard]] bool	IsValid() const
+		{
+			return m_section->IsObject();
+		}
+
 		template <typename T>
-		T	Get(std::string_view configName) const
+		[[nodiscard]] std::optional<T>	Get(std::string_view configName) const
 		{
 			auto const paramIt = m_section->FindMember(rapidjson::Value(rapidjson::Value::StringRefType(configName.data(), static_cast<rapidjson::SizeType>(configName.length()))));
 			if (paramIt == m_section->MemberEnd())

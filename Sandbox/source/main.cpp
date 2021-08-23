@@ -32,14 +32,14 @@ int main(int argc, char **argv)
 	//if (vkApp.IsInitialized())
 	//	vkApp.Run();
 
-	moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
-
-	moe::TestApplication app(appDesc);
-
-	if (app.IsInitialized())
-	{
-		app.Run();
-	}
+	//moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
+	//
+	//moe::TestApplication app(appDesc);
+	//
+	//if (app.IsInitialized())
+	//{
+	//	app.Run();
+	//}
 
 	return 0;
 }

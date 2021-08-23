@@ -15,7 +15,7 @@ namespace moe
 		~OpenGLGLFWService() = default;
 
 
-		std::unique_ptr<moe::IWindow> CreateWindow() override;
+		moe::IWindow* CreateWindow() override;
 
 
 	};
