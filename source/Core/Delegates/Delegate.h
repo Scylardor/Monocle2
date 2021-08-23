@@ -6,7 +6,6 @@
 #pragma once
 
 #include <functional> // std::function
-#include <utility> // std::index_sequence_for
 
 // We're going to use a metaprogramming integer sequence to statically generate std::placeholders stubs to pass to std::bind
 // in order to construct our delegates.

@@ -7,13 +7,12 @@
 
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Delegates/Delegate.h"
+#include "Core/Delegates/EventDelegateID.h"
 
 #include <algorithm> // std::find_if
 
 namespace moe
 {
-	typedef	std::size_t	EventDelegateID;
-
 	template<typename FunctionType>
 	class Event;
 
@@ -109,10 +108,6 @@ namespace moe
 			DelegateType	m_delegate = nullptr;
 			EventDelegateID	m_id = 0;
 		};
-
-
-
-
 
 		typedef moe::Vector<EventDelegate>	EventDelegates;
 		EventDelegates	m_delegates;

@@ -2,23 +2,16 @@
 
 #include "GameFramework/Service/ConfigService/ConfigService.h"
 
+#include "GameFramework/Engine/Engine.h"
 
-moe::App3D::App3D(int argc, char** argv)
+
+moe::App3D::App3D(Engine& owner, int argc, char** argv) :
+	AbsSimulation(owner)
 {
-	Add<ConfigService>(argc, argv);
+	moe::GetLogChainSingleton().LinkTo(&m_IDELogger);
+	m_IDELogger.GetFilterPolicy().SetFilterSeverity(moe::SevWarning);
+	m_consoleLogger.LinkTo(&m_IDELogger);
+
+	EditEngine()->AddService<ConfigService>(argc, argv);
 }
 
-
-void moe::App3D::Start()
-{
-}
-
-
-void moe::App3D::Update()
-{
-}
-
-
-void moe::App3D::Finish()
-{
-}

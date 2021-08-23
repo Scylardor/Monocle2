@@ -1,14 +1,14 @@
 // Monocle Game Engine source files - Alexandre Baron
 
 #pragma once
-#include <memory> // unique ptr
-#include <typeindex>
-#include <unordered_map>
+#include "GameFramework/Engine/EnginePart.h"
 
-#include "GameFramework/Service/Service.h"
 
 namespace moe
 {
+	class Engine;
+	class Service;
+
 	/*
 	 * The base virtual class for Engine simulations
 	 */
@@ -18,31 +18,19 @@ namespace moe
 
 		virtual ~ISimulation() = default;
 
-		virtual void	Start() = 0;
-
-		virtual void	Update() = 0;
-
-		virtual void	Finish() = 0;
 	};
 
 
-
-	class AbstractSimulation : public ISimulation
+	/*
+	 * Abstract Simulation
+	 */
+	class AbsSimulation : public ISimulation, public EnginePart
 	{
 	public:
 
-		template <typename TServ, typename... Args>
-		TServ* Add(Args&&... args);
-
-		template <typename TServ>
-		TServ const* Get() const;
-
-		template <typename TServ>
-		TServ* Edit();
-
-	private:
-
-		std::unordered_map<std::type_index, std::unique_ptr<Service>>	m_services;
+		AbsSimulation(Engine& myEngine) :
+			EnginePart(myEngine)
+		{}
 
 	};
 

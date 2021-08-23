@@ -1,0 +1,14 @@
+{
+	"window" :
+	{
+		"width":  800,
+		"height": 600,
+		"title" : "Hello Monocle",
+		"resizable": true,
+		"raw_mouse_motion": true,
+		"framebuffer":
+		{
+			"msaa": 4
+		}
+	}
+}

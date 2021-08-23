@@ -16,8 +16,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${${CORE_TARGET}_SOURCES})
 
 # Core external dependencies
 
-set(YAMLCPP_ROOT "Unknown" CACHE PATH "Folder where the YamlCpp library can be found" )
-monocle_find_package(${CORE_TARGET} "YAMLCPP")
+set(RAPIDJSON_ROOT "Unknown" CACHE PATH "Folder where the RapidJSON library can be found" )
+monocle_find_header_only_library_package(${CORE_TARGET} "RapidJSON")
 
 set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/vendor/)
 

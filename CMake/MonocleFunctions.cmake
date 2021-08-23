@@ -102,6 +102,18 @@ function(MONOCLE_FIND_PACKAGE TARGET_NAME PACKAGE_NAME)
 endfunction()
 
 
+function(MONOCLE_FIND_HEADER_ONLY_LIBRARY_PACKAGE TARGET_NAME PACKAGE_NAME)
+	# Point to our CMake dir with some code to find external dependencies
+	set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMake/")
+	
+	# Hint at our supposed ASSIMP installation location
+	find_package(${PACKAGE_NAME} REQUIRED)
+	
+	message(STATUS "Found ${PACKAGE_NAME} include dir: ${${PACKAGE_NAME}_INCLUDE_DIR}")
+	target_include_directories(${TARGET_NAME} PUBLIC ${${PACKAGE_NAME}_INCLUDE_DIR})
+	
+endfunction()
+
 function(MONOCLE_ADD_LIBRARY LIB_TYPE TARGET_NAME LIB_SOURCES)
 	add_library(${TARGET_NAME} ${LIB_TYPE} ${LIB_SOURCES})
 

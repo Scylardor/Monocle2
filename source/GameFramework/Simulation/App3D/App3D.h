@@ -5,20 +5,18 @@
 
 namespace moe
 {
-	class App3D : public AbstractSimulation
+	class App3D : public AbsSimulation
 	{
 	public:
 
-		App3D(int argc, char** argv);
-
-		void Start() override;
-
-		void Update() override;
-
-		void Finish() override;
+		App3D(Engine& owner, int argc, char** argv);
 
 	private:
+		using IDELogger = moe::StdLogger<moe::SeverityFilterPolicy, moe::DebuggerFormatPolicy, moe::IdeWritePolicy>;
+		using ConsoleLogger = moe::StdLogger<moe::NoFilterPolicy, moe::NoFormatPolicy, moe::OutStreamWritePolicy>;
 
+		IDELogger		m_IDELogger;
+		ConsoleLogger	m_consoleLogger;
 
 	};
 

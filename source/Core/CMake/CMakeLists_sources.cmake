@@ -1,8 +1,8 @@
 
 
 set(Monocle_Core_SOURCES
-	./Config/YAMLConfig.cpp
-./Config/YAMLConfig.h
+	./Config/JSONConfig.cpp
+./Config/JSONConfig.h
 ./Containers/Array/Array.h
 ./Containers/AssetRegistry/ObjectRegistry.h
 ./Containers/AssetRegistry/ObjectRegistry.inl
@@ -19,7 +19,9 @@ set(Monocle_Core_SOURCES
 ./Containers/Vector/Vector.h
 ./Debugger/moeDebugger.h
 ./Delegates/Delegate.h
-./Delegates/event.h
+./Delegates/Event.h
+./Delegates/EventDelegateID.h
+./Exception/RuntimeException.h
 ./HashString/HashString.h
 ./Log/LogUtils.h
 ./Log/moeLog.h
