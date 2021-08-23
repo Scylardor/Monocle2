@@ -28,6 +28,7 @@ namespace moe
 
 	GLFWService::~GLFWService()
 	{
+		RemoveAllWindows();
 		glfwTerminate();
 	}
 

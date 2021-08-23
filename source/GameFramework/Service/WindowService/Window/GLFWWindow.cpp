@@ -14,6 +14,9 @@ namespace moe
 	{
 		if (HasWindow())
 		{
+			// reenable the cursor before destroying, otherwise on Windows,
+			// after breaking into the debugger, a disabled cursor will stay locked in the old window 'frame' after destruction.
+			glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			glfwDestroyWindow(m_window);
 		}
 	}

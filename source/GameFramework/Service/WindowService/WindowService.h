@@ -17,9 +17,14 @@ namespace moe
 			Service(ownerEngine)
 		{}
 
+		virtual ~WindowService() = default;
 
 		virtual IWindow* CreateWindow() = 0;
 
+		void	RemoveAllWindows()
+		{
+			m_windows.Clear();
+		}
 
 	protected:
 
@@ -28,7 +33,6 @@ namespace moe
 
 		template <typename T, typename... Args>
 		bool	RemoveWindow(IWindow& toRemove);
-
 
 	private:
 

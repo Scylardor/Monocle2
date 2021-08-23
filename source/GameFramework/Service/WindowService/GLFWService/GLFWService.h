@@ -17,7 +17,7 @@ namespace moe
 
 		GLFWService(Engine& engine);
 
-		virtual ~GLFWService();
+		~GLFWService() override;
 
 
 	private:
