@@ -9,7 +9,10 @@ namespace moe
 		if (false == m_config.IsValid())
 			return {};
 
-		auto const section = GetSection(configName);
+		ConfigSection section(&(*m_config));
+
+		if (configName.find(Sm_delimiter) != std::string_view::npos)
+			section = GetSectionOf(configName);
 
 		auto const param = (*section)->FindMember(configName.data());
 		if (param == (*section)->MemberEnd())

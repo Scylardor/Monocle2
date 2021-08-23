@@ -12,29 +12,51 @@ namespace moe
 	}
 
 	// TODO: return optional
-	ConfigSection ConfigService::GetSection(std::string_view& sectionName) const
+	ConfigSection ConfigService::GetSectionOf(std::string_view& configName) const
 	{
 		rapidjson::Value const* parent = &(*m_config);
 
-		size_t delimiterOffset = sectionName.find(Sm_delimiter);
+		size_t delimiterOffset = configName.find(Sm_delimiter);
 
 		while (delimiterOffset != std::string::npos)
 		{
-			std::string_view parentSection{ sectionName };
-			parentSection.remove_suffix(sectionName.size() - delimiterOffset);
+			std::string_view parentSection{ configName };
+			parentSection.remove_suffix(configName.size() - delimiterOffset);
 			auto parentIt = parent->FindMember(rapidjson::Value(rapidjson::Value::StringRefType(parentSection.data(), static_cast<rapidjson::SizeType>(parentSection.length()))));
 			if (parentIt->value.IsObject())
 				parent = &parentIt->value;
 			else
 				return parent;
 
-			sectionName.remove_prefix(delimiterOffset + 1);
+			configName.remove_prefix(delimiterOffset + 1);
 
-			delimiterOffset = sectionName.find(Sm_delimiter);
+			delimiterOffset = configName.find(Sm_delimiter);
 		}
 
 		return { parent };
-
 	}
 
+
+	ConfigSection ConfigService::GetSection(std::string_view section) const
+	{
+		rapidjson::Value const* parent = &(*m_config);
+
+		size_t delimiterOffset = section.size();
+
+		do
+		{
+			std::string_view parentSection{ section };
+			parentSection.remove_prefix(section.size() - delimiterOffset);
+			auto parentIt = parent->FindMember(rapidjson::Value(rapidjson::Value::StringRefType(parentSection.data(), static_cast<rapidjson::SizeType>(parentSection.length()))));
+			if (parentIt->value.IsObject())
+				parent = &parentIt->value;
+			else
+				return parent;
+
+			delimiterOffset = section.find(Sm_delimiter);
+		} while (delimiterOffset != std::string_view::npos);
+
+
+		return { parent };
+	}
 }
