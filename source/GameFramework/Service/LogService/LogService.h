@@ -1,7 +1,7 @@
 ﻿// Monocle source files - Alexandre Baron
 
 #pragma once
-#include "Core/Containers/ObjectPool/ObjectPool.h"
+
 #include "Core/Containers/Vector/Vector.h"
 #include "GameFramework/Service/Service.h"
 
@@ -21,15 +21,7 @@ namespace moe
 
 
 		template <typename TLog, typename... Ts>
-		TLog& EmplaceLogger(Ts&&... args)
-		{
-			static_assert(std::is_base_of_v<ILogger, TLog>, "Can only work with ILogger derived classes");
-			m_loggers.EmplaceBack(std::make_unique<TLog>(std::forward<Ts>(args)...));
-
-			m_loggers.Back().get()->LinkTo(GetLogChainSingleton());
-
-			return static_cast<TLog&>(*m_loggers.Back());
-		}
+		TLog& EmplaceLogger(Ts&&... args);
 
 
 		void RemoveLogger(ILogger& toRemove);
@@ -38,5 +30,8 @@ namespace moe
 
 		Vector<std::unique_ptr<ILogger>>	m_loggers;
 	};
+
+
 }
 
+#include "LogService.inl"

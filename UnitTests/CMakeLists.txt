@@ -14,9 +14,12 @@ set(${UNIT_TESTS_TARGET}_SOURCES
 	"${SOURCE_DIR}/TestMath.cpp"
 	"${SOURCE_DIR}/TestStringFormat.cpp"
 	"${SOURCE_DIR}/TestGraphicsBuddyAllocator.cpp"
+	"${SOURCE_DIR}/TestStopwatch.cpp"
 )
 
 add_executable(${UNIT_TESTS_TARGET} EXCLUDE_FROM_ALL ${${UNIT_TESTS_TARGET}_SOURCES} )
+
+target_compile_definitions(${UNIT_TESTS_TARGET} PUBLIC MOE_UNIT_TESTS)
 
 target_include_directories(${UNIT_TESTS_TARGET} PRIVATE
 	${PROJECT_SOURCE_DIR}/source

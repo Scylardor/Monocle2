@@ -23,7 +23,12 @@ set(Monocle_GameFramework_SOURCES
 ./Service/ConfigService/ConfigService.inl
 ./Service/LogService/LogService.cpp
 ./Service/LogService/LogService.h
+./Service/LogService/LogService.inl
 ./Service/Service.h
+./Service/TimeService/Durations.h
+./Service/TimeService/Stopwatch/Stopwatch.cpp
+./Service/TimeService/Stopwatch/Stopwatch.h
+./Service/TimeService/Stopwatch/Stopwatch.inl
 ./Service/TimeService/TimeService.cpp
 ./Service/TimeService/TimeService.h
 ./Service/WindowService/GLFWService/GLFWService.cpp
@@ -51,7 +56,7 @@ if(WIN32)
 
 	${Monocle_GameFramework_SOURCES}
 
-
+	
 	)
 
 elseif(APPLE)
@@ -59,7 +64,7 @@ elseif(APPLE)
 
 	${Monocle_GameFramework_SOURCES}
 
-
+	
 	)
 
 elseif(UNIX)
@@ -67,7 +72,7 @@ elseif(UNIX)
 
 	${Monocle_GameFramework_SOURCES}
 
-
+	
 	)
 
 

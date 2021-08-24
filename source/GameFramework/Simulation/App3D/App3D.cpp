@@ -1,9 +1,11 @@
 #include "App3D.h"
 
+
 #include "GameFramework/Service/ConfigService/ConfigService.h"
 
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/LogService/LogService.h"
+#include "GameFramework/Service/TimeService/TimeService.h"
 
 
 moe::App3D::App3D(Engine& owner, int argc, char** argv) :
@@ -19,5 +21,8 @@ moe::App3D::App3D(Engine& owner, int argc, char** argv) :
 	ideLog.GetFilterPolicy().SetFilterSeverity(moe::SevWarning);
 
 	log->EmplaceLogger<ConsoleLogger>();
+
+	TimeService* time = EditEngine()->AddService<TimeService>();
+	time->Start();
 }
 

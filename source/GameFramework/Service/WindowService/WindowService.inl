@@ -14,7 +14,7 @@ namespace moe
 	template <typename T, typename ... Args>
 	bool WindowService::RemoveWindow(IWindow& toRemove)
 	{
-		auto windowIt = std::find_if(m_windows.begin(), m_windows.end(), [toRemove](const auto& winPtr)
+		auto windowIt = std::find_if(m_windows.begin(), m_windows.end(), [&toRemove](const auto& winPtr)
 			{
 				return winPtr.get() == toRemove;
 			});
