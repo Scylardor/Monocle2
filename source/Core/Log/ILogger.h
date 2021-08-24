@@ -3,21 +3,24 @@
 
 #ifdef MOE_STD_SUPPORT
 
-#include <string>
 #include "Core/Containers/IntrusiveListNode.h"
-#include "Monocle_Core_Export.h"
 #include "Core/Log/LogUtils.h"
+
+#include "Monocle_Core_Export.h"
 
 namespace moe
 {
-    // The LoggerBase is a logger interface you can derive from to implement your own policy-based implementations.
+    // The ILogger is a logger interface you can derive from to implement your own policy-based implementations.
     // Making it a virtual class so they can be linked by intrusive list nodes (not possible with templates)
     // Using STD support because the Log function uses std::string as a format buffer.
-    class LoggerBase : public IntrusiveListNode<LoggerBase>
+    class ILogger : public IntrusiveListNode<ILogger>
     {
     public:
-        LoggerBase() : IntrusiveListNode<LoggerBase>(this) {}
-        virtual ~LoggerBase() {}
+        ILogger()
+    	: IntrusiveListNode<ILogger>(this)
+    	{}
+
+        virtual ~ILogger() = default;
 
         // A virtual function cannot be template so preformat the message and call the virtual function afterwards for further processing
         template <typename... Args>
@@ -28,10 +31,10 @@ namespace moe
     };
 
 
-    Monocle_Core_API LoggerBase&  GetLogChainSingleton();
+    Monocle_Core_API ILogger&  GetLogChainSingleton();
 }
 
-#include "Core/Log/Private/moeLoggerBase.internal.hpp"
+#include "Core/Log/Private/ILogger.internal.hpp"
 
 
 #endif // MOE_STD_SUPPORT

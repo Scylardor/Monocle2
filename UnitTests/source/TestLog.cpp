@@ -147,7 +147,7 @@ TEST_CASE("moeLog", "[Core]")
     SECTION("Default logger")
     {
         // Default logger should be null upon initialization
-        moe::LoggerBase& logChain = moe::GetLogChainSingleton();
+        moe::ILogger& logChain = moe::GetLogChainSingleton();
 
         // The "default" class of logging macros won't log if the log chain is empty
         // Just check it doesn't crash in any way

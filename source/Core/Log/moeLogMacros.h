@@ -1,7 +1,7 @@
 #ifndef MOE_LOG_MACROS_H_
 #define MOE_LOG_MACROS_H_
 
-#include "Core/Log/moeLoggerBase.h"
+#include "Core/Log/ILogger.h"
 
 
 // The macros commonly used for logging.

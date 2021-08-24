@@ -11,9 +11,14 @@ namespace moe
     {
     public:
         IntrusiveListNode(T* owner);
-        ~IntrusiveListNode();
+        virtual ~IntrusiveListNode();
 
         void    LinkTo(IntrusiveListNode<T>* node);
+        void    LinkTo(IntrusiveListNode<T>& node)
+        {
+            LinkTo(&node);
+        }
+
         void    Unlink();
         bool    IsLinked() const;
 

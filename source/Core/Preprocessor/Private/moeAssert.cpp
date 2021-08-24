@@ -1,7 +1,7 @@
 #ifndef MOE_SHIPPING
 
 #include "Core/Preprocessor/moeAssert.h"
-#include "Core/Log/moeLoggerBase.h"
+#include "Core/Log/ILogger.h"
 #include "Core/Log/moeLogMacros.h"
 
 namespace moe

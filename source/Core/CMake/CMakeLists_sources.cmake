@@ -23,10 +23,10 @@ set(Monocle_Core_SOURCES
 ./Delegates/EventDelegateID.h
 ./Exception/RuntimeException.h
 ./HashString/HashString.h
+./Log/ILogger.h
 ./Log/LogUtils.h
 ./Log/moeLog.h
 ./Log/moeLogger.h
-./Log/moeLoggerBase.h
 ./Log/moeLogMacros.h
 ./Log/Policies/CaptureWritePolicy.h
 ./Log/Policies/DebuggerFormatPolicy.h
@@ -37,10 +37,10 @@ set(Monocle_Core_SOURCES
 ./Log/Policies/NoWritePolicy.h
 ./Log/Policies/OutStreamWritePolicy.h
 ./Log/Policies/SeverityFilterPolicy.h
+./Log/Private/ILogger.cpp
+./Log/Private/ILogger.internal.hpp
 ./Log/Private/LogUtils.cpp
 ./Log/Private/moeLogger.internal.hpp
-./Log/Private/moeLoggerBase.cpp
-./Log/Private/moeLoggerBase.internal.hpp
 ./Log/Private/Policies/CaptureWritePolicy.cpp
 ./Log/Private/Policies/DebuggerFormatPolicy.cpp
 ./Log/Private/Policies/FileWritePolicy.cpp
