@@ -97,6 +97,13 @@ namespace moe
 			glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
 
+		// vsync is enabled by default
+		bool const vsync = windowConfig.GetBool("vsync").value_or(true);
+
+		// swap interval of 1 means "wait 1 vblank" so vsync is ON, 0 means vsync OFF
+		// there's not really any point in waiting for more vblanks than creating more latency, so stick to 1 or 0
+		glfwSwapInterval((int)vsync);
+
 		return true;
 	}
 

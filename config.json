@@ -9,7 +9,8 @@
 		"raw_mouse_motion": true,
 		"GL_major": 1,
 		"GL_minor": 0,
-		"cursor": "disabled"
+		"cursor": "disabled",
+		"vsync": true
 	},
 	"framebuffer":
 	{
