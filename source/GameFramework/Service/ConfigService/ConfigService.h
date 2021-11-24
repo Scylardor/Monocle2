@@ -42,12 +42,15 @@ namespace moe
 
 		[[nodiscard]] bool	IsValid() const
 		{
-			return m_section->IsObject();
+			return (m_section && m_section->IsObject());
 		}
 
 		template <typename T>
 		[[nodiscard]] std::optional<T>	Get(std::string_view configName) const
 		{
+			if (m_section == nullptr)
+				return {};
+
 			auto const paramIt = m_section->FindMember(rapidjson::Value(rapidjson::Value::StringRefType(configName.data(), static_cast<rapidjson::SizeType>(configName.length()))));
 			if (paramIt == m_section->MemberEnd())
 				return {};

@@ -20,7 +20,6 @@ moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
 	MOE_ASSERT(Config != nullptr);
 
 	auto const windowSection = Config->GetSection("window");
-	MOE_ASSERT(windowSection.IsValid());
 
 	auto* window = EmplaceWindow<OpenGLGLFWWindow>();
 

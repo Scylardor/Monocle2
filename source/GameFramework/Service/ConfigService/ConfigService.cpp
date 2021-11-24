@@ -39,6 +39,9 @@ namespace moe
 
 	ConfigSection ConfigService::GetSection(std::string_view section) const
 	{
+		if (m_config.IsValid() == false)
+			return {nullptr};
+
 		rapidjson::Value const* parent = &(*m_config);
 
 		size_t delimiterOffset = section.size();

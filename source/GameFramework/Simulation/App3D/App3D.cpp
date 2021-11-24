@@ -5,6 +5,8 @@
 
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/LogService/LogService.h"
+#include "GameFramework/Service/RenderService/RenderService.h"
+#include "GameFramework/Service/RenderService/RenderPass/GeometryRenderPass.h"
 #include "GameFramework/Service/TimeService/TimeService.h"
 
 
@@ -24,5 +26,9 @@ moe::App3D::App3D(Engine& owner, int argc, char** argv) :
 
 	TimeService* time = EditEngine()->AddService<TimeService>();
 	time->Start();
+
+	auto* render = EditEngine()->AddService<RenderService>();
+	Renderer& renderer = render->EmplaceRenderer();
+	renderer.EmplaceRenderPass<GeometryRenderPass>();
 }
 
