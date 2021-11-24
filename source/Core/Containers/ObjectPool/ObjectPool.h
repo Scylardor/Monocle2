@@ -1,3 +1,5 @@
+// Monocle source files - Alexandre Baron
+
 #pragma once
 
 #include "Core/Preprocessor/moeAssert.h"
@@ -9,17 +11,18 @@
 
 namespace moe
 {
+	using ObjectPoolID = uint32_t;
 
-	static uint32_t const INVALID_BLOCK = UINT32_MAX;
+	static ObjectPoolID const INVALID_ID = UINT32_MAX;
 
 	struct PoolBlock
 	{
 		PoolBlock() = default;
-		PoolBlock(uint32_t nfb) :
+		PoolBlock(ObjectPoolID nfb) :
 			NextFreeBlock(nfb)
 		{}
 
-		uint32_t	NextFreeBlock{ INVALID_BLOCK };
+		ObjectPoolID	NextFreeBlock{ INVALID_ID };
 
 	};
 
@@ -66,7 +69,7 @@ namespace moe
 		struct PoolRef
 		{
 		public:
-			PoolRef(ObjectPool& owner, uint32_t id) :
+			PoolRef(ObjectPool& owner, ObjectPoolID id) :
 				m_owner(&owner),
 				m_id(id)
 			{}
@@ -132,13 +135,13 @@ namespace moe
 
 		protected:
 			ObjectPool* m_owner;
-			uint32_t	m_id;
+			ObjectPoolID	m_id;
 
 		};
 
 		struct UniqueRef :  PoolRef
 		{
-			UniqueRef(ObjectPool& owner, uint32_t id) :
+			UniqueRef(ObjectPool& owner, ObjectPoolID id) :
 				PoolRef(owner, id)
 			{}
 
@@ -151,7 +154,7 @@ namespace moe
 		// The "pure virtual functions"
 
 		template <typename TObj = ValueType, typename... Ts>
-		[[nodiscard]] uint32_t	Emplace(Ts&&... args)
+		[[nodiscard]] ObjectPoolID	Emplace(Ts&&... args)
 		{
 			static_assert(std::is_same_v<TObj, ValueType> || IsPolymorphicCompatible<ValueType, TObj>::value);
 			auto id = MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Emplace, TObj, Ts, args);
@@ -167,7 +170,7 @@ namespace moe
 		}
 
 
-		void	Free(uint32_t freedObjectID)
+		void	Free(ObjectPoolID freedObjectID)
 		{
 			MOE_CRTP_IMPL(Free, freedObjectID);
 		}
@@ -178,17 +181,17 @@ namespace moe
 		}
 
 
-		[[nodiscard]] PoolRef MutRef(uint32_t id)
+		[[nodiscard]] PoolRef MutRef(ObjectPoolID id)
 		{
 			return { *this, id };
 		}
 
-		[[nodiscard]] const ValueType& Get(uint32_t id) const
+		[[nodiscard]] const ValueType& Get(ObjectPoolID id) const
 		{
 			return MOE_CRTP_IMPL(Get, id);
 		}
 
-		[[nodiscard]] ValueType& Mut(uint32_t id)
+		[[nodiscard]] ValueType& Mut(ObjectPoolID id)
 		{
 			return MOE_CRTP_IMPL(Mut, id);
 		}
@@ -208,7 +211,7 @@ namespace moe
 	protected:
 
 		template <typename TObj = ValueType, typename... Ts>
-		[[nodiscard]] uint32_t	Append(Ts&&... args)
+		[[nodiscard]] ObjectPoolID	Append(Ts&&... args)
 		{
 			return MOE_CRTP_IMPL_VARIADIC_TEMPLATE(Append, TObj, Ts, args);
 		}
@@ -231,13 +234,13 @@ namespace moe
 
 		[[nodiscard]] bool	HasFreeBlock() const
 		{
-			return m_firstFreeBlock != INVALID_BLOCK;
+			return m_firstFreeBlock != INVALID_ID;
 		}
 
 		template <typename TObj, typename... Ts>
-		[[nodiscard]] uint32_t	EmplaceImpl(Ts&&... args)
+		[[nodiscard]] ObjectPoolID	EmplaceImpl(Ts&&... args)
 		{
-			uint32_t availableID;
+			ObjectPoolID availableID;
 			if (HasFreeBlock())
 			{
 				availableID = m_firstFreeBlock;
@@ -272,7 +275,7 @@ namespace moe
 		}
 
 
-		void	FreeImpl(uint32_t freedObjectID)
+		void	FreeImpl(ObjectPoolID freedObjectID)
 		{
 			// chain to the next free block
 			m_objects[freedObjectID].template emplace<PoolBlock>(m_firstFreeBlock);
@@ -281,12 +284,12 @@ namespace moe
 		}
 
 
-		[[nodiscard]] const ValueType& GetImpl(uint32_t id) const
+		[[nodiscard]] const ValueType& GetImpl(ObjectPoolID id) const
 		{
 			return std::get<ValueType>(m_objects[id]);
 		}
 
-		[[nodiscard]] ValueType& MutImpl(uint32_t id)
+		[[nodiscard]] ValueType& MutImpl(ObjectPoolID id)
 		{
 			return std::get<ValueType>(m_objects[id]);
 		}
@@ -303,14 +306,14 @@ namespace moe
 		}
 
 		template <typename TObj, typename... Ts>
-		[[nodiscard]] uint32_t	AppendImpl(Ts&&...)
+		[[nodiscard]] ObjectPoolID	AppendImpl(Ts&&...)
 		{
 			MOE_ASSERT(false); // unimplemented!
 			return 0;
 		}
 
 		Container				m_objects;
-		uint32_t				m_firstFreeBlock{ INVALID_BLOCK };
+		ObjectPoolID				m_firstFreeBlock{ INVALID_ID };
 
 	};
 
@@ -324,25 +327,25 @@ namespace moe
 
 	public:
 
-		VectorObjectPool(uint32_t reserved = 0)
+		VectorObjectPool(ObjectPoolID reserved = 0)
 		{
 			m_objects.reserve(reserved);
 		}
 
 
-		void	SetMaximumAllowedGrowth(uint32_t maxGrowth)
+		void	SetMaximumAllowedGrowth(ObjectPoolID maxGrowth)
 		{
 			m_maxAllowedGrowth = maxGrowth;
 		}
 
 	protected:
 		template <typename ValueType, typename... Ts>
-		[[nodiscard]] uint32_t	AppendImpl(Ts&&... args)
+		[[nodiscard]] ObjectPoolID	AppendImpl(Ts&&... args)
 		{
 			if (m_objects.size() == GetMaxAllowedGrowth())
-				return INVALID_BLOCK;
+				return INVALID_ID;
 
-			auto id = (uint32_t)m_objects.size();
+			auto id = (ObjectPoolID)m_objects.size();
 
 			if constexpr (IsUniquePointer<TObj>::value)
 			{
@@ -370,7 +373,7 @@ namespace moe
 
 	private:
 
-		std::uint32_t	m_maxAllowedGrowth{ UINT32_MAX };
+		uint32_t	m_maxAllowedGrowth{ UINT32_MAX };
 	};
 
 
@@ -382,7 +385,7 @@ namespace moe
 
 	public:
 
-		DynamicObjectPool(uint32_t reserved = 0) :
+		DynamicObjectPool(ObjectPoolID reserved = 0) :
 			VectorObjectPool(reserved)
 		{}
 	};
@@ -399,7 +402,7 @@ namespace moe
 
 	public:
 
-		PolymorphicObjectPool(uint32_t reserved = 0) :
+		PolymorphicObjectPool(ObjectPoolID reserved = 0) :
 			VectorObjectPool(reserved)
 		{}
 
@@ -420,16 +423,16 @@ namespace moe
 	public:
 		FixedObjectPool()
 		{
-			std::get<PoolBlock>(m_objects[0]) = INVALID_BLOCK;
+			std::get<PoolBlock>(m_objects[0]) = INVALID_ID;
 			m_firstFreeBlock = 0;
 		}
 
 	protected:
 
 		template <typename... Ts>
-		[[nodiscard]] uint32_t	EmplaceImpl(Ts&&... args)
+		[[nodiscard]] ObjectPoolID	EmplaceImpl(Ts&&... args)
 		{
-			uint32_t availableID{ 0 };
+			ObjectPoolID availableID{ 0 };
 
 			if (false == HasFreeBlock())
 			{
@@ -443,7 +446,7 @@ namespace moe
 			// chain to the next free block
 			PoolBlock& block = std::get<PoolBlock>(m_objects[availableID]);
 
-			if (block.NextFreeBlock == INVALID_BLOCK) // we were the last : bump the free block number
+			if (block.NextFreeBlock == INVALID_ID) // we were the last : bump the free block number
 			{
 				if (m_highestFreeBlock + 1 < TSize) // Do we need to push up the high water mark ?
 				{
@@ -451,11 +454,11 @@ namespace moe
 					m_firstFreeBlock = m_highestFreeBlock;
 					// Don't forget to set the new high water mark's next to INVALID
 					PoolBlock& highestBlock = std::get<PoolBlock>(m_objects[m_firstFreeBlock]);
-					highestBlock.NextFreeBlock = INVALID_BLOCK;
+					highestBlock.NextFreeBlock = INVALID_ID;
 				}
 				else // this is the last available block : any subsequent Emplace without a Free will crash!
 				{
-					m_firstFreeBlock = INVALID_BLOCK;
+					m_firstFreeBlock = INVALID_ID;
 				}
 			}
 			else // this block is going to be used: mark the next free block as the new first one
@@ -469,14 +472,14 @@ namespace moe
 		}
 
 		template <typename ValueType, typename... Ts>
-		[[nodiscard]] uint32_t	AppendImpl(Ts&&...)
+		[[nodiscard]] ObjectPoolID	AppendImpl(Ts&&...)
 		{
 			MOE_ASSERT(false); // unimplemented!
 			return 0;
 		}
 
 
-		uint32_t	m_highestFreeBlock = 0;
+		ObjectPoolID	m_highestFreeBlock = 0;
 
 	};
 
