@@ -12,13 +12,6 @@ moe::OpenGLApp3D::OpenGLApp3D(Engine& owner, int argc, char** argv) :
 {
 	EditEngine()->AddService<OpenGLGLFWService>();
 
-	m_startHandle = EditEngine()->OnStartEvent().Add<moe::OpenGLApp3D, &moe::OpenGLApp3D::Start>(this);
-}
-
-
-moe::OpenGLApp3D::~OpenGLApp3D()
-{
-	EditEngine()->OnStartEvent().Remove(m_startHandle);
 }
 
 

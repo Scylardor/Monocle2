@@ -4,7 +4,13 @@
 
 namespace moe
 {
-	struct BasicVertex
+	struct Vertex_PosColor
+	{
+		glm::vec3 Position{ 0.f };
+		glm::vec3 Color{ 1.f };
+	};
+
+	struct Vertex_PosColorUV
 	{
 		glm::vec3 Position{0.f};
 		glm::vec3 Color{ 1.f };

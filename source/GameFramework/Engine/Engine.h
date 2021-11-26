@@ -18,7 +18,7 @@ namespace moe
 
 		Engine() = default;
 
-		void	Run();
+		void	Start();
 
 		StartEvent& OnStartEvent()
 		{

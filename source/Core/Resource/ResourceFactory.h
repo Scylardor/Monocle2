@@ -6,12 +6,6 @@
 
 namespace moe
 {
-	// Needed for Core not to depend on graphics, Matches the Vulkan values for now (TODO: Clean up this)
-	enum VertexIndexType
-	{
-		eUint16 = 0,
-		eUint32
-	};
 
 	class Monocle_Core_API IResourceFactory
 	{

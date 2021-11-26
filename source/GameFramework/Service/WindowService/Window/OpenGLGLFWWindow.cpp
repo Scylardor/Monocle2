@@ -45,7 +45,6 @@ namespace moe
 
 	bool OpenGLGLFWWindow::PostCreate(ConfigSection const& windowConfig)
 	{
-
 		glfwMakeContextCurrent(EditWindow());
 
 		bool ok = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);

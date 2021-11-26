@@ -33,7 +33,7 @@ void moe::Model::ImportMeshResources(ResourceManager& manager, MyVkDevice& gfxDe
 		return [&]()
 		{
 			return gfxDevice.MeshFactory.NewMesh(sizeof(mesh.Vertices[0]), mesh.Vertices.size(), mesh.Vertices.data(),
-				mesh.Indices.size(), mesh.Indices.data(), VertexIndexType::eUint32);
+				mesh.Indices.size(), mesh.Indices.data(), MeshIndexType::eUint32);
 		};
 	};
 

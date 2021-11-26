@@ -13,13 +13,9 @@ namespace moe
 	public:
 
 		OpenGLApp3D(Engine& owner, int argc, char** argv);
-		~OpenGLApp3D();
 
-		void Start() ;
+		void Start() override;
 
-	private:
-
-		EventDelegateID	m_startHandle;
 	};
 
 

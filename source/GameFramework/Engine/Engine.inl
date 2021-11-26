@@ -3,11 +3,11 @@
 namespace moe
 {
 	template <typename TSimu, typename ... Args>
-	TSimu* Engine::AddSimulation(Args&&... args)
+	TSimu* Engine::	AddSimulation(Args&&... args)
 	{
 		static_assert(std::is_base_of_v<ISimulation, TSimu>, "Not a simulation");
-		m_simulations.emplace_back(std::make_unique<TSimu>(std::forward<Args>(args)...));
-		return *m_simulations.back();
+		m_simulations.EmplaceBack(std::make_unique<TSimu>(*this, std::forward<Args>(args)...));
+		return static_cast<TSimu*>(m_simulations.Back().get());
 	}
 
 
@@ -23,7 +23,7 @@ namespace moe
 			MOE_LOG("Tried to add a new service, but already had a service of the same type. Skipping");
 		}
 
-		return  static_cast<TServ*>(it->second.get());
+		return static_cast<TServ*>(it->second.get());
 	}
 
 

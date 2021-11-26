@@ -82,7 +82,7 @@ namespace moe
 
 		void* mapping;
 
-		(*m_device)->mapMemory(block.Memory, offset, size, flags, &mapping);
+		MOE_VK_CHECK((*m_device)->mapMemory(block.Memory, offset, size, flags, &mapping));
 
 		return mapping;
 	}

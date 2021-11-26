@@ -16,6 +16,8 @@ set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/DirectionalShadowDepthPass.cpp"
 	"${SOURCE_DIR}/OmnidirectionalShadowDepthPass.h"
 	"${SOURCE_DIR}/OmnidirectionalShadowDepthPass.cpp"
+	"${SOURCE_DIR}/BasicQuad.h"
+	"${SOURCE_DIR}/BasicQuad.cpp"
 )
 
 add_compile_options(

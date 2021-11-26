@@ -46,6 +46,8 @@ set(Monocle_GameFramework_SOURCES
 ./Service/RenderService/RenderScene/RenderScene.h
 ./Service/RenderService/RenderService.cpp
 ./Service/RenderService/RenderService.h
+./Service/ResourceService/ResourceService.cpp
+./Service/ResourceService/ResourceService.h
 ./Service/Service.h
 ./Service/TimeService/Durations.h
 ./Service/TimeService/Stopwatch/Stopwatch.cpp

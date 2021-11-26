@@ -18,6 +18,8 @@ namespace moe
 
 		virtual ~ISimulation() = default;
 
+		virtual void	Start() = 0;
+
 	};
 
 

@@ -4,18 +4,22 @@
 #if defined(MOE_GLFW )
 #include "GameFramework/Service/WindowService/GLFWService/GLFWService.h"
 
+#include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
+
 namespace moe
 {
 	class ConfigSection;
 	class GLFWService;
 
-	class GLFWWindow : public IWindow
+	class GLFWWindow : public IWindow, public IGraphicsSurface
 	{
 	public:
 
 		GLFWWindow() = default;
 
-		virtual ~GLFWWindow();
+		~GLFWWindow() override;
+
+		void	SwapBuffers() override;
 
 		virtual void	SetWindowHints(ConfigSection const& windowConfig);
 

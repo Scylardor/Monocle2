@@ -5,23 +5,29 @@
 #include "Application/GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.h"
 #endif
 
+
 #include "Application/GlfwApplication/OpenGL/OpenGLGlfwApplication.h"
 #include "TestApplication.h"
 
 #include "Core/Misc/Literals.h"
 #include "GameFramework/Engine/Engine.h"
+#include "GameFramework/Service/LogService/LogService.h"
+#include "GameFramework/Service/TimeService/TimeService.h"
 #include "GameFramework/Simulation/App3D/OpenGLApp3D.h"
 
-//#include "btBulletCollisionCommon.h"
+#include "BasicQuad.h"
+
 
 
 int main(int argc, char **argv)
 {
 	moe::Engine monocleEngine;
 
-	moe::OpenGLApp3D app3d{monocleEngine, argc, argv };
+	monocleEngine.AddSimulation<moe::BasicQuad>(argc, argv);
 
-	monocleEngine.Run();
+	monocleEngine.Start();
+
+
 	//std::optional<uint32_t> width = app3d.Get<moe::ConfigService>()->Get<uint32_t>("window:width");
 	//std::optional<uint32_t> height = app3d.Get<moe::ConfigService>()->Get<uint32_t>("window:height");
 
@@ -30,7 +36,7 @@ int main(int argc, char **argv)
 	//moe::BasicVkApp vkApp(vkAppDesc);
 
 	//if (vkApp.IsInitialized())
-	//	vkApp.Run();
+	//	vkApp.Start();
 
 	//moe::OpenGLGlfwAppDescriptor appDesc(1024_width, 728_height, "Monocle Sandbox");
 	//
@@ -38,7 +44,7 @@ int main(int argc, char **argv)
 	//
 	//if (app.IsInitialized())
 	//{
-	//	app.Run();
+	//	app.Start();
 	//}
 
 	return 0;

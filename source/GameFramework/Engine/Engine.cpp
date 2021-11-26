@@ -3,9 +3,14 @@
 
 namespace moe
 {
-	void Engine::Run()
+	void Engine::Start()
 	{
 		m_onStart.Broadcast();
+
+		for (auto& simu : m_simulations)
+		{
+			simu->Start();
+		}
 	}
 
 

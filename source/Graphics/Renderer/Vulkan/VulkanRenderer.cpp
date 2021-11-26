@@ -14,34 +14,34 @@
 #pragma warning( disable: 4100 )
 namespace moe
 {
-	vk::VertexInputBindingDescription GetBasicVertexBindingDescription()
+	vk::VertexInputBindingDescription GetVertex_PosColorUVBindingDescription()
 	{
 		vk::VertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(BasicVertex);
+		bindingDescription.stride = sizeof(Vertex_PosColorUV);
 		bindingDescription.inputRate = vk::VertexInputRate::eVertex;
 
 		return bindingDescription;
 	}
 
-	std::array<vk::VertexInputAttributeDescription, 3> GetBasicVertexAttributeDescriptions()
+	std::array<vk::VertexInputAttributeDescription, 3> GetVertex_PosColorUVAttributeDescriptions()
 	{
 		std::array<vk::VertexInputAttributeDescription, 3> attributeDescriptions{};
 
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
 		attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[0].offset = offsetof(BasicVertex, Position);
+		attributeDescriptions[0].offset = offsetof(Vertex_PosColorUV, Position);
 
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
-		attributeDescriptions[1].offset = offsetof(BasicVertex, Color);
+		attributeDescriptions[1].offset = offsetof(Vertex_PosColorUV, Color);
 
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 2;
 		attributeDescriptions[1].format = vk::Format::eR32G32Sfloat;
-		attributeDescriptions[1].offset = offsetof(BasicVertex, Texture_UV0);
+		attributeDescriptions[1].offset = offsetof(Vertex_PosColorUV, Texture_UV0);
 
 		return attributeDescriptions;
 	}
@@ -236,9 +236,9 @@ namespace moe
 		program.AddShader(std::move(fragShader));
 		program.AddPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(Mat4)); // object mvp
 		program.AddVertexBinding(vk::VertexInputRate::eVertex)
-			.AddVertexAttribute(0, offsetof(BasicVertex, Position), sizeof(BasicVertex::Position), vk::Format::eR32G32B32Sfloat)
-			.AddVertexAttribute(1, offsetof(BasicVertex, Color), sizeof(BasicVertex::Color), vk::Format::eR32G32B32Sfloat)
-			.AddVertexAttribute(2, offsetof(BasicVertex, Texture_UV0), sizeof(BasicVertex::Texture_UV0), vk::Format::eR32G32Sfloat)
+			.AddVertexAttribute(0, offsetof(Vertex_PosColorUV, Position), sizeof(Vertex_PosColorUV::Position), vk::Format::eR32G32B32Sfloat)
+			.AddVertexAttribute(1, offsetof(Vertex_PosColorUV, Color), sizeof(Vertex_PosColorUV::Color), vk::Format::eR32G32B32Sfloat)
+			.AddVertexAttribute(2, offsetof(Vertex_PosColorUV, Texture_UV0), sizeof(Vertex_PosColorUV::Texture_UV0), vk::Format::eR32G32Sfloat)
 			.AddNewDescriptorSetLayout()
 				//.AddNewDescriptorBinding(0, 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex)
 				.AddNewDescriptorBinding(0, 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment)

@@ -22,6 +22,12 @@ namespace moe
 	}
 
 
+	void GLFWWindow::SwapBuffers()
+	{
+
+	}
+
+
 	void GLFWWindow::SetWindowHints(ConfigSection const& windowConfig)
 	{
 		auto resizable = windowConfig.GetBool("resizable").value_or(true);

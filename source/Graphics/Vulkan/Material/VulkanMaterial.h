@@ -1,6 +1,8 @@
 #pragma once
 #include "Math/Vec4.h"
 
+#include "Core/Resource/Resource.h"
+
 namespace moe
 {
 

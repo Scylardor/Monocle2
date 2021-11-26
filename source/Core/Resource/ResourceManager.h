@@ -53,7 +53,7 @@ namespace moe
 
 
 		template <typename TRsc>
-		Ref<TRsc>	Insert(const HashString& rscHandle, std::unique_ptr<TRsc>&& rsc)
+		Ref<TRsc>	InsertPtr(const HashString& rscHandle, std::unique_ptr<TRsc>&& rsc)
 		{
 			static_assert(std::is_base_of_v<IBaseResource, TRsc>);
 
@@ -67,6 +67,24 @@ namespace moe
 			MOE_ASSERT(inserted && inserted2); // make sure there is no duplicate (or something is very wrong)
 
 			return std::move(Ref(*this, *rscPtr, entryID));
+		}
+
+
+		template <typename TRsc, typename ...Args>
+		Ref<TRsc>	Insert(const HashString& rscHandle, Args&&... args)
+		{
+			static_assert(std::is_base_of_v<IBaseResource, TRsc>);
+
+			// if it already exists :
+			std::optional<Ref<TRsc>> existingRef = FindResource<TRsc>(rscHandle);
+			if (existingRef.has_value())
+			{
+				Ref<TRsc>&& rsc = std::move(existingRef.value());
+				return rsc;
+			}
+
+			std::unique_ptr<TRsc> rscPtr = std::make_unique<TRsc>(std::forward<Args>(args)...);
+			return InsertPtr(rscHandle, std::move(rscPtr));
 		}
 
 
@@ -84,7 +102,7 @@ namespace moe
 			// if it needs to be created:
 			std::unique_ptr<TResource> newResource = factory(std::forward<Args>(args)...);
 
-			return Insert(rscHandle, std::move(newResource));
+			return InsertPtr(rscHandle, std::move(newResource));
 		}
 
 
