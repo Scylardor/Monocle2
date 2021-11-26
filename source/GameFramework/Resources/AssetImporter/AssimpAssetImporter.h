@@ -23,11 +23,11 @@ namespace moe
 	class ResourceManager;
 	class MyVkDevice;
 
-	struct MeshData
+	struct ModelData
 	{
-		MeshData() = default;
+		ModelData() = default;
 
-		MeshData(std::vector<BasicVertex>&& verts, std::vector<uint32_t>&& indices) :
+		ModelData(std::vector<Vertex_PosColorUV>&& verts, std::vector<uint32_t>&& indices) :
 			Vertices(std::move(verts)), Indices(std::move(indices))
 		{}
 
@@ -36,10 +36,10 @@ namespace moe
 			return !Vertices.empty();
 		}
 
-		std::vector<BasicVertex>	Vertices;
-		std::vector<uint32_t>		Indices;
-		std::string					Name{};
-		uint32_t					Material{ 0 };
+		std::vector<Vertex_PosColorUV>	Vertices;
+		std::vector<uint32_t>			Indices;
+		std::string						Name{};
+		uint32_t						Material{ 0 };
 	};
 
 	struct ModelMesh
@@ -109,7 +109,7 @@ namespace moe
 		void	ImportMeshResources(ResourceManager& manager, MyVkDevice& gfxDevice);
 
 
-		MeshData&	MutMesh(uint32_t meshIdx)
+		ModelData&	MutMesh(uint32_t meshIdx)
 		{
 			return m_meshes[meshIdx];
 		}
@@ -138,7 +138,7 @@ namespace moe
 		}
 
 
-		[[nodiscard]] const std::vector<MeshData>&	GetMeshes() const
+		[[nodiscard]] const std::vector<ModelData>&	GetMeshes() const
 		{
 			return m_meshes;
 		}
@@ -171,7 +171,7 @@ namespace moe
 	private:
 		std::string						m_name{};
 		std::vector<ModelNode>			m_nodes;
-		std::vector<MeshData>			m_meshes;
+		std::vector<ModelData>			m_meshes;
 		std::vector<Ref<MeshResource>>	m_meshResources;
 		std::vector<ModelMaterial>		m_materials;
 	};
@@ -203,8 +203,8 @@ namespace moe
 		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex = ModelNode::ROOT_INDEX);
 
 
-		[[nodiscard]] static std::vector<BasicVertex>	ComputeMeshVertices(const aiMesh& mesh);
-		[[nodiscard]] static std::vector<uint32_t>		ComputeMeshIndices(const aiMesh& mesh);
+		[[nodiscard]] static std::vector<Vertex_PosColorUV>	ComputeMeshVertices(const aiMesh& mesh);
+		[[nodiscard]] static std::vector<uint32_t>			ComputeMeshIndices(const aiMesh& mesh);
 
 		[[nodiscard]] aiPostProcessSteps				ComputeAssimpPostProcessFlags() const;
 

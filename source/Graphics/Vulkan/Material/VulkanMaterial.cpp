@@ -232,7 +232,7 @@ namespace moe
 			pool, (uint32_t) layouts.size(), layouts.data()
 		};
 
-		device->allocateDescriptorSets(&allocInfo, m_sets.data());
+		MOE_VK_CHECK(device->allocateDescriptorSets(&allocInfo, m_sets.data()));
 
 		// Calculate how many descriptor set write we need. It's basically the sum of binding counts across all sets
 		auto totalBindingsNbr = 0u;

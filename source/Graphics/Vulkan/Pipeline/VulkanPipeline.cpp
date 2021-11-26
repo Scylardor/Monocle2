@@ -239,7 +239,7 @@ namespace moe
 		pipelineInfo.basePipelineHandle = vk::Pipeline(); // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional
 
-		m_pipeline = device->createGraphicsPipelineUnique(vk::PipelineCache(), pipelineInfo);
+		m_pipeline = device->createGraphicsPipelineUnique(vk::PipelineCache(), pipelineInfo).value;
 		MOE_ASSERT(m_pipelineLayout);
 	}
 }

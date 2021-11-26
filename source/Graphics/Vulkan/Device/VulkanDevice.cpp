@@ -325,12 +325,12 @@ namespace moe
 
 		vk::UniqueFence submitFence = m_logicalDevice.createFenceUnique(fenceCreateInfo);
 
-		GraphicsQueue().submit(1, &submitInfo, submitFence.get());
+		MOE_VK_CHECK(GraphicsQueue().submit(1, &submitInfo, submitFence.get()));
 
 		// Now wait for the operation to complete
 		static const bool WAIT_ALL = true;
 		static const auto NO_TIMEOUT = UINT64_MAX;
-		m_logicalDevice.waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT);
+		MOE_VK_CHECK(m_logicalDevice.waitForFences(1, &submitFence.get(), WAIT_ALL, NO_TIMEOUT));
 
 		// The operation is over !
 	}

@@ -28,7 +28,7 @@ void moe::Model::ImportMeshResources(ResourceManager& manager, MyVkDevice& gfxDe
 {
 	m_meshResources.reserve(MeshesCount());
 
-	const auto meshLoadFn = [&](const MeshData& mesh)
+	const auto meshLoadFn = [&](const ModelData& mesh)
 	{
 		return [&]()
 		{
@@ -114,7 +114,7 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 		MOE_ASSERT(mesh);
 		aiMesh& meshRef = *mesh;
 
-		MeshData& thisMesh = importedModel.MutMesh(node.mMeshes[iMesh]);
+		ModelData& thisMesh = importedModel.MutMesh(node.mMeshes[iMesh]);
 		// Skip computing mesh data if we have the vertices (we already processed it)
 		if (thisMesh.HasVertices())
 			continue;
@@ -206,7 +206,7 @@ void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t mat
 	modelMat.Name.resize(importedModel.GetName().size() + matName.length + 6); // +6: accounts for additional chars and \0
 	moe::StringFormat(modelMat.Name, "M_%s_%s", importedModel.GetName(), matName.C_Str());
 	auto newMat = defaultMaterial->Clone();
-	modelMat.MaterialResource = m_manager.Insert<MaterialResource>(HashString(modelMat.Name), std::move(newMat));
+	modelMat.MaterialResource = m_manager.InsertPtr<MaterialResource>(HashString(modelMat.Name), std::move(newMat));
 	MOE_ASSERT(modelMat.MaterialResource);
 
 	auto& phongMaps = modelMat.MaterialResource->EmplaceModule<PhongReflectivityMapsMaterialModule>(0);
@@ -224,9 +224,9 @@ void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t mat
 }
 
 
-std::vector<moe::BasicVertex> moe::AssimpImporter::ComputeMeshVertices(const aiMesh& mesh)
+std::vector<moe::Vertex_PosColorUV> moe::AssimpImporter::ComputeMeshVertices(const aiMesh& mesh)
 {
-	std::vector<BasicVertex> vertexData;
+	std::vector<Vertex_PosColorUV> vertexData;
 	vertexData.resize(mesh.mNumVertices);
 
 	const bool hasColors = mesh.HasVertexColors(0);

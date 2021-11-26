@@ -62,6 +62,7 @@ namespace moe
 		}
 
 	public:
+		MeshData() = default;
 
 		MeshData(void const*  vtxData, size_t vtxSize, size_t numVerts, void const* idxData, size_t idxSize, size_t numIndices) :
 			Vertices(ToBytes(vtxData), ToBytes(vtxData) + (vtxSize * numVerts)),
@@ -71,8 +72,8 @@ namespace moe
 			MOE_ASSERT(idxSize == sizeof(uint32_t) || idxSize == sizeof(uint16_t));
 		}
 
-		RawData			Vertices;
-		RawData			Indices;
+		RawData			Vertices{};
+		RawData			Indices{};
 		MeshIndexType	MeshIndexType{ MeshIndexType::eUint32 };
 	};
 
@@ -80,6 +81,8 @@ namespace moe
 	class MeshResource : public IBaseResource
 	{
 	public:
+
+		MeshResource() = default;
 
 		MeshResource(void const* vtxData, size_t vtxSize, size_t numVerts, void const* idxData, size_t idxSize, size_t numIndices) :
 			Data(vtxData, vtxSize, numVerts, idxData, idxSize, numIndices)

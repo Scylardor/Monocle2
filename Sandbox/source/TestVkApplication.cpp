@@ -29,7 +29,7 @@ namespace moe
 
 	}
 
-	void TestVkApplication::Start()
+	void TestVkApplication::Run()
 	{
 
 		while (WindowIsOpened())
@@ -206,7 +206,7 @@ namespace moe
 
 	void BasicVkApp::CreateDefaultPlanesMesh()
 	{
-		const std::vector<moe::BasicVertex> vertices =
+		const std::vector<moe::Vertex_PosColorUV> vertices =
 		{
 	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
 	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
@@ -228,7 +228,7 @@ namespace moe
 		m_planes = m_manager.Load<MeshResource>(HashString("Planes"),
 			[&]()
 			{
-				return m_renderer.GraphicsDevice().MeshFactory.NewMesh(sizeof(moe::BasicVertex), vertices.size(), vertices.data(),
+				return m_renderer.GraphicsDevice().MeshFactory.NewMesh(sizeof(moe::Vertex_PosColorUV), vertices.size(), vertices.data(),
 					indices.size(), indices.data(), MeshIndexType::eUint16);
 			});
 
@@ -252,7 +252,7 @@ namespace moe
 		{
 			for (size_t meshIdx : node.Meshes)
 			{
-				const MeshData& meshData = m_backpack.GetMeshes()[meshIdx];
+				const ModelData& meshData = m_backpack.GetMeshes()[meshIdx];
 
 				RegistryID matID;
 				if (meshData.Material != 0) // 0 is "no material" for assimp so use the default one
