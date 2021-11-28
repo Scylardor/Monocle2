@@ -59,7 +59,7 @@ namespace moe
 
 			MOE_ASSERT(rsc != nullptr);
 			TRsc* rscPtr = rsc.get(); // get the ptr before it gets moved
-			auto entryID = m_resourcesData.EmplaceEntry(std::move(rsc));
+			auto entryID = m_resourcesData.EmplacePersistentEntry(std::move(rsc));
 
 			// Make sure the bookkeeping is uptodate
 			auto [_, inserted] = m_rscHandleToID.emplace(rscHandle, entryID);

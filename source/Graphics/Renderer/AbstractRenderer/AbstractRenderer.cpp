@@ -86,7 +86,7 @@ namespace moe
 
 		for (const auto & [shaderStage, fileName] : fileList)
 		{
-			auto shaderCodeOpt = moe::ReadFile(fileName, true);
+			auto shaderCodeOpt = moe::ReadFile(fileName, FileMode::Binary);
 			if (shaderCodeOpt.has_value())
 			{
 				programDesc.m_modules.PushBack({ shaderStage, shaderCodeOpt.value() });

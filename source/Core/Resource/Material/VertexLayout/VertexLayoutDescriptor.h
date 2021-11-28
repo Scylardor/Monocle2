@@ -5,7 +5,7 @@
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Containers/Array/Array.h"
 
-#include "Graphics/VertexLayout/VertexElementDescriptor.h"
+#include "Core/Resource/Material/VertexLayout/VertexElementDescriptor.h"
 
 
 namespace moe
@@ -19,7 +19,7 @@ namespace moe
 		Packed
 	};
 
-	using VertexElementVector = Vector<VertexElementDescriptor>;
+	using VertexElementVector = Vector<VertexElementDescription>;
 
 	class VertexLayoutBindings
 	{
@@ -89,38 +89,38 @@ namespace moe
 	using VertexBindingsVector = Vector<VertexLayoutBindings>;
 
 	/**
-	 * \brief A graphics API-agnostic descriptor of a Vertex Layout.
+	 * \brief A graphics API-agnostic Description of a Vertex Layout.
 	 * Vertex layout describes how is the structure of a vertex laid out in memory.
 	 * It describes the type of each element, the number of components, whether these are supposed to be normalized or not.
 	 * The graphics engine manages data differently whether the data comes in an Interleaved or Packed way.
 	 * Usually, Interleaved is a bit more optimized and probably what you want by default.
 	 */
-	class VertexLayoutDescriptor
+	class VertexLayoutDescription
 	{
 	public:
 
-		template <std::size_t N> using VertexElementArray = Array<VertexElementDescriptor, N>;
+		template <std::size_t N> using VertexElementArray = Array<VertexElementDescription, N>;
 
 
-		VertexLayoutDescriptor(const VertexElementVector& vtxElems, LayoutType type = LayoutType::Interleaved) :
+		VertexLayoutDescription(const VertexElementVector& vtxElems, LayoutType type = LayoutType::Interleaved) :
 			m_vtxElemFmts(vtxElems), m_type(type)
 		{}
 
-		VertexLayoutDescriptor(VertexElementVector&& vtxElems, LayoutType type = LayoutType::Interleaved) :
+		VertexLayoutDescription(VertexElementVector&& vtxElems, LayoutType type = LayoutType::Interleaved) :
 			m_vtxElemFmts(std::move(vtxElems)), m_type(type)
 		{}
 
 		template <std::size_t N>
-		VertexLayoutDescriptor(VertexElementArray<N>&& vtxArray, LayoutType type = LayoutType::Interleaved) :
+		VertexLayoutDescription(VertexElementArray<N>&& vtxArray, LayoutType type = LayoutType::Interleaved) :
 			m_vtxElemFmts(vtxArray.Begin(), vtxArray.End()), m_type(type)
 		{}
 
 
-		VertexLayoutDescriptor(std::initializer_list<VertexElementDescriptor> il) :
+		VertexLayoutDescription(std::initializer_list<VertexElementDescription> il) :
 			m_vtxElemFmts(il) {}
 
 
-		bool	operator==(const VertexLayoutDescriptor& rhs) const
+		bool	operator==(const VertexLayoutDescription& rhs) const
 		{
 			if (&rhs != this)
 			{
@@ -171,41 +171,41 @@ namespace moe
 	};
 
 	/**
-	* \brief A graphics API-agnostic descriptor of a Vertex Layout made to be used with Instancing.
+	* \brief A graphics API-agnostic Description of a Vertex Layout made to be used with Instancing.
 	* Vertex layout describes how is the structure of a vertex laid out in memory.
 	* It describes the type of each element, the number of components, whether these are supposed to be normalized or not.
 	* The graphics engine manages data differently whether the data comes in an Interleaved or Packed way.
 	* Usually, Interleaved is a bit more optimized and probably what you want by default.
-	* TODO: This is actually how all vertex layouts should work but was not made to not break any retro-compatibility. Make that the one and only VertexLayoutDescriptor.
+	* TODO: This is actually how all vertex layouts should work but was not made to not break any retro-compatibility. Make that the one and only VertexLayoutDescription.
 	*/
-	class InstancedVertexLayoutDescriptor
+	class InstancedVertexLayoutDescription
 	{
 	public:
 
 		template <std::size_t N> using VertexBindingsArray = Array<VertexLayoutBindings, N>;
 
-		InstancedVertexLayoutDescriptor(const VertexBindingsVector& vtxBindings) :
+		InstancedVertexLayoutDescription(const VertexBindingsVector& vtxBindings) :
 			m_vtxBindings(vtxBindings)
 		{}
 
-		InstancedVertexLayoutDescriptor(VertexBindingsVector&& vtxBindings) :
+		InstancedVertexLayoutDescription(VertexBindingsVector&& vtxBindings) :
 			m_vtxBindings(std::move(vtxBindings))
 		{}
 
 		template <std::size_t N>
-		InstancedVertexLayoutDescriptor(VertexBindingsArray<N>&& vtxBindings) :
+		InstancedVertexLayoutDescription(VertexBindingsArray<N>&& vtxBindings) :
 			m_vtxBindings(vtxBindings.Begin(), vtxBindings.End())
 		{}
 
 
-		InstancedVertexLayoutDescriptor(std::initializer_list<VertexLayoutBindings> il) :
+		InstancedVertexLayoutDescription(std::initializer_list<VertexLayoutBindings> il) :
 			m_vtxBindings(il) {}
 
 
 		size_t	NumBindings() const { return m_vtxBindings.Size(); }
 
 
-		bool	operator==(const InstancedVertexLayoutDescriptor& rhs) const
+		bool	operator==(const InstancedVertexLayoutDescription& rhs) const
 		{
 			if (&rhs != this)
 			{

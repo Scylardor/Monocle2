@@ -4,7 +4,7 @@
 
 #ifdef MOE_OPENGL
 
-#include "Graphics/BlendState/BlendFactor.h"
+#include "Core/Resource/Material/BlendState/BlendFactor.h"
 
 #include <glad/glad.h>
 

@@ -4,6 +4,9 @@
 
 #include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
+#include "Core/Resource/FileResource.h"
+
+#include <string_view>
 
 namespace moe
 {
@@ -11,15 +14,21 @@ namespace moe
 	/**
 	 * \brief Describes in a graphics-API agnostic way a give shader module.
 	 * A shader module represents a single shader stage (vertex, fragment, geometry).
-	 * This descriptor can be used to describe either a source code shader or a binary shader.
+	 * This Description can be used to describe either a source code shader or a binary shader.
 	 */
-	struct ShaderModuleDescriptor
+	struct ShaderModuleDescription
 	{
 		/**
 		 * \brief The agnostic shader stage of this module
 		 */
 		ShaderStage	m_moduleStage{ShaderStage::Vertex};
 
+
+		/*
+		 * Reference to the shader file that we can read to access the shader code.
+		 * Type of file will be useful to know if it's text (needs to be compiled) or binary (SPIR-V).
+		 */
+		Ref<FileResource>	m_shaderFile{};
 
 		/**
 		 * \brief The actual code of the shader. This can be either source code compiled at runtime or a precompiled binary format.

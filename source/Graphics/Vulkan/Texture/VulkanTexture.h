@@ -1,7 +1,7 @@
 #pragma once
 #ifdef MOE_VULKAN
 
-#include "Core/Resource/Resource.h"
+#include "Core/Resource/TextureResource.h"
 
 #include "Graphics/Vulkan/VulkanMacros.h"
 #include "Graphics/Vulkan/Allocators/MemoryAllocator.h"

@@ -245,7 +245,7 @@ namespace moe
 		m_backpack = assimp.ImportModel("Sandbox/assets/objects/backpack/backpack.obj");
 
 		// In case we need it
-		Ref<MaterialResource> defaultMat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
+		Ref<MaterialModulesResource> defaultMat = m_manager.FindExisting<MaterialModulesResource>(HashString("DefaultMaterial"));
 		MOE_ASSERT(defaultMat);
 
 		for (const auto& node : m_backpack.GetNodes())

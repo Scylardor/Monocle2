@@ -8,12 +8,12 @@
 namespace moe
 {
 
-	void PhongReflectivityMaterialModule::UpdateResources(MaterialResource& /*updatedMaterial*/)
+	void PhongReflectivityMaterialModule::UpdateResources(MaterialModulesResource& /*updatedMaterial*/)
 	{
 	}
 
 
-	void PhongReflectivityMapsMaterialModule::UpdateResources(MaterialResource& updatedMaterial)
+	void PhongReflectivityMapsMaterialModule::UpdateResources(MaterialModulesResource& updatedMaterial)
 	{
 		updatedMaterial.BindTextureResource(m_setNumber, (uint8_t)PhongMap::Diffuse, m_maps.Maps[(uint8_t)PhongMap::Diffuse]);
 		//for (uint8_t rscIdx = 0; rscIdx < (uint8_t)PhongMap::_COUNT_; ++rscIdx)
@@ -45,7 +45,7 @@ namespace moe
 	}
 
 
-	std::unique_ptr<MaterialResource> VulkanMaterial::Clone()
+	std::unique_ptr<MaterialModulesResource> VulkanMaterial::Clone()
 	{
 		auto matPtr = std::make_unique<VulkanMaterial>();
 
@@ -156,7 +156,7 @@ namespace moe
 	}
 
 
-	MaterialResource& VulkanMaterial::BindTextureResource(uint32_t set, uint32_t binding, const Ref<TextureResource>& tex)
+	MaterialModulesResource& VulkanMaterial::BindTextureResource(uint32_t set, uint32_t binding, const Ref<TextureResource>& tex)
 	{
 		const auto& vkTex = tex.As<VulkanTexture>();
 

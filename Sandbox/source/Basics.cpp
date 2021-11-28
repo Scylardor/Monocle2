@@ -11,7 +11,7 @@
 #include "Graphics/Shader/Module/ShaderModuleDescriptor.h"
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 
-#include "Graphics/Shader/ShaderStage/ShaderStage.h"
+#include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 

@@ -8,7 +8,8 @@
 
 #include "ResourceKind.h"
 
-#include "Graphics/Shader/ShaderStage/ShaderStage.h"
+
+#include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
 namespace moe
 {

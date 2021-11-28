@@ -263,7 +263,7 @@ namespace moe
 			.Build(*m_graphicsDevice);
 
 
-		m_defaultMaterial = m_resourceManager->Load<MaterialResource>(HashString("DefaultMaterial"), [&]()
+		m_defaultMaterial = m_resourceManager->Load<MaterialModulesResource>(HashString("DefaultMaterial"), [&]()
 		{
 				return std::make_unique<VulkanMaterial>();
 		});

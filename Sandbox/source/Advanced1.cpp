@@ -9,7 +9,7 @@
 #include <Math/Vec3.h>
 #include <Math/Vec4.h>
 
-#include "Graphics/Shader/ShaderStage/ShaderStage.h"
+#include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef MOE_VULKAN
-#include "Core/Resource/Resource.h"
+#include "Core/Resource/MeshResource.h"
 #include "Core/Resource/ResourceFactory.h"
 #include "Graphics/Vulkan/Mesh/VulkanMesh.h"
 

@@ -11,7 +11,7 @@
 #include <random> // for uniform distribution and random engine
 
 
-#include "Graphics/Shader/ShaderStage/ShaderStage.h"
+#include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 

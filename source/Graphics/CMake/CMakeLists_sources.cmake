@@ -1,11 +1,7 @@
 
 
 set(Monocle_Graphics_SOURCES
-	./BlendState/BlendEquation.h
-./BlendState/BlendFactor.h
-./BlendState/BlendStateDescriptor.cpp
-./BlendState/BlendStateDescriptor.h
-./BlendState/OpenGL/OpenGLBlendEquation.cpp
+	./BlendState/OpenGL/OpenGLBlendEquation.cpp
 ./BlendState/OpenGL/OpenGLBlendEquation.h
 ./BlendState/OpenGL/OpenGLBlendFactor.cpp
 ./BlendState/OpenGL/OpenGLBlendFactor.h
@@ -23,11 +19,6 @@ set(Monocle_Graphics_SOURCES
 ./Camera/ViewportHandle.h
 ./Color/Color.cpp
 ./Color/Color.h
-./DepthStencilState/DepthStencilComparisonFunc.h
-./DepthStencilState/DepthStencilStateDescriptor.cpp
-./DepthStencilState/DepthStencilStateDescriptor.h
-./DepthStencilState/StencilOps.h
-./DepthStencilState/StencilOpsDescriptor.h
 ./Device/GraphicsDevice.h
 ./Device/OpenGL/OpenGLGraphicsDevice.cpp
 ./Device/OpenGL/OpenGLGraphicsDevice.h
@@ -87,7 +78,6 @@ set(Monocle_Graphics_SOURCES
 ./Pipeline/OpenGL/OpenGLPipeline.h
 ./Pipeline/PipelineDescriptor.h
 ./Pipeline/PipelineHandle.h
-./RasterizerState/RasterizerStateDescriptor.h
 ./Renderer/AbstractRenderer/AbstractRenderer.cpp
 ./Renderer/AbstractRenderer/AbstractRenderer.h
 ./Renderer/OpenGL/OpenGLRenderer.cpp
@@ -202,6 +192,13 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/visualize_normals.vert
 ./Resources/shaders/Vulkan/triangle.frag
 ./Resources/shaders/Vulkan/triangle.vert
+./RHI/OpenGL/OGL4RHI.cpp
+./RHI/OpenGL/OGL4RHI.h
+./RHI/OpenGL/RenderPass/OGL4RenderPass.cpp
+./RHI/OpenGL/RenderPass/OGL4RenderPass.h
+./RHI/PipelineManager/PipelineManager.h
+./RHI/RenderHardwareInterface.cpp
+./RHI/RenderHardwareInterface.h
 ./RHI/Vulkan/VulkanRHI.cpp
 ./RHI/Vulkan/VulkanRHI.h
 ./Sampler/OpenGL/OpenGLSampler.cpp
@@ -224,8 +221,6 @@ set(Monocle_Graphics_SOURCES
 ./Shader/Program/ShaderProgramDescriptor.h
 ./Shader/ShaderStage/OpenGL/OpenGLShaderStage.cpp
 ./Shader/ShaderStage/OpenGL/OpenGLShaderStage.h
-./Shader/ShaderStage/ShaderStage.cpp
-./Shader/ShaderStage/ShaderStage.h
 ./Shader/UniformDataKind.h
 ./Swapchain/OpenGL/OpenGLSwapchain.cpp
 ./Swapchain/OpenGL/OpenGLSwapchain.h
@@ -242,7 +237,6 @@ set(Monocle_Graphics_SOURCES
 ./Texture/TextureUsage.h
 ./Texture/TextureView.h
 ./Texture/TextureViewDescription.h
-./Topology/PrimitiveTopology.h
 ./Transform/Transform.h
 ./Vertex/VertexFormats.h
 ./VertexBuffer/OpenGL/OpenGLVertexBuffer.cpp

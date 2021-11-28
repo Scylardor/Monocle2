@@ -82,7 +82,7 @@ moe::Model moe::AssimpImporter::ImportModel(std::string_view modelFilename)
 void moe::AssimpImporter::ImportSceneResources(const aiScene& scene, Model& importedModel, const FilePath& modelPath)
 {
 	// First import the materials, then the meshes
-	Ref<MaterialResource> defaultMat = m_manager.FindExisting<MaterialResource>(HashString("DefaultMaterial"));
+	Ref<MaterialModulesResource> defaultMat = m_manager.FindExisting<MaterialModulesResource>(HashString("DefaultMaterial"));
 	MOE_ASSERT(defaultMat);
 
 	// Start material idx at 1 because 0 is the default material and we don't care about it.
@@ -138,7 +138,7 @@ void moe::AssimpImporter::ProcessSceneNode(aiNode& node, const aiScene& scene, M
 }
 
 
-void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath, Ref<MaterialResource>& defaultMaterial)
+void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath, Ref<MaterialModulesResource>& defaultMaterial)
 {
 	aiMaterial* assimpMat = scene.mMaterials[materialIndex];
 	MOE_ASSERT(assimpMat);
@@ -206,7 +206,7 @@ void moe::AssimpImporter::ImportSceneMaterial(const aiScene& scene, uint32_t mat
 	modelMat.Name.resize(importedModel.GetName().size() + matName.length + 6); // +6: accounts for additional chars and \0
 	moe::StringFormat(modelMat.Name, "M_%s_%s", importedModel.GetName(), matName.C_Str());
 	auto newMat = defaultMaterial->Clone();
-	modelMat.MaterialResource = m_manager.InsertPtr<MaterialResource>(HashString(modelMat.Name), std::move(newMat));
+	modelMat.MaterialResource = m_manager.InsertPtr<MaterialModulesResource>(HashString(modelMat.Name), std::move(newMat));
 	MOE_ASSERT(modelMat.MaterialResource);
 
 	auto& phongMaps = modelMat.MaterialResource->EmplaceModule<PhongReflectivityMapsMaterialModule>(0);

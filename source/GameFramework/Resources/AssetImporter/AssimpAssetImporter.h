@@ -4,8 +4,8 @@
 #include "Graphics/Vertex/VertexFormats.h"
 
 #include "Core/Resource/ResourceRef.h"
+#include "Core/Resource/MeshResource.h"
 
-#include "Core/Resource/Resource.h"
 #include "Graphics/Vulkan/Material/VulkanMaterial.h"
 
 #include "assimp/Importer.hpp"
@@ -45,7 +45,7 @@ namespace moe
 	struct ModelMesh
 	{
 		Ref<MeshResource>		Mesh;
-		Ref<MaterialResource>	Material;
+		Ref<MaterialModulesResource>	Material;
 	};
 
 
@@ -55,7 +55,7 @@ namespace moe
 		std::string													Name{};
 		std::vector<std::pair<aiTextureType, Ref<TextureResource>>>	Textures{};
 		PhongReflectivityParameters									ReflectivityParams{};
-		Ref<MaterialResource>										MaterialResource{};
+		Ref<MaterialModulesResource>										MaterialResource{};
 	};
 
 
@@ -197,7 +197,7 @@ namespace moe
 
 		void	ImportSceneResources(const aiScene& scene, Model& importedModel, const FilePath& modelPath);
 
-		void	ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath, Ref<MaterialResource>& defaultMaterial);
+		void	ImportSceneMaterial(const aiScene& scene, uint32_t materialIndex, Model& importedModel, const FilePath& basePath, Ref<MaterialModulesResource>& defaultMaterial);
 
 
 		void	ProcessSceneNode(aiNode& node, const aiScene& scene, Model& importedModel, uint32_t parentIndex = ModelNode::ROOT_INDEX);

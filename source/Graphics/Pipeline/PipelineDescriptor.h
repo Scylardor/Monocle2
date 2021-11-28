@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "Graphics/BlendState/BlendStateDescriptor.h"
-#include "Graphics/DepthStencilState/DepthStencilStateDescriptor.h"
-#include "Graphics/RasterizerState/RasterizerStateDescriptor.h"
-#include "Graphics/Topology/PrimitiveTopology.h"
+#include "Core/Resource/Material/BlendState/BlendStateDescriptor.h"
+#include "Core/Resource/Material/DepthStencilState/DepthStencilStateDescriptor.h"
+#include "Core/Resource/Material/RasterizerState/RasterizerStateDescriptor.h"
+#include "Core/Resource/Material/Topology/PrimitiveTopology.h"
 
 namespace moe
 {

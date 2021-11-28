@@ -163,7 +163,7 @@ namespace moe
 
 		std::vector<VulkanCommandPool>	m_commandPools;
 
-		Ref<MaterialResource>	m_defaultMaterial;
+		Ref<MaterialModulesResource>	m_defaultMaterial;
 
 
 		ResourceManager* m_resourceManager{ nullptr };

@@ -4,7 +4,7 @@
 
 #include "Core/Containers/Vector/Vector.h"
 
-#include "Graphics/Shader/ShaderStage/ShaderStage.h"
+#include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
 #include <string>
 

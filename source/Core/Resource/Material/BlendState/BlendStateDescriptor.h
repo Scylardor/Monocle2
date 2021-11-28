@@ -3,7 +3,7 @@
 #include "BlendFactor.h"
 #include "BlendEquation.h"
 
-#include "Monocle_Graphics_Export.h"
+#include "Monocle_Core_Export.h"
 
 namespace moe
 {
@@ -45,13 +45,13 @@ namespace moe
 		/**
 		 * \brief This Blend State always overrides the destination pixel with the source pixel color.
 		 */
-		Monocle_Graphics_API static const BlendStateDescriptor	ms_Override;
+		Monocle_Core_API static const BlendStateDescriptor	ms_Override;
 
 
 		/**
 		 * \brief This blend state will give you a blend equation where output_color = 1 * source_color + 1 * destination_color.
 		 */
-		Monocle_Graphics_API static const BlendStateDescriptor	ms_Additive;
+		Monocle_Core_API static const BlendStateDescriptor	ms_Additive;
 
 
 		/**
@@ -61,7 +61,7 @@ namespace moe
 		 * You just have to disable depth writing.
 		 * See for example https://docs.microsoft.com/en-us/archive/blogs/etayrien/alpha-blending-part-3
 		 */
-		Monocle_Graphics_API static const BlendStateDescriptor	ms_AdditiveAlpha;
+		Monocle_Core_API static const BlendStateDescriptor	ms_AdditiveAlpha;
 
 		/**
 		* \brief This blend state will give you a blend equation where output_color = source_alpha * source_color + (1 - source_alpha) * destination_color.
@@ -69,13 +69,13 @@ namespace moe
 		* you must deal with disabling depth writing (to make sure transparent objects do not obscure each other because of depth test)
 		* and you must sort transparent objects back-to-front to ensure the computed color is right.
 		*/
-		Monocle_Graphics_API static const BlendStateDescriptor	ms_BlendAlpha;
+		Monocle_Core_API static const BlendStateDescriptor	ms_BlendAlpha;
 
 
 		/**
 		 * \brief This blend state will keep blending disabled.
 		 */
-		Monocle_Graphics_API static const BlendStateDescriptor	ms_Disabled;
+		Monocle_Core_API static const BlendStateDescriptor	ms_Disabled;
 	};
 
 }

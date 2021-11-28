@@ -4,6 +4,9 @@
 
 
 #include "Core/Containers/Array/Array.h"
+#include "Core/Resource/FileResource.h"
+#include "Core/Resource/Material/MaterialResource.h"
+#include "Core/Resource/MeshResource.h"
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
@@ -34,9 +37,23 @@ namespace moe
 
 		auto meshRsc = rscSvc->EmplaceResource<MeshResource>(
 			HashString("QuadMesh"),
-			helloQuad.Data(), sizeof(helloQuad[0]), helloQuad.Size(),
-			helloIndices.Data(), sizeof(helloIndices[0]), helloIndices.Size());
+			MeshData{ helloQuad.Data(), sizeof(helloQuad[0]), helloQuad.Size(),
+			helloIndices.Data(), sizeof(helloIndices[0]), helloIndices.Size() });
 
+		auto basicVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.vert"), "source/Graphics/Resources/shaders/OpenGL/basic.vert", FileMode::Text);
+		auto basicFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.frag"), "source/Graphics/Resources/shaders/OpenGL/basic.frag", FileMode::Text);
+
+		MaterialDescription matDesc;
+		matDesc.ShaderProgram.m_modules = {
+			{	ShaderStage::Vertex, basicVertShaderFile},
+			{	ShaderStage::Fragment, basicFragShaderFile}
+		};
+
+		rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
+
+
+
+		//MaterialData myDefaultMaterial;
 
 
 		//render->

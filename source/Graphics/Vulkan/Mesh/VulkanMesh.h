@@ -2,7 +2,7 @@
 #ifdef MOE_VULKAN
 
 #include "Graphics/Vulkan/Buffer/VulkanBuffer.h"
-#include "Core/Resource/Resource.h"
+#include "Core/Resource/MeshResource.h"
 
 namespace moe
 {

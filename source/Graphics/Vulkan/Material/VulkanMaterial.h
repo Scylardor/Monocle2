@@ -1,7 +1,7 @@
 #pragma once
 #include "Math/Vec4.h"
 
-#include "Core/Resource/Resource.h"
+#include "Core/Resource/Material/MaterialResource.h"
 
 namespace moe
 {
@@ -83,7 +83,7 @@ namespace moe
 			return m_params;
 		}
 
-		void	UpdateResources(MaterialResource& updatedMaterial) override;
+		void	UpdateResources(MaterialModulesResource& updatedMaterial) override;
 
 
 	private:
@@ -106,7 +106,7 @@ namespace moe
 			m_maps.Maps[(uint8_t)type] = tex;
 		}
 
-		void	UpdateResources(MaterialResource& updatedMaterial) override;
+		void	UpdateResources(MaterialModulesResource& updatedMaterial) override;
 
 
 
@@ -178,7 +178,7 @@ namespace moe
 
 
 
-	class VulkanMaterial : public MaterialResource
+	class VulkanMaterial : public MaterialModulesResource
 	{
 	public:
 
@@ -198,15 +198,15 @@ namespace moe
 		~VulkanMaterial();
 
 
-		/* MaterialResource interface */
-		std::unique_ptr<MaterialResource>	Clone() override;
+		/* MaterialModulesResource interface */
+		std::unique_ptr<MaterialModulesResource>	Clone() override;
 
 		void								AddNewModule(std::unique_ptr<AMaterialModule> newModule) override;
 
 		void								UpdateResources(uint8_t resourceSet) override;
 
-		MaterialResource&					BindTextureResource(uint32_t set, uint32_t binding, const Ref<TextureResource>& tex) override;
-		/* MaterialResource interface end */
+		MaterialModulesResource&					BindTextureResource(uint32_t set, uint32_t binding, const Ref<TextureResource>& tex) override;
+		/* MaterialModulesResource interface end */
 
 
 		VulkanMaterial& Initialize(MyVkDevice& device, Ref<ShaderPipelineResource> pipeline, uint32_t maxInstances = DEFAULT_MAX_INSTANCES);

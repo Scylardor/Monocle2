@@ -4,7 +4,8 @@
 
 #ifdef MOE_OPENGL
 
-#include "Graphics/Shader/ShaderStage/ShaderStage.h"
+
+#include "Core/Resource/Material/Shader/ShaderStage/ShaderStage.h"
 
 #include <glad/glad.h>
 
