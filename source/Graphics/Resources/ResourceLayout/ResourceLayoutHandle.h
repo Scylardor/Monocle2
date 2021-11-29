@@ -12,7 +12,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API ResourceLayoutHandle : RenderObjectHandle<std::uint32_t>
+	struct Monocle_Graphics_API ResourceLayoutHandle : RenderableObjectHandle<std::uint32_t>
 	{
 		static ResourceLayoutHandle	Null() { return ResourceLayoutHandle{ 0 }; }
 

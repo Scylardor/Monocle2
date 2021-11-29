@@ -11,7 +11,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API SceneNodeHandle : RenderObjectHandle<uint32_t>
+	struct Monocle_Graphics_API SceneNodeHandle : RenderableObjectHandle<uint32_t>
 	{
 		static SceneNodeHandle	Null() { return SceneNodeHandle{ 0 }; }
 

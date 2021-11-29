@@ -14,11 +14,19 @@ namespace moe
 
 	public:
 
+		enum class State
+		{
+			Stopped,
+			Running
+		};
+
+
 		using StartEvent = Event<void()>;
 
 		Engine() = default;
 
-		void	Start();
+		void	Run();
+
 
 		StartEvent& OnStartEvent()
 		{
@@ -40,14 +48,24 @@ namespace moe
 		template <typename TServ>
 		TServ* EditService();
 
+		void	SetState(State newState)
+		{
+			m_state = newState;
+		}
+
 
 	private:
+
+		void	Start();
+		void	Stop();
 
 		StartEvent	m_onStart;
 
 		Vector<std::unique_ptr<ISimulation>>	m_simulations;
 
 		std::unordered_map<std::type_index, std::unique_ptr<Service>>	m_services;
+
+		State	m_state{ State::Stopped };
 
 	};
 

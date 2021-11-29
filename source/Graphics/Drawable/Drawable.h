@@ -40,12 +40,12 @@ namespace moe
 
 		[[nodiscard]] Mat4 const& GetModelMatrix() const
 		{
-			return m_model;
+			return m_transform;
 		}
 
 		void	SetModelMatrix(const Mat4& modelMat)
 		{
-			m_model = modelMat;
+			m_transform = modelMat;
 			SetNeedsMVPUpdate(true);
 		}
 
@@ -76,7 +76,7 @@ namespace moe
 
 	protected:
 
-		Mat4			m_model{ Mat4::Identity() };
+		Mat4			m_transform{ Mat4::Identity() };
 		Mat4			m_mvp{Mat4::Identity()};
 
 		MeshID			m_meshID{0};

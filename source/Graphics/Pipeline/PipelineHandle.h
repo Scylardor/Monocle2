@@ -12,7 +12,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API PipelineHandle : RenderObjectHandle<std::uint32_t>
+	struct Monocle_Graphics_API PipelineHandle : RenderableObjectHandle<std::uint32_t>
 	{
 		static PipelineHandle	Null() { return PipelineHandle{ 0 }; }
 	};

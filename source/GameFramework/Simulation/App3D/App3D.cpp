@@ -1,6 +1,6 @@
 #include "App3D.h"
 
-
+#include "Core/Exception/RuntimeException.h"
 #include "GameFramework/Service/ConfigService/ConfigService.h"
 
 #include "GameFramework/Engine/Engine.h"
@@ -8,6 +8,7 @@
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/RenderService/RenderPass/GeometryRenderPass.h"
 #include "GameFramework/Service/TimeService/TimeService.h"
+#include "GameFramework/Service/WindowService/WindowService.h"
 
 
 moe::App3D::App3D(Engine& owner, int argc, char** argv) :
@@ -27,8 +28,32 @@ moe::App3D::App3D(Engine& owner, int argc, char** argv) :
 	TimeService* time = EditEngine()->AddService<TimeService>();
 	time->Start();
 
-	auto* render = EditEngine()->AddService<RenderService>();
-	Renderer& renderer = render->EmplaceRenderer();
-	renderer.EmplaceRenderPass<GeometryRenderPass>();
+	EditEngine()->AddService<RenderService>();
+}
+
+
+void moe::App3D::Start()
+{
+	IWindow* window = EditEngine()->EditService<WindowService>()->CreateWindow();
+	if (window == nullptr)
+	{
+		throw RuntimeException("Could not create window");
+	}
+}
+
+
+void moe::App3D::Update()
+{
+	TimeService* time = EditEngine()->EditService<TimeService>();
+	time->Update();
+
+	float dt = time->GetFrameDeltaTime();
+
+	MOE_LOG("Delta time: %f!", dt);
+}
+
+
+void moe::App3D::Shutdown()
+{
 }
 

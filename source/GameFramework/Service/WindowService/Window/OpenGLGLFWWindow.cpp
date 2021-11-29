@@ -47,14 +47,7 @@ namespace moe
 	{
 		glfwMakeContextCurrent(EditWindow());
 
-		bool ok = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		if (false == ok)
-		{
-			MOE_FATAL(ChanWindowing, "Failed to initialize OpenGL context");
-			MOE_DEBUG_ASSERT(false);
-		}
-
-		ok &= GLFWWindow::PostCreate(windowConfig);
+		bool ok = GLFWWindow::PostCreate(windowConfig);
 
 		return ok;
 	}

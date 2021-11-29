@@ -11,7 +11,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API VertexBufferHandle : RenderObjectHandle<std::uint64_t>
+	struct Monocle_Graphics_API VertexBufferHandle : RenderableObjectHandle<std::uint64_t>
 	{
 		static VertexBufferHandle	Null() { return VertexBufferHandle{ 0 }; }
 

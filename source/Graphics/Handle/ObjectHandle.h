@@ -11,12 +11,12 @@ namespace moe
 	 * Each renderer is then free to reinterpret the handle to retrieve the actual data
 	 */
 	template <typename ValT>
-	struct RenderObjectHandle
+	struct RenderableObjectHandle
 	{
 		typedef ValT	Underlying;
 
-		RenderObjectHandle() = default;
-		RenderObjectHandle(ValT val) : m_handle(val) {}
+		RenderableObjectHandle() = default;
+		RenderableObjectHandle(ValT val) : m_handle(val) {}
 
 		ValT	m_handle{ 0 };
 
@@ -25,17 +25,17 @@ namespace moe
 		[[nodiscard]] bool	IsNull() const { return m_handle == 0; }
 		[[nodiscard]] bool	IsNotNull() const { return !IsNull(); }
 
-		bool operator==(const RenderObjectHandle& rhs) const
+		bool operator==(const RenderableObjectHandle& rhs) const
 		{
 			return m_handle == rhs.m_handle;
 		}
 
-		bool operator!=(const RenderObjectHandle& rhs) const
+		bool operator!=(const RenderableObjectHandle& rhs) const
 		{
 			return !(*this == rhs);
 		}
 
-		static RenderObjectHandle	Null() { return RenderObjectHandle{0}; }
+		static RenderableObjectHandle	Null() { return RenderableObjectHandle{0}; }
 	};
 
 }

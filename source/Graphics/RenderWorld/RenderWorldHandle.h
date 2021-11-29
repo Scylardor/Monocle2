@@ -11,7 +11,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API RenderWorldHandle : RenderObjectHandle<std::uint8_t>
+	struct Monocle_Graphics_API RenderWorldHandle : RenderableObjectHandle<std::uint8_t>
 	{
 		static RenderWorldHandle	Null() { return RenderWorldHandle{ 0 }; }
 

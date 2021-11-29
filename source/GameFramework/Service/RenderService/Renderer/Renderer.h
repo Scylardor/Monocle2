@@ -10,6 +10,7 @@
 
 namespace moe
 {
+	class RenderHardwareInterface;
 	class RenderScene;
 	class RenderService;
 	class GraphicsSurface;
@@ -18,8 +19,8 @@ namespace moe
 	{
 	public:
 
-		Renderer(RenderService& ownerService) :
-			m_myService(&ownerService)
+		Renderer(RenderService& ownerService, RenderHardwareInterface* RHI) :
+			m_myService(&ownerService), m_RHI(RHI)
 		{}
 
 		Renderer(Renderer const& other) = delete;
@@ -55,12 +56,19 @@ namespace moe
 		}
 
 
+		RenderHardwareInterface*	MutRHI()
+		{
+			return m_RHI;
+		}
+
 	private:
 
 		RenderScene*		m_attachedScene = nullptr;
 		GraphicsSurface*	m_attachedSurface = nullptr;
 
 		RenderService*		m_myService = nullptr;
+
+		RenderHardwareInterface* m_RHI{ nullptr };
 
 		std::unordered_map<RenderPassType, PolymorphicObjectPool<IMaterialSystem>>	m_materialSystems{};
 

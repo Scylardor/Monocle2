@@ -1257,12 +1257,21 @@ namespace moe
 
 
 	std::pair<unsigned, unsigned> OpenGLGraphicsDevice::DecodeBufferHandle(
-		const RenderObjectHandle<std::uint64_t>& handle)
+		const RenderableObjectHandle<std::uint64_t>& handle)
 	{
 		uint64_t handleVal = handle.Get();
 		uint32_t bufferID = handleVal >> 32;
 		uint32_t bufferOffset = (uint32_t)handleVal;
 		return {bufferID, bufferOffset};
+	}
+
+
+	uint32_t	OpenGLGraphicsDevice::DecodeBufferID(
+		const RenderableObjectHandle<std::uint64_t>& handle)
+	{
+		uint64_t handleVal = handle.Get();
+		uint32_t bufferID = handleVal >> 32;
+		return  bufferID;
 	}
 
 

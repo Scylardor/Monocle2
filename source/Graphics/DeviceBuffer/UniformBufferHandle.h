@@ -12,7 +12,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API UniformBufferHandle : RenderObjectHandle<std::uint64_t>
+	struct Monocle_Graphics_API UniformBufferHandle : RenderableObjectHandle<std::uint64_t>
 	{
 		static UniformBufferHandle	Null() { return UniformBufferHandle{ 0 }; }
 

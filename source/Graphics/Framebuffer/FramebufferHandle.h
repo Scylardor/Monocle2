@@ -10,7 +10,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API FramebufferHandle : RenderObjectHandle<std::uint16_t>
+	struct Monocle_Graphics_API FramebufferHandle : RenderableObjectHandle<std::uint16_t>
 	{
 		static FramebufferHandle	Null() { return FramebufferHandle{ 0 }; }
 

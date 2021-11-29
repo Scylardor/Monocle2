@@ -11,7 +11,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API CameraHandle : RenderObjectHandle<std::uint8_t>
+	struct Monocle_Graphics_API CameraHandle : RenderableObjectHandle<std::uint8_t>
 	{
 		static CameraHandle	Null() { return CameraHandle{ 0 }; }
 

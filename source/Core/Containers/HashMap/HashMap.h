@@ -40,6 +40,8 @@ namespace moe
 
 		template <class... Args>
 		std::pair<Iterator, bool>	Emplace(Args&&... args) { return m_hashmap.emplace(std::forward<Args>(args)...); }
+		template <class... Args>
+		std::pair<Iterator, bool>	TryEmplace(Args&&... args) { return m_hashmap.try_emplace(std::forward<Args>(args)...); }
 
 		Iterator	Erase(ConstIterator position)					{ return m_hashmap.erase(position); }
 		SizeType	Erase(const Key& k)								{ return m_hashmap.erase(k); }

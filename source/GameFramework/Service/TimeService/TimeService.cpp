@@ -1,5 +1,6 @@
 ﻿#include "TimeService.h"
 
+
 namespace moe
 {
 	TimeService::TimeService(Engine& ownerEngine) :
@@ -11,25 +12,26 @@ namespace moe
 	void TimeService::Start()
 	{
 		// Reset game timer
-		m_gameTime.Restart();
-		m_gameStartTime = m_gameTime.GetStartTime();
+		m_gameWatch.Restart();
+		m_gameStartTime = m_gameWatch.GetStartTime();
 	}
 
 
 	void TimeService::PauseGameTime()
 	{
-		m_gameTime.Pause();
+		m_gameWatch.Pause();
 	}
 
 	void TimeService::FreezeGameTime()
 	{
-		m_gameTime.Freeze();
+		m_gameWatch.Freeze();
 	}
 
 
 	void TimeService::Update()
 	{
-		m_frameDeltaTime = m_gameTime.Elapsed();
+		m_frameDeltaTime = m_gameWatch.Elapsed();
+		m_gameWatch.Restart();
 	}
 
 

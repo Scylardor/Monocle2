@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BufferManager/BufferManager.h"
 #include "PipelineManager/PipelineManager.h"
 
 namespace moe
@@ -22,6 +23,8 @@ namespace moe
 		virtual ~RenderHardwareInterface() = default;
 
 		virtual	IPipelineManager& PipelineManager() = 0;
+
+		virtual IBufferManager& BufferManager() = 0;
 
 	};
 

@@ -11,11 +11,6 @@
 moe::OpenGLGLFWService::OpenGLGLFWService(Engine& engine) :
 	GLFWService(engine)
 {
-}
-
-
-moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
-{
 	auto const* Config = EditEngine()->GetService<ConfigService>();
 	MOE_ASSERT(Config != nullptr);
 
@@ -26,7 +21,11 @@ moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
 	window->SetWindowHints(windowSection);
 	bool ok = window->Create(windowSection);
 	MOE_DEBUG_ASSERT(ok);
+}
 
-	return window;
+
+moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
+{
+	return nullptr;
 }
 #endif

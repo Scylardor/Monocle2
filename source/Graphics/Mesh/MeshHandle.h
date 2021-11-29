@@ -9,7 +9,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API MeshHandle : RenderObjectHandle<std::uint32_t>
+	struct Monocle_Graphics_API MeshHandle : RenderableObjectHandle<std::uint32_t>
 	{
 		static MeshHandle	Null() { return MeshHandle{ 0 }; }
 

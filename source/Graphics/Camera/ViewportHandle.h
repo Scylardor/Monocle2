@@ -11,7 +11,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API ViewportHandle : RenderObjectHandle<std::uint8_t>
+	struct Monocle_Graphics_API ViewportHandle : RenderableObjectHandle<std::uint8_t>
 	{
 		static ViewportHandle	Null() { return ViewportHandle{ 0 }; }
 

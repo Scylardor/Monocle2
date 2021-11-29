@@ -192,8 +192,13 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/visualize_normals.vert
 ./Resources/shaders/Vulkan/triangle.frag
 ./Resources/shaders/Vulkan/triangle.vert
+./RHI/BufferManager/BufferManager.h
+./RHI/OpenGL/BufferManager/BufferManager.cpp
+./RHI/OpenGL/BufferManager/BufferManager.h
 ./RHI/OpenGL/OGL4RHI.cpp
 ./RHI/OpenGL/OGL4RHI.h
+./RHI/OpenGL/PipelineManager/PipelineManager.cpp
+./RHI/OpenGL/PipelineManager/PipelineManager.h
 ./RHI/OpenGL/RenderPass/OGL4RenderPass.cpp
 ./RHI/OpenGL/RenderPass/OGL4RenderPass.h
 ./RHI/PipelineManager/PipelineManager.h

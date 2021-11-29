@@ -12,7 +12,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API TextureHandle : RenderObjectHandle<std::uint32_t>
+	struct Monocle_Graphics_API TextureHandle : RenderableObjectHandle<std::uint32_t>
 	{
 		static TextureHandle	Null() { return TextureHandle{ 0 }; }
 

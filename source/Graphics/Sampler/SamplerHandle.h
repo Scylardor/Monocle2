@@ -10,7 +10,7 @@
 
 namespace moe
 {
-	struct Monocle_Graphics_API SamplerHandle : RenderObjectHandle<std::uint32_t>
+	struct Monocle_Graphics_API SamplerHandle : RenderableObjectHandle<std::uint32_t>
 	{
 		static SamplerHandle	Null() { return SamplerHandle{ 0 }; }
 	};

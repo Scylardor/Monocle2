@@ -15,7 +15,7 @@ namespace moe
 	/**
 	 * \brief A generic graphics-API agnostic handle to a buffer of any kind of GPU data.
 	 */
-	struct Monocle_Graphics_API DeviceBufferHandle : RenderObjectHandle<std::uint64_t>
+	struct Monocle_Graphics_API DeviceBufferHandle : RenderableObjectHandle<std::uint64_t>
 	{
 		static DeviceBufferHandle	Null() { return DeviceBufferHandle{ 0 }; }
 

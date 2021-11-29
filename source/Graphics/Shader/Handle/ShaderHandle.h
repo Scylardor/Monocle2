@@ -11,7 +11,7 @@
 namespace moe
 {
 
-	struct Monocle_Graphics_API ShaderProgramHandle : RenderObjectHandle<std::uint64_t>
+	struct Monocle_Graphics_API ShaderProgramHandle : RenderableObjectHandle<std::uint64_t>
 	{
 		static ShaderProgramHandle	Null() { return ShaderProgramHandle{ 0 }; }
 	};

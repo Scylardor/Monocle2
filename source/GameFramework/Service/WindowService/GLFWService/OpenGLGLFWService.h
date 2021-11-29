@@ -4,6 +4,10 @@
 #if defined(MOE_GLFW ) && defined(MOE_OPENGL)
 #include "GLFWService.h"
 
+#include "Graphics/RHI/OpenGL/OGL4RHI.h"
+
+#include <GLFW/glfw3.h>
+
 namespace moe
 {
 	class OpenGLGLFWService final : public GLFWService
@@ -17,6 +21,10 @@ namespace moe
 
 		moe::IWindow* CreateWindow() override;
 
+		static OpenGL4RHI::GLLoaderFunction	GetGLLoaderFunction()
+		{
+			return (OpenGL4RHI::GLLoaderFunction) glfwGetProcAddress;
+		}
 
 	};
 

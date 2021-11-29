@@ -15,7 +15,6 @@ namespace moe
 		OpenGLApp3D(Engine& owner, int argc, char** argv);
 
 		void Start() override;
-
 	};
 
 

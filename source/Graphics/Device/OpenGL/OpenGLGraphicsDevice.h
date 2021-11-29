@@ -231,7 +231,8 @@ namespace moe
 
 		static DeviceBufferHandle						EncodeBufferHandle(uint32_t bufferID, uint32_t bufferOffset);
 
-		static std::pair<unsigned int, unsigned int>	DecodeBufferHandle(const RenderObjectHandle<std::uint64_t>& handle);
+		static std::pair<unsigned int, unsigned int>	DecodeBufferHandle(const RenderableObjectHandle<std::uint64_t>& handle);
+		static uint32_t									DecodeBufferID(const RenderableObjectHandle<std::uint64_t>& handle);
 
 		static SamplerHandle							EncodeSamplerHandle(unsigned int samplerID, unsigned int freelistID);
 

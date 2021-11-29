@@ -11,6 +11,11 @@ namespace moe
 
 		App3D(Engine& owner, int argc, char** argv);
 
+		void	Start() override;
+
+		void	Update() override;
+
+		void	Shutdown() override;
 	};
 
 

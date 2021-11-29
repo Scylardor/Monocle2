@@ -3,6 +3,7 @@
 #pragma once
 #ifdef MOE_GLFW
 
+#define GLFW_INCLUDE_NONE // We do the openGL includes ourselves
 #include <GLFW/glfw3.h>
 
 #include "GameFramework/Service/WindowService/WindowService.h"

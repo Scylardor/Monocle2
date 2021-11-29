@@ -45,9 +45,9 @@ namespace moe
 
 
 	private:
-		Stopwatch::TimePoint	m_gameStartTime;
+		Stopwatch::TimePoint	m_gameStartTime{};
 
-		Stopwatch	m_gameTime;
+		Stopwatch	m_gameWatch;
 
 		float	m_frameDeltaTime{ 0 };
 	};
