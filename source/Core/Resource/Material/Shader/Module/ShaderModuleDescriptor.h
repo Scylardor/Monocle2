@@ -21,25 +21,25 @@ namespace moe
 		/**
 		 * \brief The agnostic shader stage of this module
 		 */
-		ShaderStage	m_moduleStage{ShaderStage::Vertex};
+		ShaderStage	Stage{ShaderStage::Vertex};
 
 
 		/*
 		 * Reference to the shader file that we can read to access the shader code.
 		 * Type of file will be useful to know if it's text (needs to be compiled) or binary (SPIR-V).
 		 */
-		Ref<FileResource>	m_shaderFile{};
+		Ref<FileResource>	ShaderFile{};
 
 		/**
 		 * \brief The actual code of the shader. This can be either source code compiled at runtime or a precompiled binary format.
 		 */
-		std::string	m_shaderCode{ "" };
+		std::string	ShaderCode{ "" };
 
 
 		/**
 		 * \brief Used only for binary code. Will specify the entry point of the shader. If it's null, the string "main" will be used.
 		 */
-		std::string	m_entryPoint{ "main" };
+		std::string	EntryPoint{ "main" };
 	};
 
 }

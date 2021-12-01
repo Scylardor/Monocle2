@@ -10,6 +10,7 @@
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
+#include "Graphics/RHI/OpenGL/OGL4RHI.h"
 #include "Graphics/Vertex/VertexFormats.h"
 
 
@@ -44,12 +45,24 @@ namespace moe
 		auto basicFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.frag"), "source/Graphics/Resources/shaders/OpenGL/basic.frag", FileMode::Text);
 
 		MaterialDescription matDesc;
-		matDesc.ShaderProgram.m_modules = {
+		matDesc.NewPassDescription().
+			AssignShaderProgramDescription({
 			{	ShaderStage::Vertex, basicVertShaderFile},
 			{	ShaderStage::Fragment, basicFragShaderFile}
-		};
+		});
 
 		rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
+
+		auto* rdrSvc = EditEngine()->EditService<RenderService>();
+		Renderer& forwardRenderer = rdrSvc->EmplaceRenderer(rdrSvc->MutRHI());
+
+		RenderScene& mainScene = rdrSvc->EmplaceScene(forwardRenderer);
+		mainScene.AddObject(meshRsc, {});
+
+		// rdrSvc->MutRHI()->BufferManager().FindOrCreateMeshBuffer(meshRsc);
+
+		//Renderer& forwardRenderer = rdrSvc->EmplaceRenderer();
+
 
 
 

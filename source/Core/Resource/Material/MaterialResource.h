@@ -9,7 +9,7 @@
 #include "BlendState/BlendStateDescriptor.h"
 #include "DepthStencilState/DepthStencilStateDescriptor.h"
 #include "RasterizerState/RasterizerStateDescriptor.h"
-#include "Shader/Program/ShaderProgramDescriptor.h"
+#include "Shader/Program/ShaderProgramDescription.h"
 #include "Topology/PrimitiveTopology.h"
 
 
@@ -23,16 +23,33 @@ namespace moe
 	*/
 	struct PipelineDescription
 	{
-		BlendStateDescriptor		m_blendStateDesc;
-		DepthStencilStateDescriptor	m_depthStencilStateDesc;
-		RasterizerStateDescriptor	m_rasterizerStateDesc;
-		PrimitiveTopology			m_topology{ PrimitiveTopology::TriangleList };
+		BlendStateDescriptor		BlendStateDesc;
+		DepthStencilStateDescriptor	DepthStencilStateDesc;
+		RasterizerStateDescriptor	RasterizerStateDesc;
+		PrimitiveTopology			Topology{ PrimitiveTopology::TriangleList };
+	};
+
+	struct MaterialPassDescription
+	{
+		MaterialPassDescription&	AssignShaderProgramDescription(ShaderProgramDescription programDesc)
+		{
+			ShaderProgram = std::move(programDesc);
+			return *this;
+		}
+
+		PipelineDescription			Pipeline;
+		ShaderProgramDescription	ShaderProgram;
 	};
 
 	struct MaterialDescription
 	{
-		PipelineDescription			Pipeline;
-		ShaderProgramDescription	ShaderProgram;
+		MaterialPassDescription& NewPassDescription()
+		{
+			PassDescriptors.EmplaceBack();
+			return PassDescriptors.Back();
+		}
+
+		Vector<MaterialPassDescription>	PassDescriptors;
 	};
 
 

@@ -72,7 +72,12 @@ namespace moe
 		bool ok = HasWindow();
 
 		if (ok)
+		{
+			glfwSetWindowUserPointer(m_window, this);
+			glfwSetFramebufferSizeCallback(m_window, WindowFramebufferResizeCallback);
 			ok &= PostCreate(windowConfig);
+			MOE_DEBUG_ASSERT(ok);
+		}
 
 		return ok;
 	}
@@ -111,6 +116,12 @@ namespace moe
 		glfwSwapInterval((int)vsync);
 
 		return true;
+	}
+
+	void GLFWWindow::WindowFramebufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+		myWindow->OnSurfaceResized(width, height);
 	}
 
 }

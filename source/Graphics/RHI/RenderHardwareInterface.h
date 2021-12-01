@@ -2,6 +2,7 @@
 
 #include "BufferManager/BufferManager.h"
 #include "PipelineManager/PipelineManager.h"
+#include "TextureManager/TextureManager.h"
 
 namespace moe
 {
@@ -22,9 +23,11 @@ namespace moe
 
 		virtual ~RenderHardwareInterface() = default;
 
-		virtual	IPipelineManager& PipelineManager() = 0;
+		virtual	IPipelineManager&	PipelineManager() = 0;
 
-		virtual IBufferManager& BufferManager() = 0;
+		virtual IBufferManager&		BufferManager() = 0;
+
+		virtual ITextureManager&	TextureManager() = 0;
 
 	};
 

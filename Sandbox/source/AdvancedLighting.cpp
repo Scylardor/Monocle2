@@ -656,7 +656,7 @@ namespace moe
 		/* Create Phong material buffer */
 		MaterialDescriptor materialdesc(
 			{
-				{"Frame_ShadowMappingInfo", ShaderStage(Vertex | Fragment) },
+				{"Frame_ShadowMappingInfo", +ShaderStage::Vertex | +ShaderStage::Fragment },
 				{"Material_Phong", ShaderStage::Fragment},
 				{"Material_Sampler", ShaderStage::Fragment},
 				{"Material_DiffuseMap", ShaderStage::Fragment},
@@ -1037,7 +1037,7 @@ namespace moe
 		ShaderProgramHandle depthMapProgram = renderer.CreateShaderProgramFromSourceFiles(depthMapFileList);
 
 		MaterialDescriptor depthMapDesc{
-			{"Frame_OmniShadowMappingInfo", ShaderStage(Geometry | Fragment)}
+			{"Frame_OmniShadowMappingInfo", +ShaderStage::Geometry | +ShaderStage::Fragment}
 		};
 		MaterialInterface depthMapInterface = lib.CreateMaterialInterface(depthMapProgram, depthMapDesc);
 
@@ -1064,7 +1064,7 @@ namespace moe
 		/* Create Phong material buffer */
 		MaterialDescriptor materialdesc(
 			{
-				{"Frame_ShadowMappingInfo", ShaderStage(Vertex | Fragment) },
+				{"Frame_ShadowMappingInfo", +ShaderStage::Vertex | +ShaderStage::Fragment },
 				{"Material_Phong", ShaderStage::Fragment},
 				{"Material_Sampler", ShaderStage::Fragment},
 				{"Material_DiffuseMap", ShaderStage::Fragment},

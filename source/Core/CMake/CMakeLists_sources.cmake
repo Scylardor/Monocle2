@@ -87,8 +87,11 @@ set(Monocle_Core_SOURCES
 ./Resource/Material/MaterialResource.cpp
 ./Resource/Material/MaterialResource.h
 ./Resource/Material/RasterizerState/RasterizerStateDescriptor.h
+./Resource/Material/ResourceSet/BindingType.h
+./Resource/Material/ResourceSet/ResourceLayoutBindingDescription.h
+./Resource/Material/ResourceSet/ResourceLayoutDescription.h
 ./Resource/Material/Shader/Module/ShaderModuleDescriptor.h
-./Resource/Material/Shader/Program/ShaderProgramDescriptor.h
+./Resource/Material/Shader/Program/ShaderProgramDescription.h
 ./Resource/Material/Shader/ShaderStage/ShaderStage.cpp
 ./Resource/Material/Shader/ShaderStage/ShaderStage.h
 ./Resource/Material/Shader/UniformDataKind.h

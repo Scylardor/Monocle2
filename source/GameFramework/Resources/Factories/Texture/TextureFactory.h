@@ -49,7 +49,7 @@ namespace moe
 	//template <>
 	//inline TextureResource* ResourceManager::CreateResource(const Tex2DDescriptor& tex2dDesc)
 	//{
-	//	auto* texFactory = EditFactory<ITextureFactory>(ResourceType::Texture);
+	//	auto* texFactory = EditFactory<ITextureFactory>(BindingType::Texture);
 	//	texFactory->CreateTexture2D(tex2dDesc);
 	//	return nullptr;
 	//}

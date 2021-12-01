@@ -7,6 +7,8 @@
 
 #include <Core/Containers/Vector/Vector.h>
 
+#include "Core/Resource/Material/ResourceSet/ResourceLayoutDescription.h"
+
 
 namespace moe
 {
@@ -23,42 +25,41 @@ namespace moe
 		ShaderProgramDescription() = default;
 		ShaderProgramDescription(ShaderModuleVec::SizeType reserved)
 		{
-			m_modules.Reserve(reserved);
+			Modules.Reserve(reserved);
 		}
 
 		ShaderProgramDescription(std::initializer_list< ShaderModuleDescription > il) :
-			m_modules(il)
+			Modules(il)
 		{}
 
 
 		ShaderModuleVec::SizeType	Count() const
 		{
-			return m_modules.Size();
+			return Modules.Size();
 		}
 
 
 		// C++11 range-based for loops interface
 		[[nodiscard]] Vector<ShaderModuleDescription>::Iterator begin()
 		{
-			return m_modules.begin();
+			return Modules.begin();
 		}
 		[[nodiscard]] Vector<ShaderModuleDescription>::ConstIterator begin() const
 		{
-			return m_modules.begin();
+			return Modules.begin();
 		}
 
 		[[nodiscard]] Vector<ShaderModuleDescription>::Iterator end()
 		{
-			return m_modules.end();
+			return Modules.end();
 		}
 
 		[[nodiscard]] Vector<ShaderModuleDescription>::ConstIterator end() const
 		{
-			return m_modules.end();
+			return Modules.end();
 		}
 
-
-
-		Vector<ShaderModuleDescription>	m_modules;
+		Vector<ShaderModuleDescription>		Modules;
+		Vector<ResourceLayoutDescription>	ResourceSetLayouts;
 	};
 }

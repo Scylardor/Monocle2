@@ -201,9 +201,12 @@ set(Monocle_Graphics_SOURCES
 ./RHI/OpenGL/PipelineManager/PipelineManager.h
 ./RHI/OpenGL/RenderPass/OGL4RenderPass.cpp
 ./RHI/OpenGL/RenderPass/OGL4RenderPass.h
+./RHI/OpenGL/TextureManager/TextureManager.cpp
+./RHI/OpenGL/TextureManager/TextureManager.h
 ./RHI/PipelineManager/PipelineManager.h
 ./RHI/RenderHardwareInterface.cpp
 ./RHI/RenderHardwareInterface.h
+./RHI/TextureManager/TextureManager.h
 ./RHI/Vulkan/VulkanRHI.cpp
 ./RHI/Vulkan/VulkanRHI.h
 ./Sampler/OpenGL/OpenGLSampler.cpp

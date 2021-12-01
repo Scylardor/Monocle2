@@ -45,7 +45,6 @@ moe::BaseGlfwApplication::~BaseGlfwApplication()
 	}
 	else
 	{
-		/* TODO : parameterize that with the app descriptor */
 		glfwSetWindowUserPointer(m_window, this);
 
 		glfwSetKeyCallback(m_window, KeyCallback);

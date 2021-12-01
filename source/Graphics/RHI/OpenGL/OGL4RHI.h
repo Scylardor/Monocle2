@@ -5,6 +5,8 @@
 #include "Graphics/RHI/RenderHardwareInterface.h"
 #include "BufferManager/BufferManager.h"
 #include "PipelineManager/PipelineManager.h"
+#include "TextureManager/TextureManager.h"
+
 
 namespace moe
 {
@@ -28,6 +30,11 @@ namespace moe
 			return m_bufferManager;
 		}
 
+		ITextureManager&	TextureManager() override
+		{
+			return m_textureManager;
+		}
+
 
 	private:
 
@@ -35,6 +42,7 @@ namespace moe
 
 		OpenGL4BufferManager	m_bufferManager;
 		OpenGL4PipelineManager	m_pipelineManager;
+		OpenGL4TextureManager	m_textureManager;
 	};
 
 }

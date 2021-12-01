@@ -44,7 +44,10 @@ namespace moe
 	private:
 
 		GLFWwindow* m_window = nullptr;
+
+		static void	WindowFramebufferResizeCallback(GLFWwindow* window, int width, int height);
 	};
+
 
 }
 

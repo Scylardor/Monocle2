@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
 	monocleEngine.AddSimulation<moe::BasicQuad>(argc, argv);
 
-	monocleEngine.Start();
+	monocleEngine.Run();
 
 
 	//std::optional<uint32_t> width = app3d.Get<moe::ConfigService>()->Get<uint32_t>("window:width");

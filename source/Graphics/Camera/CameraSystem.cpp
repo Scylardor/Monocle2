@@ -17,7 +17,7 @@ namespace moe
 
 		/* TODO : Creating layout here is probably bad... + make the shader stage parameterized */
 		const ResourceLayoutDescriptor cameraLayoutDesc{
-			{{ "CameraMatrices",  MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer, ShaderStage(ShaderStage::Vertex | ShaderStage::Fragment) }}
+			{{ "CameraMatrices",  MaterialBlockBinding::VIEW_CAMERA, ResourceKind::UniformBuffer, +ShaderStage::Vertex | +ShaderStage::Fragment }}
 		};
 
 		m_CamerasResourceLayout = m_device.CreateResourceLayout(cameraLayoutDesc);

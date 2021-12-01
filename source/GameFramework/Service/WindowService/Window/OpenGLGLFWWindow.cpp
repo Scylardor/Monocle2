@@ -36,7 +36,7 @@ namespace moe
 
 		// The MacOS only supports forward-compatible core profile contexts for OpenGL versions 3.2 and later.
 #ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
 		GLFWWindow::SetWindowHints(windowConfig);
