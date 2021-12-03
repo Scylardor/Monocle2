@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BufferManager/BufferManager.h"
+#include "FramebufferManager/FramebufferManager.h"
 #include "PipelineManager/PipelineManager.h"
 #include "TextureManager/TextureManager.h"
 
@@ -23,11 +24,13 @@ namespace moe
 
 		virtual ~RenderHardwareInterface() = default;
 
-		virtual	IPipelineManager&	PipelineManager() = 0;
+		virtual	IPipelineManager&		PipelineManager() = 0;
 
-		virtual IBufferManager&		BufferManager() = 0;
+		virtual IBufferManager&			BufferManager() = 0;
 
-		virtual ITextureManager&	TextureManager() = 0;
+		virtual ITextureManager&		TextureManager() = 0;
+
+		virtual IFramebufferManager&	FramebufferManager() = 0;
 
 	};
 

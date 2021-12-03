@@ -9,8 +9,9 @@
 #include "Core/Resource/MeshResource.h"
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/RenderService/RenderService.h"
+#include "GameFramework/Service/RenderService/RenderPass/GeometryRenderPass.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
-#include "Graphics/RHI/OpenGL/OGL4RHI.h"
+#include "GameFramework/Service/WindowService/WindowService.h"
 #include "Graphics/Vertex/VertexFormats.h"
 
 
@@ -55,6 +56,10 @@ namespace moe
 
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 		Renderer& forwardRenderer = rdrSvc->EmplaceRenderer(rdrSvc->MutRHI());
+		auto* winSvc = EditEngine()->EditService<WindowService>();
+		forwardRenderer.AttachSurface(*winSvc->MutWindow());
+
+		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
 
 		RenderScene& mainScene = rdrSvc->EmplaceScene(forwardRenderer);
 		mainScene.AddObject(meshRsc, {});

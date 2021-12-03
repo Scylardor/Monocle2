@@ -40,7 +40,7 @@ namespace moe
 	struct Monocle_Graphics_API DeviceTextureHandle : RenderableObjectHandle<std::uint64_t>
 	{
 	private:
-		static const std::uint32_t ms_INVALID_ID = (std::uint32_t) - 1;
+		static const std::uint64_t ms_INVALID_ID = (std::uint64_t) - 1;
 
 	public:
 
@@ -55,7 +55,7 @@ namespace moe
 
 
 	/*
-	 * An abstract class for textures (1D, 2D, 3D, cubemap ...) and render targets (sometimes AKA renderbuffers) management.
+	 * An abstract class for textures (1D, 2D, 3D, cubemap ...) management.
 	 */
 	class ITextureManager
 	{

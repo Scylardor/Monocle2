@@ -13,7 +13,7 @@ namespace moe
 	class RenderHardwareInterface;
 	class RenderScene;
 	class RenderService;
-	class GraphicsSurface;
+	class IGraphicsSurface;
 
 	class Renderer
 	{
@@ -50,9 +50,14 @@ namespace moe
 		}
 
 
-		void	AttachSurface(GraphicsSurface& surface)
+		void	AttachSurface(IGraphicsSurface& surface)
 		{
 			m_attachedSurface = &surface;
+		}
+
+		IGraphicsSurface*	MutSurface()
+		{
+			return m_attachedSurface;
 		}
 
 
@@ -64,7 +69,7 @@ namespace moe
 	private:
 
 		RenderScene*		m_attachedScene = nullptr;
-		GraphicsSurface*	m_attachedSurface = nullptr;
+		IGraphicsSurface*	m_attachedSurface = nullptr;
 
 		RenderService*		m_myService = nullptr;
 

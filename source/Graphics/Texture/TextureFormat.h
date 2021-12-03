@@ -15,6 +15,7 @@ namespace moe
 	{
 		Any,				//	Any will do, handy when you don't care basically
 		R8,					//	1 channel using a 8-bit unsigned integer. Each component is clamped to the range [0,1].
+		RG8,				//	2 channels using a 8-bit unsigned integer. Each component is clamped to the range [0,1].
 		RG16F,				//	2 channels using each 16-bit floats. Each component is clamped to the range [0,1].
 		RGBA8,				//	4 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1].
 		SRGB_RGBA8,			//	4 channels using each 8-bit unsigned integer. Each component is clamped to the range [0,1]. SRGB version (to be used for gamma-corrected images)
@@ -37,6 +38,24 @@ namespace moe
 
 
 	uint8_t	GetTextureFormatChannelsNumber(TextureFormat format);
+
+	inline TextureFormat	GetFormatForChannelsNumber(int channelsNbr)
+	{
+		switch (channelsNbr)
+		{
+		case 1:
+			return TextureFormat::R8;
+		case 2:
+			return TextureFormat::RG8;
+		case 3:
+			return TextureFormat::RGB8;
+		case 4:
+			return TextureFormat::RGBA8;
+		default:
+			MOE_ASSERT(false); // unmanaged value
+			return TextureFormat::RGBA8;
+		}
+	}
 
 	inline TextureFormat	GetRadianceHDRFormat()						{ return TextureFormat::RGBE; }
 	inline bool				IsRadianceHDRFormat(TextureFormat format)	{ return (format == TextureFormat::RGBE); }

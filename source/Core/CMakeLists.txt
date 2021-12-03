@@ -24,5 +24,10 @@ set(VENDOR_DIR ${PROJECT_SOURCE_DIR}/vendor/)
 # We use BetterEnums folder which is directly in the vendor directory, so use vendor as an include directory.
 target_include_directories(${CORE_TARGET} PUBLIC .. ${VENDOR_DIR})
 
+# If using STB, integrate it in the build
+if(${PROJECT_NAME}_USE_STB_IMAGE_IMPORTER)
+	target_include_directories(${CORE_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/vendor/stb")
+endif()
+
 target_link_libraries(${CORE_TARGET} PRIVATE ${PROJECT_NAME})  # Linking with project's Interface Library allows us to reuse PCH's.
 

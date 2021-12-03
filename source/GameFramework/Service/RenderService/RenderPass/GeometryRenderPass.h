@@ -2,6 +2,7 @@
 
 #pragma once
 #include "RenderPass.h"
+#include "Core/Delegates/EventDelegateID.h"
 
 namespace moe
 {
@@ -10,13 +11,20 @@ namespace moe
 	class GeometryRenderPass : public IRenderPass
 	{
 	public:
-		GeometryRenderPass(Renderer& owner) :
-			m_ownerRenderer(&owner)
-		{}
+		GeometryRenderPass(Renderer& owner);
+
+		~GeometryRenderPass() override;
 
 
 	private:
+
+		void	OnGraphicsSurfaceResized(int newWidth, int newHeight);
+
+
 		Renderer* m_ownerRenderer{ nullptr };
+
+		moe::EventDelegateID	m_surfaceResizeDelID{};
+
 	};
 
 

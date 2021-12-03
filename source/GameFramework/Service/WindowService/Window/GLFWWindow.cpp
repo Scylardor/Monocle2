@@ -24,7 +24,7 @@ namespace moe
 
 	void GLFWWindow::SwapBuffers()
 	{
-
+		glfwSwapBuffers(m_window);
 	}
 
 

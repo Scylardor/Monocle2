@@ -11,7 +11,7 @@ namespace moe
 	class ConfigSection;
 	class GLFWService;
 
-	class GLFWWindow : public IWindow, public IGraphicsSurface
+	class GLFWWindow : public IWindow
 	{
 	public:
 
