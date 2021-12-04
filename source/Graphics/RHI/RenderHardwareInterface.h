@@ -4,6 +4,7 @@
 #include "FramebufferManager/FramebufferManager.h"
 #include "PipelineManager/PipelineManager.h"
 #include "TextureManager/TextureManager.h"
+#include "SwapchainManager/SwapchainManager.h"
 
 namespace moe
 {
@@ -31,6 +32,8 @@ namespace moe
 		virtual ITextureManager&		TextureManager() = 0;
 
 		virtual IFramebufferManager&	FramebufferManager() = 0;
+
+		virtual ISwapchainManager&		SwapchainManager() = 0;
 
 	};
 

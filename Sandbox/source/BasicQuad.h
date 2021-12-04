@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GameFramework/Service/RenderService/Renderer/Renderer.h"
 #include "GameFramework/Simulation/App3D/OpenGLApp3D.h"
 
 namespace moe
@@ -17,6 +18,7 @@ namespace moe
 
 		void Start() override;
 
+		Renderer& InitializeRenderer();
 	};
 
 }

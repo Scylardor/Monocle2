@@ -1,11 +1,25 @@
 #pragma once
 
+#include <glad/glad.h>
+
 #include "Graphics/RHI/TextureManager/TextureManager.h"
+
+#include "Core/Resource/TextureResource.h"
 
 #include "Monocle_Graphics_Export.h"
 
 namespace moe
 {
+
+	struct OpenGL4TextureData : TextureData
+	{
+		OpenGL4TextureData(TextureData const& data, GLuint texID) :
+			TextureData(data),
+			TextureID(texID)
+		{}
+
+		GLuint	TextureID{0};
+	};
 
 
 	/*
@@ -19,7 +33,13 @@ namespace moe
 
 		DeviceTextureHandle Monocle_Graphics_API	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) override;
 
-		DeviceTextureHandle Monocle_Graphics_API	CreateTexture2D() override;
+		DeviceTextureHandle Monocle_Graphics_API	CreateTexture2D(TextureData const& data) override;
+
+
+	private:
+
+		DynamicObjectPool<OpenGL4TextureData>	m_textures;
+
 	};
 
 

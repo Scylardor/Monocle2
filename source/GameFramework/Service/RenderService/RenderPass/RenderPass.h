@@ -14,6 +14,8 @@ namespace moe
 
 		virtual ~IRenderPass() = default;
 
+		virtual void	Update() = 0;
+
 		void	Destroy(RenderHardwareInterface& rhi);
 	};
 

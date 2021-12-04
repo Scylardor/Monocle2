@@ -78,10 +78,7 @@ namespace moe
 			return m_func(args...);
 		}
 
-		bool	IsSet() const { return m_func != nullptr; }
-
-	private:
-
+		[[nodiscard]] bool	IsSet() const { return m_func != nullptr; }
 
 		/*
 			Using std::index_sequence, GetNextPlaceholder<Idx>() will get expanded into appropriate std::placeholders::_Idx.

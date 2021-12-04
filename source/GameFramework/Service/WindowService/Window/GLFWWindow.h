@@ -4,7 +4,6 @@
 #if defined(MOE_GLFW )
 #include "GameFramework/Service/WindowService/GLFWService/GLFWService.h"
 
-#include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
 
 namespace moe
 {
@@ -19,7 +18,9 @@ namespace moe
 
 		~GLFWWindow() override;
 
-		void	SwapBuffers() override;
+		void				SwapBuffers() override;
+
+		std::pair<int, int>	GetDimensions() override;
 
 		virtual void	SetWindowHints(ConfigSection const& windowConfig);
 

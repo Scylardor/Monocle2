@@ -9,6 +9,7 @@ namespace moe
 {
 	enum class TextureFormat : unsigned char;
 
+	// TODO: Make that an enum class
 	/**
 	 * \brief Defines graphics API-agnostic texture usage flag values.
 	 * These values indicates how a texture is allowed to be used.

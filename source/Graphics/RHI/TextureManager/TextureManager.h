@@ -11,6 +11,7 @@
 
 namespace moe
 {
+	struct TextureData;
 
 	/* A structure describing the wanted creation parameters for a 2D texture. */
 	struct Texture2DDescription
@@ -65,7 +66,7 @@ namespace moe
 
 		virtual DeviceTextureHandle	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) = 0;
 
-		virtual DeviceTextureHandle	CreateTexture2D() = 0;
+		virtual DeviceTextureHandle	CreateTexture2D(TextureData const& data) = 0;
 	};
 
 

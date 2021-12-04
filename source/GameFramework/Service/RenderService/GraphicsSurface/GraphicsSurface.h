@@ -15,7 +15,9 @@ namespace moe
 
 		virtual ~IGraphicsSurface() = default;
 
-		virtual void			SwapBuffers() = 0;
+		virtual void					SwapBuffers() = 0;
+
+		virtual std::pair<int, int>		GetDimensions() = 0;
 
 		SurfaceResizedEvent&	OnSurfaceResizedEvent()
 		{

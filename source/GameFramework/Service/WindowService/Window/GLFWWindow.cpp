@@ -28,6 +28,16 @@ namespace moe
 	}
 
 
+	std::pair<int, int> GLFWWindow::GetDimensions()
+	{
+		MOE_ASSERT(m_window);
+
+		int width, height;
+		glfwGetFramebufferSize(m_window, &width, &height);
+		return { width, height };
+	}
+
+
 	void GLFWWindow::SetWindowHints(ConfigSection const& windowConfig)
 	{
 		auto resizable = windowConfig.GetBool("resizable").value_or(true);

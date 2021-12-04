@@ -6,6 +6,7 @@
 #include "BufferManager/BufferManager.h"
 #include "FramebufferManager/FramebufferManager.h"
 #include "PipelineManager/PipelineManager.h"
+#include "SwapchainManager/SwapchainManager.h"
 #include "TextureManager/TextureManager.h"
 
 
@@ -41,6 +42,10 @@ namespace moe
 			return m_framebufferManager;
 		}
 
+		ISwapchainManager& SwapchainManager() override
+		{
+			return m_swapchainManager;
+		}
 
 	private:
 
@@ -50,6 +55,7 @@ namespace moe
 		OpenGL4PipelineManager		m_pipelineManager;
 		OpenGL4TextureManager		m_textureManager;
 		OpenGL4FramebufferManager	m_framebufferManager;
+		OpenGL4SwapchainManager		m_swapchainManager;
 	};
 
 }

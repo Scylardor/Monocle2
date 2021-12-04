@@ -3,7 +3,8 @@
 
 namespace moe
 {
-	OpenGL4RHI::OpenGL4RHI(GLLoaderFunction loaderFunc)
+	OpenGL4RHI::OpenGL4RHI(GLLoaderFunction loaderFunc) :
+		m_framebufferManager(m_textureManager)
 	{
 		// Very important : this has to be done and working before any gl* call !
 		bool ok = gladLoadGLLoader((GLADloadproc)loaderFunc);

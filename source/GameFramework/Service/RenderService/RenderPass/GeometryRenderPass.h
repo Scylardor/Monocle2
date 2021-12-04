@@ -3,6 +3,8 @@
 #pragma once
 #include "RenderPass.h"
 #include "Core/Delegates/EventDelegateID.h"
+#include "Graphics/RHI/FramebufferManager/FramebufferManager.h"
+#include "Graphics/RHI/SwapchainManager/SwapchainManager.h"
 
 namespace moe
 {
@@ -15,16 +17,20 @@ namespace moe
 
 		~GeometryRenderPass() override;
 
+		void	Update() override;
 
 	private:
 
 		void	OnGraphicsSurfaceResized(int newWidth, int newHeight);
 
 
-		Renderer* m_ownerRenderer{ nullptr };
+		Renderer*				m_ownerRenderer{ nullptr };
 
-		moe::EventDelegateID	m_surfaceResizeDelID{};
+		EventDelegateID			m_surfaceResizeDelID{};
 
+		DeviceFramebufferHandle	m_framebuffer{};
+
+		DeviceSwapchainHandle	m_swapchain{};
 	};
 
 

@@ -4,6 +4,7 @@
 #include "Graphics/Texture/TextureFormat.h" // TODO: Core now depends on Graphics... good job ! Need to fix that
 
 #include "Core/Resource/ImageLoader.h"
+#include "Graphics/Texture/TextureUsage.h"
 
 namespace moe
 {
@@ -19,7 +20,9 @@ namespace moe
 		uint32_t						Width{ 0 };
 		uint32_t						Height{ 0 };
 		TextureFormat					Format{ TextureFormat::Any };
+		TextureUsage					Usage{ TextureUsage::Sampled };
 		uint32_t						Mipmaps{ MAX_MIPMAPS };
+		uint32_t						Samples{ 1 };
 	};
 
 
