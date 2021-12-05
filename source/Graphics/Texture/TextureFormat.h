@@ -57,6 +57,12 @@ namespace moe
 		}
 	}
 
+	inline bool	FormatHasStencilComponent(TextureFormat format)
+	{
+		return (format == TextureFormat::Depth24_Stencil8 || format == TextureFormat::Depth32F_Stencil8);
+	}
+
+
 	inline TextureFormat	GetRadianceHDRFormat()						{ return TextureFormat::RGBE; }
 	inline bool				IsRadianceHDRFormat(TextureFormat format)	{ return (format == TextureFormat::RGBE); }
 }

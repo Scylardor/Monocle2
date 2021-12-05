@@ -39,11 +39,11 @@ namespace moe
 	template <typename Ret, typename... Args>
 	class Delegate<Ret(Args...)>
 	{
-		using DelegateType = std::function<Ret(Args...)>;
 
-		DelegateType	m_func = nullptr;
 
 	public:
+
+		using DelegateType = std::function<Ret(Args...)>;
 
 		Delegate() = default;
 
@@ -57,6 +57,11 @@ namespace moe
 		{
 			m_func = Bind(obj, funcPtr, std::index_sequence_for<Args...>{});
 		}
+
+
+		Delegate(DelegateType&& dlgt) :
+			m_func(std::move(dlgt))
+		{}
 
 
 		// Free function version
@@ -79,6 +84,10 @@ namespace moe
 		}
 
 		[[nodiscard]] bool	IsSet() const { return m_func != nullptr; }
+
+	private:
+
+		DelegateType	m_func = nullptr;
 
 		/*
 			Using std::index_sequence, GetNextPlaceholder<Idx>() will get expanded into appropriate std::placeholders::_Idx.

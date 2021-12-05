@@ -39,6 +39,8 @@ set(Monocle_GameFramework_SOURCES
 ./Service/RenderService/Renderer/Renderer.h
 ./Service/RenderService/RenderPass/GeometryRenderPass.cpp
 ./Service/RenderService/RenderPass/GeometryRenderPass.h
+./Service/RenderService/RenderPass/PresentPass.cpp
+./Service/RenderService/RenderPass/PresentPass.h
 ./Service/RenderService/RenderPass/RenderPass.cpp
 ./Service/RenderService/RenderPass/RenderPass.h
 ./Service/RenderService/RenderPass/RenderPassType.h

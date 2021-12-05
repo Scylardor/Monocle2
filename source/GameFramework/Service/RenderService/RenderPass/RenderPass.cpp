@@ -3,7 +3,7 @@
 
 namespace moe
 {
-	IRenderPass::IRenderPass(RenderHardwareInterface& /*rhi*/)
+	IRenderPass::IRenderPass()
 	{
 
 	}

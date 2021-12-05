@@ -46,6 +46,10 @@ namespace moe
 
 		DeviceTextureHandle	CreateDepthStencilAttachment(DeviceFramebufferHandle fbHandle, TextureFormat format = TextureFormat::Depth24_Stencil8, TextureUsage usage = TextureUsage(DepthStencil | RenderTarget)) override;
 
+		void	BindFramebuffer(DeviceFramebufferHandle fbHandle, TargetBuffer readBuffer = TargetBuffer::Default, TargetBuffer writeBuffer = TargetBuffer::Default) override;
+
+		void	UnbindFramebuffer(DeviceFramebufferHandle fbHandle) override;
+
 	private:
 
 		OpenGL4FramebufferDescription&	MutFramebuffer(DeviceFramebufferHandle fbHandle)
@@ -53,6 +57,12 @@ namespace moe
 			// should be ok to cast to uint32 : it's supposed to be an object pool ID
 			return m_frameBuffers.Mut((uint32_t) fbHandle.Get());
 		}
+
+		void			BindAttachment(GLint framebufferID, unsigned int attachmentID, GLuint textureID, TextureUsage usage, int mipLevel = 0, bool layered = false, int layerIdx = 0);
+
+		void			BindDepthStencilAttachment(GLint framebufferID, DeviceTextureHandle attachmentHandle);
+
+		static GLint	GetMaxColorAttachments();
 
 
 		OpenGL4TextureManager&								m_texManager;

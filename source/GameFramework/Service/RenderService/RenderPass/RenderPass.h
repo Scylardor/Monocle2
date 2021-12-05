@@ -10,7 +10,7 @@ namespace moe
 	{
 	public:
 
-		IRenderPass(RenderHardwareInterface& rhi);
+		IRenderPass();
 
 		virtual ~IRenderPass() = default;
 

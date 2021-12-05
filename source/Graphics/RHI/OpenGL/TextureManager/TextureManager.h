@@ -31,10 +31,14 @@ namespace moe
 
 		~OpenGL4TextureManager() override = default;
 
-		DeviceTextureHandle Monocle_Graphics_API	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) override;
+		[[nodiscard]] DeviceTextureHandle Monocle_Graphics_API	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) override;
 
-		DeviceTextureHandle Monocle_Graphics_API	CreateTexture2D(TextureData const& data) override;
+		[[nodiscard]] DeviceTextureHandle Monocle_Graphics_API	CreateTexture2D(TextureData const& data) override;
 
+		[[nodiscard]] OpenGL4TextureData const&	GetTextureData(DeviceTextureHandle handle) const
+		{
+			return m_textures.Get((ObjectPoolID) handle.Get());
+		}
 
 	private:
 

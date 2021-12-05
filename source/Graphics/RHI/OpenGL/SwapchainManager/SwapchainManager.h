@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Containers/ObjectPool/ObjectPool.h"
+#include "Graphics/RHI/OpenGL/FramebufferManager/FramebufferManager.h"
 #include "Graphics/RHI/SwapchainManager/SwapchainManager.h"
 
 namespace moe
@@ -16,14 +17,12 @@ namespace moe
 	struct OpenGLSwapchain
 	{
 		OpenGLSwapchain() = default;
-		OpenGLSwapchain(IGraphicsSurface* surf, int w, int h) :
-			Surface(surf), Width(w), Height(h)
+		OpenGLSwapchain(IGraphicsSurface* surf, DeviceFramebufferHandle fbHandle) :
+			Surface(surf), Framebuffer(fbHandle)
 		{}
 
-		IGraphicsSurface*	Surface = nullptr;
-		int					Width{ 0 };
-		int					Height{ 0 };
-
+		IGraphicsSurface*		Surface = nullptr;
+		DeviceFramebufferHandle	Framebuffer;
 	};
 
 
@@ -34,7 +33,9 @@ namespace moe
 	{
 	public:
 
-		~OpenGL4SwapchainManager() override = default;
+		OpenGL4SwapchainManager(OpenGL4FramebufferManager& fbManager)  :
+			m_fbManager(fbManager)
+		{}
 
 		DeviceSwapchainHandle	CreateSwapchain(RenderHardwareInterface* RHI, IGraphicsSurface* boundSurface) override;
 
@@ -44,7 +45,11 @@ namespace moe
 
 		void	OnSurfaceResized(DeviceSwapchainHandle swapchainHandle, int width, int height);
 
+
+		OpenGL4FramebufferManager&			m_fbManager;
+
 		DynamicObjectPool<OpenGLSwapchain>	m_swapchains{};
+
 	};
 
 

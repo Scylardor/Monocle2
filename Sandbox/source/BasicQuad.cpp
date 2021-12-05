@@ -10,6 +10,7 @@
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/RenderService/RenderPass/GeometryRenderPass.h"
+#include "GameFramework/Service/RenderService/RenderPass/PresentPass.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
 #include "GameFramework/Service/WindowService/WindowService.h"
 #include "Graphics/Vertex/VertexFormats.h"
@@ -84,9 +85,8 @@ namespace moe
 		auto* winSvc = EditEngine()->EditService<WindowService>();
 		forwardRenderer.AttachSurface(*winSvc->MutWindow());
 
-
-		
 		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
+		forwardRenderer.EmplaceRenderPass<PresentRenderPass>();
 
 		return forwardRenderer;
 	}

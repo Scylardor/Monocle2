@@ -11,7 +11,6 @@
 namespace moe
 {
 	GeometryRenderPass::GeometryRenderPass(Renderer& owner) :
-		IRenderPass(*owner.MutRHI()),
 		m_ownerRenderer(&owner)
 	{
 		// We wanna resize our framebuffer everytime the graphics surface resizes itself.
@@ -27,8 +26,6 @@ namespace moe
 
 		framebufferManager.CreateFramebufferColorAttachment(fbHandle);
 		framebufferManager.CreateDepthStencilAttachment(fbHandle);
-
-		m_swapchain = RHI->SwapchainManager().CreateSwapchain(RHI, m_ownerRenderer->MutSurface());
 	}
 
 
@@ -41,7 +38,6 @@ namespace moe
 
 	void GeometryRenderPass::Update()
 	{
-		m_ownerRenderer->MutRHI()->SwapchainManager().Present(m_swapchain);
 	}
 
 

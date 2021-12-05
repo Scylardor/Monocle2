@@ -1,6 +1,6 @@
 /*
 	Implementation of a multicast-event system
-	Heavily inspired by https://nikitablack.github.io/2016/04/26/stdfunction-as-delegate.html
+	Heavily inspired by https://nikitablack.github.io/post/std_function_as_delegate/
 */
 
 #pragma once

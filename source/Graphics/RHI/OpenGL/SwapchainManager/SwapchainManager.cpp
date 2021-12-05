@@ -24,17 +24,18 @@ namespace moe
 			return DeviceSwapchainHandle::Null();
 		}
 
-		auto [width, height] = boundSurface->GetDimensions();
+		auto dimensions = boundSurface->GetDimensions();
 
-		auto scID = m_swapchains.Emplace(boundSurface, width, height);
+		DeviceFramebufferHandle fbHandle = m_fbManager.CreateFramebuffer(dimensions);
+		m_fbManager.CreateFramebufferColorAttachment(fbHandle, moe::TextureFormat::RGB32F, TextureUsage::RenderTarget);
+
+		auto scID = m_swapchains.Emplace(boundSurface, fbHandle);
 		auto swapChainHandle = DeviceSwapchainHandle(scID);
 
-		//using namespace std::placeholders;
-		//auto resizeDelegate = std::bind(this, &OpenGL4SwapchainManager::OnSurfaceResized, swapChainHandle, _1, _2);
-
-		//IGraphicsSurface::SurfaceResizedEvent::DelegateType
-		//boundSurface->OnSurfaceResizedEvent().AddDelegate((resizeDelegate);
-
+		using namespace std::placeholders;
+		boundSurface->OnSurfaceResizedEvent().AddDelegate(
+			{ std::bind(&OpenGL4SwapchainManager::OnSurfaceResized, this, swapChainHandle, _1, _2) }
+		);
 
 		return swapChainHandle;
 	}
