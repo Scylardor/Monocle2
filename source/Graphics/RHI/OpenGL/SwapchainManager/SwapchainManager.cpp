@@ -28,6 +28,7 @@ namespace moe
 
 		DeviceFramebufferHandle fbHandle = m_fbManager.CreateFramebuffer(dimensions);
 		m_fbManager.CreateFramebufferColorAttachment(fbHandle, moe::TextureFormat::RGB32F, TextureUsage::RenderTarget);
+		m_fbManager.CreateDepthStencilAttachment(fbHandle);
 
 		auto scID = m_swapchains.Emplace(boundSurface, fbHandle);
 		auto swapChainHandle = DeviceSwapchainHandle(scID);
@@ -38,6 +39,24 @@ namespace moe
 		);
 
 		return swapChainHandle;
+	}
+
+	DeviceTextureHandle OpenGL4SwapchainManager::GetMainSwapchainColorAttachment(uint32_t colorAttachmentIdx)
+	{
+		if (m_swapchains.Size() == 0)
+			return DeviceTextureHandle::Null();
+
+		return m_fbManager.GetFramebufferColorAttachment(m_swapchains.Get(0).Framebuffer, colorAttachmentIdx);
+	}
+
+
+	DeviceTextureHandle OpenGL4SwapchainManager::GetMainSwapchainDepthStencilAttachment()
+	{
+		if (m_swapchains.Size() == 0)
+			return DeviceTextureHandle::Null();
+
+		return m_fbManager.GetFramebufferDepthStencilAttachment(m_swapchains.Get(0).Framebuffer);
+
 	}
 
 

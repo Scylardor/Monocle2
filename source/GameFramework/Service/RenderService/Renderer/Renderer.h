@@ -66,6 +66,13 @@ namespace moe
 			return m_RHI;
 		}
 
+		RenderService*	MutRenderService()
+		{
+			return m_myService;
+		}
+
+
+
 	private:
 
 		RenderScene*		m_attachedScene = nullptr;

@@ -17,7 +17,8 @@ namespace moe
 		Geometry = 1 << 2,
 		TessellationControl = 1 << 3,
 		TessellationEvaluation = 1 << 4,
-		Compute = 1 << 5
+		Compute = 1 << 5,
+		All = 1 << 6
 	)
 
 	DECLARE_MOE_ENUM_OPERATORS(ShaderStage);

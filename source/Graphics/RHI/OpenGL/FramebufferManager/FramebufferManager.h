@@ -32,7 +32,7 @@ namespace moe
 	/*
 	 * An abstract class for render targets (sometimes AKA renderbuffers) and framebuffer management.
 	 */
-	class OpenGL4FramebufferManager : public IFramebufferManager
+	class OpenGL4FramebufferManager final : public IFramebufferManager
 	{
 	public:
 
@@ -40,7 +40,7 @@ namespace moe
 			m_texManager(textureManager)
 		{}
 
-		DeviceFramebufferHandle	CreateFramebuffer(std::pair<int, int> const& dimensions, uint32_t numSamples = 1) override;
+		[[nodiscard]] DeviceFramebufferHandle	CreateFramebuffer(std::pair<int, int> const& dimensions, uint32_t numSamples = 1) override;
 
 		DeviceTextureHandle	CreateFramebufferColorAttachment(DeviceFramebufferHandle fbHandle, TextureFormat format = TextureFormat::RGB32F, TextureUsage usage = TextureUsage(Sampled | RenderTarget)) override;
 
@@ -50,9 +50,22 @@ namespace moe
 
 		void	UnbindFramebuffer(DeviceFramebufferHandle fbHandle) override;
 
-	private:
+		void	AddColorAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) override;
+		void	SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) override;
 
-		OpenGL4FramebufferDescription&	MutFramebuffer(DeviceFramebufferHandle fbHandle)
+
+		[[nodiscard]] DeviceTextureHandle	GetFramebufferColorAttachment(DeviceFramebufferHandle fbHandle, uint32_t colorAttachmentIdx = 0);
+		[[nodiscard]] DeviceTextureHandle	GetFramebufferDepthStencilAttachment(DeviceFramebufferHandle fbHandle);
+
+	private:
+		[[nodiscard]] OpenGL4FramebufferDescription const&	GetFramebuffer(DeviceFramebufferHandle fbHandle)
+		{
+			// should be ok to cast to uint32 : it's supposed to be an object pool ID
+			return m_frameBuffers.Get((uint32_t)fbHandle.Get());
+		}
+
+
+		[[nodiscard]] OpenGL4FramebufferDescription&	MutFramebuffer(DeviceFramebufferHandle fbHandle)
 		{
 			// should be ok to cast to uint32 : it's supposed to be an object pool ID
 			return m_frameBuffers.Mut((uint32_t) fbHandle.Get());
@@ -62,7 +75,7 @@ namespace moe
 
 		void			BindDepthStencilAttachment(GLint framebufferID, DeviceTextureHandle attachmentHandle);
 
-		static GLint	GetMaxColorAttachments();
+		[[nodiscard]] static GLint	GetMaxColorAttachments();
 
 
 		OpenGL4TextureManager&								m_texManager;

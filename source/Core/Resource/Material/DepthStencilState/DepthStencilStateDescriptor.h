@@ -40,6 +40,13 @@ namespace moe
 	struct DepthStencilStateDescriptor
 	{
 
+		void	SetDepthTestEnabled(DepthTest dpEnabled = DepthTest::Enabled, DepthWriting dwEnabled = DepthWriting::Enabled)
+		{
+			m_depthTest = dpEnabled;
+			m_depthWriting = dwEnabled;
+		}
+
+
 		DepthTest		m_depthTest{ DepthTest::Enabled };
 
 		DepthWriting	m_depthWriting{ DepthWriting::Enabled };
@@ -58,21 +65,21 @@ namespace moe
 		/**
 		 * \brief The mask used to bitwise-AND the reference value and the stored stencil value before the stencil test compares them.
 		 */
-		std::uint8_t	m_stencilReadMask{ 0xFF };
+		std::uint32_t	m_stencilReadMask{ 0xFF };
 
 
 		/**
 		 * \brief The mask used to bitwise-AND a stencil value about to be written to the buffer.
 		 * Usually set to all 1s, unaffecting the output, but setting it to 0x00 equates disabling stencil writing.
 		 */
-		std::uint8_t	m_stencilWriteMask{ 0xFF };
+		std::uint32_t	m_stencilWriteMask{ 0xFF };
 
 
 		/**
 		 * \brief The integer reference value that is used in the stencil comparison. It is clamped to the range [0,2^n - 1], where n is the number of bitplanes in the stencil buffer.
 		 * Usually set to 0
 		 */
-		std::uint32_t	m_stencilRefVal{ 0 };
+		int	m_stencilRefVal{ 0 };
 
 
 		/**

@@ -8,6 +8,8 @@
 #include "Core/Resource/TextureResource.h"
 #include "BlendState/BlendStateDescriptor.h"
 #include "DepthStencilState/DepthStencilStateDescriptor.h"
+#include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
+#include "Graphics/RHI/TextureManager/TextureManager.h"
 #include "RasterizerState/RasterizerStateDescriptor.h"
 #include "Shader/Program/ShaderProgramDescription.h"
 #include "Topology/PrimitiveTopology.h"
@@ -29,6 +31,117 @@ namespace moe
 		PrimitiveTopology			Topology{ PrimitiveTopology::TriangleList };
 	};
 
+
+	struct ResourceBinding
+	{
+		ResourceBinding(int nbr, BindingType type, ShaderStage stage) :
+			Number((uint16_t)nbr), Type(type), Stage(stage)
+		{}
+
+		uint16_t	Number = 0;
+		BindingType	Type = BindingType::None;
+		ShaderStage	Stage = ShaderStage::All;
+	};
+	using ResourceBindingList = Vector<ResourceBinding>;
+
+
+	struct ResourceSetLayout
+	{
+		ResourceSetLayout(int nbr, ResourceBindingList bindings) :
+			Number((uint16_t)nbr), Bindings(std::move(bindings))
+		{}
+
+		uint16_t			Number = 0;
+		ResourceBindingList	Bindings;
+	};
+
+	struct ResourceSetLayoutsDescription
+	{
+		ResourceSetLayout&	AddResourceLayout(uint16_t setNumber, Vector<ResourceBinding> bindings)
+		{
+			Layouts.EmplaceBack(setNumber, std::move(bindings));
+			return Layouts.Back();
+		}
+
+		Vector<ResourceSetLayout>	Layouts{};
+	};
+
+
+	struct ResourceSetBinding
+	{
+		ResourceSetBinding(int binding, int set = 0) :
+			BindingNumber((uint16_t)binding), SetNumber((uint16_t)set)
+		{}
+
+		bool operator==(const ResourceSetBinding& other) const
+		{
+			if (&other == this)
+				return true;
+			return (BindingNumber == other.BindingNumber && SetNumber == other.SetNumber);
+		}
+
+		uint16_t	BindingNumber{ 0 };
+		uint16_t	SetNumber{ 0 };
+	};
+
+	struct BufferBinding : ResourceSetBinding
+	{
+		inline static const uint64_t WHOLE_RANGE = (uint64_t)-1;
+
+		BufferBinding(DeviceBufferHandle buffer, int binding, int set, uint64_t off = 0, uint64_t range = WHOLE_RANGE) :
+			ResourceSetBinding(binding, set),
+			BufferHandle(buffer),
+			Offset(off),
+			Range(range)
+		{}
+
+		bool operator==(const BufferBinding& other) const
+		{
+			if (&other == this)
+				return true;
+			return ResourceSetBinding::operator==(other) &&
+				(BufferHandle == other.BufferHandle && Offset == other.Offset && Range == other.Range);
+		}
+
+		DeviceBufferHandle	BufferHandle{};
+		uint64_t			Offset{0};
+		uint64_t			Range{ WHOLE_RANGE };
+	};
+
+	struct TextureBinding : ResourceSetBinding
+	{
+		TextureBinding(DeviceTextureHandle texture, int binding, int set) :
+			ResourceSetBinding(binding, set),
+			TextureHandle(texture)
+		{}
+
+		bool operator==(const TextureBinding& other) const
+		{
+			if (&other == this)
+				return true;
+			return ResourceSetBinding::operator==(other) &&
+				(TextureHandle == other.TextureHandle);
+		}
+
+		DeviceTextureHandle	TextureHandle{};
+		/* TODO : DeviceSamplerHandle SamplerHandle{}; */
+	};
+
+	struct ResourceSetsDescription
+	{
+		using BindingVariant = std::variant< BufferBinding, TextureBinding >;
+
+		Vector<BindingVariant>	Bindings;
+
+		template <typename T, typename... Args>
+		T&	EmplaceBinding(Args&&... args)
+		{
+			Bindings.EmplaceBack(std::in_place_type<T>, std::forward<Args>(args)...);
+			return std::get<T>(Bindings.Back());
+		}
+	};
+
+
 	struct MaterialPassDescription
 	{
 		MaterialPassDescription&	AssignShaderProgramDescription(ShaderProgramDescription programDesc)
@@ -37,8 +150,10 @@ namespace moe
 			return *this;
 		}
 
-		PipelineDescription			Pipeline;
-		ShaderProgramDescription	ShaderProgram;
+		PipelineDescription				Pipeline;
+		ShaderProgramDescription		ShaderProgram;
+		ResourceSetLayoutsDescription	ResourceSetLayouts;
+		ResourceSetsDescription			ResourceBindings;
 	};
 
 	struct MaterialDescription

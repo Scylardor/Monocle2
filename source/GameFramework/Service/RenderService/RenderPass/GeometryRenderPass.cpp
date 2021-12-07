@@ -13,19 +13,19 @@ namespace moe
 	GeometryRenderPass::GeometryRenderPass(Renderer& owner) :
 		m_ownerRenderer(&owner)
 	{
-		// We wanna resize our framebuffer everytime the graphics surface resizes itself.
-		auto * gfxSurface = m_ownerRenderer->MutSurface();
-		MOE_DEBUG_ASSERT(gfxSurface != nullptr);
-		m_surfaceResizeDelID = gfxSurface->OnSurfaceResizedEvent().Add<GeometryRenderPass, &GeometryRenderPass::OnGraphicsSurfaceResized>(this);
-
 		auto* RHI = m_ownerRenderer->MutRHI();
-		auto& framebufferManager = RHI->FramebufferManager();
 
+		DeviceTextureHandle scColorAttach = RHI->SwapchainManager().GetMainSwapchainColorAttachment();
+		DeviceTextureHandle scDepthAttach = RHI->SwapchainManager().GetMainSwapchainDepthStencilAttachment();
+
+		auto* gfxSurface = m_ownerRenderer->MutSurface();
+		MOE_DEBUG_ASSERT(gfxSurface != nullptr);
 		auto dimensions = gfxSurface->GetDimensions();
+		auto& framebufferManager = RHI->FramebufferManager();
 		DeviceFramebufferHandle fbHandle = framebufferManager.CreateFramebuffer(dimensions);
 
-		framebufferManager.CreateFramebufferColorAttachment(fbHandle);
-		framebufferManager.CreateDepthStencilAttachment(fbHandle);
+		framebufferManager.AddColorAttachment(fbHandle, scColorAttach);
+		framebufferManager.SetDepthStencilAttachment(fbHandle, scDepthAttach);
 	}
 
 

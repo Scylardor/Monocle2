@@ -10,6 +10,12 @@ namespace moe
 		glm::vec3 Color{ 1.f };
 	};
 
+	struct Vertex2D_PosUV
+	{
+		glm::vec2 Position{ 0.f };
+		glm::vec2 Texture_UV0{ 0.f };
+	};
+
 	struct Vertex_PosColorUV
 	{
 		glm::vec3 Position{0.f};

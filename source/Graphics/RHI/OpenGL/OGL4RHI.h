@@ -5,6 +5,7 @@
 #include "Graphics/RHI/RenderHardwareInterface.h"
 #include "BufferManager/BufferManager.h"
 #include "FramebufferManager/FramebufferManager.h"
+#include "MaterialManager/MaterialManager.h"
 #include "PipelineManager/PipelineManager.h"
 #include "SwapchainManager/SwapchainManager.h"
 #include "TextureManager/TextureManager.h"
@@ -47,6 +48,11 @@ namespace moe
 			return m_swapchainManager;
 		}
 
+		IMaterialManager& MaterialManager() override
+		{
+			return m_materialManager;
+		}
+
 	private:
 
 		static	void			OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam);
@@ -56,6 +62,7 @@ namespace moe
 		OpenGL4TextureManager		m_textureManager;
 		OpenGL4FramebufferManager	m_framebufferManager;
 		OpenGL4SwapchainManager		m_swapchainManager;
+		OpenGL4MaterialManager		m_materialManager;
 	};
 
 }

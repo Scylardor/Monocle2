@@ -32,6 +32,17 @@ namespace moe
 			return m_fileContents.empty();
 		}
 
+		[[nodiscard]] FileMode	GetFileMode() const
+		{
+			return m_mode;
+		}
+
+
+		[[nodiscard]] bool	IsBinaryFile() const
+		{
+			return m_mode == FileMode::Binary;
+		}
+
 
 	private:
 

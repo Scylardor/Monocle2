@@ -60,6 +60,5 @@ namespace moe
 		}
 
 		Vector<ShaderModuleDescription>		Modules;
-		Vector<ResourceLayoutDescription>	ResourceSetLayouts;
 	};
 }

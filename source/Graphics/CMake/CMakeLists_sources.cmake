@@ -142,6 +142,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/framebuffer.vert
 ./Resources/shaders/OpenGL/fullscreen_quad.frag
 ./Resources/shaders/OpenGL/fullscreen_quad.vert
+./Resources/shaders/OpenGL/fullscreen_quad2.frag
+./Resources/shaders/OpenGL/fullscreen_quad2.vert
 ./Resources/shaders/OpenGL/gamma_correction.frag
 ./Resources/shaders/OpenGL/gamma_correction.vert
 ./Resources/shaders/OpenGL/geometry_shader.frag
@@ -194,10 +196,13 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/Vulkan/triangle.vert
 ./RHI/BufferManager/BufferManager.h
 ./RHI/FramebufferManager/FramebufferManager.h
+./RHI/MaterialManager/MaterialManager.h
 ./RHI/OpenGL/BufferManager/BufferManager.cpp
 ./RHI/OpenGL/BufferManager/BufferManager.h
 ./RHI/OpenGL/FramebufferManager/FramebufferManager.cpp
 ./RHI/OpenGL/FramebufferManager/FramebufferManager.h
+./RHI/OpenGL/MaterialManager/MaterialManager.cpp
+./RHI/OpenGL/MaterialManager/MaterialManager.h
 ./RHI/OpenGL/OGL4RHI.cpp
 ./RHI/OpenGL/OGL4RHI.h
 ./RHI/OpenGL/PipelineManager/PipelineManager.cpp

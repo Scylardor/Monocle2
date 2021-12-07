@@ -85,8 +85,8 @@ namespace moe
 		auto* winSvc = EditEngine()->EditService<WindowService>();
 		forwardRenderer.AttachSurface(*winSvc->MutWindow());
 
-		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
 		forwardRenderer.EmplaceRenderPass<PresentRenderPass>();
+		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
 
 		return forwardRenderer;
 	}

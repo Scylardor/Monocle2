@@ -75,6 +75,9 @@ namespace moe
 
 		virtual DeviceTextureHandle	CreateDepthStencilAttachment(DeviceFramebufferHandle fbHandle, TextureFormat format = TextureFormat::Depth24_Stencil8, TextureUsage usage = TextureUsage(DepthStencil | RenderTarget)) = 0;
 
+		virtual void	AddColorAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) = 0;
+		virtual void	SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) = 0;
+
 		virtual void	BindFramebuffer(DeviceFramebufferHandle fbHandle, TargetBuffer readBuffer = TargetBuffer::Default, TargetBuffer writeBuffer = TargetBuffer::Default) = 0;
 
 		virtual void	UnbindFramebuffer(DeviceFramebufferHandle fbHandle) = 0;

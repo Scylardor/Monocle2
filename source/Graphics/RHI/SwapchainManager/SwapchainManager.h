@@ -36,6 +36,11 @@ namespace moe
 
 		virtual DeviceSwapchainHandle	CreateSwapchain(RenderHardwareInterface* RHI, IGraphicsSurface* boundSurface) = 0;
 
+		virtual DeviceTextureHandle		GetMainSwapchainColorAttachment(uint32_t colorAttachmentIdx = 0) = 0;
+		virtual DeviceTextureHandle		GetMainSwapchainDepthStencilAttachment() = 0;
+
+
+
 		virtual	bool					Present(DeviceSwapchainHandle presentedSwapchain) = 0;
 	};
 

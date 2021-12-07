@@ -21,8 +21,8 @@ namespace moe
 
 #		if MOE_DEBUG
 		static GLint maxColorAttachments = GetMaxColorAttachments();
-		bool const isFramebufferFull = fb.ColorAttachments.Size() < (unsigned)maxColorAttachments;
-		MOE_DEBUG_ASSERT(isFramebufferFull);
+		bool const isFramebufferFull = fb.ColorAttachments.Size() >= (unsigned)maxColorAttachments;
+		MOE_DEBUG_ASSERT(!isFramebufferFull);
 		if (isFramebufferFull)
 			return DeviceTextureHandle::Null();
 #		endif
@@ -87,6 +87,36 @@ namespace moe
 	void OpenGL4FramebufferManager::UnbindFramebuffer(DeviceFramebufferHandle /*fbHandle*/)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+
+	void OpenGL4FramebufferManager::AddColorAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle)
+	{
+		auto& fb = MutFramebuffer(fbHandle);
+		fb.ColorAttachments.PushBack(texHandle);
+	}
+
+
+	void OpenGL4FramebufferManager::SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle,
+		DeviceTextureHandle texHandle)
+	{
+		auto& fb = MutFramebuffer(fbHandle);
+		fb.DepthStencilAttachment = texHandle;
+	}
+
+	DeviceTextureHandle OpenGL4FramebufferManager::GetFramebufferColorAttachment(DeviceFramebufferHandle fbHandle, uint32_t colorAttachmentIdx)
+	{
+		auto const& fb = GetFramebuffer(fbHandle);
+		if (!MOE_ASSERT(fb.ColorAttachments.Size() > colorAttachmentIdx))
+			return DeviceTextureHandle::Null();
+
+		return fb.ColorAttachments[colorAttachmentIdx];
+	}
+
+	DeviceTextureHandle OpenGL4FramebufferManager::GetFramebufferDepthStencilAttachment(DeviceFramebufferHandle fbHandle)
+	{
+		auto const& fb = GetFramebuffer(fbHandle);
+		return fb.DepthStencilAttachment;
 	}
 
 
