@@ -10,7 +10,7 @@ namespace moe
 	{
 		RenderHardwareInterface* rhi = m_sceneRenderer->MutRHI();
 
-		RenderMeshHandle meshHandle = rhi->BufferManager().FindOrCreateMeshBuffer(model);
+		DeviceMeshHandle meshHandle = rhi->BufferManager().FindOrCreateMeshBuffer(model);
 
 		DeviceMaterialHandle matHandle;
 		if (material.IsValid())
@@ -22,7 +22,7 @@ namespace moe
 	}
 
 
-	RenderObjectHandle RenderScene::AddObject(RenderMeshHandle meshHandle, DeviceMaterialHandle materialHandle, Mat4 const& transform)
+	RenderObjectHandle RenderScene::AddObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle materialHandle, Mat4 const& transform)
 	{
 		auto newObjID = m_objects.Emplace(meshHandle, materialHandle, transform);
 

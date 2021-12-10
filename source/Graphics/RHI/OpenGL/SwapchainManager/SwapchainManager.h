@@ -14,10 +14,10 @@ namespace moe
 	 * So we have to emulate it, kind of...
 	 * It will store everythin related to graphics surfaces render targets and their presentation.
 	 */
-	struct OpenGLSwapchain
+	struct OpenGL4Swapchain
 	{
-		OpenGLSwapchain() = default;
-		OpenGLSwapchain(IGraphicsSurface* surf, DeviceFramebufferHandle fbHandle) :
+		OpenGL4Swapchain() = default;
+		OpenGL4Swapchain(IGraphicsSurface* surf, DeviceFramebufferHandle fbHandle) :
 			Surface(surf), Framebuffer(fbHandle)
 		{}
 
@@ -52,7 +52,7 @@ namespace moe
 
 		OpenGL4FramebufferManager&			m_fbManager;
 
-		DynamicObjectPool<OpenGLSwapchain>	m_swapchains{};
+		DynamicObjectPool<OpenGL4Swapchain>	m_swapchains{};
 
 	};
 

@@ -12,7 +12,7 @@ namespace moe
 	public:
 
 		virtual RegistryID	CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, MeshIndexType indexType) = 0;
+			size_t numIndices, const void* indexData, MeshElementType indexType) = 0;
 
 
 		[[nodiscard]] virtual VulkanMesh&		MutateResource(RegistryID id) = 0;
@@ -34,10 +34,10 @@ namespace moe
 
 
 		RegistryID	CreateMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, MeshIndexType indexType) override;
+			size_t numIndices, const void* indexData, MeshElementType indexType) override;
 
 		std::unique_ptr<MeshResource>	NewMesh(size_t vertexSize, size_t numVertices, const void* vertexData,
-			size_t numIndices, const void* indexData, MeshIndexType indexType);
+			size_t numIndices, const void* indexData, MeshElementType indexType);
 
 		[[nodiscard]] VulkanMesh& MutateResource(RegistryID id) override
 		{

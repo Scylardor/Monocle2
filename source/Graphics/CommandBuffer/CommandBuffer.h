@@ -50,11 +50,11 @@ namespace moe
 
 	struct CmdDrawMesh
 	{
-		CmdDrawMesh(RenderMeshHandle meshHandle) :
+		CmdDrawMesh(DeviceMeshHandle meshHandle) :
 			Handle(meshHandle)
 		{}
 
-		RenderMeshHandle	Handle;
+		DeviceMeshHandle		Handle;
 	};
 
 	using CommandBufferVariant = std::variant<

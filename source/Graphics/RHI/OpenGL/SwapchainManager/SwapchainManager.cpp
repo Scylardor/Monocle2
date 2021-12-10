@@ -74,7 +74,7 @@ namespace moe
 	bool OpenGL4SwapchainManager::Present(DeviceSwapchainHandle presentedSwapchain)
 	{
 		// OpenGL has no swapchain per se, and is 100% relying on the actual graphics surface to swap buffers.
-		OpenGLSwapchain& swapchain = m_swapchains.Mut(presentedSwapchain.Get());
+		OpenGL4Swapchain& swapchain = m_swapchains.Mut(presentedSwapchain.Get());
 
 		swapchain.Surface->SwapBuffers();
 

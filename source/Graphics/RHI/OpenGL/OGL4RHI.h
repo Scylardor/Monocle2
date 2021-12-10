@@ -36,7 +36,17 @@ namespace moe
 			return m_bufferManager;
 		}
 
+		OpenGL4BufferManager&	GLBufferManager()
+		{
+			return m_bufferManager;
+		}
+
 		ITextureManager&	TextureManager() override
+		{
+			return m_textureManager;
+		}
+
+		OpenGL4TextureManager&	GLTextureManager()
 		{
 			return m_textureManager;
 		}
@@ -56,7 +66,9 @@ namespace moe
 			return m_materialManager;
 		}
 
-		void BeginRenderPass(CmdBeginRenderPass const& cbrp);
+		void	BeginRenderPass(CmdBeginRenderPass const& cbrp);
+		void	EndRenderPass();
+
 
 	private:
 

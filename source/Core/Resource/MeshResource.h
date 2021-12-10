@@ -11,10 +11,11 @@ namespace moe
 {
 
 	// Needed for Core not to depend on graphics, Matches the Vulkan values for now (TODO: Clean up this)
-	enum class MeshIndexType : uint8_t
+	enum class MeshElementType : uint32_t
 	{
 		eUint16 = 0,
-		eUint32
+		eUint32,
+		eVertices
 	};
 
 	struct MeshData
@@ -34,8 +35,10 @@ namespace moe
 		MeshData(void const* vtxData, size_t vtxSize, size_t numVerts, void const* idxData, size_t idxSize, size_t numIndices) :
 			Vertices(ToBytes(vtxData), ToBytes(vtxData) + (vtxSize * numVerts)),
 			Indices(ToBytes(idxData), ToBytes(idxData) + (idxSize * numIndices)),
-			MeshIndexType((idxSize == sizeof(uint32_t) ? MeshIndexType::eUint32 : MeshIndexType::eUint16))
+			ElementInformation(Indices.Empty() ? (MeshElementType)(numVerts) :
+				(idxSize == sizeof(uint32_t) ? MeshElementType::eUint32 : MeshElementType::eUint16))
 		{
+			MOE_ASSERT(numVerts < moe::MaxValue<uint32_t>() && numIndices < moe::MaxValue<uint32_t>());
 			MOE_ASSERT(idxSize == sizeof(uint32_t) || idxSize == sizeof(uint16_t));
 		}
 
@@ -54,7 +57,7 @@ namespace moe
 
 		RawData			Vertices{};
 		RawData			Indices{};
-		MeshIndexType	MeshIndexType{ MeshIndexType::eUint32 };
+		MeshElementType	ElementInformation{ MeshElementType::eUint32 };
 	};
 
 

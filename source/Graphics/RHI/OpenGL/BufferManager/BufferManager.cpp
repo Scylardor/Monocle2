@@ -1,29 +1,31 @@
 #include "BufferManager.h"
 
 #include "Graphics/Device/OpenGL/OpenGLGraphicsDevice.h"
+#include "../MaterialManager/MaterialManager.h"
 
 namespace moe
 {
-	OpenGL4BufferManager::~OpenGL4BufferManager()
+	OpenGL4BufferManager::~OpenGL4BufferManager() noexcept
 	{
-		for (auto & [id, handle] : m_meshIDToHandle)
+		for (auto & [id, handle] : m_meshRscIDToHandle)
 		{
-			OpenGL4BufferManager::DestroyDeviceBuffer(handle.VertexBuffer);
+			OpenGL4MeshData const& meshData = m_meshesData.Get(handle.Get());
+			OpenGL4BufferManager::DestroyDeviceBuffer(meshData.VertexBuffer);
 		}
 	}
 
 
-	RenderMeshHandle OpenGL4BufferManager::FindOrCreateMeshBuffer(Ref<MeshResource> const& meshRsc)
+	DeviceMeshHandle OpenGL4BufferManager::FindOrCreateMeshBuffer(Ref<MeshResource> const& meshRsc)
 	{
 		// First, check if we don't already have that mesh somewhere
-		auto [meshIt, inserted] = m_meshIDToHandle.TryEmplace(meshRsc.ID());
+		auto [meshIt, inserted] = m_meshRscIDToHandle.TryEmplace(meshRsc.ID());
 		if (inserted == false)
 		{
 			return meshIt->second; // already exists
 		}
 
 		// Not found : we have to create one
-		RenderMeshHandle meshHandle = CreateMesh(meshRsc->Data);
+		DeviceMeshHandle meshHandle = CreateMesh(meshRsc->Data);
 
 		// Dont forget to update the lookup table
 		meshIt->second = meshHandle;
@@ -32,11 +34,11 @@ namespace moe
 	}
 
 
-	RenderMeshHandle OpenGL4BufferManager::FindOrCreateMeshBuffer(MeshData const& meshData)
+	DeviceMeshHandle OpenGL4BufferManager::FindOrCreateMeshBuffer(MeshData const& meshData)
 	{
 		// This is a "free mesh" version of the function that doesn't ask the lookup table if we know this mesh.
 		// Careful because it may cause duplicates if used heavily. To avoid duplicates, we should use the Resource system.
-		RenderMeshHandle meshHandle = CreateMesh(meshData);
+		DeviceMeshHandle meshHandle = CreateMesh(meshData);
 		return meshHandle;
 
 	}
@@ -50,7 +52,32 @@ namespace moe
 	}
 
 
-	RenderMeshHandle OpenGL4BufferManager::CreateMesh(MeshData const& meshData)
+	void OpenGL4BufferManager::DrawMesh(OpenGL4MaterialManager const& materialManager, DeviceMeshHandle handle, DeviceMaterialHandle meshMaterial)
+	{
+		OpenGL4VertexLayout const& vtxLayout = materialManager.GetMaterialVertexLayout(meshMaterial);
+
+		OpenGL4MeshData const& meshData = m_meshesData.Get(handle.Get());
+
+		MOE_DEBUG_ASSERT(vtxLayout.Desc.BindingsLayout == LayoutType::Interleaved); // TODO: We should get rid of packed type soon
+		auto [VBO, VBOoffset] = OpenGLGraphicsDevice::DecodeBufferHandle(meshData.VertexBuffer);
+		glVertexArrayVertexBuffer(vtxLayout.VAO, 0, VBO,(GLintptr) VBOoffset, vtxLayout.TotalStride);
+
+		if (meshData.IndexBuffer.IsNotNull())
+		{
+			auto [EBO, EBOoffset] = OpenGLGraphicsDevice::DecodeBufferHandle(meshData.IndexBuffer);
+
+			glVertexArrayElementBuffer(vtxLayout.VAO, EBO);
+
+			glDrawElements(vtxLayout.Topology, meshData.NumElements, meshData.ElementType, (const void*)((uint64_t)EBOoffset));
+		}
+		else
+		{
+			glDrawArrays(vtxLayout.Topology, 0, meshData.NumElements);
+		}
+	}
+
+
+	DeviceMeshHandle OpenGL4BufferManager::CreateMesh(MeshData const& meshData)
 	{
 		// Allocate both vertex and index buffers in the same storage space,
 		// Then separate them in two different handles.
@@ -72,10 +99,10 @@ namespace moe
 		MOE_ASSERT(meshData.Vertices.Size() < moe::MaxValue<uint32_t>());
 
 		// Now forge handles
-		RenderMeshHandle meshHandle;
-		meshHandle.VertexBuffer = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, 0);
-		meshHandle.IndexBuffer = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, (uint32_t)meshData.Vertices.Size());
+		DeviceBufferHandle vbo = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, 0);
+		DeviceBufferHandle ebo = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, (uint32_t)meshData.Vertices.Size());
 
+		DeviceMeshHandle meshHandle(m_meshesData.Emplace(meshData, vbo, ebo));
 		return meshHandle;
 	}
 }

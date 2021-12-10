@@ -3,21 +3,19 @@
 
 namespace moe
 {
-	struct PipelineHandle : RenderableObjectHandle<uint64_t>
-	{
-
-	};
-
-	struct DeviceMaterialDescription
-	{
-		PipelineHandle			Pipeline;
-		ResourceSetsDescription	ResourceSets;
-	};
-
 
 	struct DeviceMaterialHandle : RenderableObjectHandle<std::uint64_t>
 	{
-		static DeviceMaterialHandle	Null() { return DeviceMaterialHandle{ 0 }; }
+	private:
+		static const Underlying ms_INVALID_ID = (Underlying)-1;
+
+	public:
+
+		DeviceMaterialHandle(Underlying handleID = ms_INVALID_ID) :
+			RenderableObjectHandle(handleID)
+		{}
+
+		static DeviceMaterialHandle	Null() { return DeviceMaterialHandle(); }
 
 		[[nodiscard]] std::pair<uint32_t, uint32_t>	DecomposeMaterialAndShaderIndices() const
 		{

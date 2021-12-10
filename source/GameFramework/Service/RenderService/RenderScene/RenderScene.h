@@ -23,7 +23,7 @@ namespace moe
 
 		RenderObjectHandle	AddObject( Ref<MeshResource> model, Ref<MaterialResource> material, Mat4 const& transform = Mat4::Identity());
 
-		RenderObjectHandle	AddObject(RenderMeshHandle meshHandle, DeviceMaterialHandle materialHandle, Mat4 const& transform = Mat4::Identity());
+		RenderObjectHandle	AddObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle materialHandle, Mat4 const& transform = Mat4::Identity());
 
 		RenderObject const&	GetRenderObject(RenderObject::ID objID) const
 		{

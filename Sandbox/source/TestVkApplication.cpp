@@ -229,7 +229,7 @@ namespace moe
 			[&]()
 			{
 				return m_renderer.GraphicsDevice().MeshFactory.NewMesh(sizeof(moe::Vertex_PosColorUV), vertices.size(), vertices.data(),
-					indices.size(), indices.data(), MeshIndexType::eUint16);
+					indices.size(), indices.data(), MeshElementType::eUint16);
 			});
 
 		m_scene.Emplace(m_planes.ID(), 0);

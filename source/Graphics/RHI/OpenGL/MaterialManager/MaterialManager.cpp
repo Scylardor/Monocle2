@@ -7,7 +7,7 @@
 #include "Graphics/BlendState/OpenGL/OpenGLBlendFactor.h"
 #include "Graphics/Pipeline/OpenGL/OpenGLPipeline.h"
 #include "Graphics/Shader/ShaderStage/OpenGL/OpenGLShaderStage.h"
-
+#include "../OGL4RHI.h"
 
 
 static const unsigned ms_INFOLOG_BUF_SIZE = 512;
@@ -77,7 +77,7 @@ namespace moe
 		// Now translate the pipeline configuration to an OpenGL one, and find if one already exists (or add it)
 		uint32_t psoIdx = FindOrBuildPipelineStateObject(firstPass.Pipeline);
 
-		uint32_t vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout);
+		uint32_t vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout, firstPass.Pipeline.Topology);
 
 		// Now build and return the material object.
 		auto matIt = std::find_if(m_materials.begin(), m_materials.end(),
@@ -104,6 +104,31 @@ namespace moe
 		matID = matIdx;
 		matID = (matID << 32) | programIdx;
 		return DeviceMaterialHandle{ matID };
+	}
+
+
+	void OpenGL4MaterialManager::BindMaterial(OpenGL4RHI* rhi, DeviceMaterialHandle matHandle)
+	{
+		MOE_DEBUG_ASSERT(matHandle.IsNotNull());
+		if (matHandle.IsNull())
+			return;
+
+		MOE_ASSERT(matHandle.Get() < m_materials.Size());
+		OpenGL4Material& material = m_materials[matHandle.Get()];
+
+		MOE_ASSERT(material.PSOIdx < m_pipelineStateObjects.Size());
+		OpenGL4PipelineStateObject& pso = m_pipelineStateObjects[material.PSOIdx];
+		BindPipelineStateObject(pso);
+
+		MOE_ASSERT(material.ProgramIdx < m_shaderPrograms.Size());
+		GLuint program = m_shaderPrograms[material.ProgramIdx].Program;
+		glUseProgram(program);
+
+		MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
+		GLuint vao = m_VAOs[material.VAOIdx].VAO;
+		glBindVertexArray(vao);
+
+		BindResourceSets(rhi, program, material.ResourceSets);
 	}
 
 
@@ -370,7 +395,7 @@ namespace moe
 		}
 	}
 
-	GLuint OpenGL4MaterialManager::FindOrCreateVAO(VertexLayoutDescription const& layoutDesc)
+	GLuint OpenGL4MaterialManager::FindOrCreateVAO(VertexLayoutDescription const& layoutDesc, PrimitiveTopology topo)
 	{
 		// First and foremost, check that we do not have an existing vertex layout that could fit this description...
 		auto vtxLayoutIt = std::find_if(m_VAOs.begin(), m_VAOs.end(), [&layoutDesc](const OpenGL4VertexLayout& glLayout)
@@ -385,16 +410,17 @@ namespace moe
 		}
 
 		GLuint vaoID = 0;
+		GLsizei vaoStride = 0;
 
 		switch (layoutDesc.BindingsLayout)
 		{
 		case LayoutType::Interleaved:
 		{
-			vaoID = BuildInterleavedVAO(layoutDesc);
+			std::tie(vaoID, vaoStride) = BuildInterleavedVAO(layoutDesc);
 		}
 		break;
 
-		case LayoutType::Packed:
+		case LayoutType::Packed: // TODO: should be sunsetted soon. Packed vertex layout should be avoided.
 		{
 			vaoID = BuildPackedVAO(layoutDesc);
 		}
@@ -408,21 +434,21 @@ namespace moe
 		if (vaoID != 0)
 		{
 			// The VAO was successfully initialized : we store our vertex layout
-			m_VAOs.EmplaceBack(vaoID, layoutDesc);
+			m_VAOs.EmplaceBack(vaoID, vaoStride, topo, layoutDesc);
 		}
 
 		return vaoID;
 	}
 
 
-	GLuint OpenGL4MaterialManager::BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc)
+	std::pair<GLuint, GLsizei> OpenGL4MaterialManager::BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc)
 	{
 		GLuint vaoID;
 		glCreateVertexArrays(1, &vaoID);
 
 		bool hasErrors = false; // start optimistic
 
-		uint32_t totalStride{ 0 }; // only really useful for Interleaved mode
+		GLsizei totalStride{ 0 };
 		int iAttrib = 0;
 
 		for (VertexBindingDescription const& desc : layoutDesc.Bindings)
@@ -477,7 +503,7 @@ namespace moe
 			vaoID = 0;
 		}
 
-		return vaoID;
+		return { vaoID, totalStride };
 	}
 
 	GLuint OpenGL4MaterialManager::BuildPackedVAO(VertexLayoutDescription const& layoutDesc)
@@ -580,8 +606,119 @@ namespace moe
 
 		pso.EnableDepthClamp = (pipelineDesc.RasterizerStateDesc.m_depthClip == RasterizerStateDescriptor::Enabled);
 		pso.EnableScissorTest = (pipelineDesc.RasterizerStateDesc.m_scissorTest == RasterizerStateDescriptor::Enabled);
-		pso.Topology = OpenGLPipeline::GetOpenGLPrimitiveTopology(pipelineDesc.Topology);
 
 		return pso;
+	}
+
+
+	void OpenGL4MaterialManager::BindPipelineStateObject(OpenGL4PipelineStateObject const& pso)
+	{
+		if (pso.BlendEnabled)
+		{
+			glEnable(GL_BLEND);
+			glBlendFunc(pso.BlendSrcFactor, pso.BlendDestFactor);
+			glBlendEquation(pso.BlendEquation);
+		}
+		else
+		{
+			glDisable(GL_BLEND);
+		}
+
+		if (pso.DepthTestEnabled)
+		{
+			glEnable(GL_DEPTH_TEST);
+
+			// OpenGL allows us to disable writing to the depth buffer by setting its depth mask to GL_FALSE:
+			// Basically, you're (temporarily) using a read-only depth buffer.
+			glDepthMask(pso.DepthWriteEnabled);
+
+			glDepthFunc(pso.DepthFunction);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
+
+		if (pso.StencilTestEnabled)
+		{
+			glEnable(GL_STENCIL_TEST);
+
+			// allows us to set a bitmask that is ANDed with the stencil value about to be written to the buffer.
+			// By default this is set to a bitmask of all 1s, leaving the output unaffected.
+			// But if we were to set this to 0x00, all the stencil values written to the buffer would end up as 0s.
+			glStencilMask(pso.StencilWriteMask);
+
+			glStencilOpSeparate(GL_FRONT, pso.FrontFaceStencilFailOp, pso.FrontFaceDepthFailOp, pso.FrontFaceBothPassOp);
+			glStencilFuncSeparate(GL_FRONT, pso.FrontFaceComparisonFunc, pso.StencilReferenceValue, pso.StencilReadMask);
+
+			glStencilOpSeparate(GL_BACK, pso.BackFaceStencilFailOp, pso.BackFaceDepthFailOp, pso.BackFaceBothPassOp);
+			glStencilFuncSeparate(GL_BACK, pso.BackFaceComparisonFunc, pso.StencilReferenceValue, pso.StencilReadMask);
+		}
+		else
+		{
+			glDisable(GL_STENCIL_TEST);
+		}
+
+		if (pso.CullingEnabled)
+		{
+			glEnable(GL_CULL_FACE);
+			glCullFace(pso.CulledFace);
+			glFrontFace(pso.FrontFace);
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
+		}
+
+		glPolygonMode(pso.PolygonFace, pso.PolygonMode);
+
+		// The clipping behavior against the Z position of a vertex can be turned off by activating depth clamping.
+		// This is done with glEnable(GL_DEPTH_CLAMP).
+		// This will cause the clip - space Z to remain unclipped by the front and rear viewing volume.
+		// The Z value computations will proceed as normal through the pipeline.
+		// After computing the window-space position, the resulting Z value will be clamped to the glDepthRange (provided by viewport).
+		if (pso.EnableDepthClamp)
+		{
+			glEnable(GL_DEPTH_CLAMP);
+		}
+		else
+		{
+			glDisable(GL_DEPTH_CLAMP);
+		}
+
+		if (pso.EnableScissorTest)
+		{
+			glEnable(GL_SCISSOR_TEST);
+		}
+		else
+		{
+			glDisable(GL_SCISSOR_TEST);
+		}
+	}
+
+	// Needed to visit variants https://www.bfilipek.com/2018/09/visit-variants.html
+	template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
+	template<class... Ts> overload(Ts...)->overload<Ts...>;
+
+	void OpenGL4MaterialManager::BindResourceSets(OpenGL4RHI* rhi, GLuint programID, ResourceSetsDescription const& rscDesc)
+	{
+		uint32_t blockBindingIdx = 0;
+
+		for (auto const& binding : rscDesc.Bindings)
+		{
+			std::visit(overload{
+				[&](BufferBinding const& buffBind)
+				{
+					GLuint bufferID = rhi->GLBufferManager().GetBuffer(buffBind.BufferHandle);
+					glUniformBlockBinding(programID, blockBindingIdx, buffBind.BindingNumber);
+					glBindBufferRange(GL_UNIFORM_BUFFER, buffBind.BindingNumber, bufferID, buffBind.Offset, buffBind.Range);
+				},
+				[&](TextureBinding const& texBind)
+				{
+					GLuint texID = rhi->GLTextureManager().GetTextureData(texBind.TextureHandle).TextureID;
+					glBindTextureUnit(texBind.BindingNumber, texID);
+				}
+			}, binding);
+		}
 	}
 }

@@ -152,7 +152,7 @@ namespace moe
 		}
 
 		DeviceBufferHandle	BufferHandle{};
-		uint64_t			Offset{0};
+		uint64_t			Offset{0}; // TODO : this information is also in the buffer's MeshData
 		uint64_t			Range{ WHOLE_RANGE };
 	};
 

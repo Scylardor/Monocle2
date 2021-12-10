@@ -29,7 +29,7 @@ namespace moe
 
 		DeviceSwapchainHandle	m_swapchain{};
 
-		RenderMeshHandle		m_fullscreenQuadMesh{};
+		DeviceMeshHandle		m_fullscreenQuadMesh{};
 
 		DeviceMaterialHandle	m_fullscreenQuadMaterial{};
 	};

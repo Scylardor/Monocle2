@@ -21,7 +21,7 @@ namespace moe
 
 
 		RenderObject() = default;
-		RenderObject(RenderMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 transform = Mat4::Identity()) :
+		RenderObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 transform = Mat4::Identity()) :
 			m_transform(transform), m_meshHandle(std::move(meshHandle)), m_matHandle(matHandle)
 		{}
 
@@ -55,7 +55,7 @@ namespace moe
 		}
 
 
-		[[nodiscard]] RenderMeshHandle const& GetMeshHandle() const
+		[[nodiscard]] DeviceMeshHandle const& GetMeshHandle() const
 		{
 			return m_meshHandle;
 		}
@@ -75,7 +75,7 @@ namespace moe
 		Mat4				m_transform{ Mat4::Identity() };
 		Mat4				m_mvp{ Mat4::Identity() };
 
-		RenderMeshHandle		m_meshHandle{ 0 };
+		DeviceMeshHandle		m_meshHandle{ 0 };
 		DeviceMaterialHandle	m_matHandle{ 0 };
 
 		bool			m_updatedSinceLastRender{ true };

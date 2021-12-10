@@ -5,10 +5,12 @@
 #include "Core/Containers/HashMap/HashMap.h"
 #include "Core/HashString/HashString.h"
 #include "Core/Resource/Material/MaterialResource.h"
+#include "Graphics/Pipeline/OpenGL/OpenGLPipeline.h"
 #include "Graphics/RHI/MaterialManager/MaterialManager.h"
 
 namespace moe
 {
+	class OpenGL4RHI;
 
 	struct OpenGLVertexBindingFormat
 	{
@@ -21,13 +23,18 @@ namespace moe
 		uint32_t		NumBindings{ 1 }; // Some types (e.g. mat4) take multiple bindings.
 	};
 
+	// Stores the informations of a VAO.
+	// Note: in OpenGL, the topology of a mesh is more related to the VAO than to the PSO.
+	// That's why specifically for OpenGL, I actually store the topology inside the VAO rather than the PSO.
 	struct OpenGL4VertexLayout
 	{
-		OpenGL4VertexLayout(GLuint vao, VertexLayoutDescription layoutDesc) :
-			VAO(vao), Desc(std::move(layoutDesc))
+		OpenGL4VertexLayout(GLuint vao, GLsizei stride, PrimitiveTopology topo, VertexLayoutDescription layoutDesc) :
+			VAO(vao), TotalStride(stride), Topology(OpenGLPipeline::GetOpenGLPrimitiveTopology(topo)), Desc(std::move(layoutDesc))
 		{}
 
 		GLuint					VAO{0};
+		GLsizei					TotalStride{ 0 };
+		GLenum					Topology{ GL_TRIANGLES };
 		VertexLayoutDescription	Desc{};
 	};
 
@@ -79,8 +86,6 @@ namespace moe
 		bool	EnableDepthClamp{ GL_FALSE };
 		bool	EnableScissorTest{ GL_FALSE };
 
-		GLenum	Topology{ GL_TRIANGLES };
-
 		bool operator==(const OpenGL4PipelineStateObject& other) const
 		{
 			if (&other == this)
@@ -112,8 +117,7 @@ namespace moe
 				PolygonFace == other.PolygonFace &&
 				PolygonMode == other.PolygonMode &&
 				EnableDepthClamp == other.EnableDepthClamp &&
-				EnableScissorTest == other.EnableScissorTest &&
-				Topology == other.Topology
+				EnableScissorTest == other.EnableScissorTest
 			);
 		}
 	};
@@ -138,13 +142,22 @@ namespace moe
 	class OpenGL4MaterialManager : public IMaterialManager
 	{
 	public:
-
-
 		bool	CreatePipelineStateObjectLayout(PipelineDescription const& pipeDesc) override;
 
 		bool	CreateShaderProgram(ShaderProgramDescription const& programDescription) override;
 
-		DeviceMaterialHandle	CreateMaterial(MaterialDescription const& matDesc) override;
+		[[nodiscard]] DeviceMaterialHandle	CreateMaterial(MaterialDescription const& matDesc) override;
+
+		void	BindMaterial(OpenGL4RHI* rhi, DeviceMaterialHandle matHandle);
+
+		[[nodiscard]] OpenGL4VertexLayout const&	GetMaterialVertexLayout(DeviceMaterialHandle handle) const
+		{
+			MOE_ASSERT(handle.IsNotNull() && handle.Get() < m_materials.Size());
+			OpenGL4Material const& material = m_materials[handle.Get()];
+
+			MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
+			return m_VAOs[material.VAOIdx];
+		}
 
 
 	private:
@@ -157,11 +170,16 @@ namespace moe
 
 		uint32_t	FindOrBuildPipelineStateObject(PipelineDescription const& pipelineDesc);
 
-		GLuint			FindOrCreateVAO(VertexLayoutDescription const& layoutDesc);
-		static GLuint	BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc);
-		static GLuint	BuildPackedVAO(VertexLayoutDescription const& layoutDesc);
+		GLuint		FindOrCreateVAO(VertexLayoutDescription const& layoutDesc, PrimitiveTopology topo);
+
+		static std::pair<GLuint, GLsizei>	BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc);
+		static GLuint						BuildPackedVAO(VertexLayoutDescription const& layoutDesc);
 
 		static OpenGL4PipelineStateObject	TranslateConfigToPipelineStateObject(PipelineDescription const& pipelineDesc);
+
+		static void	BindPipelineStateObject(OpenGL4PipelineStateObject const& pso);
+
+		void		BindResourceSets(OpenGL4RHI* rhi, GLuint programID, ResourceSetsDescription const& rscDesc);
 
 		HashMap<HashString, GLuint>			m_shaderModules{};
 

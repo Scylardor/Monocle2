@@ -45,8 +45,7 @@ namespace moe
 
 	public:
 
-		DeviceTextureHandle() = default;
-		DeviceTextureHandle(std::uint64_t handleID) :
+		DeviceTextureHandle(std::uint64_t handleID = ms_INVALID_ID) :
 			RenderableObjectHandle(handleID)
 		{}
 

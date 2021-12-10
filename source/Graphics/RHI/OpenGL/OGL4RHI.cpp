@@ -57,12 +57,21 @@ namespace moe
 	}
 
 
+	void OpenGL4RHI::EndRenderPass()
+	{
+		m_framebufferManager.UnbindFramebuffer();
+		glUseProgram(0);
+		glBindVertexArray(0);
+	}
+
+
 	// Needed to visit variants https://www.bfilipek.com/2018/09/visit-variants.html
 	template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
 	template<class... Ts> overload(Ts...)->overload<Ts...>;
 
 	void OpenGL4RHI::SubmitCommandBuffer(CommandBuffer const& cmdBuf)
 	{
+		DeviceMaterialHandle lastMaterialUsed;
 
 		for (CommandBufferVariant const& cmd : cmdBuf)
 		{
@@ -71,14 +80,18 @@ namespace moe
 					{
 						BeginRenderPass(cbrp);
 					},
-					[this](CmdBindMaterial const &)
+					[&](CmdBindMaterial const & cbm)
 					{
-						//m_materialManager.CreatePipelineStateObjectLayout()
+						m_materialManager.BindMaterial(this, cbm.Handle);
+						lastMaterialUsed = cbm.Handle;
 					},
-					[this](CmdDrawMesh const &) {},
+					[&](CmdDrawMesh const & cdm)
+					{
+						m_bufferManager.DrawMesh(m_materialManager, cdm.Handle, lastMaterialUsed);
+					},
 					[this](CmdEndRenderPass const &)
 					{
-						m_framebufferManager.UnbindFramebuffer();
+						EndRenderPass();
 					},
 					[this](CmdPresentSwapchain const & cps)
 					{
