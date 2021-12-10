@@ -5,6 +5,7 @@
 #include "GameFramework/Service/RenderService/Renderer/Renderer.h"
 
 #include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
+#include "Graphics/RenderQueue/RenderQueue.h"
 
 #include "Graphics/RHI/RenderHardwareInterface.h"
 
@@ -36,8 +37,12 @@ namespace moe
 	}
 
 
-	void GeometryRenderPass::Update()
+	void GeometryRenderPass::Update(RenderQueue& drawQueue, uint8_t passIndex)
 	{
+		RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
+		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Red());
+
+		drawQueue.EmplaceCommand<CmdEndRenderPass>(key);
 	}
 
 

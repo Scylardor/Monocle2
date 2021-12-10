@@ -5,6 +5,7 @@
 #include "Graphics/RHI/RenderHardwareInterface.h"
 #include "BufferManager/BufferManager.h"
 #include "FramebufferManager/FramebufferManager.h"
+#include "Graphics/CommandBuffer/CommandBuffer.h"
 #include "MaterialManager/MaterialManager.h"
 #include "PipelineManager/PipelineManager.h"
 #include "SwapchainManager/SwapchainManager.h"
@@ -22,6 +23,8 @@ namespace moe
 		OpenGL4RHI(GLLoaderFunction loaderFunc);
 
 		~OpenGL4RHI() override = default;
+
+		void	SubmitCommandBuffer(CommandBuffer const& cmdBuf) override;
 
 		IPipelineManager& PipelineManager() override
 		{
@@ -52,6 +55,8 @@ namespace moe
 		{
 			return m_materialManager;
 		}
+
+		void BeginRenderPass(CmdBeginRenderPass const& cbrp);
 
 	private:
 

@@ -1,5 +1,7 @@
 #include "OGL4RHI.h"
 
+#include "Graphics/CommandBuffer/CommandBuffer.h"
+
 
 namespace moe
 {
@@ -29,9 +31,67 @@ namespace moe
 
 	}
 
+	void OpenGL4RHI::BeginRenderPass(CmdBeginRenderPass const& cbrp)
+	{
+		// OpenGL doesn't have a concept of "swap chain".
+		// So if someone tries to bind the fake "swapchain framebuffer", just do nothing :
+		// it's going to draw on the default framebuffer.
+		if (cbrp.PassFramebuffer != m_swapchainManager.GetMainSwapchainFramebufferHandle())
+			m_framebufferManager.BindFramebuffer(cbrp.PassFramebuffer);
+
+		glClearColor(cbrp.ClearColor.R(), cbrp.ClearColor.G(), cbrp.ClearColor.B(), cbrp.ClearColor.A());
+
+		glClearDepth((double) cbrp.DepthClear);
+		glClearStencil(cbrp.StencilClear);
+
+		auto clearBits = GL_COLOR_BUFFER_BIT;
+		OpenGL4FramebufferDescription const& fbDesc = m_framebufferManager.GetFramebuffer(cbrp.PassFramebuffer);
+		if (fbDesc.DepthStencilAttachment.IsNotNull())
+		{
+			clearBits |= GL_DEPTH_BUFFER_BIT;
+			if (FormatHasStencilComponent(m_textureManager.GetTextureData(fbDesc.DepthStencilAttachment).Format))
+				clearBits |= GL_STENCIL_BUFFER_BIT;
+		}
+
+		glClear(clearBits);
+	}
+
+
+	// Needed to visit variants https://www.bfilipek.com/2018/09/visit-variants.html
+	template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
+	template<class... Ts> overload(Ts...)->overload<Ts...>;
+
+	void OpenGL4RHI::SubmitCommandBuffer(CommandBuffer const& cmdBuf)
+	{
+
+		for (CommandBufferVariant const& cmd : cmdBuf)
+		{
+			std::visit(overload{
+					[this](CmdBeginRenderPass const & cbrp)
+					{
+						BeginRenderPass(cbrp);
+					},
+					[this](CmdBindMaterial const &)
+					{
+						//m_materialManager.CreatePipelineStateObjectLayout()
+					},
+					[this](CmdDrawMesh const &) {},
+					[this](CmdEndRenderPass const &)
+					{
+						m_framebufferManager.UnbindFramebuffer();
+					},
+					[this](CmdPresentSwapchain const & cps)
+					{
+						m_swapchainManager.Present(cps.Handle);
+					}
+				}, cmd);
+		}
+
+	}
+
 
 	void OpenGL4RHI::OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*length*/,
-		const char* message, const void* /*userParam*/)
+	                                           const char* message, const void* /*userParam*/)
 	{
 		static const auto ignoredErrorNumbers = std::array<GLuint,4>{ 131169, 131185, 131218, 131204 };
 		// ignore non-significant error/warning codes

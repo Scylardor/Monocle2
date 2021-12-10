@@ -33,12 +33,23 @@ namespace moe
 		auto scID = m_swapchains.Emplace(boundSurface, fbHandle);
 		auto swapChainHandle = DeviceSwapchainHandle(scID);
 
-		using namespace std::placeholders;
-		boundSurface->OnSurfaceResizedEvent().AddDelegate(
-			{ std::bind(&OpenGL4SwapchainManager::OnSurfaceResized, this, swapChainHandle, _1, _2) }
-		);
+		boundSurface->OnSurfaceResizedEvent().AddDelegate({
+			 [this, swapChainHandle](int width, int height)
+			{
+				this->OnSurfaceResized(swapChainHandle, width, height);
+			}
+		});
 
 		return swapChainHandle;
+	}
+
+
+	DeviceFramebufferHandle OpenGL4SwapchainManager::GetMainSwapchainFramebufferHandle()
+	{
+		if (m_swapchains.Size() == 0)
+			return DeviceFramebufferHandle::Null();
+
+		return m_swapchains.Get(0).Framebuffer;
 	}
 
 	DeviceTextureHandle OpenGL4SwapchainManager::GetMainSwapchainColorAttachment(uint32_t colorAttachmentIdx)

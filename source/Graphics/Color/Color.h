@@ -2,12 +2,9 @@
 
 #pragma once
 
-#include "Core/Misc/Types.h"
 
 /* TODO : Make a generic Vector header... */
-#include "Math/Vec2.h"
 #include "Math/Vec3.h"
-#include "Math/Vec4.h"
 
 
 #include "Monocle_Graphics_Export.h"
@@ -47,7 +44,7 @@ namespace moe
 	{
 		static_assert(NumChannels > 0 && NumChannels <= 4, "unsupported number of color channels");
 
-		Color(Val value)
+		explicit Color(Val value)
 		{
 			std::fill_n(Rgba, NumChannels, value); // array name, size, value
 			Normalize();

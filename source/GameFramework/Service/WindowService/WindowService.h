@@ -35,6 +35,10 @@ namespace moe
 			return m_windows[windowIdx].get();
 		}
 
+
+		void	Update();
+
+
 	protected:
 
 		template <typename TWin, typename... Args>

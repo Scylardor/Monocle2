@@ -49,6 +49,7 @@ namespace moe
 		void	BindFramebuffer(DeviceFramebufferHandle fbHandle, TargetBuffer readBuffer = TargetBuffer::Default, TargetBuffer writeBuffer = TargetBuffer::Default) override;
 
 		void	UnbindFramebuffer(DeviceFramebufferHandle fbHandle) override;
+		void	UnbindFramebuffer();
 
 		void	AddColorAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) override;
 		void	SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) override;
@@ -57,12 +58,14 @@ namespace moe
 		[[nodiscard]] DeviceTextureHandle	GetFramebufferColorAttachment(DeviceFramebufferHandle fbHandle, uint32_t colorAttachmentIdx = 0);
 		[[nodiscard]] DeviceTextureHandle	GetFramebufferDepthStencilAttachment(DeviceFramebufferHandle fbHandle);
 
-	private:
-		[[nodiscard]] OpenGL4FramebufferDescription const&	GetFramebuffer(DeviceFramebufferHandle fbHandle)
+
+		[[nodiscard]] OpenGL4FramebufferDescription const& GetFramebuffer(DeviceFramebufferHandle fbHandle)
 		{
 			// should be ok to cast to uint32 : it's supposed to be an object pool ID
 			return m_frameBuffers.Get((uint32_t)fbHandle.Get());
 		}
+
+	private:
 
 
 		[[nodiscard]] OpenGL4FramebufferDescription&	MutFramebuffer(DeviceFramebufferHandle fbHandle)

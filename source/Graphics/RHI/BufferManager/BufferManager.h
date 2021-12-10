@@ -23,6 +23,8 @@ namespace moe
 
 		virtual RenderMeshHandle	FindOrCreateMeshBuffer(Ref<MeshResource> const& meshRsc) = 0;
 
+		virtual RenderMeshHandle	FindOrCreateMeshBuffer(MeshData const& meshData) = 0;
+
 		virtual void				DestroyDeviceBuffer(DeviceBufferHandle bufferToDestroy) = 0;
 	};
 

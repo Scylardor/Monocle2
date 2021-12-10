@@ -14,6 +14,8 @@
 #include "Graphics/Material/MaterialInterface.h"
 #include "Graphics/Material/MaterialLibrary.h"
 
+#include "Math/Vec2.h"
+
 namespace moe
 {
 	// TODO: refactor out of here

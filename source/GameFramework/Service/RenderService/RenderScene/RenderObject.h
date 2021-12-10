@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphics/RHI/BufferManager/BufferManager.h"
+#include "Graphics/RHI/MaterialManager/MaterialManager.h"
 #include "Math/Matrix.h"
 
 
@@ -20,8 +21,8 @@ namespace moe
 
 
 		RenderObject() = default;
-		RenderObject(RenderMeshHandle meshHandle, MaterialID materialID, Mat4 transform = Mat4::Identity()) :
-			m_transform(transform), m_meshHandle(std::move(meshHandle)), m_materialID(materialID)
+		RenderObject(RenderMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 transform = Mat4::Identity()) :
+			m_transform(transform), m_meshHandle(std::move(meshHandle)), m_matHandle(matHandle)
 		{}
 
 
@@ -59,9 +60,9 @@ namespace moe
 			return m_meshHandle;
 		}
 
-		[[nodiscard]] MaterialID GetMaterialID() const
+		[[nodiscard]] DeviceMaterialHandle GetMaterialHandle() const
 		{
-			return m_materialID;
+			return m_matHandle;
 		}
 
 		[[nodiscard]] bool WasUpdatedSinceLastRender() const
@@ -74,8 +75,8 @@ namespace moe
 		Mat4				m_transform{ Mat4::Identity() };
 		Mat4				m_mvp{ Mat4::Identity() };
 
-		RenderMeshHandle	m_meshHandle{ 0 };
-		MaterialID			m_materialID{ 0 };
+		RenderMeshHandle		m_meshHandle{ 0 };
+		DeviceMaterialHandle	m_matHandle{ 0 };
 
 		bool			m_updatedSinceLastRender{ true };
 	};

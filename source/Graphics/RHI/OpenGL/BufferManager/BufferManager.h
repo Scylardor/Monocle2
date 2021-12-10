@@ -18,9 +18,13 @@ namespace moe
 
 		Monocle_Graphics_API RenderMeshHandle	FindOrCreateMeshBuffer(Ref<MeshResource> const& meshRsc) override;
 
+		Monocle_Graphics_API RenderMeshHandle	FindOrCreateMeshBuffer(MeshData const& meshData) override;
+
 		Monocle_Graphics_API void				DestroyDeviceBuffer(DeviceBufferHandle bufferToDestroy) override;
 
 	private:
+
+		static RenderMeshHandle	CreateMesh(MeshData const& meshData);
 
 		DynamicObjectPool<GLuint>				m_bufferHandles{};
 		HashMap< RegistryID, RenderMeshHandle>	m_meshIDToHandle{};

@@ -9,6 +9,7 @@
 
 namespace moe
 {
+	class CommandBuffer;
 	/*
 	 * A rendering API-agnostic abstraction of render hardware interface.
 	 * You need to implement this RHI with every rendering API you use in order to use it with a Renderer.
@@ -25,6 +26,8 @@ namespace moe
 	public:
 
 		virtual ~RenderHardwareInterface() = default;
+
+		virtual void					SubmitCommandBuffer(CommandBuffer const& cmdBuf) = 0;
 
 		virtual	IPipelineManager&		PipelineManager() = 0;
 

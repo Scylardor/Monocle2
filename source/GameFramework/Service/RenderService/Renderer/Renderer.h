@@ -19,6 +19,8 @@ namespace moe
 	{
 	public:
 
+		using RenderPassList = Vector < std::unique_ptr<IRenderPass>>;
+
 		Renderer(RenderService& ownerService, RenderHardwareInterface* RHI) :
 			m_myService(&ownerService), m_RHI(RHI)
 		{}
@@ -49,6 +51,11 @@ namespace moe
 			m_attachedScene = &scene;
 		}
 
+		RenderScene*	MutAttachedScene()
+		{
+			return m_attachedScene;
+		}
+
 
 		void	AttachSurface(IGraphicsSurface& surface)
 		{
@@ -70,6 +77,20 @@ namespace moe
 		{
 			return m_myService;
 		}
+
+
+		// C++11 range-based for loops interface
+		RenderPassList::Iterator		begin()
+		{ return m_renderPasses.Begin(); }
+		RenderPassList::ConstIterator	begin() const
+		{ return m_renderPasses.Begin(); }
+
+		RenderPassList::Iterator		end()
+		{ return m_renderPasses.End(); }
+		RenderPassList::ConstIterator	end() const
+		{ return m_renderPasses.End(); }
+		//--------------------------------
+
 
 
 

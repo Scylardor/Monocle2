@@ -19,6 +19,8 @@ set(Monocle_Graphics_SOURCES
 ./Camera/ViewportHandle.h
 ./Color/Color.cpp
 ./Color/Color.h
+./CommandBuffer/CommandBuffer.cpp
+./CommandBuffer/CommandBuffer.h
 ./Device/GraphicsDevice.h
 ./Device/OpenGL/OpenGLGraphicsDevice.cpp
 ./Device/OpenGL/OpenGLGraphicsDevice.h
@@ -86,6 +88,8 @@ set(Monocle_Graphics_SOURCES
 ./Renderer/RendererDescriptor.h
 ./Renderer/Vulkan/VulkanRenderer.cpp
 ./Renderer/Vulkan/VulkanRenderer.h
+./RenderQueue/RenderQueue.cpp
+./RenderQueue/RenderQueue.h
 ./RenderTarget/RenderTargetHandle.h
 ./RenderWorld/GraphicsObject.cpp
 ./RenderWorld/GraphicsObject.h

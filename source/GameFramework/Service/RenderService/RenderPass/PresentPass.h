@@ -2,8 +2,10 @@
 
 #pragma once
 #include "RenderPass.h"
+#include "Graphics/RHI/BufferManager/BufferManager.h"
 
 #include "Graphics/RHI/FramebufferManager/FramebufferManager.h"
+#include "Graphics/RHI/MaterialManager/MaterialManager.h"
 #include "Graphics/RHI/SwapchainManager/SwapchainManager.h"
 
 namespace moe
@@ -13,11 +15,11 @@ namespace moe
 	class PresentRenderPass : public IRenderPass
 	{
 	public:
-		PresentRenderPass(Renderer& owner);
+		PresentRenderPass(Renderer& owner, DeviceSwapchainHandle attachedSwapchain);
 
 		~PresentRenderPass() override = default;
 
-		void	Update() override;
+		void	Update(RenderQueue& drawQueue, uint8_t passIndex) override;
 
 	private:
 
@@ -26,6 +28,10 @@ namespace moe
 		DeviceFramebufferHandle	m_framebuffer{};
 
 		DeviceSwapchainHandle	m_swapchain{};
+
+		RenderMeshHandle		m_fullscreenQuadMesh{};
+
+		DeviceMaterialHandle	m_fullscreenQuadMaterial{};
 	};
 
 

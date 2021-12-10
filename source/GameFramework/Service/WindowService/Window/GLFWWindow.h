@@ -18,13 +18,17 @@ namespace moe
 
 		~GLFWWindow() override;
 
+
+		WindowState			PollEvents() override;
+
 		void				SwapBuffers() override;
 
 		std::pair<int, int>	GetDimensions() override;
 
-		virtual void	SetWindowHints(ConfigSection const& windowConfig);
 
-		bool	Create(ConfigSection const& windowConfig);
+		bool			Create(ConfigSection const& windowConfig);
+
+		virtual void	SetWindowHints(ConfigSection const& windowConfig);
 
 
 	protected:

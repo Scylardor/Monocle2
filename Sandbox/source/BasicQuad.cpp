@@ -56,11 +56,11 @@ namespace moe
 		rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
 
 		Renderer& forwardRenderer = InitializeRenderer();
+		forwardRenderer;
+		//auto* rdrSvc = EditEngine()->EditService<RenderService>();
+		//
 
-		auto* rdrSvc = EditEngine()->EditService<RenderService>();
-
-		RenderScene& mainScene = rdrSvc->EmplaceScene(forwardRenderer);
-		mainScene.AddObject(meshRsc, {});
+		//mainScene.AddObject(meshRsc, {});
 
 		// rdrSvc->MutRHI()->BufferManager().FindOrCreateMeshBuffer(meshRsc);
 
@@ -84,9 +84,13 @@ namespace moe
 
 		auto* winSvc = EditEngine()->EditService<WindowService>();
 		forwardRenderer.AttachSurface(*winSvc->MutWindow());
+		DeviceSwapchainHandle swapchain = forwardRenderer.MutRHI()->SwapchainManager().CreateSwapchain(forwardRenderer.MutRHI(), forwardRenderer.MutSurface());
 
-		forwardRenderer.EmplaceRenderPass<PresentRenderPass>();
+		rdrSvc->EmplaceScene(forwardRenderer);
+
 		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
+
+		forwardRenderer.EmplaceRenderPass<PresentRenderPass>(swapchain);
 
 		return forwardRenderer;
 	}

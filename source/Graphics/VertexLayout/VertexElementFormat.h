@@ -213,4 +213,6 @@ namespace moe
 		HalfFloat4
 	};
 
+	using VertexBindingFormat = VertexElementFormat; // TODO : remove VertexElementFormat
+
 }

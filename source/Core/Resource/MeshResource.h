@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include "BaseResource.h"
+#include "Core/Containers/Array/Array.h"
 #include "Core/Containers/Vector/Vector.h"
 #include "Core/Preprocessor/moeAssert.h"
 
@@ -37,6 +38,19 @@ namespace moe
 		{
 			MOE_ASSERT(idxSize == sizeof(uint32_t) || idxSize == sizeof(uint16_t));
 		}
+
+		template <template <typename> class VtxContainer, typename VertexType>
+		static MeshData	Build(VtxContainer<VertexType> & vertices)
+		{
+			return MeshData(vertices.Data(), sizeof(VertexType), vertices.Size(), nullptr, 0, 0);
+		}
+
+		template <typename VertexType, size_t N>
+		static MeshData	Build(Array<VertexType, N> const& vertices)
+		{
+			return MeshData(vertices.Data(), sizeof(VertexType), N, nullptr, sizeof(uint16_t), 0);
+		}
+
 
 		RawData			Vertices{};
 		RawData			Indices{};

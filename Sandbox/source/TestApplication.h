@@ -2,6 +2,8 @@
 
 #include "Application/GlfwApplication/OpenGL/OpenGLGlfwApplication.h"
 
+#include "Math/Vec2.h"
+
 namespace moe
 {
 

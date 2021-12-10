@@ -49,7 +49,7 @@ namespace moe
 		int							Height{ 0 };
 		uint32_t					Samples{ 1 };
 		Vector<DeviceTextureHandle>	ColorAttachments;
-		DeviceTextureHandle			DepthStencilAttachment;
+		DeviceTextureHandle			DepthStencilAttachment{DeviceTextureHandle::Null()};
 
 		// The source color buffer to use for all read operations when this framebuffer is bound.
 		TargetBuffer				ReadBuffer{ TargetBuffer::Default };

@@ -13,5 +13,12 @@ namespace moe
 
 		virtual ~IWindow() = default;
 
+		enum class WindowState : char
+		{
+			Opened,
+			Closed
+		};
+
+		virtual WindowState	PollEvents() = 0;
 	};
 }

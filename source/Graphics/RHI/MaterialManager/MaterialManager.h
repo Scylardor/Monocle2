@@ -19,6 +19,11 @@ namespace moe
 	{
 		static DeviceMaterialHandle	Null() { return DeviceMaterialHandle{ 0 }; }
 
+		[[nodiscard]] std::pair<uint32_t, uint32_t>	DecomposeMaterialAndShaderIndices() const
+		{
+			return { (uint32_t) (Get() >> 32), (uint32_t)Get() };
+		}
+
 	};
 
 	/*

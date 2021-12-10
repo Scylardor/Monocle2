@@ -9,16 +9,21 @@
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
 
+#include "Graphics/RenderQueue/RenderQueue.h"
+
 namespace moe
 {
-	PresentRenderPass::PresentRenderPass(Renderer& owner) :
-		m_ownerRenderer(&owner)
+	PresentRenderPass::PresentRenderPass(Renderer& owner, DeviceSwapchainHandle attachedSwapchain) :
+		m_ownerRenderer(&owner),
+		m_swapchain(attachedSwapchain)
 	{
 		auto* RHI = owner.MutRHI();
-		m_swapchain = RHI->SwapchainManager().CreateSwapchain(RHI, owner.MutSurface());
+
+		m_framebuffer = RHI->SwapchainManager().GetMainSwapchainFramebufferHandle();
+
 		DeviceTextureHandle swapchainColorTex = RHI->SwapchainManager().GetMainSwapchainColorAttachment();
 
-		Array<Vertex2D_PosUV, 6> fullscreenQuad
+		const Array<Vertex2D_PosUV, 6> fullscreenQuad
 		{
 			// positions   // texCoords
 			{{-1.0f,  1.0f},  {0.0f, 1.0f}},
@@ -29,6 +34,9 @@ namespace moe
 			{{ 1.0f,  1.0f},  {1.0f, 1.0f}}
 		};
 
+		MeshData quadData = MeshData::Build(fullscreenQuad);
+		m_fullscreenQuadMesh = RHI->BufferManager().FindOrCreateMeshBuffer(quadData);
+
 		auto* engine = m_ownerRenderer->MutRenderService()->EditEngine();
 		auto* rscSvc = engine->EditService<ResourceService>();
 
@@ -37,24 +45,46 @@ namespace moe
 
 		MaterialDescription matDesc;
 		MaterialPassDescription& passDesc = matDesc.NewPassDescription();
-		passDesc.AssignShaderProgramDescription({
-				{	ShaderStage::Vertex, basicVertShaderFile},
-				{	ShaderStage::Fragment, basicFragShaderFile}
-			})
-			.Pipeline.DepthStencilStateDesc.SetDepthTestEnabled(DepthTest::Disabled, DepthWriting::Disabled);
+		passDesc.AssignPipelineVertexLayout({ {
+			{"v_Pos", VertexBindingFormat::Float2 },
+			{"v_UV0", VertexBindingFormat::Float2 }}
+		}).
+		AssignShaderProgramDescription({
+			{	ShaderStage::Vertex, basicVertShaderFile},
+			{	ShaderStage::Fragment, basicFragShaderFile}
+		}).
+		Pipeline.DepthStencilStateDesc.SetDepthTestEnabled(DepthTest::Disabled, DepthWriting::Disabled);
+;
 
 		ResourceBindingList bindings;
 		bindings.EmplaceBack(0, BindingType::TextureReadOnly, ShaderStage::Fragment);
 		passDesc.ResourceSetLayouts.AddResourceLayout(0, std::move(bindings));
 		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(swapchainColorTex, 0, 0);
 
-		RHI->MaterialManager().CreateMaterial(matDesc);
+		m_fullscreenQuadMaterial = RHI->MaterialManager().CreateMaterial(matDesc);
 
+		//owner.MutAttachedScene()->AddObject(m_fullscreenQuadMesh, material);
 	}
 
 
-	void PresentRenderPass::Update()
+	void PresentRenderPass::Update(RenderQueue& drawQueue, uint8_t passIndex)
 	{
-		m_ownerRenderer->MutRHI()->SwapchainManager().Present(m_swapchain);
+		RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
+		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Red());
+
+		auto [matIdx, programIdx] = m_fullscreenQuadMaterial.DecomposeMaterialAndShaderIndices();
+
+		key.Material = matIdx;
+		key.Program = programIdx;
+
+		drawQueue.EmplaceDrawCall<CmdBindMaterial>(key, m_fullscreenQuadMaterial);
+
+		drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, m_fullscreenQuadMesh);
+
+		key = drawQueue.EmplaceCommand<CmdEndRenderPass>(key);
+
+		key = drawQueue.EmplaceCommand<CmdPresentSwapchain>(key, m_swapchain);
+
+
 	}
 }

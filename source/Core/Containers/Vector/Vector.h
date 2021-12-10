@@ -83,7 +83,7 @@ namespace moe
 		}
 
 
-		SizeType	Size() const noexcept	{ return m_vec.size(); }
+		SizeType	Size() const noexcept		{ return m_vec.size(); }
 		SizeType	Capacity() const noexcept	{ return m_vec.capacity(); }
 
 		bool	Empty() const noexcept { return m_vec.empty(); }

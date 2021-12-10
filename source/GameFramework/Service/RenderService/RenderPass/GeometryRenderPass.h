@@ -17,7 +17,7 @@ namespace moe
 
 		~GeometryRenderPass() override;
 
-		void	Update() override;
+		void	Update(RenderQueue& drawQueue, uint8_t passIndex) override;
 
 	private:
 

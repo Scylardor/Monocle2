@@ -86,6 +86,12 @@ namespace moe
 
 	void OpenGL4FramebufferManager::UnbindFramebuffer(DeviceFramebufferHandle /*fbHandle*/)
 	{
+		UnbindFramebuffer();
+	}
+
+
+	void OpenGL4FramebufferManager::UnbindFramebuffer()
+	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 

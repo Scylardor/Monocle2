@@ -77,15 +77,33 @@ namespace moe
 		// Now translate the pipeline configuration to an OpenGL one, and find if one already exists (or add it)
 		uint32_t psoIdx = FindOrBuildPipelineStateObject(firstPass.Pipeline);
 
+		uint32_t vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout);
+
 		// Now build and return the material object.
-		OpenGL4PMaterial material{ psoIdx, programIdx, firstPass.ResourceBindings };
 		auto matIt = std::find_if(m_materials.begin(), m_materials.end(),
-			[programIdx, psoIdx, &firstPass](OpenGL4PMaterial const& mat)
+			[programIdx, psoIdx, vaoIdx, &firstPass](OpenGL4Material const& mat)
 		{
-				return (mat.ProgramIdx == programIdx && mat.PSOIdx == psoIdx && mat.ResourceSets.Bindings == firstPass.ResourceBindings.Bindings);
+				return (mat.ProgramIdx == programIdx && mat.PSOIdx == psoIdx && mat.VAOIdx == vaoIdx
+					&& mat.ResourceSets.Bindings == firstPass.ResourceBindings.Bindings);
 		});
 
-		return {};
+
+		uint64_t matID;
+		uint32_t matIdx;
+
+		if (matIt != m_materials.End())
+		{
+			matIdx = (uint32_t)std::distance(m_materials.begin(), matIt);
+		}
+		else
+		{
+			matIdx = (uint32_t) m_materials.Size();
+			m_materials.EmplaceBack(psoIdx, programIdx, vaoIdx, firstPass.ResourceBindings);
+		}
+
+		matID = matIdx;
+		matID = (matID << 32) | programIdx;
+		return DeviceMaterialHandle{ matID };
 	}
 
 
@@ -219,6 +237,309 @@ namespace moe
 			m_pipelineStateObjects.EmplaceBack(pso);
 			return (uint32_t)m_pipelineStateObjects.Size() - 1;
 		}
+	}
+
+	std::optional<OpenGLVertexBindingFormat> OpenGLVertexBindingFormat::TranslateFormat(VertexBindingFormat vtxFormat)
+	{
+		switch (vtxFormat)
+		{
+		case VertexBindingFormat::Float:
+			return { {GL_FLOAT, 1, false} };
+		case VertexBindingFormat::Float2:
+			return { { GL_FLOAT, 2, false } };
+		case VertexBindingFormat::Float3:
+			return { { GL_FLOAT, 3, false } };
+		case VertexBindingFormat::Float4:
+			return { { GL_FLOAT, 4, false } };
+		case VertexBindingFormat::Mat4:
+			return { { GL_FLOAT, 4, false, 4 } };
+		case VertexBindingFormat::Byte:
+			return { { GL_UNSIGNED_BYTE, 1, false } };
+		case VertexBindingFormat::Byte_Norm:
+			return { { GL_UNSIGNED_BYTE, 1, true} };
+		case VertexBindingFormat::Byte2_Norm:
+			return { { GL_UNSIGNED_BYTE, 2, true } };
+		case VertexBindingFormat::Byte2:
+			return { { GL_UNSIGNED_BYTE, 2, false } };
+		case VertexBindingFormat::Byte3_Norm:
+			return { { GL_UNSIGNED_BYTE, 3, true } };
+		case VertexBindingFormat::Byte3:
+			return { { GL_UNSIGNED_BYTE, 3, false} };
+		case VertexBindingFormat::Byte4_Norm:
+			return { { GL_UNSIGNED_BYTE, 4, true } };
+		case VertexBindingFormat::Byte4:
+			return { { GL_UNSIGNED_BYTE, 4, false } };
+		case VertexBindingFormat::SByte:
+			return { { GL_BYTE, 4, false } };
+		case VertexBindingFormat::SByte_Norm:
+			return { { GL_BYTE, 4, true } };
+		case VertexBindingFormat::SByte2_Norm:
+			return { { GL_BYTE, 2, true} };
+		case VertexBindingFormat::SByte2:
+			return { { GL_BYTE, 2, false } };
+		case VertexBindingFormat::SByte3_Norm:
+			return { { GL_BYTE, 3, true } };
+		case VertexBindingFormat::SByte3:
+			return { { GL_BYTE, 3, false} };
+		case VertexBindingFormat::SByte4_Norm:
+			return { { GL_BYTE, 4, true} };
+		case VertexBindingFormat::SByte4:
+			return { { GL_BYTE, 4, false} };
+		case VertexBindingFormat::UShort_Norm:
+			return { { GL_UNSIGNED_SHORT, 1, true} };
+		case VertexBindingFormat::UShort:
+			return { { GL_UNSIGNED_SHORT, 1, false } };
+		case VertexBindingFormat::UShort2_Norm:
+			return { { GL_UNSIGNED_SHORT, 2, true } };
+		case VertexBindingFormat::UShort2:
+			return { { GL_UNSIGNED_SHORT, 2, false } };
+		case VertexBindingFormat::UShort3_Norm:
+			return { { GL_UNSIGNED_SHORT, 3, true} };
+		case VertexBindingFormat::UShort3:
+			return { { GL_UNSIGNED_SHORT, 3, false} };
+		case VertexBindingFormat::UShort4_Norm:
+			return { { GL_UNSIGNED_SHORT, 4, true} };
+		case VertexBindingFormat::UShort4:
+			return { { GL_UNSIGNED_SHORT, 4, false } };
+		case VertexBindingFormat::Short_Norm:
+			return { { GL_SHORT, 1, true } };
+		case VertexBindingFormat::Short:
+			return { { GL_SHORT, 1, false} };
+		case VertexBindingFormat::Short2_Norm:
+			return { { GL_SHORT, 2, true } };
+		case VertexBindingFormat::Short2:
+			return { { GL_SHORT, 2, false} };
+		case VertexBindingFormat::Short3_Norm:
+			return { { GL_SHORT, 3, true} };
+		case VertexBindingFormat::Short3:
+			return { { GL_SHORT, 3, false } };
+		case VertexBindingFormat::Short4_Norm:
+			return { { GL_SHORT, 4, true } };
+		case VertexBindingFormat::Short4:
+			return { { GL_SHORT, 4, false } };
+		case VertexBindingFormat::UInt:
+			return { { GL_UNSIGNED_INT, 1, false} };
+		case VertexBindingFormat::UInt2:
+			return { { GL_UNSIGNED_INT, 2, false} };
+		case VertexBindingFormat::UInt3:
+			return { { GL_UNSIGNED_INT, 3, false } };
+		case VertexBindingFormat::UInt4:
+			return { { GL_UNSIGNED_INT, 4, false } };
+		case VertexBindingFormat::Int:
+			return { { GL_INT, 1, false } };
+		case VertexBindingFormat::Int2:
+			return { { GL_INT, 2, false} };
+		case VertexBindingFormat::Int3:
+			return { { GL_INT, 3, false } };
+		case VertexBindingFormat::Int4:
+			return { { GL_INT, 4, false} };
+		case VertexBindingFormat::HalfFloat:
+			return { { GL_HALF_FLOAT, 1, false } };
+		case VertexBindingFormat::HalfFloat2:
+			return { { GL_HALF_FLOAT, 2, false } };
+		case VertexBindingFormat::HalfFloat3:
+			return { { GL_HALF_FLOAT, 3, false } };
+		case VertexBindingFormat::HalfFloat4:
+			return { { GL_HALF_FLOAT, 4, false } };
+		default:
+			MOE_ERROR(ChanGraphics, "Unrecognized vertex element format value : '%d'", vtxFormat);
+			return {};
+		}
+	}
+
+	std::optional<uint32_t> OpenGLVertexBindingFormat::FindTypeSize(std::uint8_t numCpnts, GLenum type)
+	{
+		MOE_ASSERT(numCpnts != 0);
+
+		switch (type)
+		{
+		case GL_BYTE:
+		case GL_UNSIGNED_BYTE:
+			return numCpnts;
+		case GL_FLOAT:
+		case GL_INT:
+		case GL_UNSIGNED_INT:
+			return (uint32_t)(sizeof(float) * numCpnts); // Assume sizeof(float) == sizeof(int) == sizeof(unsigned int).
+		case GL_SHORT:
+		case GL_UNSIGNED_SHORT:
+		case GL_HALF_FLOAT:
+			return (uint32_t)(sizeof(short) * numCpnts); // Assume sizeof(short) == sizeof(unsigned short) == sizeof(GLhalf).
+		default:
+			MOE_ERROR(ChanGraphics, "Unmanaged vertex element type value: '%d'.", type);
+			return {};
+		}
+	}
+
+	GLuint OpenGL4MaterialManager::FindOrCreateVAO(VertexLayoutDescription const& layoutDesc)
+	{
+		// First and foremost, check that we do not have an existing vertex layout that could fit this description...
+		auto vtxLayoutIt = std::find_if(m_VAOs.begin(), m_VAOs.end(), [&layoutDesc](const OpenGL4VertexLayout& glLayout)
+			{
+				return (glLayout.Desc == layoutDesc);
+			});
+
+		if (vtxLayoutIt != m_VAOs.end())
+		{
+			// we found a matching one : don't bother recreating a new one
+			return vtxLayoutIt->VAO;
+		}
+
+		GLuint vaoID = 0;
+
+		switch (layoutDesc.BindingsLayout)
+		{
+		case LayoutType::Interleaved:
+		{
+			vaoID = BuildInterleavedVAO(layoutDesc);
+		}
+		break;
+
+		case LayoutType::Packed:
+		{
+			vaoID = BuildPackedVAO(layoutDesc);
+		}
+		break;
+
+		default:
+			MOE_ASSERT(false); // not supposed to happen
+		}
+
+		MOE_DEBUG_ASSERT(vaoID != 0);
+		if (vaoID != 0)
+		{
+			// The VAO was successfully initialized : we store our vertex layout
+			m_VAOs.EmplaceBack(vaoID, layoutDesc);
+		}
+
+		return vaoID;
+	}
+
+
+	GLuint OpenGL4MaterialManager::BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc)
+	{
+		GLuint vaoID;
+		glCreateVertexArrays(1, &vaoID);
+
+		bool hasErrors = false; // start optimistic
+
+		uint32_t totalStride{ 0 }; // only really useful for Interleaved mode
+		int iAttrib = 0;
+
+		for (VertexBindingDescription const& desc : layoutDesc.Bindings)
+		{
+			auto OpenGLInfoOpt = OpenGLVertexBindingFormat::TranslateFormat(desc.Format);
+			if (false == OpenGLInfoOpt.has_value())
+			{
+				MOE_ERROR(ChanGraphics, "Failed to translate following OpenGL format : %u", desc.Format);
+				hasErrors = true;
+				break;
+			}
+
+			const OpenGLVertexBindingFormat& glVertexElemFmt = OpenGLInfoOpt.value();
+
+			// "Repeats" are necessary to handle vertex attributes like mat4 that can exist in shaders, but are not handled by the API code.
+			// For a mat4 as an example, we have to describe a matrix as four vec4 attributes following each other; the repeat count will then be 4.
+			for (auto iBind = 0u; iBind < glVertexElemFmt.NumBindings; iBind++)
+			{
+				// Enable attrib index for given VAO
+				glEnableVertexArrayAttrib(vaoID, iAttrib);
+
+				// Specify format for this attrib : type; number of components, normalized. Use totalStride as relativeoffset because data is interleaved (XYZ XYZ...)
+				glVertexArrayAttribFormat(vaoID, iAttrib, glVertexElemFmt.Size, glVertexElemFmt.Type, glVertexElemFmt.Normalized, totalStride);
+
+				// We can bind all attributes to same binding index because data is interleaved.
+				glVertexArrayAttribBinding(vaoID, iAttrib, 0);
+
+				// Set up vertex divisor for instancing
+				if (desc.Divisor != 0)
+				{
+					glVertexArrayBindingDivisor(vaoID, iAttrib, desc.Divisor);
+				}
+
+				auto sizeOpt = OpenGLVertexBindingFormat::FindTypeSize(glVertexElemFmt.Size, glVertexElemFmt.Type);
+				if (false == sizeOpt.has_value())
+				{
+					MOE_ERROR(ChanGraphics, "Failed to find the OpenGL type size of following combination : %u %i", glVertexElemFmt.Size, glVertexElemFmt.Type);
+					hasErrors = true;
+					break; // invalid, could not find component size
+				}
+
+				totalStride += sizeOpt.value();
+			}
+
+			iAttrib++;
+		}
+
+		if (hasErrors)
+		{
+			// There was a problem somewhere : delete our created VAO
+			glDeleteVertexArrays(1, &vaoID);
+			vaoID = 0;
+		}
+
+		return vaoID;
+	}
+
+	GLuint OpenGL4MaterialManager::BuildPackedVAO(VertexLayoutDescription const& layoutDesc)
+	{
+		GLuint vaoID;
+		glCreateVertexArrays(1, &vaoID);
+
+		bool hasErrors = false; // start optimistic
+
+		int iAttrib = 0;
+
+		for (VertexBindingDescription const& desc : layoutDesc.Bindings)
+		{
+			auto OpenGLInfoOpt = OpenGLVertexBindingFormat::TranslateFormat(desc.Format);
+			if (false == OpenGLInfoOpt.has_value())
+			{
+				MOE_ERROR(ChanGraphics, "Failed to translate following OpenGL format : %u", desc.Format);
+				hasErrors = true;
+				break;
+			}
+
+			const auto& glVertexElemFmt = OpenGLInfoOpt.value();
+
+			// More of a safety measure because we actually don't need the total size in packed mode.
+			auto sizeOpt = OpenGLVertexBindingFormat::FindTypeSize(glVertexElemFmt.Size, glVertexElemFmt.Type);
+			if (false == sizeOpt.has_value())
+			{
+				MOE_ERROR(ChanGraphics, "Failed to find the OpenGL type size of following combination : %u %i", glVertexElemFmt.Size, glVertexElemFmt.Type);
+				hasErrors = true;
+				break;
+			}
+
+			// "Repeats" are necessary to handle vertex attributes like mat4 that can exist in shaders, but are not handled by the API code.
+			// For a mat4 as an example, we have to describe a matrix as four vec4 attributes following each other; the repeat count will then be 4.
+			for (auto iBind = 0u; iBind < glVertexElemFmt.NumBindings; iBind++)
+			{
+				// Enable attrib index for given VAO
+				glEnableVertexArrayAttrib(vaoID, iAttrib);
+
+				// Specify format for this attrib : type; number of components, normalized. Use 0 as relativeoffset because data will be tightly packed (XXX YYY...)
+				glVertexArrayAttribFormat(vaoID, iAttrib, glVertexElemFmt.Size, glVertexElemFmt.Type, glVertexElemFmt.Normalized, 0);
+
+				// As data will be tightly packed, we need to bind each attribute to a different binding index.
+				glVertexArrayAttribBinding(vaoID, iAttrib, iAttrib);
+
+				if (desc.Divisor != 0)
+				{
+					glVertexArrayBindingDivisor(vaoID, iAttrib, desc.Divisor);
+				}
+
+				iAttrib++;
+			}
+		}
+
+		if (hasErrors)
+		{
+			// There was a problem somewhere : delete our created VAO
+			glDeleteVertexArrays(1, &vaoID);
+			vaoID = 0;
+		}
+
+		return vaoID;
 	}
 
 

@@ -10,6 +10,8 @@
 #include "DepthStencilState/DepthStencilStateDescriptor.h"
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/RHI/TextureManager/TextureManager.h"
+#include "Graphics/VertexLayout/VertexElementFormat.h"
+#include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 #include "RasterizerState/RasterizerStateDescriptor.h"
 #include "Shader/Program/ShaderProgramDescription.h"
 #include "Topology/PrimitiveTopology.h"
@@ -18,6 +20,51 @@
 namespace moe
 {
 	class MaterialModulesResource;
+
+
+	struct VertexBindingDescription
+	{
+		VertexBindingDescription(std::string sem, VertexBindingFormat fmt, uint32_t div = 0) :
+			Semantic(std::move(sem)), Format(fmt), Divisor(div)
+		{}
+
+		bool	operator==(const VertexBindingDescription& rhs) const
+		{
+			if (&rhs != this)
+			{
+				return (Semantic == rhs.Semantic && Format == rhs.Format && Divisor == rhs.Divisor);
+			}
+			return true;
+		}
+
+		std::string			Semantic{""};
+		VertexBindingFormat	Format;
+		uint32_t			Divisor{ 0 };
+	};
+
+	struct VertexLayoutDescription
+	{
+		VertexLayoutDescription() = default;
+
+		VertexLayoutDescription(Vector<VertexBindingDescription> bindings, LayoutType layout = LayoutType::Interleaved) :
+			Bindings(std::move(bindings)), BindingsLayout(layout)
+		{}
+
+
+		bool	operator==(const VertexLayoutDescription& rhs) const
+		{
+			if (&rhs != this)
+			{
+				return (Bindings == rhs.Bindings && BindingsLayout == rhs.BindingsLayout);
+			}
+			return true;
+		}
+
+
+		Vector<VertexBindingDescription>	Bindings;
+		LayoutType							BindingsLayout{ LayoutType::Interleaved };
+	};
+
 
 	/**
 	* \brief This describes how a graphics pipeline should be built.
@@ -29,6 +76,7 @@ namespace moe
 		DepthStencilStateDescriptor	DepthStencilStateDesc;
 		RasterizerStateDescriptor	RasterizerStateDesc;
 		PrimitiveTopology			Topology{ PrimitiveTopology::TriangleList };
+		VertexLayoutDescription		VertexLayout;
 	};
 
 
@@ -149,6 +197,13 @@ namespace moe
 			ShaderProgram = std::move(programDesc);
 			return *this;
 		}
+
+		MaterialPassDescription&	AssignPipelineVertexLayout(VertexLayoutDescription layoutDesc)
+		{
+			Pipeline.VertexLayout = std::move(layoutDesc);
+			return *this;
+		}
+
 
 		PipelineDescription				Pipeline;
 		ShaderProgramDescription		ShaderProgram;

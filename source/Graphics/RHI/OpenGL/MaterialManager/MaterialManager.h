@@ -10,6 +10,28 @@
 namespace moe
 {
 
+	struct OpenGLVertexBindingFormat
+	{
+		static std::optional<OpenGLVertexBindingFormat>	TranslateFormat(VertexBindingFormat vtxFormat);
+		static std::optional<uint32_t>					FindTypeSize(std::uint8_t numCpnts, GLenum type);
+
+		GLenum			Type{ GL_FALSE };
+		std::uint8_t	Size{ 0 };
+		GLboolean		Normalized{ false };
+		uint32_t		NumBindings{ 1 }; // Some types (e.g. mat4) take multiple bindings.
+	};
+
+	struct OpenGL4VertexLayout
+	{
+		OpenGL4VertexLayout(GLuint vao, VertexLayoutDescription layoutDesc) :
+			VAO(vao), Desc(std::move(layoutDesc))
+		{}
+
+		GLuint					VAO{0};
+		VertexLayoutDescription	Desc{};
+	};
+
+
 	struct OpenGL4ShaderProgram
 	{
 		OpenGL4ShaderProgram(GLuint prog, Vector<GLuint> mods) :
@@ -23,9 +45,6 @@ namespace moe
 
 	struct OpenGL4PipelineStateObject
 	{
-
-
-
 		GLenum	BlendSrcFactor{ GL_SRC_ALPHA };
 		GLenum	BlendDestFactor{ GL_ONE_MINUS_SRC_ALPHA };
 		GLenum	BlendEquation{ GL_FUNC_ADD };
@@ -100,14 +119,15 @@ namespace moe
 	};
 
 
-	struct OpenGL4PMaterial
+	struct OpenGL4Material
 	{
-		OpenGL4PMaterial(uint32_t pso, uint32_t pipeline, ResourceSetsDescription sets) :
-			PSOIdx(pso), ProgramIdx(pipeline), ResourceSets(std::move(sets))
+		OpenGL4Material(uint32_t pso, uint32_t pipeline, uint32_t vao, ResourceSetsDescription sets) :
+			PSOIdx(pso), ProgramIdx(pipeline), VAOIdx(vao), ResourceSets(std::move(sets))
 		{}
 
 		uint32_t				PSOIdx{ 0 };
 		uint32_t				ProgramIdx{ 0 };
+		uint32_t				VAOIdx{ 0 };
 		ResourceSetsDescription	ResourceSets;
 	};
 
@@ -137,6 +157,10 @@ namespace moe
 
 		uint32_t	FindOrBuildPipelineStateObject(PipelineDescription const& pipelineDesc);
 
+		GLuint			FindOrCreateVAO(VertexLayoutDescription const& layoutDesc);
+		static GLuint	BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc);
+		static GLuint	BuildPackedVAO(VertexLayoutDescription const& layoutDesc);
+
 		static OpenGL4PipelineStateObject	TranslateConfigToPipelineStateObject(PipelineDescription const& pipelineDesc);
 
 		HashMap<HashString, GLuint>			m_shaderModules{};
@@ -145,7 +169,9 @@ namespace moe
 
 		Vector<OpenGL4PipelineStateObject>	m_pipelineStateObjects;
 
-		Vector<OpenGL4PMaterial>			m_materials;
+		Vector<OpenGL4VertexLayout>			m_VAOs;
+
+		Vector<OpenGL4Material>				m_materials;
 
 
 	};

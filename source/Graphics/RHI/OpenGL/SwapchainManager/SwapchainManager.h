@@ -39,6 +39,7 @@ namespace moe
 
 		DeviceSwapchainHandle	CreateSwapchain(RenderHardwareInterface* RHI, IGraphicsSurface* boundSurface) override;
 
+		DeviceFramebufferHandle	GetMainSwapchainFramebufferHandle() override;
 		DeviceTextureHandle		GetMainSwapchainColorAttachment(uint32_t colorAttachmentIdx = 0) override;
 		DeviceTextureHandle		GetMainSwapchainDepthStencilAttachment() override;
 

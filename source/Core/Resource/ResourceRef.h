@@ -119,7 +119,12 @@ namespace moe
 
 		operator bool() const
 		{
-			return (m_rscID != INVALID_ENTRY);
+			return IsValid();
+		}
+
+		bool	IsValid() const
+		{
+			return m_rscID != INVALID_ENTRY;
 		}
 
 

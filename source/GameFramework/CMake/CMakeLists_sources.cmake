@@ -68,6 +68,7 @@ set(Monocle_GameFramework_SOURCES
 ./Service/WindowService/Window/OpenGLGLFWWindow.cpp
 ./Service/WindowService/Window/OpenGLGLFWWindow.h
 ./Service/WindowService/Window/Window.h
+./Service/WindowService/WindowService.cpp
 ./Service/WindowService/WindowService.h
 ./Service/WindowService/WindowService.inl
 ./Simulation/App3D/App3D.cpp

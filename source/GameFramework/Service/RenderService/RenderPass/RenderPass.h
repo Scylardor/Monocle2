@@ -4,6 +4,7 @@
 
 namespace moe
 {
+	class RenderQueue;
 	class RenderHardwareInterface;
 
 	class IRenderPass
@@ -14,7 +15,7 @@ namespace moe
 
 		virtual ~IRenderPass() = default;
 
-		virtual void	Update() = 0;
+		virtual void	Update(RenderQueue & drawQueue, uint8_t passIndex) = 0;
 
 		void	Destroy(RenderHardwareInterface& rhi);
 	};

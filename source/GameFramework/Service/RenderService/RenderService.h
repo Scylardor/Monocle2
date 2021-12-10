@@ -29,9 +29,10 @@ namespace moe
 
 
 		template <typename... Args>
-		[[nodiscard]] RenderScene& EmplaceScene(Renderer& renderer, Args&&... args)
+		RenderScene& EmplaceScene(Renderer& renderer, Args&&... args)
 		{
 			m_scenes.EmplaceBack(renderer, std::forward<Args>(args)...);
+			renderer.AttachScene(m_scenes.Back());
 			return m_scenes.Back();
 		}
 
@@ -50,6 +51,9 @@ namespace moe
 		{
 			return m_RHI.get();
 		}
+
+
+		void	Update();
 
 	private:
 
