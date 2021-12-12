@@ -395,7 +395,7 @@ namespace moe
 		}
 	}
 
-	GLuint OpenGL4MaterialManager::FindOrCreateVAO(VertexLayoutDescription const& layoutDesc, PrimitiveTopology topo)
+	uint32_t OpenGL4MaterialManager::FindOrCreateVAO(VertexLayoutDescription const& layoutDesc, PrimitiveTopology topo)
 	{
 		// First and foremost, check that we do not have an existing vertex layout that could fit this description...
 		auto vtxLayoutIt = std::find_if(m_VAOs.begin(), m_VAOs.end(), [&layoutDesc](const OpenGL4VertexLayout& glLayout)
@@ -406,7 +406,7 @@ namespace moe
 		if (vtxLayoutIt != m_VAOs.end())
 		{
 			// we found a matching one : don't bother recreating a new one
-			return vtxLayoutIt->VAO;
+			return (uint32_t) std::distance(m_VAOs.begin(), vtxLayoutIt);
 		}
 
 		GLuint vaoID = 0;
@@ -437,7 +437,7 @@ namespace moe
 			m_VAOs.EmplaceBack(vaoID, vaoStride, topo, layoutDesc);
 		}
 
-		return vaoID;
+		return (uint32_t) m_VAOs.Size()-1;
 	}
 
 

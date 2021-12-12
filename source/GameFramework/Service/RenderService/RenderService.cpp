@@ -27,6 +27,7 @@ namespace moe
 				MOE_ASSERT(passIndex <= GetMaxRenderPassIndex());
 			}
 
+			rdr.MutRHI()->SubmitCommandBuffer(drawCallQueue.GetCommandBuffer());
 		}
 	}
 }

@@ -33,6 +33,7 @@ namespace moe
 		colorAttachmentData.Format = format;
 		colorAttachmentData.Usage = usage;
 		colorAttachmentData.Samples = fb.Samples;
+		colorAttachmentData.Mipmaps = 1;
 
 		DeviceTextureHandle colorAttachment = m_texManager.CreateTexture2D(colorAttachmentData);
 		fb.ColorAttachments.EmplaceBack(colorAttachment);
@@ -50,6 +51,7 @@ namespace moe
 		depthAttachmentData.Format = format;
 		depthAttachmentData.Usage = usage;
 		depthAttachmentData.Samples = fb.Samples;
+		depthAttachmentData.Mipmaps = 1;
 
 		DeviceTextureHandle depthAttachment = m_texManager.CreateTexture2D(depthAttachmentData);
 		fb.DepthStencilAttachment = depthAttachment;
@@ -68,19 +70,27 @@ namespace moe
 #		endif
 
 		glBindFramebuffer(GL_FRAMEBUFFER, fb.FramebufferID);
+	}
 
-		int i = 0;
-		for (DeviceTextureHandle colorAttachment : fb.ColorAttachments)
+
+	void OpenGL4FramebufferManager::DestroyFramebuffer(DeviceFramebufferHandle fbHandle, DestroyAttachmentMode attachMode)
+	{
+		OpenGL4FramebufferDescription const& fbDesc = GetFramebuffer(fbHandle);
+
+		if (attachMode == DestroyAttachmentMode::DestroyAttachments)
 		{
-			OpenGL4TextureData const& texData = m_texManager.GetTextureData(colorAttachment);
-			BindAttachment(fb.FramebufferID, GL_COLOR_ATTACHMENT0 + i, texData.TextureID, texData.Usage);
+			for (auto const& attachmentTexture : fbDesc.ColorAttachments)
+			{
+				m_texManager.DestroyTexture2D(attachmentTexture);
+			}
+
+			if (fbDesc.DepthStencilAttachment.IsNotNull())
+			{
+				m_texManager.DestroyTexture2D(fbDesc.DepthStencilAttachment);
+			}
 		}
 
-		if (fb.DepthStencilAttachment.IsNotNull())
-		{
-			BindDepthStencilAttachment(fb.FramebufferID, fb.DepthStencilAttachment);
-		}
-
+		glDeleteFramebuffers(1, &fbDesc.FramebufferID);
 	}
 
 
@@ -96,17 +106,82 @@ namespace moe
 	}
 
 
+	void OpenGL4FramebufferManager::DestroyFramebuffer(DeviceFramebufferHandle fbHandle)
+	{
+		auto& fb = MutFramebuffer(fbHandle);
+		glDeleteFramebuffers(1, &fb.FramebufferID);
+	}
+
+
+	void OpenGL4FramebufferManager::ResizeFramebuffer(DeviceFramebufferHandle fbHandle, std::pair<int, int> const& dimensions)
+	{
+		OpenGL4FramebufferDescription& fbDesc = MutFramebuffer(fbHandle);
+
+		for (auto const& attachmentTexture : fbDesc.ColorAttachments)
+		{
+			m_texManager.ResizeTexture2D(attachmentTexture, dimensions);
+		}
+
+		if (fbDesc.DepthStencilAttachment.IsNotNull())
+		{
+			m_texManager.ResizeTexture2D(fbDesc.DepthStencilAttachment, dimensions);
+		}
+
+		glDeleteFramebuffers(1, &fbDesc.FramebufferID);
+		glCreateFramebuffers(1, &fbDesc.FramebufferID);
+
+		for (auto const& attachmentTexture : fbDesc.ColorAttachments)
+		{
+			OpenGL4TextureData const& texData = m_texManager.GetTextureData(attachmentTexture);
+			BindAttachment(fbDesc.FramebufferID, GL_COLOR_ATTACHMENT0 + (int)fbDesc.ColorAttachments.Size(), texData.TextureID, texData.Usage);
+		}
+
+		if (fbDesc.DepthStencilAttachment.IsNotNull())
+		{
+			OpenGL4TextureData const& texData = m_texManager.GetTextureData(fbDesc.DepthStencilAttachment);
+			if (FormatHasStencilComponent(texData.Format))
+			{
+				BindAttachment(fbDesc.FramebufferID, GL_DEPTH_STENCIL_ATTACHMENT, texData.TextureID, texData.Usage);
+			}
+			else
+			{
+				BindAttachment(fbDesc.FramebufferID, GL_DEPTH_ATTACHMENT, texData.TextureID, texData.Usage);
+			}
+		}
+
+#		if MOE_DEBUG
+		auto status = glCheckNamedFramebufferStatus(fbDesc.FramebufferID, GL_FRAMEBUFFER);
+		MOE_DEBUG_ASSERT(status == GL_FRAMEBUFFER_COMPLETE);
+#		endif
+
+	}
+
+
 	void OpenGL4FramebufferManager::AddColorAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle)
 	{
 		auto& fb = MutFramebuffer(fbHandle);
+
+		OpenGL4TextureData const& texData = m_texManager.GetTextureData(texHandle);
+		BindAttachment(fb.FramebufferID, GL_COLOR_ATTACHMENT0 + (int)fb.ColorAttachments.Size(), texData.TextureID, texData.Usage);
+		// TODO : check for max number of attachments
 		fb.ColorAttachments.PushBack(texHandle);
 	}
 
 
-	void OpenGL4FramebufferManager::SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle,
-		DeviceTextureHandle texHandle)
+	void OpenGL4FramebufferManager::SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle)
 	{
 		auto& fb = MutFramebuffer(fbHandle);
+		OpenGL4TextureData const& texData = m_texManager.GetTextureData(texHandle);
+
+		if (FormatHasStencilComponent(texData.Format))
+		{
+			BindAttachment(fb.FramebufferID, GL_DEPTH_STENCIL_ATTACHMENT, texData.TextureID, texData.Usage);
+		}
+		else
+		{
+			BindAttachment(fb.FramebufferID, GL_DEPTH_ATTACHMENT, texData.TextureID, texData.Usage);
+		}
+
 		fb.DepthStencilAttachment = texHandle;
 	}
 

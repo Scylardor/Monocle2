@@ -10,17 +10,27 @@ namespace moe
 {
 	void OpenGLGLFWWindow::SetWindowHints(ConfigSection const& windowConfig)
 	{
-		// While there is no way to ask the driver for a context of the highest supported version,
-		// GLFW will attempt to provide this when you ask for a version 1.0 context, which is the default for these hints.
-		auto GLmajor = windowConfig.GetUint("GL_major").value_or(1);
-		auto GLminor = windowConfig.GetUint("GL_minor").value_or(0);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GLmajor);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GLminor);
+		// there is no way to ask the driver for a context of the highest supported version,
+		// if there is no configuration, try to load 4.5 by default. TODO: this should be changed
+		auto GLmajor = windowConfig.GetUint("GL_major");
+		if (GLmajor.has_value())
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GLmajor.value());
+		else
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+
+
+		auto GLminor = windowConfig.GetUint("GL_minor");
+		if (GLminor.has_value())
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GLminor.value());
+		else
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
 		// From the docs :
 		// If requesting an OpenGL version below 3.2, GLFW_OPENGL_ANY_PROFILE must be used. If OpenGL ES is requested, this hint is ignored.
+		// If the 1.0 special version is used, we use core (it's supposed to mean "highest available".
 		bool const higherThan32 = (GLmajor >= 3u && (GLminor >= (GLmajor == 3u ? 2u : 0u)));
-		if (higherThan32)
+		bool const enableCoreProfile = higherThan32 || (!GLmajor.has_value() && !GLminor.has_value());
+		if (enableCoreProfile)
 		{
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}

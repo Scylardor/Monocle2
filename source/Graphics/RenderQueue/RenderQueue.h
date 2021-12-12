@@ -91,6 +91,12 @@ namespace moe
 		}
 
 
+		CommandBuffer	const&	GetCommandBuffer() const
+		{
+			return m_cmdBuffer;
+		}
+
+
 
 		static RenderQueueKey ComputeRenderQueueKey(uint8_t passIndex, uint32_t cmd = 0, uint32_t program = 0, uint32_t matID = 0,
 		                                            float Depth = 0,

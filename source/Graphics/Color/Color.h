@@ -109,7 +109,7 @@ namespace moe
 
 		static	Color	Red()
 		{
-			return Color(255);
+			return Color(255, 0, 0);
 		}
 
 		static	Color	Green()

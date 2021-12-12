@@ -1,16 +1,19 @@
 #include "SwapchainManager.h"
 
-#include "Graphics/RHI/OpenGL/OGL4RHI.h"
 
 #include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
+#include "Graphics/RHI/OpenGL/OGL4RHI.h"
 
 namespace moe
 {
-
-	DeviceSwapchainHandle OpenGL4SwapchainManager::CreateSwapchain(RenderHardwareInterface* RHI, IGraphicsSurface* boundSurface)
+	OpenGL4SwapchainManager::OpenGL4SwapchainManager(RenderHardwareInterface* RHI):
+		m_RHI(dynamic_cast<OpenGL4RHI*>(RHI))
 	{
-		auto* rhi = dynamic_cast<OpenGL4RHI*>(RHI);
-		if (rhi == nullptr)
+	}
+
+	DeviceSwapchainHandle OpenGL4SwapchainManager::CreateSwapchain(IGraphicsSurface* boundSurface)
+	{
+		if (m_RHI == nullptr)
 		{
 			MOE_FATAL(ChanGraphics, "OpenGL swapchain manager not used with OpenGL RHI : something is very wrong.");
 			MOE_ASSERT(false);
@@ -26,9 +29,14 @@ namespace moe
 
 		auto dimensions = boundSurface->GetDimensions();
 
-		DeviceFramebufferHandle fbHandle = m_fbManager.CreateFramebuffer(dimensions);
-		m_fbManager.CreateFramebufferColorAttachment(fbHandle, moe::TextureFormat::RGB32F, TextureUsage::RenderTarget);
-		m_fbManager.CreateDepthStencilAttachment(fbHandle);
+		OpenGL4FramebufferManager& fbManager = m_RHI->GLFramebufferManager();
+
+		DeviceFramebufferHandle fbHandle = fbManager.CreateFramebuffer(dimensions);
+		// TODO : Putting Sampled here as it is likely the swapchain color attachment be sampled to be rendered on a fullscreen quad for postprocess.
+		// If we don't do it, materials trying to bind it won't work because the API is going to create a renderbuffer instead.
+		// Double check if it is a good idea or not later.
+		fbManager.CreateFramebufferColorAttachment(fbHandle, moe::TextureFormat::RGB8, TextureUsage((int)RenderTarget | (int)Sampled));
+		fbManager.CreateDepthStencilAttachment(fbHandle);
 
 		auto scID = m_swapchains.Emplace(boundSurface, fbHandle);
 		auto swapChainHandle = DeviceSwapchainHandle(scID);
@@ -36,7 +44,7 @@ namespace moe
 		boundSurface->OnSurfaceResizedEvent().AddDelegate({
 			 [this, swapChainHandle](int width, int height)
 			{
-				this->OnSurfaceResized(swapChainHandle, width, height);
+				this->OnSurfaceResized( swapChainHandle, width, height);
 			}
 		});
 
@@ -57,7 +65,7 @@ namespace moe
 		if (m_swapchains.Size() == 0)
 			return DeviceTextureHandle::Null();
 
-		return m_fbManager.GetFramebufferColorAttachment(m_swapchains.Get(0).Framebuffer, colorAttachmentIdx);
+		return m_RHI->GLFramebufferManager().GetFramebufferColorAttachment(m_swapchains.Get(0).Framebuffer, colorAttachmentIdx);
 	}
 
 
@@ -66,8 +74,15 @@ namespace moe
 		if (m_swapchains.Size() == 0)
 			return DeviceTextureHandle::Null();
 
-		return m_fbManager.GetFramebufferDepthStencilAttachment(m_swapchains.Get(0).Framebuffer);
+		return m_RHI->GLFramebufferManager().GetFramebufferDepthStencilAttachment(m_swapchains.Get(0).Framebuffer);
 
+	}
+
+
+	EventDelegateID OpenGL4SwapchainManager::RegisterSwapchainResizedCallback(DeviceSwapchainHandle scHandle, SwapchainResizedEvent::DelegateType&& dlgt)
+	{
+		OpenGL4Swapchain& swapchain = m_swapchains.Mut(scHandle.Get());
+		return swapchain.SwapchainResizedEvent.AddDelegate(std::move(dlgt));
 	}
 
 
@@ -81,10 +96,16 @@ namespace moe
 		return true;
 	}
 
+
 	void	OpenGL4SwapchainManager::OnSurfaceResized(DeviceSwapchainHandle swapchainHandle, int width, int height)
 	{
-		swapchainHandle;
-		width;
-		height;
+		OpenGL4Swapchain& sc = m_swapchains.Mut(swapchainHandle.Get());
+		OpenGL4FramebufferManager& fbManager = m_RHI->GLFramebufferManager();
+
+		fbManager.ResizeFramebuffer(sc.Framebuffer, { width, height });
+
+		glViewport(0, 0, width, height);
+
+		sc.SwapchainResizedEvent.Broadcast(width, height);
 	}
 }

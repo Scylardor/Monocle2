@@ -18,11 +18,11 @@ namespace moe
 		RenderableObjectHandle() = default;
 		RenderableObjectHandle(ValT val) : m_handle(val) {}
 
-		ValT	m_handle{ 0 };
+		ValT	m_handle{ (ValT)-1 };
 
 		[[nodiscard]] ValT	Get() const { return m_handle; }
 
-		[[nodiscard]] bool	IsNull() const { return m_handle == 0; }
+		[[nodiscard]] bool	IsNull() const { return m_handle == (ValT)-1; }
 		[[nodiscard]] bool	IsNotNull() const { return !IsNull(); }
 
 		bool operator==(const RenderableObjectHandle& rhs) const

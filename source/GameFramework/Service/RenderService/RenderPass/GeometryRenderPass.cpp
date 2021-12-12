@@ -14,40 +14,67 @@ namespace moe
 	GeometryRenderPass::GeometryRenderPass(Renderer& owner) :
 		m_ownerRenderer(&owner)
 	{
-		auto* RHI = m_ownerRenderer->MutRHI();
-
-		DeviceTextureHandle scColorAttach = RHI->SwapchainManager().GetMainSwapchainColorAttachment();
-		DeviceTextureHandle scDepthAttach = RHI->SwapchainManager().GetMainSwapchainDepthStencilAttachment();
-
 		auto* gfxSurface = m_ownerRenderer->MutSurface();
 		MOE_DEBUG_ASSERT(gfxSurface != nullptr);
 		auto dimensions = gfxSurface->GetDimensions();
-		auto& framebufferManager = RHI->FramebufferManager();
-		DeviceFramebufferHandle fbHandle = framebufferManager.CreateFramebuffer(dimensions);
 
-		framebufferManager.AddColorAttachment(fbHandle, scColorAttach);
-		framebufferManager.SetDepthStencilAttachment(fbHandle, scDepthAttach);
+		CreateFramebuffer(dimensions);
+
+		DeviceSwapchainHandle mainSwapchainHandle{ 0 };
+		m_ownerRenderer->MutRHI()->SwapchainManager().RegisterSwapchainResizedCallback(
+			mainSwapchainHandle,
+			{ [this](int width, int height)
+			{
+				this->OnGraphicsSurfaceResized(width, height);
+			} }
+		);
 	}
 
 
 	GeometryRenderPass::~GeometryRenderPass()
 	{
-		auto* gfxSurface = m_ownerRenderer->MutSurface();
-		gfxSurface->OnSurfaceResizedEvent().Remove(m_surfaceResizeDelID);
 	}
 
 
 	void GeometryRenderPass::Update(RenderQueue& drawQueue, uint8_t passIndex)
 	{
 		RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
-		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Red());
+		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Blue());
 
 		drawQueue.EmplaceCommand<CmdEndRenderPass>(key);
 	}
 
 
-	void GeometryRenderPass::OnGraphicsSurfaceResized(int /*newWidth*/, int /*newHeight*/)
+	void GeometryRenderPass::CreateFramebuffer(std::pair<int, int> const& dimensions)
 	{
+		auto* RHI = m_ownerRenderer->MutRHI();
+		auto& framebufferManager = RHI->FramebufferManager();
+		m_framebuffer = framebufferManager.CreateFramebuffer(dimensions);
 
+		ISwapchainManager& scManager = RHI->SwapchainManager();
+		DeviceTextureHandle scColorAttach = scManager.GetMainSwapchainColorAttachment();
+		DeviceTextureHandle scDepthAttach = scManager.GetMainSwapchainDepthStencilAttachment();
+
+		framebufferManager.AddColorAttachment(m_framebuffer, scColorAttach);
+		framebufferManager.SetDepthStencilAttachment(m_framebuffer, scDepthAttach);
+	}
+
+
+	void GeometryRenderPass::OnGraphicsSurfaceResized(int newWidth, int newHeight)
+	{
+		auto* RHI = m_ownerRenderer->MutRHI();
+		auto& framebufferManager = RHI->FramebufferManager();
+
+		// dont destroy the attachments of the swap chain : the swap chain probably deleted them itself
+		framebufferManager.DestroyFramebuffer(m_framebuffer, IFramebufferManager::DestroyAttachmentMode::KeepAttachments);
+
+		m_framebuffer = framebufferManager.CreateFramebuffer({newWidth, newHeight});
+
+		ISwapchainManager& scManager = RHI->SwapchainManager();
+		DeviceTextureHandle scColorAttach = scManager.GetMainSwapchainColorAttachment();
+		DeviceTextureHandle scDepthAttach = scManager.GetMainSwapchainDepthStencilAttachment();
+
+		framebufferManager.AddColorAttachment(m_framebuffer, scColorAttach);
+		framebufferManager.SetDepthStencilAttachment(m_framebuffer, scDepthAttach);
 	}
 }

@@ -100,7 +100,12 @@ namespace moe
 
 		// Now forge handles
 		DeviceBufferHandle vbo = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, 0);
-		DeviceBufferHandle ebo = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, (uint32_t)meshData.Vertices.Size());
+
+		DeviceBufferHandle ebo;
+		if (!meshData.Indices.Empty())
+		{
+			ebo = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, (uint32_t)meshData.Vertices.Size());
+		}
 
 		DeviceMeshHandle meshHandle(m_meshesData.Emplace(meshData, vbo, ebo));
 		return meshHandle;

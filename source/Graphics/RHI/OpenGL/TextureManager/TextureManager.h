@@ -11,6 +11,7 @@
 namespace moe
 {
 
+
 	struct OpenGL4TextureData : TextureData
 	{
 		OpenGL4TextureData(TextureData const& data, GLuint texID) :
@@ -35,12 +36,17 @@ namespace moe
 
 		[[nodiscard]] DeviceTextureHandle Monocle_Graphics_API	CreateTexture2D(TextureData const& data) override;
 
+		void	FreeUnderlyingTexture2D(DeviceTextureHandle tex);
+		void	ResizeTexture2D(DeviceTextureHandle tex, std::pair<int, int> const& newDimensions);
+		void	DestroyTexture2D(DeviceTextureHandle tex);
+
 		[[nodiscard]] OpenGL4TextureData const&	GetTextureData(DeviceTextureHandle handle) const
 		{
 			return m_textures.Get((ObjectPoolID) handle.Get());
 		}
 
 	private:
+		void	FreeUnderlyingTexture2D(OpenGL4TextureData& texData);
 
 		DynamicObjectPool<OpenGL4TextureData>	m_textures;
 
