@@ -56,6 +56,11 @@ namespace moe
 			return m_attachedScene;
 		}
 
+		RenderScene const*	GetAttachedScene() const
+		{
+			return m_attachedScene;
+		}
+
 
 		void	AttachSurface(IGraphicsSurface& surface)
 		{

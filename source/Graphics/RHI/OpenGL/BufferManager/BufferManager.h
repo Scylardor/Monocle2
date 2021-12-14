@@ -66,7 +66,7 @@ namespace moe
 		}
 
 
-		void	DrawMesh(OpenGL4MaterialManager const& materialManager, DeviceMeshHandle handle, DeviceMaterialHandle meshMaterial);
+		void	DrawMesh(OpenGL4MaterialManager const& materialManager, DeviceMeshHandle handle, uint32_t materialIdx);
 
 
 	private:

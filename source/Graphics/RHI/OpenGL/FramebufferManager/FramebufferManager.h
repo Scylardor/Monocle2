@@ -48,8 +48,12 @@ namespace moe
 
 		void	BindFramebuffer(DeviceFramebufferHandle fbHandle, TargetBuffer readBuffer = TargetBuffer::Default, TargetBuffer writeBuffer = TargetBuffer::Default) override;
 
+		void	DestroyFramebuffer(DeviceFramebufferHandle fbHandle, DestroyAttachmentMode attachMode = DestroyAttachmentMode::DestroyAttachments) override;
+
 		void	UnbindFramebuffer(DeviceFramebufferHandle fbHandle) override;
 		void	UnbindFramebuffer();
+		void	DestroyFramebuffer(DeviceFramebufferHandle fbHandle);
+		void	ResizeFramebuffer(DeviceFramebufferHandle fbHandle, std::pair<int, int> const& dimensions);
 
 		void	AddColorAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) override;
 		void	SetDepthStencilAttachment(DeviceFramebufferHandle fbHandle, DeviceTextureHandle texHandle) override;

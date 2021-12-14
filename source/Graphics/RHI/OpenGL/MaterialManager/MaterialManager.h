@@ -148,12 +148,12 @@ namespace moe
 
 		[[nodiscard]] DeviceMaterialHandle	CreateMaterial(MaterialDescription const& matDesc) override;
 
-		void	BindMaterial(OpenGL4RHI* rhi, DeviceMaterialHandle matHandle);
+		void	BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx);
 
-		[[nodiscard]] OpenGL4VertexLayout const&	GetMaterialVertexLayout(DeviceMaterialHandle handle) const
+		[[nodiscard]] OpenGL4VertexLayout const&	GetMaterialVertexLayout(uint32_t materialIdx) const
 		{
-			MOE_ASSERT(handle.IsNotNull() && handle.Get() < m_materials.Size());
-			OpenGL4Material const& material = m_materials[handle.Get()];
+			MOE_ASSERT(materialIdx < m_materials.Size());
+			OpenGL4Material const& material = m_materials[materialIdx];
 
 			MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
 			return m_VAOs[material.VAOIdx];

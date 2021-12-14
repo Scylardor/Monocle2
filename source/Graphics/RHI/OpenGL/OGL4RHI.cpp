@@ -7,7 +7,7 @@ namespace moe
 {
 	OpenGL4RHI::OpenGL4RHI(GLLoaderFunction loaderFunc) :
 		m_framebufferManager(m_textureManager),
-		m_swapchainManager(m_framebufferManager)
+		m_swapchainManager(this)
 	{
 		// Very important : this has to be done and working before any gl* call !
 		bool ok = gladLoadGLLoader((GLADloadproc)loaderFunc);
@@ -71,7 +71,7 @@ namespace moe
 
 	void OpenGL4RHI::SubmitCommandBuffer(CommandBuffer const& cmdBuf)
 	{
-		DeviceMaterialHandle lastMaterialUsed;
+		uint32_t lastMaterialUsedIdx = (uint32_t)-1;
 
 		for (CommandBufferVariant const& cmd : cmdBuf)
 		{
@@ -82,12 +82,17 @@ namespace moe
 					},
 					[&](CmdBindMaterial const & cbm)
 					{
-						m_materialManager.BindMaterial(this, cbm.Handle);
-						lastMaterialUsed = cbm.Handle;
+						MOE_DEBUG_ASSERT(cbm.Handle.IsNotNull());
+						if (cbm.Handle.IsNull())
+							return;
+
+						uint32_t matIdx = cbm.Handle.Get() >> 32;
+						m_materialManager.BindMaterial(this, matIdx);
+						lastMaterialUsedIdx = matIdx;
 					},
 					[&](CmdDrawMesh const & cdm)
 					{
-						m_bufferManager.DrawMesh(m_materialManager, cdm.Handle, lastMaterialUsed);
+						m_bufferManager.DrawMesh(m_materialManager, cdm.Handle, lastMaterialUsedIdx);
 					},
 					[this](CmdEndRenderPass const &)
 					{

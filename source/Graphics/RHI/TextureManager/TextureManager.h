@@ -66,6 +66,7 @@ namespace moe
 		virtual DeviceTextureHandle	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) = 0;
 
 		virtual DeviceTextureHandle	CreateTexture2D(TextureData const& data) = 0;
+
 	};
 
 

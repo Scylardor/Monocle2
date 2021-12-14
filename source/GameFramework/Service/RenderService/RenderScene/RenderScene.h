@@ -35,6 +35,28 @@ namespace moe
 			return m_objects.Mut(objID);
 		}
 
+
+		// For C++11 range for syntax
+		auto	begin()
+		{
+			return m_objects.begin();
+		}
+
+		auto begin() const
+		{
+			return m_objects.begin();
+		}
+
+		auto end()
+		{
+			return m_objects.end();
+		}
+
+		auto end() const
+		{
+			return m_objects.end();
+		}
+
 	private:
 
 		Renderer* m_sceneRenderer{ nullptr };

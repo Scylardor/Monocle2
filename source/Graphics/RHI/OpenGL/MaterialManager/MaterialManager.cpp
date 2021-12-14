@@ -107,14 +107,10 @@ namespace moe
 	}
 
 
-	void OpenGL4MaterialManager::BindMaterial(OpenGL4RHI* rhi, DeviceMaterialHandle matHandle)
+	void OpenGL4MaterialManager::BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx)
 	{
-		MOE_DEBUG_ASSERT(matHandle.IsNotNull());
-		if (matHandle.IsNull())
-			return;
-
-		MOE_ASSERT(matHandle.Get() < m_materials.Size());
-		OpenGL4Material& material = m_materials[matHandle.Get()];
+		MOE_ASSERT(materialIdx < m_materials.Size());
+		OpenGL4Material& material = m_materials[materialIdx];
 
 		MOE_ASSERT(material.PSOIdx < m_pipelineStateObjects.Size());
 		OpenGL4PipelineStateObject& pso = m_pipelineStateObjects[material.PSOIdx];

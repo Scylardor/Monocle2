@@ -23,6 +23,12 @@ namespace moe
 		TextureUsage					Usage{ TextureUsage::Sampled };
 		uint32_t						Mipmaps{ MAX_MIPMAPS };
 		uint32_t						Samples{ 1 };
+
+
+		[[nodiscard]] bool	IsSampledTexture() const
+		{
+			return (Usage & Sampled) == Sampled;
+		}
 	};
 
 

@@ -6,6 +6,7 @@
 
 #include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
 #include "Graphics/RenderQueue/RenderQueue.h"
+#include "GameFramework/Service/RenderService/RenderScene/RenderScene.h"
 
 #include "Graphics/RHI/RenderHardwareInterface.h"
 
@@ -39,7 +40,22 @@ namespace moe
 	void GeometryRenderPass::Update(RenderQueue& drawQueue, uint8_t passIndex)
 	{
 		RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
-		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Blue());
+		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Black());
+
+		RenderScene const& renderedScene = *m_ownerRenderer->GetAttachedScene();
+
+		DeviceMaterialHandle lastMaterialUsed = DeviceMaterialHandle::Null();
+
+		for (RenderObject const& object : renderedScene)
+		{
+			if (object.GetMaterialHandle() != lastMaterialUsed)
+			{
+				drawQueue.EmplaceDrawCall<CmdBindMaterial>(key, object.GetMaterialHandle());
+				lastMaterialUsed = object.GetMaterialHandle();
+			}
+
+			drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, object.GetMeshHandle());
+		}
 
 		drawQueue.EmplaceCommand<CmdEndRenderPass>(key);
 	}

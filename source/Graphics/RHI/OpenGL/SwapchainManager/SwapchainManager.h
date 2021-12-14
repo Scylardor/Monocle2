@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Core/Containers/ObjectPool/ObjectPool.h"
-#include "Graphics/RHI/OpenGL/FramebufferManager/FramebufferManager.h"
 #include "Graphics/RHI/SwapchainManager/SwapchainManager.h"
+
 
 namespace moe
 {
+	class OpenGL4RHI;
 	class RenderHardwareInterface;
 	class IGraphicsSurface;
 
@@ -23,6 +24,7 @@ namespace moe
 
 		IGraphicsSurface*		Surface = nullptr;
 		DeviceFramebufferHandle	Framebuffer;
+		SwapchainResizedEvent	SwapchainResizedEvent{};
 	};
 
 
@@ -33,15 +35,15 @@ namespace moe
 	{
 	public:
 
-		OpenGL4SwapchainManager(OpenGL4FramebufferManager& fbManager)  :
-			m_fbManager(fbManager)
-		{}
+		OpenGL4SwapchainManager(RenderHardwareInterface* RHI);
 
-		DeviceSwapchainHandle	CreateSwapchain(RenderHardwareInterface* RHI, IGraphicsSurface* boundSurface) override;
+		DeviceSwapchainHandle	CreateSwapchain(IGraphicsSurface* boundSurface) override;
 
 		DeviceFramebufferHandle	GetMainSwapchainFramebufferHandle() override;
 		DeviceTextureHandle		GetMainSwapchainColorAttachment(uint32_t colorAttachmentIdx = 0) override;
 		DeviceTextureHandle		GetMainSwapchainDepthStencilAttachment() override;
+
+		EventDelegateID			RegisterSwapchainResizedCallback(DeviceSwapchainHandle scHandle, SwapchainResizedEvent::DelegateType&& dlgt) override;
 
 		bool					Present(DeviceSwapchainHandle presentedSwapchain) override;
 
@@ -50,7 +52,7 @@ namespace moe
 		void	OnSurfaceResized(DeviceSwapchainHandle swapchainHandle, int width, int height);
 
 
-		OpenGL4FramebufferManager&			m_fbManager;
+		OpenGL4RHI*							m_RHI;
 
 		DynamicObjectPool<OpenGL4Swapchain>	m_swapchains{};
 

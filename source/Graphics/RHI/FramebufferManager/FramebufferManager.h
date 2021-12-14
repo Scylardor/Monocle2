@@ -81,6 +81,13 @@ namespace moe
 		virtual void	BindFramebuffer(DeviceFramebufferHandle fbHandle, TargetBuffer readBuffer = TargetBuffer::Default, TargetBuffer writeBuffer = TargetBuffer::Default) = 0;
 
 		virtual void	UnbindFramebuffer(DeviceFramebufferHandle fbHandle) = 0;
+
+		enum class DestroyAttachmentMode
+		{
+			DestroyAttachments,
+			KeepAttachments
+		};
+		virtual void	DestroyFramebuffer(DeviceFramebufferHandle fbHandle, DestroyAttachmentMode attachMode = DestroyAttachmentMode::DestroyAttachments) = 0;
 	};
 
 

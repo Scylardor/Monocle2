@@ -56,6 +56,11 @@ namespace moe
 			return m_framebufferManager;
 		}
 
+		OpenGL4FramebufferManager& GLFramebufferManager()
+		{
+			return m_framebufferManager;
+		}
+
 		ISwapchainManager& SwapchainManager() override
 		{
 			return m_swapchainManager;

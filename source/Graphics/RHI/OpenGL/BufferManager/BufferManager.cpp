@@ -52,9 +52,9 @@ namespace moe
 	}
 
 
-	void OpenGL4BufferManager::DrawMesh(OpenGL4MaterialManager const& materialManager, DeviceMeshHandle handle, DeviceMaterialHandle meshMaterial)
+	void OpenGL4BufferManager::DrawMesh(OpenGL4MaterialManager const& materialManager, DeviceMeshHandle handle, uint32_t materialIdx)
 	{
-		OpenGL4VertexLayout const& vtxLayout = materialManager.GetMaterialVertexLayout(meshMaterial);
+		OpenGL4VertexLayout const& vtxLayout = materialManager.GetMaterialVertexLayout(materialIdx);
 
 		OpenGL4MeshData const& meshData = m_meshesData.Get(handle.Get());
 

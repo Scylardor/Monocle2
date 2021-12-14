@@ -21,6 +21,8 @@ namespace moe
 
 	private:
 
+		void	CreateFramebuffer(std::pair<int, int> const& dimensions);
+
 		void	OnGraphicsSurfaceResized(int newWidth, int newHeight);
 
 

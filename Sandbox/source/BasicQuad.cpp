@@ -24,7 +24,6 @@ namespace moe
 		OpenGLApp3D::Start();
 
 		auto* rscSvc = EditEngine()->AddService<ResourceService>();
-		//auto* render = EditEngine()->EditService<RenderService>();
 
 		Array<Vertex_PosColorUV, 4> helloQuad{
 		{{0.5f, 0.5f, 0.0f } , {1.0f, 0.0f, 0.0f }, {1.0f, 1.0f} },   // top right
@@ -48,31 +47,24 @@ namespace moe
 
 		MaterialDescription matDesc;
 		matDesc.NewPassDescription().
-			AssignShaderProgramDescription({
+			AssignPipelineVertexLayout({ {
+				{"position", VertexBindingFormat::Float3 },
+				{"color", VertexBindingFormat::Float3 },
+				{"uv0", VertexBindingFormat::Float2 } }
+			}).AssignShaderProgramDescription({
 			{	ShaderStage::Vertex, basicVertShaderFile},
 			{	ShaderStage::Fragment, basicFragShaderFile}
-		});
+			})
+		.Pipeline.RasterizerStateDesc.m_cullMode = CullFace::None;
 
-		rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
+		Ref<MaterialResource> basicMat = rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
 
 		Renderer& forwardRenderer = InitializeRenderer();
-		forwardRenderer;
-		//auto* rdrSvc = EditEngine()->EditService<RenderService>();
-		//
 
-		//mainScene.AddObject(meshRsc, {});
+		auto* rdrSvc = EditEngine()->EditService<RenderService>();
+		RenderScene& scene = rdrSvc->EmplaceScene(forwardRenderer);
 
-		// rdrSvc->MutRHI()->BufferManager().FindOrCreateMeshBuffer(meshRsc);
-
-		//Renderer& forwardRenderer = rdrSvc->EmplaceRenderer();
-
-
-
-
-		//MaterialData myDefaultMaterial;
-
-
-		//render->
+		scene.AddObject(meshRsc, basicMat);
 	}
 
 
@@ -84,9 +76,7 @@ namespace moe
 
 		auto* winSvc = EditEngine()->EditService<WindowService>();
 		forwardRenderer.AttachSurface(*winSvc->MutWindow());
-		DeviceSwapchainHandle swapchain = forwardRenderer.MutRHI()->SwapchainManager().CreateSwapchain(forwardRenderer.MutRHI(), forwardRenderer.MutSurface());
-
-		rdrSvc->EmplaceScene(forwardRenderer);
+		DeviceSwapchainHandle swapchain = forwardRenderer.MutRHI()->SwapchainManager().CreateSwapchain(forwardRenderer.MutSurface());
 
 		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
 
