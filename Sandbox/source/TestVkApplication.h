@@ -44,7 +44,7 @@ namespace moe
 		float		m_deltaTime{ 0.f };
 
 
-		RenderScene		m_scene;
+		VulkanRenderScene		m_scene;
 
 	};
 

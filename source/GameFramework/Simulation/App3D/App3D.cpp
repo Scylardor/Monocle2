@@ -39,6 +39,8 @@ void moe::App3D::Start()
 	{
 		throw RuntimeException("Could not create window");
 	}
+
+	window->OnSurfaceLostEvent().Add<App3D, &App3D::OnWindowClosed>(this);
 }
 
 
@@ -58,10 +60,18 @@ void moe::App3D::Update()
 	auto* rdrSvc = EditEngine()->EditService<RenderService>();
 
 	rdrSvc->Update();
+
 }
 
 
 void moe::App3D::Shutdown()
 {
+}
+
+
+void moe::App3D::OnWindowClosed()
+{
+	EditEngine()->RemoveSimulation(this);
+	m_runningState = SimulationState::Stopping; // TODO: probably useless now
 }
 

@@ -56,6 +56,7 @@ namespace moe
 			{	ShaderStage::Fragment, basicFragShaderFile}
 			})
 		.Pipeline.RasterizerStateDesc.m_cullMode = CullFace::None;
+		matDesc.PassDescriptors[0].Pipeline.RasterizerStateDesc.m_polyMode = PolygonMode::Wireframe;
 
 		Ref<MaterialResource> basicMat = rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
 

@@ -309,7 +309,7 @@ namespace moe
 
 
 
-	void VulkanRenderer::RenderFrame(RenderScene& renderedScene)
+	void VulkanRenderer::RenderFrame(VulkanRenderScene& renderedScene)
 	{
 		m_swapchain.PrepareNewFrame();
 
@@ -343,7 +343,7 @@ namespace moe
 	}
 
 
-	void VulkanRenderer::RenderSceneWithCamera(RenderScene& renderScene, vk::CommandBuffer commandBuffer, CameraDesc& camera)
+	void VulkanRenderer::RenderSceneWithCamera(VulkanRenderScene& renderScene, vk::CommandBuffer commandBuffer, CameraDesc& camera)
 	{
 		const auto& camViewportScissor = renderScene.GetCameraSystem().GetCameraViewportScissor(camera.ID);
 		// get the view proj in case we need to recompute drawable's MVP

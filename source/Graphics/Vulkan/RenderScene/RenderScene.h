@@ -10,7 +10,7 @@
 
 namespace moe
 {
-	class RenderScene
+	class VulkanRenderScene
 	{
 
 	public:

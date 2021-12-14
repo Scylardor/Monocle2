@@ -62,10 +62,7 @@ namespace moe
 		}
 
 
-		void	AttachSurface(IGraphicsSurface& surface)
-		{
-			m_attachedSurface = &surface;
-		}
+		void AttachSurface(IGraphicsSurface& surface);
 
 		IGraphicsSurface*	MutSurface()
 		{
@@ -81,6 +78,11 @@ namespace moe
 		RenderService*	MutRenderService()
 		{
 			return m_myService;
+		}
+
+		bool	Ready() const
+		{
+			return m_readyToRender;
 		}
 
 
@@ -101,6 +103,11 @@ namespace moe
 
 	private:
 
+		void	OnAttachedSurfaceLost()
+		{
+			m_readyToRender = false;
+		}
+
 		RenderScene*		m_attachedScene = nullptr;
 		IGraphicsSurface*	m_attachedSurface = nullptr;
 
@@ -108,9 +115,11 @@ namespace moe
 
 		RenderHardwareInterface* m_RHI{ nullptr };
 
-		std::unordered_map<RenderPassType, PolymorphicObjectPool<IMaterialSystem>>	m_materialSystems{};
+		//std::unordered_map<RenderPassType, PolymorphicObjectPool<IMaterialSystem>>	m_materialSystems{};
 
 		Vector<std::unique_ptr<IRenderPass>>	m_renderPasses{};
+
+		bool	m_readyToRender = true;
 	};
 }
 

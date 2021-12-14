@@ -17,6 +17,8 @@ void moe::OpenGLApp3D::Start()
 {
 	EditEngine()->AddService<OpenGLGLFWService>();
 
+	App3D::Start();
+
 	auto* rdrSvc = EditEngine()->EditService<RenderService>();
 	rdrSvc->EmplaceRenderHardwareInterface<OpenGL4RHI>(OpenGLGLFWService::GetGLLoaderFunction());
 }

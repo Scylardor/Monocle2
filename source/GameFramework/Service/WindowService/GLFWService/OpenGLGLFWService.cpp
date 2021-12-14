@@ -8,8 +8,8 @@
 #include "GameFramework/Service/ConfigService/ConfigService.h"
 #include "GameFramework/Service/WindowService/Window/OpenGLGLFWWindow.h"
 
-moe::OpenGLGLFWService::OpenGLGLFWService(Engine& engine) :
-	GLFWService(engine)
+
+moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
 {
 	auto const* Config = EditEngine()->GetService<ConfigService>();
 	MOE_ASSERT(Config != nullptr);
@@ -21,11 +21,7 @@ moe::OpenGLGLFWService::OpenGLGLFWService(Engine& engine) :
 	window->SetWindowHints(windowSection);
 	bool ok = window->Create(windowSection);
 	MOE_DEBUG_ASSERT(ok);
-}
 
-
-moe::IWindow* moe::OpenGLGLFWService::CreateWindow()
-{
-	return nullptr;
+	return window;
 }
 #endif

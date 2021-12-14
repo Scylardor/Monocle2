@@ -11,7 +11,8 @@ namespace moe
 	public:
 		OpenGLGLFWWindow() = default;
 
-		void	SetWindowHints(ConfigSection const& windowConfig) override;
+		void				SetWindowHints(ConfigSection const& windowConfig) override;
+
 
 	protected:
 

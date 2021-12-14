@@ -1,19 +1,6 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#ifdef MOE_VULKAN
-#include "TestVkApplication.h"
-#include "Application/GlfwApplication/Vulkan/VulkanGlfwAppDescriptor.h"
-#endif
-
-
-#include "Application/GlfwApplication/OpenGL/OpenGLGlfwApplication.h"
-#include "TestApplication.h"
-
-#include "Core/Misc/Literals.h"
 #include "GameFramework/Engine/Engine.h"
-#include "GameFramework/Service/LogService/LogService.h"
-#include "GameFramework/Service/TimeService/TimeService.h"
-#include "GameFramework/Simulation/App3D/OpenGLApp3D.h"
 
 #include "BasicQuad.h"
 

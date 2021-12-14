@@ -14,7 +14,10 @@ namespace moe
 	{
 	public:
 
-		OpenGLGLFWService(Engine& engine);
+		OpenGLGLFWService(Engine& engine) :
+			GLFWService(engine)
+		{
+		}
 
 		~OpenGLGLFWService() = default;
 

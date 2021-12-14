@@ -3,6 +3,8 @@
 
 #include "Renderer.h"
 
+#include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
+
 namespace moe
 {
 
@@ -10,4 +12,13 @@ namespace moe
 	{
 
 	}
+
+
+	void Renderer::AttachSurface(IGraphicsSurface& surface)
+	{
+		m_attachedSurface = &surface;
+		surface.OnSurfaceLostEvent().Add<Renderer, &Renderer::OnAttachedSurfaceLost>(this);
+	}
+
+
 }

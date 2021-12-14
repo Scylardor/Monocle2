@@ -6,7 +6,7 @@
 namespace moe
 {
 
-	void RenderScene::Initialize(MyVkDevice& device, const VulkanSwapchain& swapchain, uint32_t maxFrameCount, uint32_t nbrActors)
+	void VulkanRenderScene::Initialize(MyVkDevice& device, const VulkanSwapchain& swapchain, uint32_t maxFrameCount, uint32_t nbrActors)
 	{
 		m_objects.Reserve(nbrActors);
 
@@ -14,7 +14,7 @@ namespace moe
 	}
 
 
-	void RenderScene::Update(uint32_t frameIndex)
+	void VulkanRenderScene::Update(uint32_t frameIndex)
 	{
 		m_cameras.Update(frameIndex);
 	}

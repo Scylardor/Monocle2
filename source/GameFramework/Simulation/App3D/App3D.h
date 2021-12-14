@@ -16,6 +16,10 @@ namespace moe
 		void	Update() override;
 
 		void	Shutdown() override;
+
+	private:
+
+		void OnWindowClosed();
 	};
 
 

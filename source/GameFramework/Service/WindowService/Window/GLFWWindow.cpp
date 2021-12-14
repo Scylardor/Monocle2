@@ -22,11 +22,11 @@ namespace moe
 	}
 
 
-	IWindow::WindowState GLFWWindow::PollEvents()
+	void GLFWWindow::PollEvents()
 	{
 		glfwPollEvents();
 
-		return (glfwWindowShouldClose(m_window) ? WindowState::Closed : WindowState::Opened);
+		m_openState = glfwWindowShouldClose(m_window) ? WindowState::Closed : WindowState::Opened;
 	}
 
 

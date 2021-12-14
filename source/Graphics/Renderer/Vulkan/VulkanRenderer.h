@@ -110,9 +110,9 @@ namespace moe
 		}
 
 
-		void	RenderFrame(RenderScene& renderedScene);
+		void	RenderFrame(VulkanRenderScene& renderedScene);
 
-		void	RenderSceneWithCamera(RenderScene& renderScene, vk::CommandBuffer commandBuffer, CameraDesc& camera);
+		void	RenderSceneWithCamera(VulkanRenderScene& renderScene, vk::CommandBuffer commandBuffer, CameraDesc& camera);
 
 
 		auto	GetMaxFramesInFlight() const

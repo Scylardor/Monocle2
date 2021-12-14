@@ -19,11 +19,16 @@ namespace moe
 		~GLFWWindow() override;
 
 
-		WindowState			PollEvents() override;
+		void				PollEvents() override;
 
 		void				SwapBuffers() override;
 
 		std::pair<int, int>	GetDimensions() override;
+
+		bool				ShouldClose() override
+		{
+			return m_openState == WindowState::Closed;
+		}
 
 
 		bool			Create(ConfigSection const& windowConfig);
@@ -48,7 +53,16 @@ namespace moe
 
 	private:
 
+		enum class WindowState : char
+		{
+			Opened,
+			Closed
+		};
+
+
 		GLFWwindow* m_window = nullptr;
+
+		WindowState	m_openState{ WindowState::Opened };
 
 		static void	WindowFramebufferResizeCallback(GLFWwindow* window, int width, int height);
 	};

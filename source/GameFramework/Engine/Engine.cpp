@@ -26,6 +26,24 @@ namespace moe
 	}
 
 
+	void Engine::RemoveShuttingDownSimulations()
+	{
+		// Sort indices in descending order so simulations that want to be destroyed don't end up swapped before!
+		std::sort(m_simulationsShuttingDown.Begin(), m_simulationsShuttingDown.End(), std::greater<>());
+		for (auto idx : m_simulationsShuttingDown)
+		{
+			m_simulations.EraseBySwapAt(idx);
+		}
+
+		m_simulationsShuttingDown.Clear();
+
+		if (m_simulations.Empty())
+		{
+			m_state = State::Stopped; // No more simulations to run ? The engine goes down.
+		}
+	}
+
+
 	void Engine::Run()
 	{
 		Start();
@@ -37,6 +55,12 @@ namespace moe
 			for (auto& simu : m_simulations)
 			{
 				simu->Update();
+			}
+
+			// Shut down all simulations that noticed us they wanna get destroyed.
+			if (!m_simulationsShuttingDown.Empty())
+			{
+				RemoveShuttingDownSimulations();
 			}
 		}
 	}
@@ -50,6 +74,8 @@ namespace moe
 			});
 
 		if (simuIt != m_simulations.end())
-			m_simulations.EraseBySwap(simuIt);
+		{
+			m_simulationsShuttingDown.PushBack((uint32_t) std::distance(m_simulations.Begin(), simuIt));
+		}
 	}
 }

@@ -34,9 +34,20 @@ namespace moe
 	{
 	public:
 
+		enum class SimulationState : uint8_t
+		{
+			Running = 0,
+			Stopping
+		};
+
 		AbsSimulation(Engine& myEngine) :
 			EnginePart(myEngine)
 		{}
+
+
+	protected:
+
+		SimulationState	m_runningState = SimulationState::Running;
 
 	};
 

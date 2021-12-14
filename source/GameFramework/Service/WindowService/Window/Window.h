@@ -11,14 +11,13 @@ namespace moe
 	{
 	public:
 
-		virtual ~IWindow() = default;
+		using WindowClosedEvent = Event<void()>;
 
-		enum class WindowState : char
-		{
-			Opened,
-			Closed
-		};
+		virtual bool	ShouldClose() = 0;
 
-		virtual WindowState	PollEvents() = 0;
+		virtual void	PollEvents() = 0;
+
+
+
 	};
 }

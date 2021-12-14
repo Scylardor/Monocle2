@@ -59,6 +59,8 @@ namespace moe
 		void	Start();
 		void	Stop();
 
+		void	RemoveShuttingDownSimulations();
+
 		StartEvent	m_onStart;
 
 		Vector<std::unique_ptr<ISimulation>>	m_simulations;
@@ -66,6 +68,8 @@ namespace moe
 		std::unordered_map<std::type_index, std::unique_ptr<Service>>	m_services;
 
 		State	m_state{ State::Stopped };
+
+		Vector<uint32_t>	m_simulationsShuttingDown;
 
 	};
 

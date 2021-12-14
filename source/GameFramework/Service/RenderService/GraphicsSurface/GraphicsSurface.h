@@ -12,8 +12,12 @@ namespace moe
 	public:
 
 		using SurfaceResizedEvent = Event<void(int, int)>;
+		using SurfaceLostEvent = Event<void()>;
 
-		virtual ~IGraphicsSurface() = default;
+		virtual ~IGraphicsSurface()
+		{
+			m_onSurfaceLost.Broadcast();
+		}
 
 		virtual void					SwapBuffers() = 0;
 
@@ -24,6 +28,10 @@ namespace moe
 			return m_onSurfaceResized;
 		}
 
+		SurfaceLostEvent&	OnSurfaceLostEvent()
+		{
+			return m_onSurfaceLost;
+		}
 
 	protected:
 
@@ -32,10 +40,16 @@ namespace moe
 			m_onSurfaceResized.Broadcast(newWidth, newHeight);
 		}
 
+		void	OnSurfaceLost()
+		{
+			m_onSurfaceLost.Broadcast();
+		}
+
 
 	private:
 
 		SurfaceResizedEvent	m_onSurfaceResized{};
+		SurfaceLostEvent	m_onSurfaceLost{};
 
 	};
 }
