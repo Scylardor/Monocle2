@@ -65,9 +65,24 @@ namespace moe
 		Ref<TextureResource> containerTexture = rscSvc->EmplaceResource<TextureResource>(HashString("Container"), "Sandbox/assets/container.jpg");
 		DeviceTextureHandle texHandle = forwardRenderer.MutRHI()->TextureManager().CreateTexture2DFromFile(containerTexture);
 
-		ResourceBindingList bindings{ {0, BindingType::TextureReadOnly, ShaderStage::Fragment } };
+		Ref<TextureResource> awesomeTexture = rscSvc->EmplaceResource<TextureResource>(HashString("AwesomeFace"), "Sandbox/assets/awesomeface.png");
+		DeviceTextureHandle texHandle2 = forwardRenderer.MutRHI()->TextureManager().CreateTexture2DFromFile(awesomeTexture);
+
+		SamplerDescription samplerDesc;
+		samplerDesc.m_anisotropy = SamplerDescription::AnisotropyLevel::Maximum;
+
+		DeviceSamplerHandle sampler = forwardRenderer.MutRHI()->TextureManager().CreateSampler(samplerDesc);
+
+		ResourceBindingList bindings{
+										{0, BindingType::Sampler, ShaderStage::Fragment },
+										{0, BindingType::TextureReadOnly, ShaderStage::Fragment },
+										{1, BindingType::Sampler, ShaderStage::Fragment },
+										{1, BindingType::TextureReadOnly, ShaderStage::Fragment } };
 		passDesc.ResourceSetLayouts.AddResourceLayout(0, std::move(bindings));
-		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(texHandle, 0, 0);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, texHandle);
+		passDesc.ResourceBindings.EmplaceBinding<SamplerBinding>(0, 0, sampler);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 1, texHandle2);
+		passDesc.ResourceBindings.EmplaceBinding<SamplerBinding>(0, 1, sampler);
 
 		Ref<MaterialResource> basicMat = rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
 

@@ -15,9 +15,7 @@ namespace moe
 
 		using ServiceLocatorType = ResourceService;
 
-		ResourceService(Engine& ownerEngine) :
-			Service(ownerEngine)
-		{}
+		ResourceService(Engine& ownerEngine);
 
 
 		template <typename Resource, typename... Args>

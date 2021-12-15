@@ -327,13 +327,13 @@ namespace moe
 
 	public:
 
-		VectorObjectPool(ObjectPoolID reserved = 0)
+		VectorObjectPool(uint32_t reserved = 0)
 		{
 			m_objects.reserve(reserved);
 		}
 
 
-		void	SetMaximumAllowedGrowth(ObjectPoolID maxGrowth)
+		void	SetMaximumAllowedGrowth(uint32_t maxGrowth)
 		{
 			m_maxAllowedGrowth = maxGrowth;
 		}
@@ -385,7 +385,7 @@ namespace moe
 
 	public:
 
-		DynamicObjectPool(ObjectPoolID reserved = 0) :
+		DynamicObjectPool(uint32_t reserved = 0) :
 			VectorObjectPool(reserved)
 		{}
 	};

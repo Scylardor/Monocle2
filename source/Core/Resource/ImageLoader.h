@@ -34,6 +34,10 @@ namespace moe
 
 		Data	LoadRadianceHDR(std::filesystem::path const& imagePath, int requiredChannels = 0);
 
+		inline void	VerticallyFlipTexturesOnLoad(bool enabled)
+		{
+			stbi_set_flip_vertically_on_load(enabled);
+		}
 
 		inline void	Free(unsigned char* imgData)
 		{

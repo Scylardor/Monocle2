@@ -59,7 +59,7 @@ namespace moe
 		ResourceBindingList bindings;
 		bindings.EmplaceBack(0, BindingType::TextureReadOnly, ShaderStage::Fragment);
 		passDesc.ResourceSetLayouts.AddResourceLayout(0, std::move(bindings));
-		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(swapchainColorTex, 0, 0);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, swapchainColorTex);
 
 		m_fullscreenQuadMaterial = RHI->MaterialManager().CreateMaterial(matDesc);
 

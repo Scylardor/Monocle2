@@ -7,7 +7,8 @@ namespace moe
 {
 	OpenGL4RHI::OpenGL4RHI(GLLoaderFunction loaderFunc) :
 		m_framebufferManager(m_textureManager),
-		m_swapchainManager(this)
+		m_swapchainManager(this),
+		m_materialManager(m_textureManager)
 	{
 		// Very important : this has to be done and working before any gl* call !
 		bool ok = gladLoadGLLoader((GLADloadproc)loaderFunc);
@@ -23,10 +24,7 @@ namespace moe
 		glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 		if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
 		{
-			glEnable(GL_DEBUG_OUTPUT);
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-			glDebugMessageCallback(OpenGLDebugMessageRoutine, this);
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE); // we want to log all errors
+			DebugSetup();
 		}
 
 	}
@@ -62,6 +60,25 @@ namespace moe
 		m_framebufferManager.UnbindFramebuffer();
 		glUseProgram(0);
 		glBindVertexArray(0);
+	}
+
+
+	void OpenGL4RHI::DebugSetup()
+	{
+		// List all extensions
+		GLint numExts = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
+		MOE_INFO(ChanGraphics, "List of supported OpenGL extensions (%i):", numExts);
+		for (GLint i = 0; i < numExts; i++)
+		{
+			auto* extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+			MOE_INFO(ChanGraphics, "\t%s", extension);
+		}
+
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(OpenGLDebugMessageRoutine, this);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE); // we want to log all errors
 	}
 
 

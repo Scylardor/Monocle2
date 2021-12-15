@@ -4,6 +4,8 @@
 
 #include "Graphics/RenderQueue/RenderQueue.h"
 
+#include "GraphicsSurface/GraphicsSurface.h"
+
 namespace moe
 {
 	RenderService::RenderService(Engine& ownerEngine) :
@@ -17,6 +19,9 @@ namespace moe
 	{
 		for (Renderer& rdr : m_renderers)
 		{
+			if (!rdr.Ready())
+				continue;
+
 			RenderQueue drawCallQueue;
 
 			uint8_t passIndex = 0;

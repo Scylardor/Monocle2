@@ -10,6 +10,7 @@
 #include "DepthStencilState/DepthStencilStateDescriptor.h"
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/RHI/TextureManager/TextureManager.h"
+#include "Graphics/Sampler/SamplerDescriptor.h"
 #include "Graphics/VertexLayout/VertexElementFormat.h"
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 #include "RasterizerState/RasterizerStateDescriptor.h"
@@ -37,7 +38,7 @@ namespace moe
 			return true;
 		}
 
-		std::string			Semantic{""};
+		std::string			Semantic{ "" };
 		VertexBindingFormat	Format;
 		uint32_t			Divisor{ 0 };
 	};
@@ -105,7 +106,7 @@ namespace moe
 
 	struct ResourceSetLayoutsDescription
 	{
-		ResourceSetLayout&	AddResourceLayout(uint16_t setNumber, Vector<ResourceBinding> bindings)
+		ResourceSetLayout& AddResourceLayout(uint16_t setNumber, Vector<ResourceBinding> bindings)
 		{
 			Layouts.EmplaceBack(setNumber, std::move(bindings));
 			return Layouts.Back();
@@ -152,13 +153,15 @@ namespace moe
 		}
 
 		DeviceBufferHandle	BufferHandle{};
-		uint64_t			Offset{0}; // TODO : this information is also in the buffer's MeshData
+		uint64_t			Offset{ 0 }; // TODO : this information is also in the buffer's MeshData
 		uint64_t			Range{ WHOLE_RANGE };
 	};
 
+
 	struct TextureBinding : ResourceSetBinding
 	{
-		TextureBinding(DeviceTextureHandle texture, int binding, int set) :
+		// TODO: needs to change (organize by set or swap set and binding as its confusing right now)
+		TextureBinding(int set, int binding, DeviceTextureHandle texture) :
 			ResourceSetBinding(binding, set),
 			TextureHandle(texture)
 		{}
@@ -172,33 +175,52 @@ namespace moe
 		}
 
 		DeviceTextureHandle	TextureHandle{};
-		/* TODO : DeviceSamplerHandle SamplerHandle{}; */
 	};
+
+	struct SamplerBinding : ResourceSetBinding
+	{
+		SamplerBinding(int set, int binding, DeviceSamplerHandle sampler) :
+			ResourceSetBinding(binding, set),
+			SamplerHandle(sampler)
+		{}
+
+		bool operator==(const SamplerBinding& other) const
+		{
+			if (&other == this)
+				return true;
+			return ResourceSetBinding::operator==(other) &&
+				(SamplerHandle == other.SamplerHandle);
+		}
+
+		DeviceSamplerHandle	SamplerHandle{};
+	};
+
 
 	struct ResourceSetsDescription
 	{
-		using BindingVariant = std::variant< BufferBinding, TextureBinding >;
+		using BindingVariant = std::variant< BufferBinding, TextureBinding, SamplerBinding >;
 
 		Vector<BindingVariant>	Bindings;
 
 		template <typename T, typename... Args>
-		T&	EmplaceBinding(Args&&... args)
+		T& EmplaceBinding(Args&&... args)
 		{
 			Bindings.EmplaceBack(std::in_place_type<T>, std::forward<Args>(args)...);
 			return std::get<T>(Bindings.Back());
 		}
+
 	};
 
 
 	struct MaterialPassDescription
 	{
-		MaterialPassDescription&	AssignShaderProgramDescription(ShaderProgramDescription programDesc)
+		MaterialPassDescription& AssignShaderProgramDescription(ShaderProgramDescription programDesc)
 		{
 			ShaderProgram = std::move(programDesc);
 			return *this;
 		}
 
-		MaterialPassDescription&	AssignPipelineVertexLayout(VertexLayoutDescription layoutDesc)
+		MaterialPassDescription& AssignPipelineVertexLayout(VertexLayoutDescription layoutDesc)
 		{
 			Pipeline.VertexLayout = std::move(layoutDesc);
 			return *this;
@@ -219,6 +241,7 @@ namespace moe
 			return PassDescriptors.Back();
 		}
 
+
 		Vector<MaterialPassDescription>	PassDescriptors;
 	};
 
@@ -232,7 +255,7 @@ namespace moe
 			Description(std::move(desc))
 		{}
 
-		MaterialDescription const&	GetDescription() const
+		MaterialDescription const& GetDescription() const
 		{
 			return Description;
 		}

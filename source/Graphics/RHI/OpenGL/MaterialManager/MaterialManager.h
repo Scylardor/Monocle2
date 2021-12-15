@@ -10,6 +10,7 @@
 
 namespace moe
 {
+	class OpenGL4TextureManager;
 	class OpenGL4RHI;
 
 	struct OpenGLVertexBindingFormat
@@ -142,6 +143,12 @@ namespace moe
 	class OpenGL4MaterialManager : public IMaterialManager
 	{
 	public:
+
+		OpenGL4MaterialManager(OpenGL4TextureManager& texMgr) :
+			m_textureManager(texMgr)
+		{}
+
+
 		bool	CreatePipelineStateObjectLayout(PipelineDescription const& pipeDesc) override;
 
 		bool	CreateShaderProgram(ShaderProgramDescription const& programDescription) override;
@@ -172,6 +179,9 @@ namespace moe
 
 		uint32_t	FindOrCreateVAO(VertexLayoutDescription const& layoutDesc, PrimitiveTopology topo);
 
+		uint32_t	FindOrCreateSampler(SamplerDescription const& samplerDesc);
+
+
 		static std::pair<GLuint, GLsizei>	BuildInterleavedVAO(VertexLayoutDescription const& layoutDesc);
 		static GLuint						BuildPackedVAO(VertexLayoutDescription const& layoutDesc);
 
@@ -191,7 +201,7 @@ namespace moe
 
 		Vector<OpenGL4Material>				m_materials;
 
-
+		OpenGL4TextureManager&				m_textureManager;
 	};
 
 

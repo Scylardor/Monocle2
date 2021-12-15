@@ -124,6 +124,7 @@ namespace moe
 		GLuint vao = m_VAOs[material.VAOIdx].VAO;
 		glBindVertexArray(vao);
 
+		// TODO: use glBindSamplers in OGL 4.5?
 		BindResourceSets(rhi, program, material.ResourceSets);
 	}
 
@@ -711,8 +712,13 @@ namespace moe
 				},
 				[&](TextureBinding const& texBind)
 				{
-					GLuint texID = rhi->GLTextureManager().GetTextureData(texBind.TextureHandle).TextureID;
+					GLuint texID = m_textureManager.GetTextureData(texBind.TextureHandle).TextureID;
 					glBindTextureUnit(texBind.BindingNumber, texID);
+				},
+				[&](SamplerBinding const& sampler)
+				{
+					GLuint samplerID = GLSamplerCache::DecodeGLHandle(sampler.SamplerHandle);
+					glBindSampler(sampler.BindingNumber, samplerID);
 				}
 			}, binding);
 		}

@@ -11,6 +11,7 @@
 
 namespace moe
 {
+	struct SamplerDescription;
 	struct TextureData;
 
 	/* A structure describing the wanted creation parameters for a 2D texture. */
@@ -54,6 +55,22 @@ namespace moe
 	};
 
 
+
+	struct Monocle_Graphics_API DeviceSamplerHandle : RenderableObjectHandle<std::uint64_t>
+	{
+	private:
+		static const std::uint64_t ms_INVALID_ID = (std::uint64_t) - 1;
+
+	public:
+
+		DeviceSamplerHandle(std::uint64_t handleID = ms_INVALID_ID) :
+			RenderableObjectHandle(handleID)
+		{}
+
+		static DeviceSamplerHandle	Null() { return DeviceSamplerHandle(); }
+
+	};
+
 	/*
 	 * An abstract class for textures (1D, 2D, 3D, cubemap ...) management.
 	 */
@@ -66,6 +83,8 @@ namespace moe
 		virtual DeviceTextureHandle	CreateTexture2DFromFile(Ref<TextureResource> const& textureFile) = 0;
 
 		virtual DeviceTextureHandle	CreateTexture2D(TextureData const& data) = 0;
+
+		virtual DeviceSamplerHandle	CreateSampler(SamplerDescription const& samplerDesc) = 0;
 
 	};
 

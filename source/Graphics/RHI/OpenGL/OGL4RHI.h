@@ -77,6 +77,8 @@ namespace moe
 
 	private:
 
+		void	DebugSetup();
+
 		static	void			OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char* message, const void* userParam);
 
 		OpenGL4BufferManager		m_bufferManager;
