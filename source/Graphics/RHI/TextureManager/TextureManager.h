@@ -3,9 +3,9 @@
 
 #include "Monocle_Graphics_Export.h"
 #include "Core/Misc/Types.h"
-#include "Core/Resource/FileResource.h"
 #include "Core/Resource/ResourceRef.h"
 #include "Core/Preprocessor/moeBuilder.h"
+#include "Core/Resource/TextureResource.h"
 #include "Graphics/Texture/TextureFormat.h"
 #include "Graphics/Texture/TextureUsage.h"
 
@@ -63,7 +63,7 @@ namespace moe
 
 		virtual ~ITextureManager() = default;
 
-		virtual DeviceTextureHandle	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) = 0;
+		virtual DeviceTextureHandle	CreateTexture2DFromFile(Ref<TextureResource> const& textureFile) = 0;
 
 		virtual DeviceTextureHandle	CreateTexture2D(TextureData const& data) = 0;
 

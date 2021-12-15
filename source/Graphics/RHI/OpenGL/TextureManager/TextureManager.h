@@ -32,7 +32,7 @@ namespace moe
 
 		~OpenGL4TextureManager() override = default;
 
-		[[nodiscard]] DeviceTextureHandle Monocle_Graphics_API	CreateTexture2DFromFile(Ref<FileResource> const& textureFile) override;
+		[[nodiscard]] DeviceTextureHandle Monocle_Graphics_API	CreateTexture2DFromFile(Ref<TextureResource> const& textureFile) override;
 
 		[[nodiscard]] DeviceTextureHandle Monocle_Graphics_API	CreateTexture2D(TextureData const& data) override;
 

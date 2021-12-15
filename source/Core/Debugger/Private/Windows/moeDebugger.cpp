@@ -8,23 +8,23 @@
 
 namespace moe
 {
-    bool    IsDebuggerPresent()
-    {
-        // comparing to 0 to avoid warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
-        return (::IsDebuggerPresent() != 0);
-    }
+	bool    IsDebuggerPresent()
+	{
+		// comparing to 0 to avoid warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+		return (::IsDebuggerPresent() != 0);
+	}
 
-    bool DebugBreak()
-    {
-        #ifndef MOE_PROFILE // We don't want an assert break ruining a profiling session
-        if (IsDebuggerPresent())
-        {
+	bool DebugBreak()
+	{
+		#ifndef MOE_PROFILE // We don't want an assert break ruining a profiling session
+		if (IsDebuggerPresent())
+		{
 			__debugbreak();
-        }
-        #endif // MOE_PROFILE
+		}
+		#endif // MOE_PROFILE
 
-        return false;
-    }
+		return false;
+	}
 }
 
 #endif // MOE_SHIPPING

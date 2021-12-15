@@ -42,6 +42,11 @@ namespace moe
 
 		~TextureResource() override;
 
+		TextureData const&	GetTextureData() const
+		{
+			return m_textureData;
+		}
+
 
 	private :
 

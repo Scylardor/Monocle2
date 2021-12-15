@@ -1,7 +1,16 @@
 #pragma once
 
+
+#ifdef MOE_WINDOWS
+// I want to be able to convert wchar_t to char for filenames.
+#define STBI_WINDOWS_UTF8
+#include "Core/Misc/Windows/GetLastErrorAsString.h"
+#endif
+
 #include <STB/stb_image.h>
 #include <filesystem>
+
+#include "Core/Misc/moeSystem.h"
 
 namespace moe
 {
@@ -21,24 +30,9 @@ namespace moe
 			}
 		};
 
-		inline Data	Load(std::filesystem::path const& imagePath, int requiredChannels = 0)
-		{
-			Data imgData;
-			imgData.Image = stbi_load((const char*) imagePath.c_str(), &imgData.Width, &imgData.Height, &imgData.Channels, requiredChannels);
-			MOE_DEBUG_ASSERT(imgData.Image);
+		Data	Load(std::filesystem::path const& imagePath, int requiredChannels = 0);
 
-			return imgData;
-		}
-
-
-		inline Data	LoadRadianceHDR(std::filesystem::path const& imagePath, int requiredChannels = 0)
-		{
-			Data imgData;
-			imgData.Image = (unsigned char *) stbi_loadf((const char*)imagePath.c_str(), &imgData.Width, &imgData.Height, &imgData.Channels, requiredChannels);
-			MOE_DEBUG_ASSERT(imgData.Image);
-
-			return imgData;
-		}
+		Data	LoadRadianceHDR(std::filesystem::path const& imagePath, int requiredChannels = 0);
 
 
 		inline void	Free(unsigned char* imgData)

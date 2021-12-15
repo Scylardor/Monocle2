@@ -7,9 +7,11 @@
 
 namespace moe
 {
-	 DeviceTextureHandle OpenGL4TextureManager::CreateTexture2DFromFile(Ref<FileResource> const& /*textureFile*/)
+	 DeviceTextureHandle OpenGL4TextureManager::CreateTexture2DFromFile(Ref<TextureResource> const& textureFile)
 	{
-		 return DeviceTextureHandle::Null();
+	 	// TODO: so far, no system to prevent duplicates.
+		MOE_ASSERT(textureFile);
+		return CreateTexture2D(textureFile->GetTextureData());
 	}
 
 	 DeviceTextureHandle OpenGL4TextureManager::CreateTexture2D(TextureData const& data)

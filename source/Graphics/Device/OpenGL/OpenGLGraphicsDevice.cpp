@@ -1,7 +1,5 @@
 ﻿// Monocle Game Engine source files - Alexandre Baron
 
-// TODO: This should be moved elsewhere... lol !
-#define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
 
 #ifdef MOE_OPENGL

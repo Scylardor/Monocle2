@@ -58,6 +58,7 @@ set(Monocle_Core_SOURCES
 ./Misc/moeFalse.h
 ./Misc/moeFile.h
 ./Misc/moeNamedType.h
+./Misc/moeSystem.h
 ./Misc/moeTypeList.h
 ./Misc/Private/moeAbort.cpp
 ./Misc/Private/moeFile.cpp
@@ -75,6 +76,8 @@ set(Monocle_Core_SOURCES
 ./Resource/BaseResource.h
 ./Resource/FileResource.cpp
 ./Resource/FileResource.h
+./Resource/ImageLoader.cpp
+./Resource/ImageLoader.h
 ./Resource/Material/BlendState/BlendEquation.h
 ./Resource/Material/BlendState/BlendFactor.h
 ./Resource/Material/BlendState/BlendStateDescriptor.cpp

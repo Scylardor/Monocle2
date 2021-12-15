@@ -42,11 +42,14 @@ namespace moe
 			MeshData{ helloQuad.Data(), sizeof(helloQuad[0]), helloQuad.Size(),
 			helloIndices.Data(), sizeof(helloIndices[0]), helloIndices.Size() });
 
-		auto basicVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.vert"), "source/Graphics/Resources/shaders/OpenGL/basic.vert", FileMode::Text);
-		auto basicFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.frag"), "source/Graphics/Resources/shaders/OpenGL/basic.frag", FileMode::Text);
+
+
+		auto basicVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.vert"), "source/Graphics/Resources/shaders/OpenGL/basic_textured.vert", FileMode::Text);
+		auto basicFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.frag"), "source/Graphics/Resources/shaders/OpenGL/basic_textured.frag", FileMode::Text);
 
 		MaterialDescription matDesc;
-		matDesc.NewPassDescription().
+		auto& passDesc = matDesc.NewPassDescription();
+		passDesc.
 			AssignPipelineVertexLayout({ {
 				{"position", VertexBindingFormat::Float3 },
 				{"color", VertexBindingFormat::Float3 },
@@ -56,11 +59,17 @@ namespace moe
 			{	ShaderStage::Fragment, basicFragShaderFile}
 			})
 		.Pipeline.RasterizerStateDesc.m_cullMode = CullFace::None;
-		matDesc.PassDescriptors[0].Pipeline.RasterizerStateDesc.m_polyMode = PolygonMode::Wireframe;
-
-		Ref<MaterialResource> basicMat = rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
 
 		Renderer& forwardRenderer = InitializeRenderer();
+
+		Ref<TextureResource> containerTexture = rscSvc->EmplaceResource<TextureResource>(HashString("Container"), "Sandbox/assets/container.jpg");
+		DeviceTextureHandle texHandle = forwardRenderer.MutRHI()->TextureManager().CreateTexture2DFromFile(containerTexture);
+
+		ResourceBindingList bindings{ {0, BindingType::TextureReadOnly, ShaderStage::Fragment } };
+		passDesc.ResourceSetLayouts.AddResourceLayout(0, std::move(bindings));
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(texHandle, 0, 0);
+
+		Ref<MaterialResource> basicMat = rscSvc->EmplaceResource<MaterialResource>(HashString("BasicMaterial"), matDesc);
 
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 		RenderScene& scene = rdrSvc->EmplaceScene(forwardRenderer);
