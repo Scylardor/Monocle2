@@ -133,6 +133,11 @@ namespace moe
 		}
 
 
+		bool operator==(const Color& rhs) const
+		{
+			return memcmp(Rgba, rhs.Rgba, sizeof(Val) * NumChannels) == 0;
+		}
+
 	private:
 
 		Val	Rgba[NumChannels] { Val(1) };

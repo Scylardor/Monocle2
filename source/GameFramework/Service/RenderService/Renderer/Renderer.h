@@ -75,7 +75,12 @@ namespace moe
 			return m_RHI;
 		}
 
-		RenderService*	MutRenderService()
+		RenderService*			MutRenderService()
+		{
+			return m_myService;
+		}
+
+		RenderService const*	GetRenderService() const
 		{
 			return m_myService;
 		}

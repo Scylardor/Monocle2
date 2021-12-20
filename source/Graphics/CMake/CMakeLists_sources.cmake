@@ -48,6 +48,7 @@ set(Monocle_Graphics_SOURCES
 ./Framebuffer/OpenGL/OpenGLFramebuffer.h
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
+./Handle/DeviceHandles.h
 ./Handle/ObjectHandle.h
 ./Light/LightObject.cpp
 ./Light/LightObject.h
@@ -109,6 +110,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/ResourceSet/ResourceSetHandle.h
 ./Resources/shaders/OpenGL/basic.frag
 ./Resources/shaders/OpenGL/basic.vert
+./Resources/shaders/OpenGL/basic_textured.frag
+./Resources/shaders/OpenGL/basic_textured.vert
 ./Resources/shaders/OpenGL/blending.frag
 ./Resources/shaders/OpenGL/blending.vert
 ./Resources/shaders/OpenGL/blinn_phong.frag
@@ -245,6 +248,8 @@ set(Monocle_Graphics_SOURCES
 ./Shader/ShaderStage/OpenGL/OpenGLShaderStage.cpp
 ./Shader/ShaderStage/OpenGL/OpenGLShaderStage.h
 ./Shader/UniformDataKind.h
+./ShaderCapabilities/ShaderCapabilities.cpp
+./ShaderCapabilities/ShaderCapabilities.h
 ./Swapchain/OpenGL/OpenGLSwapchain.cpp
 ./Swapchain/OpenGL/OpenGLSwapchain.h
 ./Swapchain/Swapchain.h

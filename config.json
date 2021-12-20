@@ -15,5 +15,9 @@
 	"framebuffer":
 	{
 		"msaa": 4
+	},
+	"rendering":
+	{
+		"defaut_scene_size": 32
 	}
 }

@@ -6,7 +6,6 @@
 
 #include "Core/Resource/FileResource.h"
 
-#include <string_view>
 
 namespace moe
 {

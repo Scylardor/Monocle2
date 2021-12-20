@@ -1273,6 +1273,11 @@ namespace moe
 	}
 
 
+	uint32_t OpenGLGraphicsDevice::DecodeBufferOffset(const RenderableObjectHandle<std::uint64_t>& handle)
+	{
+		uint32_t offset = (uint32_t)handle.Get();
+		return offset;
+	}
 }
 
 #endif

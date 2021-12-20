@@ -24,13 +24,13 @@ namespace moe
 
 
 		template<typename T>
-		auto	MaxValue()
+		constexpr auto	MaxValue()
 		{
 			return std::numeric_limits<T>::max();
 		}
 
 		template<typename T>
-		auto	MinValue()
+		constexpr auto	MinValue()
 		{
 			return std::numeric_limits<T>::min();
 		}

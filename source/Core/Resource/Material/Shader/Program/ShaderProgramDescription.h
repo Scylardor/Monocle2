@@ -7,7 +7,6 @@
 
 #include <Core/Containers/Vector/Vector.h>
 
-#include "Core/Resource/Material/ResourceSet/ResourceLayoutDescription.h"
 
 
 namespace moe

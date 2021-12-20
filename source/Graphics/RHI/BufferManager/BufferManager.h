@@ -5,29 +5,45 @@
 
 namespace moe
 {
-	struct RenderMeshHandle
+
+	struct DeviceBufferMapping
 	{
-		DeviceBufferHandle	VertexBuffer = DeviceBufferHandle::Null();
-		DeviceBufferHandle	IndexBuffer = DeviceBufferHandle::Null();
-	};
+		static const auto WHOLE_RANGE = -1;
 
-	struct DeviceMeshHandle : RenderableObjectHandle<std::uint32_t>
-	{
-	private:
-		static const Underlying ms_INVALID_ID = (Underlying) -1;
+		DeviceBufferMapping() = default;
 
-	public:
-
-		DeviceMeshHandle(Underlying handleID = ms_INVALID_ID) :
-			RenderableObjectHandle(handleID)
+		DeviceBufferMapping(ObjectPoolID id, DeviceBufferHandle handle, void* dat) :
+			ID(id), BufferHandle(handle), Data(dat)
 		{}
 
-		static DeviceMeshHandle	Null() { return DeviceMeshHandle(); }
+		template <typename T>
+		T As()
+		{
+			return static_cast<T>(Data);
+		}
 
+		[[nodiscard]] auto	MappingID() const
+		{
+			return ID;
+		}
 
+		auto	Handle() const
+		{
+			return BufferHandle;
+		}
+
+	private:
+
+		ObjectPoolID		ID{ INVALID_ID };
+		DeviceBufferHandle	BufferHandle{};
+		void*				Data = nullptr;
 	};
 
+
+
+
 	struct MeshData;
+
 	/*
 	 * An abstract class for device buffer (vertex, index, uniform -AKA constant-, storage -aka structured- ...) buffer management.
 	 */
@@ -40,6 +56,13 @@ namespace moe
 		virtual DeviceMeshHandle	FindOrCreateMeshBuffer(Ref<MeshResource> const& meshRsc) = 0;
 
 		virtual DeviceMeshHandle	FindOrCreateMeshBuffer(MeshData const& meshData) = 0;
+
+		virtual DeviceBufferMapping	MapCoherentDeviceBuffer(size_t dataSize, void const* data = nullptr,
+			uint32_t mappingOffset = 0, size_t mappingRange = DeviceBufferMapping::WHOLE_RANGE) = 0;
+
+		virtual void				Unmap(DeviceBufferMapping const& bufferMap) = 0;
+		virtual void				ResizeMapping(DeviceBufferMapping & bufferMap, uint32_t newSize) = 0;
+
 
 		virtual void				DestroyDeviceBuffer(DeviceBufferHandle bufferToDestroy) = 0;
 	};

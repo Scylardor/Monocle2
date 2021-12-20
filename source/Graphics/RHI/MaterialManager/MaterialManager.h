@@ -1,28 +1,12 @@
 #pragma once
-#include "Core/Resource/Material/MaterialResource.h"
+#include "Graphics/Handle/DeviceHandles.h"
+#include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 
 namespace moe
 {
-
-	struct DeviceMaterialHandle : RenderableObjectHandle<std::uint64_t>
-	{
-	private:
-		static const Underlying ms_INVALID_ID = (Underlying)-1;
-
-	public:
-
-		DeviceMaterialHandle(Underlying handleID = ms_INVALID_ID) :
-			RenderableObjectHandle(handleID)
-		{}
-
-		static DeviceMaterialHandle	Null() { return DeviceMaterialHandle(); }
-
-		[[nodiscard]] std::pair<uint32_t, uint32_t>	DecomposeMaterialAndShaderIndices() const
-		{
-			return { (uint32_t) (Get() >> 32), (uint32_t)Get() };
-		}
-
-	};
+	struct MaterialDescription;
+	struct PipelineDescription;
+	struct ShaderProgramDescription;
 
 	/*
 	 * An abstract class for pipeline state object (PSO) management and resource set (aka descriptor set in e.g. Vulkan) allocation.
@@ -38,6 +22,11 @@ namespace moe
 		virtual bool	CreateShaderProgram(ShaderProgramDescription const& programDescription) = 0;
 
 		virtual DeviceMaterialHandle	CreateMaterial(MaterialDescription const& matDesc) = 0;
+
+		virtual DeviceDynamicResourceSetHandle	AddDynamicBufferBinding(
+			DeviceDynamicResourceSetHandle dynamicSetHandle, uint32_t setNumber, uint32_t bindingNumber, DeviceBufferHandle buf, uint32_t range) = 0;
+
+		virtual void	FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle) = 0;
 
 
 

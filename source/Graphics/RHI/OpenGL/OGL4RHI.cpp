@@ -88,7 +88,10 @@ namespace moe
 
 	void OpenGL4RHI::SubmitCommandBuffer(CommandBuffer const& cmdBuf)
 	{
-		uint32_t lastMaterialUsedIdx = (uint32_t)-1;
+		// Some convenience variables to go faster in the visit hot loop
+		uint32_t lastMaterialUsedIdx = INVALID_ID;
+		uint32_t lastProgramUsed = 0;
+		OpenGL4VertexLayout const* lastLayoutUsed = nullptr;
 
 		for (CommandBufferVariant const& cmd : cmdBuf)
 		{
@@ -103,13 +106,16 @@ namespace moe
 						if (cbm.Handle.IsNull())
 							return;
 
-						uint32_t matIdx = cbm.Handle.Get() >> 32;
-						m_materialManager.BindMaterial(this, matIdx);
-						lastMaterialUsedIdx = matIdx;
+						lastMaterialUsedIdx = cbm.Handle.Get() >> 32;
+						lastLayoutUsed = &m_materialManager.GetMaterialVertexLayout(lastMaterialUsedIdx);
+						lastProgramUsed = m_materialManager.BindMaterial(this, lastMaterialUsedIdx);
 					},
 					[&](CmdDrawMesh const & cdm)
 					{
-						m_bufferManager.DrawMesh(m_materialManager, cdm.Handle, lastMaterialUsedIdx);
+						if (cdm.DynamicSets != INVALID_ID)
+							m_materialManager.BindDynamicResourceSets(this, cdm.DynamicSets, lastProgramUsed);
+
+						m_bufferManager.DrawMesh(cdm.Handle, lastLayoutUsed);
 					},
 					[this](CmdEndRenderPass const &)
 					{

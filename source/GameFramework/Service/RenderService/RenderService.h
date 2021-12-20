@@ -27,7 +27,7 @@ namespace moe
 		}
 
 
-
+		// TODO: this API is dangerous as the scenes can be reallocated... Use dynamic object pool ?
 		template <typename... Args>
 		RenderScene& EmplaceScene(Renderer& renderer, Args&&... args)
 		{

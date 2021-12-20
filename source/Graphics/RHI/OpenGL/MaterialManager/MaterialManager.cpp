@@ -107,7 +107,29 @@ namespace moe
 	}
 
 
-	void OpenGL4MaterialManager::BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx)
+	DeviceDynamicResourceSetHandle OpenGL4MaterialManager::AddDynamicBufferBinding(
+		DeviceDynamicResourceSetHandle dynamicSetHandle, uint32_t setNumber, uint32_t bindingNumber, DeviceBufferHandle buf, uint32_t range)
+	{
+		if (dynamicSetHandle == DeviceMaterialHandle::INVALID_ID)
+		{
+			// create a new dynamic resource set
+			dynamicSetHandle = m_dynamicResourceSets.Emplace();
+		}
+
+		ResourceSetsDescription& dynamicResourceSets = m_dynamicResourceSets.Mut(dynamicSetHandle);
+		dynamicResourceSets.EmplaceBinding<BufferBinding>(buf, bindingNumber, setNumber, 0, range);
+
+		return dynamicSetHandle;
+	}
+
+
+	void OpenGL4MaterialManager::FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle)
+	{
+		m_dynamicResourceSets.Free(freedHandle);
+	}
+
+
+	GLuint OpenGL4MaterialManager::BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx)
 	{
 		MOE_ASSERT(materialIdx < m_materials.Size());
 		OpenGL4Material& material = m_materials[materialIdx];
@@ -126,6 +148,15 @@ namespace moe
 
 		// TODO: use glBindSamplers in OGL 4.5?
 		BindResourceSets(rhi, program, material.ResourceSets);
+
+		return program; // just handy to have it for later for dynamic resource sets...
+	}
+
+	void OpenGL4MaterialManager::BindDynamicResourceSets(OpenGL4RHI* rhi, DeviceDynamicResourceSetHandle dynRscHandle, GLuint usedProgram)
+	{
+		ResourceSetsDescription const& rscDescs = m_dynamicResourceSets.Get(dynRscHandle);
+
+		BindResourceSets(rhi, usedProgram, rscDescs);
 	}
 
 
@@ -261,7 +292,7 @@ namespace moe
 		}
 	}
 
-	std::optional<OpenGLVertexBindingFormat> OpenGLVertexBindingFormat::TranslateFormat(VertexBindingFormat vtxFormat)
+std::optional<OpenGLVertexBindingFormat> OpenGLVertexBindingFormat::TranslateFormat(VertexBindingFormat vtxFormat)
 	{
 		switch (vtxFormat)
 		{

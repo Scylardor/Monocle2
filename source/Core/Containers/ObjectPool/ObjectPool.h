@@ -329,7 +329,7 @@ namespace moe
 
 		VectorObjectPool(uint32_t reserved = 0)
 		{
-			m_objects.reserve(reserved);
+			Reserve(reserved);
 		}
 
 
@@ -337,6 +337,12 @@ namespace moe
 		{
 			m_maxAllowedGrowth = maxGrowth;
 		}
+
+		void	Reserve(uint32_t reserved)
+		{
+			m_objects.reserve(reserved);
+		}
+
 
 	protected:
 		template <typename ValueType, typename... Ts>

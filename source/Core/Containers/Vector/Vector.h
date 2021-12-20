@@ -17,6 +17,8 @@ namespace moe
 
 		typedef	typename std::vector<DataType>::iterator		Iterator;
 		typedef	typename std::vector<DataType>::const_iterator	ConstIterator;
+		typedef	typename std::vector<DataType>::reverse_iterator		ReverseIterator;
+		typedef	typename std::vector<DataType>::const_reverse_iterator	ReverseConstIterator;
 		typedef	typename std::vector<DataType>::value_type		ValueType;
 		typedef	typename std::vector<DataType>::size_type		SizeType;
 
@@ -109,6 +111,12 @@ namespace moe
 		Iterator		End() noexcept			{ return m_vec.end(); }
 		ConstIterator	End() const noexcept	{ return m_vec.end(); }
 
+
+		ReverseIterator			RBegin() noexcept		{ return m_vec.rbegin(); }
+		ReverseConstIterator	RBegin() const noexcept	{ return m_vec.rbegin(); }
+
+		ReverseIterator			REnd() noexcept			{ return m_vec.rend(); }
+		ReverseConstIterator	REnd() const noexcept	{ return m_vec.rend(); }
 
 		// C++11 range-based for loops interface
 		Iterator		begin() { return Begin(); }

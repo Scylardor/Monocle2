@@ -5,7 +5,6 @@
 #ifdef MOE_STD_SUPPORT
 
 #include <string>
-#include <string_view>
 #include <optional>
 #include <filesystem>
 

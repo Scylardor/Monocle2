@@ -52,27 +52,103 @@ namespace moe
 	}
 
 
-	void OpenGL4BufferManager::DrawMesh(OpenGL4MaterialManager const& materialManager, DeviceMeshHandle handle, uint32_t materialIdx)
+	DeviceBufferMapping OpenGL4BufferManager::MapCoherentDeviceBuffer(size_t dataSize, void const* data,
+		uint32_t mappingOffset, size_t mappingRange)
 	{
-		OpenGL4VertexLayout const& vtxLayout = materialManager.GetMaterialVertexLayout(materialIdx);
+		constexpr GLbitfield
+			mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+			storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
+
+		if (mappingRange == DeviceBufferMapping::WHOLE_RANGE)
+			mappingRange = dataSize;
+
+		GLuint buffer;
+		glCreateBuffers(1, &buffer);
+		MOE_DEBUG_ASSERT(buffer != 0);
+
+		glNamedBufferStorage(buffer, dataSize, data, storage_flags);
+		void* ptr = glMapNamedBufferRange(buffer, mappingOffset, mappingRange, mapping_flags);
+
+		DeviceBufferHandle buffHandle = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, mappingOffset);
+
+		ObjectPoolID mappingID = m_mappings.Emplace(buffHandle, mappingRange);
+
+		DeviceBufferMapping mapping{ mappingID, buffHandle, ptr };
+		return mapping;
+	}
+
+
+	void OpenGL4BufferManager::Unmap(DeviceBufferMapping const& bufferMap)
+	{
+		auto const& mapping = m_mappings.Get(bufferMap.MappingID());
+
+		GLuint buffer = OpenGLGraphicsDevice::DecodeBufferID(mapping.BufferHandle);
+		glUnmapBuffer(buffer);
+		glDeleteBuffers(1, &buffer);
+
+		m_mappings.Free(bufferMap.MappingID());
+	}
+
+
+	void OpenGL4BufferManager::ResizeMapping(DeviceBufferMapping & bufferMap, uint32_t newSize)
+	{
+		// First unmap the original buffer
+		auto & buffMapping = m_mappings.Mut(bufferMap.MappingID());
+		auto [srcBuffer, srcOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(buffMapping.BufferHandle);
+		glUnmapBuffer(srcBuffer);
+
+		// Create the new one
+		constexpr GLbitfield
+			mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+			storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
+
+		GLuint destBuffer;
+		glCreateBuffers(1, &destBuffer);
+		MOE_DEBUG_ASSERT(destBuffer != 0);
+		glNamedBufferStorage(destBuffer, newSize, nullptr, storage_flags);
+
+		// Make the copy from one buffer to another
+
+		// If not using OpenGL 4.5, you need to use something like this :
+		//glBindBuffer(GL_COPY_READ_BUFFER, vbo1);
+		//glBindBuffer(GL_COPY_WRITE_BUFFER, vbo2);
+		glCopyNamedBufferSubData(srcBuffer, destBuffer, srcOffset, 0, buffMapping.Range);
+
+		// Delete the old buffer (we don't need it anymore)
+		glDeleteBuffers(1, &srcBuffer);
+
+		// Map the new buffer.
+		buffMapping.BufferHandle = OpenGLGraphicsDevice::EncodeBufferHandle(destBuffer, 0);
+		buffMapping.Range = newSize;
+
+		void* ptr = glMapNamedBufferRange(destBuffer, 0, newSize, mapping_flags);
+		MOE_ASSERT(ptr != nullptr);
+
+		bufferMap = DeviceBufferMapping(bufferMap.MappingID(), buffMapping.BufferHandle, ptr);
+	}
+
+
+	void OpenGL4BufferManager::DrawMesh(DeviceMeshHandle handle, OpenGL4VertexLayout const* vtxLayout)
+	{
+		MOE_ASSERT(vtxLayout != nullptr);
 
 		OpenGL4MeshData const& meshData = m_meshesData.Get(handle.Get());
 
-		MOE_DEBUG_ASSERT(vtxLayout.Desc.BindingsLayout == LayoutType::Interleaved); // TODO: We should get rid of packed type soon
+		MOE_DEBUG_ASSERT(vtxLayout->Desc.BindingsLayout == LayoutType::Interleaved); // TODO: We should get rid of packed type soon
 		auto [VBO, VBOoffset] = OpenGLGraphicsDevice::DecodeBufferHandle(meshData.VertexBuffer);
-		glVertexArrayVertexBuffer(vtxLayout.VAO, 0, VBO,(GLintptr) VBOoffset, vtxLayout.TotalStride);
+		glVertexArrayVertexBuffer(vtxLayout->VAO, 0, VBO,(GLintptr) VBOoffset, vtxLayout->TotalStride);
 
 		if (meshData.IndexBuffer.IsNotNull())
 		{
 			auto [EBO, EBOoffset] = OpenGLGraphicsDevice::DecodeBufferHandle(meshData.IndexBuffer);
 
-			glVertexArrayElementBuffer(vtxLayout.VAO, EBO);
+			glVertexArrayElementBuffer(vtxLayout->VAO, EBO);
 
-			glDrawElements(vtxLayout.Topology, meshData.NumElements, meshData.ElementType, (const void*)((uint64_t)EBOoffset));
+			glDrawElements(vtxLayout->Topology, meshData.NumElements, meshData.ElementType, (const void*)((uint64_t)EBOoffset));
 		}
 		else
 		{
-			glDrawArrays(vtxLayout.Topology, 0, meshData.NumElements);
+			glDrawArrays(vtxLayout->Topology, 0, meshData.NumElements);
 		}
 	}
 

@@ -54,7 +54,7 @@ namespace moe
 				lastMaterialUsed = object.GetMaterialHandle();
 			}
 
-			drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, object.GetMeshHandle());
+			drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, object.GetMeshHandle(), object.GetDynamicSetsHandle());
 		}
 
 		drawQueue.EmplaceCommand<CmdEndRenderPass>(key);

@@ -13,8 +13,10 @@
 #include "GameFramework/Service/RenderService/RenderPass/PresentPass.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
 #include "GameFramework/Service/WindowService/WindowService.h"
+#include "Graphics/Sampler/SamplerDescriptor.h"
+#include "Graphics/ShaderCapabilities/ShaderCapabilities.h"
 #include "Graphics/Vertex/VertexFormats.h"
-
+#include "GameFramework/Service/TimeService/TimeService.h"
 
 namespace moe
 {
@@ -59,6 +61,7 @@ namespace moe
 			{	ShaderStage::Fragment, basicFragShaderFile}
 			})
 		.Pipeline.RasterizerStateDesc.m_cullMode = CullFace::None;
+		passDesc.AddShaderCapability<SC_ObjectTransform>();
 
 		Renderer& forwardRenderer = InitializeRenderer();
 
@@ -89,7 +92,27 @@ namespace moe
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 		RenderScene& scene = rdrSvc->EmplaceScene(forwardRenderer);
 
-		scene.AddObject(meshRsc, basicMat);
+		m_quad = scene.AddObject(meshRsc, basicMat);
+
+		Mat4 quadTrans = Mat4::Rotation(90_degf, Vec3(0, 0, 1));
+		quadTrans.Scale(Vec3(0.5f));
+
+		scene.SetObjectTransform(m_quad.GetID(), quadTrans);
+
+		m_svcTime = EditEngine()->EditService<TimeService>();
+
+		m_scene = &scene;
+	}
+
+
+	void BasicQuad::Update()
+	{
+		OpenGLApp3D::Update();
+
+		float time = m_svcTime->GetSecondsSinceGameStart();
+		m_quadTrans = Mat4::Rotation(Degs_f(time * 10), Vec3(0, 0, 1));
+
+		m_scene->SetObjectTransform(m_quad.GetID(), m_quadTrans);
 	}
 
 

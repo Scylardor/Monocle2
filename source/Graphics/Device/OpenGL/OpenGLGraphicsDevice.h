@@ -233,6 +233,7 @@ namespace moe
 
 		static std::pair<unsigned int, unsigned int>	DecodeBufferHandle(const RenderableObjectHandle<std::uint64_t>& handle);
 		static uint32_t									DecodeBufferID(const RenderableObjectHandle<std::uint64_t>& handle);
+		static uint32_t									DecodeBufferOffset(const RenderableObjectHandle<std::uint64_t>& handle);
 
 		static SamplerHandle							EncodeSamplerHandle(unsigned int samplerID, unsigned int freelistID);
 

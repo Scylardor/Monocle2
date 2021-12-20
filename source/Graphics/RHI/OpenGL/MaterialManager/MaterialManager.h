@@ -137,6 +137,14 @@ namespace moe
 	};
 
 
+
+	struct MaterialResourceSets
+	{
+		ResourceSetsDescription	ResourceSets;
+	};
+
+
+
 	/*
 	 * An abstract class for pipeline state object (PSO) management and resource set (aka descriptor set in e.g. Vulkan) allocation.
 	 */
@@ -155,7 +163,15 @@ namespace moe
 
 		[[nodiscard]] DeviceMaterialHandle	CreateMaterial(MaterialDescription const& matDesc) override;
 
-		void	BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx);
+		DeviceDynamicResourceSetHandle	AddDynamicBufferBinding(DeviceDynamicResourceSetHandle dynamicSetHandle, uint32_t setNumber, uint32_t bindingNumber, DeviceBufferHandle buf, uint32_t range) override;
+
+		void							FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle) override;
+
+
+
+		GLuint	BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx);
+
+		void	BindDynamicResourceSets(OpenGL4RHI* rhi, DeviceDynamicResourceSetHandle dynRscHandle, GLuint usedProgram);
 
 		[[nodiscard]] OpenGL4VertexLayout const&	GetMaterialVertexLayout(uint32_t materialIdx) const
 		{
@@ -200,6 +216,8 @@ namespace moe
 		Vector<OpenGL4VertexLayout>			m_VAOs;
 
 		Vector<OpenGL4Material>				m_materials;
+
+		DynamicObjectPool<ResourceSetsDescription>	m_dynamicResourceSets;
 
 		OpenGL4TextureManager&				m_textureManager;
 	};

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Graphics/RHI/BufferManager/BufferManager.h"
-#include "Graphics/RHI/MaterialManager/MaterialManager.h"
+#include "Core/Delegates/Event.h"
+#include "Graphics/Handle/DeviceHandles.h"
 #include "Math/Matrix.h"
 
 
@@ -17,12 +17,12 @@ namespace moe
 		using MaterialID = uint32_t;
 		using ID = std::uint32_t;
 
-		static const auto INVALID_ID = -1;
+		static const uint32_t INVALID_ID = MaxValue<uint32_t>();
 
 
 		RenderObject() = default;
 		RenderObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 transform = Mat4::Identity()) :
-			m_transform(transform), m_meshHandle(std::move(meshHandle)), m_matHandle(matHandle)
+			m_transform(transform), m_meshHandle(meshHandle), m_matHandle(matHandle)
 		{}
 
 
@@ -30,6 +30,12 @@ namespace moe
 		{
 			return m_mvp;
 		}
+
+		[[nodiscard]] uint32_t GetTransformID() const
+		{
+			return m_transformID;
+		}
+
 
 		void	SetMVP(const Mat4& mvp)
 		{
@@ -65,9 +71,39 @@ namespace moe
 			return m_matHandle;
 		}
 
+		void	SetMaterialHandle(DeviceMaterialHandle handle)
+		{
+			m_matHandle = handle;
+		}
+
+
+		[[nodiscard]] DeviceDynamicResourceSetHandle	GetDynamicSetsHandle() const
+		{
+			return m_dynamicSets;
+		}
+
+		void	SetDynamicSetsHandle(DeviceDynamicResourceSetHandle ddrsh)
+		{
+			m_dynamicSets = ddrsh;
+		}
+
+
 		[[nodiscard]] bool WasUpdatedSinceLastRender() const
 		{
 			return m_updatedSinceLastRender;
+		}
+
+
+		void	SetTransformID(uint32_t transfID)
+		{
+			m_transformID = transfID;
+		}
+
+
+		using OnObjectRemovedEvent = Event< void(RenderScene*, RenderObject&)>;
+		OnObjectRemovedEvent&	RemovedEvent()
+		{
+			return m_removedEvent;
 		}
 
 	protected:
@@ -75,10 +111,13 @@ namespace moe
 		Mat4				m_transform{ Mat4::Identity() };
 		Mat4				m_mvp{ Mat4::Identity() };
 
+		uint32_t				m_transformID{ (uint32_t) -1 };
 		DeviceMeshHandle		m_meshHandle{ 0 };
 		DeviceMaterialHandle	m_matHandle{ 0 };
+		DeviceDynamicResourceSetHandle	m_dynamicSets{ INVALID_ID };
 
-		bool			m_updatedSinceLastRender{ true };
+		OnObjectRemovedEvent	m_removedEvent{};
+		bool				m_updatedSinceLastRender{ true };
 	};
 
 

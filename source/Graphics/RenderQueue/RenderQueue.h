@@ -35,7 +35,7 @@ namespace moe
 		uint64_t	Material	: 16;
 		uint64_t	Depth		: 9;
 		uint64_t	Translucent : 3;
-		uint64_t	ViewportLayer : 3;
+		uint64_t	ViewLayer	: 3;
 		uint64_t	ViewportID	: 3;
 		uint64_t	Fullscreen	: 3;
 	};
@@ -127,7 +127,7 @@ namespace moe
 		key.Material = matID;
 		key.Depth = DepthToBits(Depth);
 		key.Translucent = (uint8_t)translut;
-		key.ViewportLayer = (uint8_t)layer;
+		key.ViewLayer = (uint8_t)layer;
 		key.ViewportID = viewportID;
 		key.Fullscreen = fullscreen;
 		return key;

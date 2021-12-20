@@ -6,16 +6,17 @@
 #include "Core/Resource/BaseResource.h"
 #include "Core/Resource/ResourceRef.h"
 #include "Core/Resource/TextureResource.h"
+#include "Core/Resource/Material/ResourceSet/BindingType.h"
 #include "BlendState/BlendStateDescriptor.h"
 #include "DepthStencilState/DepthStencilStateDescriptor.h"
 #include "Graphics/DeviceBuffer/DeviceBufferHandle.h"
 #include "Graphics/RHI/TextureManager/TextureManager.h"
-#include "Graphics/Sampler/SamplerDescriptor.h"
 #include "Graphics/VertexLayout/VertexElementFormat.h"
 #include "Graphics/VertexLayout/VertexLayoutDescriptor.h"
 #include "RasterizerState/RasterizerStateDescriptor.h"
 #include "Shader/Program/ShaderProgramDescription.h"
 #include "Topology/PrimitiveTopology.h"
+#include "GameFramework/Service/RenderService/RenderScene/RenderObject.h"
 
 
 namespace moe
@@ -106,7 +107,7 @@ namespace moe
 
 	struct ResourceSetLayoutsDescription
 	{
-		ResourceSetLayout& AddResourceLayout(uint16_t setNumber, Vector<ResourceBinding> bindings)
+		ResourceSetLayout& AddResourceLayout(uint16_t setNumber, ResourceBindingList bindings)
 		{
 			Layouts.EmplaceBack(setNumber, std::move(bindings));
 			return Layouts.Back();
@@ -212,6 +213,23 @@ namespace moe
 	};
 
 
+	struct MaterialPassDescription;
+	class RenderScene;
+
+	struct ShaderCapability
+	{
+		using OnCapabilityInitialized = void(*)(RenderScene*, RenderObject&);
+		using OnCapabilityRemoved = void(*)(RenderScene*, RenderObject&);
+
+		ShaderCapability(OnCapabilityInitialized oci, OnCapabilityRemoved ocr) :
+			OnInitialized(oci), OnRemoved(ocr)
+		{}
+
+		OnCapabilityInitialized	OnInitialized = nullptr;
+		OnCapabilityRemoved		OnRemoved = nullptr;
+	};
+
+
 	struct MaterialPassDescription
 	{
 		MaterialPassDescription& AssignShaderProgramDescription(ShaderProgramDescription programDesc)
@@ -227,10 +245,23 @@ namespace moe
 		}
 
 
+		template <typename TCap>
+		MaterialPassDescription&	AddShaderCapability()
+		{
+			ShaderCapabilities.EmplaceBack(&TCap::OnInitialized, &TCap::OnRemoved);
+			TCap::OnAdded(*this);
+			return *this;
+		}
+
+
+
 		PipelineDescription				Pipeline;
 		ShaderProgramDescription		ShaderProgram;
 		ResourceSetLayoutsDescription	ResourceSetLayouts;
 		ResourceSetsDescription			ResourceBindings;
+
+		using ShaderCaps = Vector<ShaderCapability>;
+		ShaderCaps						ShaderCapabilities;
 	};
 
 	struct MaterialDescription
