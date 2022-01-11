@@ -156,10 +156,7 @@ namespace moe
 		if (std::find(ignoredErrorNumbers.begin(), ignoredErrorNumbers.end(), id) != ignoredErrorNumbers.end())
 			return;
 
-		std::string errorMessage;
-		errorMessage.reserve(128);
-
-		errorMessage = "OpenGL error (ID %u) : %s\n";
+		std::string errorMessage = "OpenGL error (ID %u) : %s\n";
 
 		switch (source)
 		{
