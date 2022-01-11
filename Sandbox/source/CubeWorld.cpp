@@ -123,7 +123,6 @@ namespace moe
 		//scene.AddView(viewMatrix, perspective, viewport, viewport);
 	}
 
-
 	void CubeWorld::Update()
 	{
 		OpenGLApp3D::Update();

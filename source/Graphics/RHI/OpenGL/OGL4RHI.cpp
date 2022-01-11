@@ -107,7 +107,7 @@ namespace moe
 							return;
 
 						lastMaterialUsedIdx = cbm.Handle.Get() >> 32;
-						lastLayoutUsed = &m_materialManager.GetMaterialVertexLayout(lastMaterialUsedIdx);
+						lastLayoutUsed = m_materialManager.GetMaterialVertexLayout(lastMaterialUsedIdx);
 						lastProgramUsed = m_materialManager.BindMaterial(this, lastMaterialUsedIdx);
 					},
 					[&](CmdBindResourceSet const& cbrs)
@@ -136,6 +136,11 @@ namespace moe
 					{
 						glViewport(csvs.Viewport.x, csvs.Viewport.y, csvs.Viewport.Width, csvs.Viewport.Height);
 						glScissor(csvs.Scissor.x, csvs.Scissor.y, csvs.Scissor.Width, csvs.Scissor.Height);
+					},
+					[this](CmdDrawArrays const& cda)
+					{
+						auto topo = OpenGLPipeline::GetOpenGLPrimitiveTopology(cda.Topo);
+						glDrawArrays(topo, cda.First, cda.Count);
 					}
 				}, cmd
 			);

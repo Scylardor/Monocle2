@@ -77,7 +77,13 @@ namespace moe
 		// Now translate the pipeline configuration to an OpenGL one, and find if one already exists (or add it)
 		uint32_t psoIdx = FindOrBuildPipelineStateObject(firstPass.Pipeline);
 
-		uint32_t vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout, firstPass.Pipeline.Topology);
+		// It's possible for some special materials (e.g. full screen triangle) to not require a VAO.
+		// In that case, there are no vertex bindings and we should just ignore it.
+		uint32_t vaoIdx;
+		if (firstPass.Pipeline.VertexLayout.Bindings.Empty())
+			vaoIdx = NO_VAO;
+		else
+			vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout, firstPass.Pipeline.Topology);
 
 		// Now build and return the material object.
 		auto matIt = std::find_if(m_materials.begin(), m_materials.end(),
@@ -156,9 +162,13 @@ namespace moe
 		GLuint program = m_shaderPrograms[material.ProgramIdx].Program;
 		glUseProgram(program);
 
-		MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
-		GLuint vao = m_VAOs[material.VAOIdx].VAO;
-		glBindVertexArray(vao);
+		MOE_ASSERT(material.VAOIdx < m_VAOs.Size() || material.VAOIdx == NO_VAO);
+		if (material.VAOIdx != NO_VAO)
+		{
+			GLuint vao = m_VAOs[material.VAOIdx].VAO;
+			glBindVertexArray(vao);
+		}
+
 
 		// TODO: use glBindSamplers in OGL 4.5?
 		BindResourceSets(rhi, program, material.ResourceSets);

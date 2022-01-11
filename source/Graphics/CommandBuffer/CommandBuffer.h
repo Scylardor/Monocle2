@@ -5,7 +5,7 @@
 
 
 #include "Core/Containers/Vector/Vector.h"
-#include "GameFramework/Service/RenderService/RenderScene/RenderObject.h"
+#include "Core/Resource/Material/Topology/PrimitiveTopology.h"
 #include "Graphics/Color/Color.h"
 #include "Graphics/RHI/FramebufferManager/FramebufferManager.h"
 #include "Graphics/RHI/MaterialManager/MaterialManager.h"
@@ -81,6 +81,18 @@ namespace moe
 		DeviceDynamicResourceSetHandle	DynamicSets = INVALID_ID;
 	};
 
+
+	struct CmdDrawArrays
+	{
+		CmdDrawArrays(PrimitiveTopology primTop, uint32_t first, uint32_t cnt) :
+			Topo(primTop), First(first), Count(cnt)
+		{}
+
+		PrimitiveTopology	Topo{ PrimitiveTopology::TriangleList };
+		uint32_t			First = 0;
+		uint32_t			Count = 0;
+	};
+
 	using CommandBufferVariant = std::variant<
 		CmdBeginRenderPass,
 		CmdBindMaterial,
@@ -88,7 +100,8 @@ namespace moe
 		CmdDrawMesh,
 		CmdEndRenderPass,
 		CmdPresentSwapchain,
-		CmdSetViewportScissor
+		CmdSetViewportScissor,
+		CmdDrawArrays
 	>;
 
 

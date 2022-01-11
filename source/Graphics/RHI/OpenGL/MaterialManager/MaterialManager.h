@@ -177,17 +177,22 @@ namespace moe
 
 		void	BindResourceSet(DeviceResourceSetHandle setHandle);
 
-		[[nodiscard]] OpenGL4VertexLayout const&	GetMaterialVertexLayout(uint32_t materialIdx) const
+		[[nodiscard]] OpenGL4VertexLayout const*	GetMaterialVertexLayout(uint32_t materialIdx) const
 		{
 			MOE_ASSERT(materialIdx < m_materials.Size());
 			OpenGL4Material const& material = m_materials[materialIdx];
 
-			MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
-			return m_VAOs[material.VAOIdx];
+			MOE_ASSERT(material.VAOIdx < m_VAOs.Size() || material.VAOIdx == NO_VAO);
+			if (material.VAOIdx == NO_VAO)
+				return nullptr;
+
+			return &m_VAOs[material.VAOIdx];
 		}
 
 
 	private:
+
+		inline static const auto NO_VAO = UINT32_MAX;
 
 		uint32_t	FindOrBuildShaderProgram(ShaderProgramDescription const& progDesc);
 
