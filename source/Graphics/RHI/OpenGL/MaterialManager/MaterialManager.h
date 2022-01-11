@@ -92,7 +92,7 @@ namespace moe
 			if (&other == this)
 				return true;
 
-			return (
+			const bool equal =
 				BlendDestFactor == other.BlendDestFactor &&
 				BlendSrcFactor == other.BlendSrcFactor &&
 				BlendEquation == other.BlendEquation &&
@@ -107,10 +107,10 @@ namespace moe
 				FrontFaceStencilFailOp == other.FrontFaceStencilFailOp &&
 				FrontFaceDepthFailOp == other.FrontFaceDepthFailOp &&
 				FrontFaceBothPassOp == other.FrontFaceBothPassOp &&
-				FrontFaceComparisonFunc == other.FrontFaceBothPassOp &&
+				FrontFaceComparisonFunc == other.FrontFaceComparisonFunc &&
 				BackFaceStencilFailOp == other.BackFaceStencilFailOp &&
 				BackFaceDepthFailOp == other.BackFaceDepthFailOp &&
-				BackFaceBothPassOp == other.BackFaceDepthFailOp &&
+				BackFaceBothPassOp == other.BackFaceBothPassOp &&
 				BackFaceComparisonFunc == other.BackFaceComparisonFunc &&
 				CullingEnabled == other.CullingEnabled &&
 				CulledFace == other.CulledFace &&
@@ -118,8 +118,9 @@ namespace moe
 				PolygonFace == other.PolygonFace &&
 				PolygonMode == other.PolygonMode &&
 				EnableDepthClamp == other.EnableDepthClamp &&
-				EnableScissorTest == other.EnableScissorTest
-			);
+				EnableScissorTest == other.EnableScissorTest;
+
+			return equal;
 		}
 	};
 

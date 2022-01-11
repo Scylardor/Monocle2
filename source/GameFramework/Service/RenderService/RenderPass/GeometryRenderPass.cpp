@@ -75,12 +75,12 @@ namespace moe
 						renderedScene.OnRenderShaderChange().Broadcast(renderedScene, view, drawQueue, key);
 					}
 
-					renderedScene.SetObjectTransform(object.GetTransformID(), view.GetViewProjectionMatrix() * object.GetModelMatrix());
 
-					lastMaterialUsed = object.GetMaterialHandle();
+					lastMaterialUsed = objectMaterialHandle;
 					lastMaterialIDs = thisMaterialIDs;
 				}
 
+				renderedScene.SetObjectTransform(object.GetTransformID(), view.GetViewProjectionMatrix() * object.GetModelMatrix());
 				drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, object.GetMeshHandle(), object.GetDynamicSetsHandle());
 			}
 
