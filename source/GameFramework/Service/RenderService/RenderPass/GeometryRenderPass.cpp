@@ -42,19 +42,49 @@ namespace moe
 		RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
 		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Black());
 
-		RenderScene const& renderedScene = *m_ownerRenderer->GetAttachedScene();
+		RenderScene & renderedScene = *m_ownerRenderer->MutAttachedScene();
 
-		DeviceMaterialHandle lastMaterialUsed = DeviceMaterialHandle::Null();
-
-		for (RenderObject const& object : renderedScene)
+		uint8_t viewportIdx = 0;
+		for (ViewObject const& view : renderedScene.GetViews())
 		{
-			if (object.GetMaterialHandle() != lastMaterialUsed)
+			MOE_ASSERT(viewportIdx < RenderQueueKey::MAX_VIEWPORTS);
+			key.ViewportID = viewportIdx;
+
+			drawQueue.EmplaceDrawCall<CmdSetViewportScissor>(key, view.ScreenViewport(), view.ScreenScissor());
+
+			DeviceMaterialHandle lastMaterialUsed = DeviceMaterialHandle::Null();
+			std::pair<uint32_t, uint32_t> lastMaterialIDs{};
+
+			for (RenderObject const& object : renderedScene)
 			{
-				drawQueue.EmplaceDrawCall<CmdBindMaterial>(key, object.GetMaterialHandle());
-				lastMaterialUsed = object.GetMaterialHandle();
+				auto objectMaterialHandle = object.GetMaterialHandle();
+
+				if (objectMaterialHandle != lastMaterialUsed)
+				{
+					auto thisMaterialIDs = objectMaterialHandle.DecomposeMaterialAndShaderIndices();
+
+					key.Material = thisMaterialIDs.first;
+					key.Program = thisMaterialIDs.second;
+
+					drawQueue.EmplaceDrawCall<CmdBindMaterial>(key, objectMaterialHandle);
+
+					// If it's the same shader program, but with different uniforms, we don't need to rebind the scenes' resource sets.
+					// If it is not, we have to rebind everything
+					if (lastMaterialIDs.second != thisMaterialIDs.second)
+					{
+						renderedScene.OnRenderShaderChange().Broadcast(renderedScene, view, drawQueue, key);
+					}
+
+					renderedScene.SetObjectTransform(object.GetTransformID(), view.GetViewProjectionMatrix() * object.GetModelMatrix());
+
+					lastMaterialUsed = object.GetMaterialHandle();
+					lastMaterialIDs = thisMaterialIDs;
+				}
+
+				drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, object.GetMeshHandle(), object.GetDynamicSetsHandle());
 			}
 
-			drawQueue.EmplaceDrawCall<CmdDrawMesh>(key, object.GetMeshHandle(), object.GetDynamicSetsHandle());
+			viewportIdx++;
 		}
 
 		drawQueue.EmplaceCommand<CmdEndRenderPass>(key);

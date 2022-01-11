@@ -51,11 +51,6 @@ namespace moe
 	DECLARE_MOE_ENUM_OPERATORS(ButtonState);
 
 
-	MOE_ENUM(MouseButtonState, std::uint8_t,
-		Down = 0,
-		Up,
-		Unknown
-	);
 
 
 }

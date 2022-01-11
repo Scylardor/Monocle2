@@ -10,18 +10,6 @@
 namespace moe
 {
 
-	// TODO: put this elsewhere (used for framebuffer blitting)
-	template <typename T>
-	struct Rect2D
-	{
-		T x{0};
-		T y{0};
-		T width{0};
-		T height{0};
-	};
-
-	typedef	Rect2D<int>	Rect2Di;
-
 
 	/**
 	 * \brief A graphics API-agnostic class implementing a Framebuffer.

@@ -52,28 +52,37 @@ namespace moe
 	}
 
 
-	DeviceBufferMapping OpenGL4BufferManager::MapCoherentDeviceBuffer(size_t dataSize, void const* data,
+	DeviceBufferMapping OpenGL4BufferManager::MapCoherentDeviceBuffer(uint32_t dataBlockSize, uint32_t numBlocks, void const* data,
 		uint32_t mappingOffset, size_t mappingRange)
 	{
 		constexpr GLbitfield
 			mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
 			storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
 
+		// in order to be able to bind subparts of the buffer,
+		// the block size will have to be aligned to a multiple of GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT.
+		// see https://community.khronos.org/t/uniform-buffers-and-bindbufferrange/65397/2
+
+		static const GLint uboOffsetAlignment = GetUniformBufferOffsetAlignment();
+		dataBlockSize = (dataBlockSize + uboOffsetAlignment - 1) & ~(uboOffsetAlignment - 1);
+
+		auto totalSize = dataBlockSize * numBlocks;
+
 		if (mappingRange == DeviceBufferMapping::WHOLE_RANGE)
-			mappingRange = dataSize;
+			mappingRange = totalSize;
 
 		GLuint buffer;
 		glCreateBuffers(1, &buffer);
 		MOE_DEBUG_ASSERT(buffer != 0);
 
-		glNamedBufferStorage(buffer, dataSize, data, storage_flags);
+		glNamedBufferStorage(buffer, totalSize, data, storage_flags);
 		void* ptr = glMapNamedBufferRange(buffer, mappingOffset, mappingRange, mapping_flags);
 
 		DeviceBufferHandle buffHandle = OpenGLGraphicsDevice::EncodeBufferHandle(buffer, mappingOffset);
 
 		ObjectPoolID mappingID = m_mappings.Emplace(buffHandle, mappingRange);
 
-		DeviceBufferMapping mapping{ mappingID, buffHandle, ptr };
+		DeviceBufferMapping mapping{ mappingID, buffHandle, ptr, dataBlockSize };
 		return mapping;
 	}
 
@@ -83,7 +92,7 @@ namespace moe
 		auto const& mapping = m_mappings.Get(bufferMap.MappingID());
 
 		GLuint buffer = OpenGLGraphicsDevice::DecodeBufferID(mapping.BufferHandle);
-		glUnmapBuffer(buffer);
+		glUnmapNamedBuffer(buffer);
 		glDeleteBuffers(1, &buffer);
 
 		m_mappings.Free(bufferMap.MappingID());
@@ -95,7 +104,7 @@ namespace moe
 		// First unmap the original buffer
 		auto & buffMapping = m_mappings.Mut(bufferMap.MappingID());
 		auto [srcBuffer, srcOffset] = OpenGLGraphicsDevice::DecodeBufferHandle(buffMapping.BufferHandle);
-		glUnmapBuffer(srcBuffer);
+		glUnmapNamedBuffer(srcBuffer);
 
 		// Create the new one
 		constexpr GLbitfield
@@ -105,7 +114,7 @@ namespace moe
 		GLuint destBuffer;
 		glCreateBuffers(1, &destBuffer);
 		MOE_DEBUG_ASSERT(destBuffer != 0);
-		glNamedBufferStorage(destBuffer, newSize, nullptr, storage_flags);
+		glNamedBufferStorage(destBuffer, bufferMap.AlignedBlockSize() * newSize, nullptr, storage_flags);
 
 		// Make the copy from one buffer to another
 
@@ -124,7 +133,7 @@ namespace moe
 		void* ptr = glMapNamedBufferRange(destBuffer, 0, newSize, mapping_flags);
 		MOE_ASSERT(ptr != nullptr);
 
-		bufferMap = DeviceBufferMapping(bufferMap.MappingID(), buffMapping.BufferHandle, ptr);
+		bufferMap = DeviceBufferMapping(bufferMap.MappingID(), buffMapping.BufferHandle, ptr, bufferMap.AlignedBlockSize());
 	}
 
 
@@ -152,6 +161,13 @@ namespace moe
 		}
 	}
 
+
+	uint32_t OpenGL4BufferManager::GetUniformBufferOffsetAlignment()
+	{
+		GLint uniformBufferAlignSize = 0;
+		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignSize);
+		return uniformBufferAlignSize;
+	}
 
 	DeviceMeshHandle OpenGL4BufferManager::CreateMesh(MeshData const& meshData)
 	{

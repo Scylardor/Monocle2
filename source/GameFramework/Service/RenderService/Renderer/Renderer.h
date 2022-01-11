@@ -64,7 +64,13 @@ namespace moe
 
 		void AttachSurface(IGraphicsSurface& surface);
 
+
 		IGraphicsSurface*	MutSurface()
+		{
+			return m_attachedSurface;
+		}
+
+		IGraphicsSurface const*	GetSurface()
 		{
 			return m_attachedSurface;
 		}

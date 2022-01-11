@@ -161,17 +161,21 @@ namespace moe
 
 		bool	CreateShaderProgram(ShaderProgramDescription const& programDescription) override;
 
-		[[nodiscard]] DeviceMaterialHandle	CreateMaterial(MaterialDescription const& matDesc) override;
+		[[nodiscard]] DeviceMaterialHandle		CreateMaterial(MaterialDescription const& matDesc) override;
 
-		DeviceDynamicResourceSetHandle	AddDynamicBufferBinding(DeviceDynamicResourceSetHandle dynamicSetHandle, uint32_t setNumber, uint32_t bindingNumber, DeviceBufferHandle buf, uint32_t range) override;
+		[[nodiscard]] DeviceDynamicResourceSetHandle	AddDynamicBufferBinding(DeviceDynamicResourceSetHandle dynamicSetHandle,
+			BufferBinding const& dynamicBufferBinding) override;
 
-		void							FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle) override;
+		void									FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle) override;
 
-
+		[[nodiscard]] DeviceResourceSetHandle	AllocateResourceSet(ResourceSetsDescription const& setDescription) override;
+		void									FreeResourceSet(DeviceResourceSetHandle setHandle) override;
 
 		GLuint	BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx);
 
 		void	BindDynamicResourceSets(OpenGL4RHI* rhi, DeviceDynamicResourceSetHandle dynRscHandle, GLuint usedProgram);
+
+		void	BindResourceSet(DeviceResourceSetHandle setHandle);
 
 		[[nodiscard]] OpenGL4VertexLayout const&	GetMaterialVertexLayout(uint32_t materialIdx) const
 		{

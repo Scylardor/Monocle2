@@ -110,6 +110,13 @@ namespace moe
 						lastLayoutUsed = &m_materialManager.GetMaterialVertexLayout(lastMaterialUsedIdx);
 						lastProgramUsed = m_materialManager.BindMaterial(this, lastMaterialUsedIdx);
 					},
+					[&](CmdBindResourceSet const& cbrs)
+					{
+						MOE_DEBUG_ASSERT(cbrs.Handle.IsNotNull());
+						if (cbrs.Handle.IsNull())
+							return;
+						m_materialManager.BindDynamicResourceSets(this, cbrs.Handle.Get(), lastProgramUsed);
+					},
 					[&](CmdDrawMesh const & cdm)
 					{
 						if (cdm.DynamicSets != INVALID_ID)
@@ -124,10 +131,15 @@ namespace moe
 					[this](CmdPresentSwapchain const & cps)
 					{
 						m_swapchainManager.Present(cps.Handle);
+					},
+					[this](CmdSetViewportScissor const& csvs)
+					{
+						glViewport(csvs.Viewport.x, csvs.Viewport.y, csvs.Viewport.Width, csvs.Viewport.Height);
+						glScissor(csvs.Scissor.x, csvs.Scissor.y, csvs.Scissor.Width, csvs.Scissor.Height);
 					}
-				}, cmd);
+				}, cmd
+			);
 		}
-
 	}
 
 

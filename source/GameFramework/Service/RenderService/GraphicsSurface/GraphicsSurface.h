@@ -21,7 +21,13 @@ namespace moe
 
 		virtual void					SwapBuffers() = 0;
 
-		virtual std::pair<int, int>		GetDimensions() = 0;
+		virtual std::pair<int, int>		GetDimensions() const = 0;
+
+		float	GetAspectRatio() const
+		{
+			auto [width, height] = GetDimensions();
+			return (float)width / (float)height;
+		}
 
 		SurfaceResizedEvent&	OnSurfaceResizedEvent()
 		{

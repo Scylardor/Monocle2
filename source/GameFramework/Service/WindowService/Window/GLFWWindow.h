@@ -19,11 +19,11 @@ namespace moe
 		~GLFWWindow() override;
 
 
-		void				PollEvents() override;
+		void				PollInputs() override;
 
 		void				SwapBuffers() override;
 
-		std::pair<int, int>	GetDimensions() override;
+		std::pair<int, int>	GetDimensions() const override;
 
 		bool				ShouldClose() override
 		{
@@ -65,9 +65,15 @@ namespace moe
 		WindowState	m_openState{ WindowState::Opened };
 
 		static void	WindowFramebufferResizeCallback(GLFWwindow* window, int width, int height);
+
+		static void	WindowCursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+
+		static void	WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+		static void	WindowMouseCallback(GLFWwindow* window, int button, int action, int mods);
+
+		static void	WindowMouseScrollCallback(GLFWwindow* window, double xscroll, double yscroll);
 	};
-
-
 }
 
 

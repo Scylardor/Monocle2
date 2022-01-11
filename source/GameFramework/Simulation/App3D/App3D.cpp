@@ -4,6 +4,7 @@
 #include "GameFramework/Service/ConfigService/ConfigService.h"
 
 #include "GameFramework/Engine/Engine.h"
+#include "GameFramework/Service/InputService/InputService.h"
 #include "GameFramework/Service/LogService/LogService.h"
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/RenderService/RenderPass/GeometryRenderPass.h"
@@ -49,12 +50,15 @@ void moe::App3D::Update()
 	TimeService* time = EditEngine()->EditService<TimeService>();
 	time->Update();
 
+	auto* winSvc = EditEngine()->EditService<WindowService>();
+	winSvc->Update();
+
+	InputService* inputs = EditEngine()->EditService<InputService>();
+	inputs->Update();
 	//float dt = time->GetFrameDeltaTime();
 
 	//MOE_LOG("Delta time: %f!", dt);
 
-	auto* winSvc = EditEngine()->EditService<WindowService>();
-	winSvc->Update();
 
 
 	auto* rdrSvc = EditEngine()->EditService<RenderService>();

@@ -6,6 +6,7 @@
 #include "Graphics/Vertex/VertexFormats.h"
 
 #include "GameFramework/Service/RenderService/RenderService.h"
+#include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
 #include "GameFramework/Engine/Engine.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
 
@@ -54,7 +55,6 @@ namespace moe
 			{	ShaderStage::Fragment, basicFragShaderFile}
 		}).
 		Pipeline.DepthStencilStateDesc.SetDepthTestEnabled(DepthTest::Disabled, DepthWriting::Disabled);
-;
 
 		ResourceBindingList bindings;
 		bindings.EmplaceBack(0, BindingType::TextureReadOnly, ShaderStage::Fragment);
@@ -62,8 +62,6 @@ namespace moe
 		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, swapchainColorTex);
 
 		m_fullscreenQuadMaterial = RHI->MaterialManager().CreateMaterial(matDesc);
-
-		//owner.MutAttachedScene()->AddObject(m_fullscreenQuadMesh, material);
 	}
 
 
@@ -76,6 +74,13 @@ namespace moe
 
 		key.Material = matIdx;
 		key.Program = programIdx;
+
+		// Make sure to reset the viewport to draw on the whole surface
+		// Otherwise we could be still using a viewport from a previous pass!
+		auto [surfaceWidth, surfaceHeight] = m_ownerRenderer->GetSurface()->GetDimensions();
+		Rect2Du fullscreenViewport{ 0, 0, (uint32_t) surfaceWidth, (uint32_t) surfaceHeight };
+
+		drawQueue.EmplaceDrawCall<CmdSetViewportScissor>(key, fullscreenViewport, fullscreenViewport);
 
 		drawQueue.EmplaceDrawCall<CmdBindMaterial>(key, m_fullscreenQuadMaterial);
 

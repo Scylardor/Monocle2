@@ -90,6 +90,12 @@ namespace moe
 		EventDelegateID	GetNextID() const { return m_nextID; }
 
 
+		[[nodiscard]] bool	IsBound() const
+		{
+			return !m_delegates.Empty();
+		}
+
+
 	private:
 
 

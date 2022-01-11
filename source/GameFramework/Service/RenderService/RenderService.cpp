@@ -29,7 +29,7 @@ namespace moe
 			{
 				renderPass->Update(drawCallQueue, passIndex);
 				passIndex++;
-				MOE_ASSERT(passIndex <= GetMaxRenderPassIndex());
+				MOE_ASSERT(passIndex < RenderQueueKey::MAX_PASSES);
 			}
 
 			rdr.MutRHI()->SubmitCommandBuffer(drawCallQueue.GetCommandBuffer());

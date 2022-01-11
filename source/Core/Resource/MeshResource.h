@@ -24,7 +24,7 @@ namespace moe
 
 		using RawData = Vector<std::byte>;
 
-		std::byte const* ToBytes(void const* anything)
+		static std::byte const* ToBytes(void const* anything)
 		{
 			return reinterpret_cast<std::byte const*>(anything);
 		}
@@ -32,7 +32,7 @@ namespace moe
 	public:
 		MeshData() = default;
 
-		MeshData(void const* vtxData, size_t vtxSize, size_t numVerts, void const* idxData, size_t idxSize, size_t numIndices) :
+		MeshData(void const* vtxData, size_t vtxSize, size_t numVerts, void const* idxData = nullptr, size_t idxSize = sizeof(uint32_t), size_t numIndices = 0) :
 			Vertices(ToBytes(vtxData), ToBytes(vtxData) + (vtxSize * numVerts)),
 			Indices(ToBytes(idxData), ToBytes(idxData) + (idxSize * numIndices)),
 			ElementInformation(Indices.Empty() ? (MeshElementType)(numVerts) :

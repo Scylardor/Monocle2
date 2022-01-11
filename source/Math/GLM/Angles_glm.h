@@ -59,6 +59,12 @@ namespace moe
 			return Degs(-m_value);
 		}
 
+
+		T	operator()() const
+		{
+			return m_value;
+		}
+
 	};
 
 

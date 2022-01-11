@@ -12,14 +12,24 @@ namespace moe
 
 		DeviceBufferMapping() = default;
 
-		DeviceBufferMapping(ObjectPoolID id, DeviceBufferHandle handle, void* dat) :
-			ID(id), BufferHandle(handle), Data(dat)
+		DeviceBufferMapping(ObjectPoolID id, DeviceBufferHandle handle, void* dat, uint32_t blockSize) :
+			ID(id), BufferHandle(handle), Data(dat), BlockSize(blockSize)
 		{}
 
 		template <typename T>
-		T As()
+		T& MutBlock(uint32_t idx = 0)
 		{
-			return static_cast<T>(Data);
+			auto* ptr = (char*)Data;
+			ptr += (BlockSize * idx);
+			return *reinterpret_cast<T*>(ptr);
+		}
+
+		template <typename T>
+		T const& GetBlock(uint32_t idx = 0) const
+		{
+			auto* ptr = (char const*)Data;
+			ptr += (BlockSize * idx);
+			return *reinterpret_cast<T const*>(ptr);
 		}
 
 		[[nodiscard]] auto	MappingID() const
@@ -27,9 +37,14 @@ namespace moe
 			return ID;
 		}
 
-		auto	Handle() const
+		[[nodiscard]] auto	Handle() const
 		{
 			return BufferHandle;
+		}
+
+		[[nodiscard]] auto	AlignedBlockSize() const
+		{
+			return BlockSize;
 		}
 
 	private:
@@ -37,6 +52,7 @@ namespace moe
 		ObjectPoolID		ID{ INVALID_ID };
 		DeviceBufferHandle	BufferHandle{};
 		void*				Data = nullptr;
+		uint32_t			BlockSize = 0;
 	};
 
 
@@ -57,7 +73,7 @@ namespace moe
 
 		virtual DeviceMeshHandle	FindOrCreateMeshBuffer(MeshData const& meshData) = 0;
 
-		virtual DeviceBufferMapping	MapCoherentDeviceBuffer(size_t dataSize, void const* data = nullptr,
+		virtual DeviceBufferMapping	MapCoherentDeviceBuffer(uint32_t dataBlockSize, uint32_t numBlocks = 1, void const* data = nullptr,
 			uint32_t mappingOffset = 0, size_t mappingRange = DeviceBufferMapping::WHOLE_RANGE) = 0;
 
 		virtual void				Unmap(DeviceBufferMapping const& bufferMap) = 0;

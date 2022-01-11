@@ -22,10 +22,7 @@ namespace moe
 
 #define PASS_BITS 8
 
-	inline auto	GetMaxRenderPassIndex()
-	{
-		return 01111'1111;
-	}
+#define VIEWPORT_BITS 3
 
 	struct RenderQueueKey
 	{
@@ -36,8 +33,11 @@ namespace moe
 		uint64_t	Depth		: 9;
 		uint64_t	Translucent : 3;
 		uint64_t	ViewLayer	: 3;
-		uint64_t	ViewportID	: 3;
+		uint64_t	ViewportID	: VIEWPORT_BITS;
 		uint64_t	Fullscreen	: 3;
+
+		inline static const int MAX_VIEWPORTS = 1 << VIEWPORT_BITS;
+		inline static const int MAX_PASSES = 1 << PASS_BITS;
 	};
 
 	static_assert(sizeof(RenderQueueKey) == sizeof(uint64_t));

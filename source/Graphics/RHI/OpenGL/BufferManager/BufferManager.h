@@ -72,7 +72,7 @@ namespace moe
 
 		Monocle_Graphics_API void					DestroyDeviceBuffer(DeviceBufferHandle bufferToDestroy) override;
 
-		Monocle_Graphics_API DeviceBufferMapping	MapCoherentDeviceBuffer(size_t dataSize, void const* data = nullptr,
+		Monocle_Graphics_API DeviceBufferMapping	MapCoherentDeviceBuffer(uint32_t dataBlockSize, uint32_t numBlocks = 1, void const* data = nullptr,
 			uint32_t mappingOffset = 0, size_t mappingRange = DeviceBufferMapping::WHOLE_RANGE) override;
 
 		Monocle_Graphics_API void					Unmap(DeviceBufferMapping const& bufferMap) override;
@@ -91,6 +91,8 @@ namespace moe
 
 
 	private:
+
+		static uint32_t	GetUniformBufferOffsetAlignment();
 
 		DeviceMeshHandle	CreateMesh(MeshData const& meshData);
 

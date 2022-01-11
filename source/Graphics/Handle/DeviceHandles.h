@@ -38,11 +38,6 @@ namespace moe
 			return { (uint32_t)(Get() >> 32), (uint32_t)Get() };
 		}
 
-		[[nodiscard]] bool	HasDynamicResourceSets() const
-		{
-			return (uint32_t)Get() != INVALID_ID;
-		}
-
 	};
 
 	struct DeviceMeshHandle : RenderableObjectHandle<uint32_t>

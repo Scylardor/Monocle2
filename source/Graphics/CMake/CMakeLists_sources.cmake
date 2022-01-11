@@ -46,6 +46,8 @@ set(Monocle_Graphics_SOURCES
 ./Framebuffer/FramebufferHandle.h
 ./Framebuffer/OpenGL/OpenGLFramebuffer.cpp
 ./Framebuffer/OpenGL/OpenGLFramebuffer.h
+./Geometry/Cube.cpp
+./Geometry/Cube.h
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
 ./Handle/DeviceHandles.h

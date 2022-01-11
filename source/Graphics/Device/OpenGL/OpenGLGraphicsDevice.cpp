@@ -1173,7 +1173,7 @@ namespace moe
 
 		// Note that this may or may not work as the internal formats of both FBOs have to match.
 		// The internal format of an FBO is implementation defined.
-		glBlitNamedFramebuffer(srcFbID, destFbID, srcArea.x, srcArea.y, srcArea.width, srcArea.height, destArea.x, destArea.y, destArea.width, destArea.height, mask, filter);
+		glBlitNamedFramebuffer(srcFbID, destFbID, srcArea.x, srcArea.y, srcArea.Width, srcArea.Height, destArea.x, destArea.y, destArea.Width, destArea.Height, mask, filter);
 	}
 
 

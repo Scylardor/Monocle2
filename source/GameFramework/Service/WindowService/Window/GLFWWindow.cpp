@@ -17,12 +17,13 @@ namespace moe
 			// reenable the cursor before destroying, otherwise on Windows,
 			// after breaking into the debugger, a disabled cursor will stay locked in the old window 'frame' after destruction.
 			glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
 			glfwDestroyWindow(m_window);
 		}
 	}
 
 
-	void GLFWWindow::PollEvents()
+	void GLFWWindow::PollInputs()
 	{
 		glfwPollEvents();
 
@@ -36,7 +37,7 @@ namespace moe
 	}
 
 
-	std::pair<int, int> GLFWWindow::GetDimensions()
+	std::pair<int, int> GLFWWindow::GetDimensions() const
 	{
 		MOE_ASSERT(m_window);
 
@@ -93,6 +94,10 @@ namespace moe
 		{
 			glfwSetWindowUserPointer(m_window, this);
 			glfwSetFramebufferSizeCallback(m_window, WindowFramebufferResizeCallback);
+			glfwSetKeyCallback(m_window, WindowKeyCallback);
+			glfwSetCursorPosCallback(m_window, WindowCursorPosCallback);
+			glfwSetMouseButtonCallback(m_window, WindowMouseCallback);
+			glfwSetScrollCallback(m_window, WindowMouseScrollCallback);
 			ok &= PostCreate(windowConfig);
 			MOE_DEBUG_ASSERT(ok);
 		}
@@ -140,6 +145,32 @@ namespace moe
 	{
 		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
 		myWindow->OnSurfaceResized(width, height);
+	}
+
+
+	void GLFWWindow::WindowCursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+	{
+		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+		myWindow->CursorPositionUpdateEvent.Broadcast(xpos, ypos);
+	}
+
+	void GLFWWindow::WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+		myWindow->KeyboardKeyEvent.Broadcast(key, scancode, ButtonPressedState(action), mods);
+	}
+
+	void GLFWWindow::WindowMouseCallback(GLFWwindow* window, int button, int action, int mods)
+	{
+		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+		myWindow->MouseButtonUpdateEvent.Broadcast(MouseButton(button), ButtonPressedState(action), mods);
+	}
+
+
+	void GLFWWindow::WindowMouseScrollCallback(GLFWwindow* window, double xscroll, double yscroll)
+	{
+		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+		myWindow->MouseScrollUpdateEvent.Broadcast(xscroll, yscroll);
 	}
 
 }

@@ -3,6 +3,8 @@
 #pragma once
 
 
+#include <Math/Rect2D.h>
+
 #include "Graphics/Shader/Handle/ShaderHandle.h"
 #include "Graphics/Shader/Program/ShaderProgramDescriptor.h"
 #include "Graphics/VertexLayout/OpenGL/OpenGLVertexLayout.h"

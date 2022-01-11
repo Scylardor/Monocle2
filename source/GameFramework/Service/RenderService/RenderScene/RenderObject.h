@@ -2,6 +2,7 @@
 
 #include "Core/Delegates/Event.h"
 #include "Graphics/Handle/DeviceHandles.h"
+#include "Graphics/RenderQueue/RenderQueue.h"
 #include "Math/Matrix.h"
 
 
@@ -21,15 +22,11 @@ namespace moe
 
 
 		RenderObject() = default;
-		RenderObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 transform = Mat4::Identity()) :
-			m_transform(transform), m_meshHandle(meshHandle), m_matHandle(matHandle)
+		RenderObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 modelMatrix = Mat4::Identity()) :
+			m_modelMatrix(modelMatrix), m_meshHandle(meshHandle), m_matHandle(matHandle)
 		{}
 
 
-		[[nodiscard]] Mat4 const& GetMVP() const
-		{
-			return m_mvp;
-		}
 
 		[[nodiscard]] uint32_t GetTransformID() const
 		{
@@ -37,27 +34,14 @@ namespace moe
 		}
 
 
-		void	SetMVP(const Mat4& mvp)
-		{
-			m_mvp = mvp;
-			m_updatedSinceLastRender = false;
-		}
-
 		[[nodiscard]] Mat4 const& GetModelMatrix() const
 		{
-			return m_transform;
+			return m_modelMatrix;
 		}
 
 		void	SetModelMatrix(const Mat4& modelMat)
 		{
-			m_transform = modelMat;
-			SetNeedsMVPUpdate(true);
-		}
-
-
-		void	SetNeedsMVPUpdate(bool needsMVPUpdate)
-		{
-			m_updatedSinceLastRender = needsMVPUpdate;
+			m_modelMatrix = modelMat;
 		}
 
 
@@ -88,12 +72,6 @@ namespace moe
 		}
 
 
-		[[nodiscard]] bool WasUpdatedSinceLastRender() const
-		{
-			return m_updatedSinceLastRender;
-		}
-
-
 		void	SetTransformID(uint32_t transfID)
 		{
 			m_transformID = transfID;
@@ -106,10 +84,10 @@ namespace moe
 			return m_removedEvent;
 		}
 
+
 	protected:
 
-		Mat4				m_transform{ Mat4::Identity() };
-		Mat4				m_mvp{ Mat4::Identity() };
+		Mat4				m_modelMatrix{ Mat4::Identity() };
 
 		uint32_t				m_transformID{ (uint32_t) -1 };
 		DeviceMeshHandle		m_meshHandle{ 0 };
@@ -117,7 +95,7 @@ namespace moe
 		DeviceDynamicResourceSetHandle	m_dynamicSets{ INVALID_ID };
 
 		OnObjectRemovedEvent	m_removedEvent{};
-		bool				m_updatedSinceLastRender{ true };
+
 	};
 
 

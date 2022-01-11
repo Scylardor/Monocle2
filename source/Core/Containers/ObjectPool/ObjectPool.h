@@ -134,7 +134,7 @@ namespace moe
 			}
 
 		protected:
-			ObjectPool* m_owner;
+			ObjectPool*		m_owner;
 			ObjectPoolID	m_id;
 
 		};
@@ -313,7 +313,7 @@ namespace moe
 		}
 
 		Container				m_objects;
-		ObjectPoolID				m_firstFreeBlock{ INVALID_ID };
+		ObjectPoolID			m_firstFreeBlock{ INVALID_ID };
 
 	};
 

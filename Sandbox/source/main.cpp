@@ -3,14 +3,14 @@
 #include "GameFramework/Engine/Engine.h"
 
 #include "BasicQuad.h"
-
+#include "CubeWorld.h"
 
 
 int main(int argc, char **argv)
 {
 	moe::Engine monocleEngine;
 
-	monocleEngine.AddSimulation<moe::BasicQuad>(argc, argv);
+	monocleEngine.AddSimulation<moe::CubeWorld>(argc, argv);
 
 	monocleEngine.Run();
 

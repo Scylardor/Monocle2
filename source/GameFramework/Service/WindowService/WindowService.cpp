@@ -9,7 +9,7 @@ namespace moe
 	{
 		for (auto& winPtr : m_windows)
 		{
-			winPtr->PollEvents();
+			winPtr->PollInputs();
 		}
 
 		// Delete all the windows that should get closed.

@@ -1,6 +1,6 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#include "BasicQuad.h"
+#include "CubeWorld.h"
 
 
 #include "Core/Containers/Array/Array.h"
@@ -18,48 +18,37 @@
 #include "Graphics/ShaderCapabilities/ShaderCapabilities.h"
 #include "Graphics/Vertex/VertexFormats.h"
 #include "GameFramework/Service/TimeService/TimeService.h"
+#include "Graphics/Geometry/Cube.h"
 
 namespace moe
 {
 
-	void BasicQuad::Start()
+	void CubeWorld::Start()
 	{
 		OpenGLApp3D::Start();
 
 		auto* rscSvc = EditEngine()->AddService<ResourceService>();
 
-		Array<Vertex_PosColorUV, 4> helloQuad{
-		{{0.5f, 0.5f, 0.0f } , {1.0f, 0.0f, 0.0f }, {1.0f, 1.0f} },   // top right
-		{{0.5f, -0.5f, 0.0f } , {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},   // bottom right
-		{{-0.5f, -0.5f, 0.0f} , {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},   // bottom left
-		{{-0.5f, 0.5f, 0.0f } , {1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}}    // top left
-		};
+		auto cubeGeometry = CreateCube_PositionTexture(0.5f);
 
-		Array<uint32_t, 6> helloIndices = {  // note that we start from 0!
-			0, 1, 3,   // first triangle
-			1, 2, 3    // second triangle
-		};
+		auto cubeMesh = rscSvc->EmplaceResource<MeshResource>(
+			HashString("CubeMesh"),
+			MeshData{ cubeGeometry.Data(), sizeof(cubeGeometry[0]), cubeGeometry.Size() });
 
-		auto meshRsc = rscSvc->EmplaceResource<MeshResource>(
-			HashString("QuadMesh"),
-			MeshData{ helloQuad.Data(), sizeof(helloQuad[0]), helloQuad.Size(),
-			helloIndices.Data(), sizeof(helloIndices[0]), helloIndices.Size() });
-
-		auto basicVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.vert"), "source/Graphics/Resources/shaders/OpenGL/basic_textured.vert", FileMode::Text);
-		auto basicFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.frag"), "source/Graphics/Resources/shaders/OpenGL/basic_textured.frag", FileMode::Text);
+		auto basicVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.vert"), "source/Graphics/Resources/shaders/OpenGL/basic_textured_nocolor.vert", FileMode::Text);
+		auto basicFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BasicShader.frag"), "source/Graphics/Resources/shaders/OpenGL/basic_textured_nocolor.frag", FileMode::Text);
 
 		MaterialDescription matDesc;
 		auto& passDesc = matDesc.NewPassDescription();
 		passDesc.
 			AssignPipelineVertexLayout({ {
 				{"position", VertexBindingFormat::Float3 },
-				{"color", VertexBindingFormat::Float3 },
 				{"uv0", VertexBindingFormat::Float2 } }
 			}).AssignShaderProgramDescription({
 			{	ShaderStage::Vertex, basicVertShaderFile},
 			{	ShaderStage::Fragment, basicFragShaderFile}
 			})
-		.Pipeline.RasterizerStateDesc.m_cullMode = CullFace::None;
+		.Pipeline.RasterizerStateDesc.m_cullMode = CullFace::Back;
 		passDesc.AddShaderCapability<SC_ObjectTransform>();
 
 		Renderer& forwardRenderer = InitializeRenderer();
@@ -91,17 +80,14 @@ namespace moe
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 		RenderScene& scene = rdrSvc->EmplaceScene(forwardRenderer);
 
-		m_quad = scene.AddObject(meshRsc, basicMat);
-
-		Mat4 quadTrans = Mat4::Rotation(90_degf, Vec3(0, 0, 1));
-		quadTrans.Scale(Vec3(0.5f));
-
-		scene.SetObjectTransform(m_quad.GetID(), quadTrans);
+		for (int i = 0; i < 10; i++)
+		{
+			m_cubes[i] = scene.AddObject(cubeMesh, basicMat);
+		}
 
 		m_svcTime = EditEngine()->EditService<TimeService>();
 
 		m_scene = &scene;
-
 
 		InputService* svcInput = EditEngine()->AddService<InputService>();
 		auto* winSvc = EditEngine()->EditService<WindowService>();
@@ -117,21 +103,57 @@ namespace moe
 		perspective.Near = 1.f;
 		perspective.Far = 1000.f;
 		svcInput->EmplaceController<FlyingCameraController>(scene, cameraPos, cameraTarget, up, perspective);
+
+		//Mat4 viewMatrix = Mat4::LookAtMatrix(cameraPos, cameraTarget, up);
+		//
+		//Rect2Df viewport;
+		//viewport.x = 0;
+		//viewport.y = 0;
+		//viewport.Width = 0.5f;
+		//viewport.Height = 0.5f;
+		//scene.AddView(viewMatrix, perspective, viewport, viewport);
+		//viewport.x = 0.5f;
+		//viewport.y = 0;
+		//scene.AddView(viewMatrix, perspective, viewport, viewport);
+		//viewport.x = 0;
+		//viewport.y = 0.5f;
+		//scene.AddView(viewMatrix, perspective, viewport, viewport);
+		//viewport.x = 0.5f;
+		//viewport.y = 0.5f;
+		//scene.AddView(viewMatrix, perspective, viewport, viewport);
 	}
 
 
-	void BasicQuad::Update()
+	void CubeWorld::Update()
 	{
 		OpenGLApp3D::Update();
 
 		float time = m_svcTime->GetSecondsSinceGameStart();
-		Mat4 modelMatrix = Mat4::Rotation(Degs_f(time * 10), Vec3(0, 0, 1));
 
-		m_quad.MutObject()->SetModelMatrix(modelMatrix);
+		static const Vec3 cubePositions[] =
+		{
+			Vec3(0.0f,  0.0f,  0.0f),
+			Vec3(3.0f,  5.0f, -15.0f),
+			Vec3(-3.f, -2.2f, -2.5f),
+			Vec3(-3.8f,0.f, -12.3f),
+			Vec3(2.4f, 0, -3.5f),
+			Vec3(-1.7f,0.f, -7.5f),
+			Vec3(1.3f, 0, -2.5f),
+			Vec3(1.5f, 0, -2.5f),
+			Vec3(1.5f, 0, -1.5f),
+			Vec3(-1.3f,0.f, -1.5f)
+		};
+
+		for (int i = 0; i < 10; i++)
+		{
+			auto angle = Degs_f(time * 50);
+			Mat4 cubeMatrix = Mat4::Translation(cubePositions[i]).Rotate(angle, 0.5f, 1.0f, 0.f);
+			m_cubes[i].MutObject()->SetModelMatrix(cubeMatrix);
+		}
 	}
 
 
-	Renderer& BasicQuad::InitializeRenderer()
+	Renderer& CubeWorld::InitializeRenderer()
 	{
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 

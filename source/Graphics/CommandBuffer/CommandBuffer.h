@@ -1,6 +1,8 @@
 #pragma once
 
 #include <variant>
+#include <Math/Rect2D.h>
+
 
 #include "Core/Containers/Vector/Vector.h"
 #include "GameFramework/Service/RenderService/RenderScene/RenderObject.h"
@@ -48,6 +50,27 @@ namespace moe
 	};
 
 
+	struct CmdSetViewportScissor
+	{
+		CmdSetViewportScissor(Rect2Du const& vp, Rect2Du const& sc) :
+			Viewport(vp), Scissor(sc)
+		{}
+
+		Rect2Du		Viewport;
+		Rect2Du		Scissor;
+	};
+
+
+	struct CmdBindResourceSet
+	{
+		CmdBindResourceSet(DeviceResourceSetHandle setHandle) :
+			Handle(setHandle)
+		{}
+
+		DeviceResourceSetHandle	Handle{};
+	};
+
+
 	struct CmdDrawMesh
 	{
 		CmdDrawMesh(DeviceMeshHandle meshHandle, DeviceDynamicResourceSetHandle dynRscHandle = INVALID_ID) :
@@ -61,9 +84,11 @@ namespace moe
 	using CommandBufferVariant = std::variant<
 		CmdBeginRenderPass,
 		CmdBindMaterial,
+		CmdBindResourceSet,
 		CmdDrawMesh,
 		CmdEndRenderPass,
-		CmdPresentSwapchain
+		CmdPresentSwapchain,
+		CmdSetViewportScissor
 	>;
 
 

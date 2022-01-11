@@ -11,11 +11,11 @@ namespace moe
 {
 	class TimeService;
 
-	class BasicQuad : public OpenGLApp3D
+	class CubeWorld : public OpenGLApp3D
 	{
 	public:
 
-		BasicQuad(Engine& owner, int argc, char** argv) :
+		CubeWorld(Engine& owner, int argc, char** argv) :
 			OpenGLApp3D(owner, argc, argv)
 		{}
 
@@ -28,9 +28,9 @@ namespace moe
 	private:
 
 		TimeService*	m_svcTime = nullptr;
-		
+		Mat4			m_quadTrans = Mat4::Identity();
 		RenderScene*	m_scene = nullptr;
-		RenderObjectHandle	m_quad;
+		RenderObjectHandle	m_cubes[10];
 	};
 
 }

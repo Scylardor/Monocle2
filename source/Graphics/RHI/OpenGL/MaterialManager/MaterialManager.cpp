@@ -108,7 +108,7 @@ namespace moe
 
 
 	DeviceDynamicResourceSetHandle OpenGL4MaterialManager::AddDynamicBufferBinding(
-		DeviceDynamicResourceSetHandle dynamicSetHandle, uint32_t setNumber, uint32_t bindingNumber, DeviceBufferHandle buf, uint32_t range)
+		DeviceDynamicResourceSetHandle dynamicSetHandle, BufferBinding const& dynamicBufferBinding)
 	{
 		if (dynamicSetHandle == DeviceMaterialHandle::INVALID_ID)
 		{
@@ -117,7 +117,7 @@ namespace moe
 		}
 
 		ResourceSetsDescription& dynamicResourceSets = m_dynamicResourceSets.Mut(dynamicSetHandle);
-		dynamicResourceSets.EmplaceBinding<BufferBinding>(buf, bindingNumber, setNumber, 0, range);
+		dynamicResourceSets.EmplaceBinding<BufferBinding>(dynamicBufferBinding);
 
 		return dynamicSetHandle;
 	}
@@ -126,6 +126,20 @@ namespace moe
 	void OpenGL4MaterialManager::FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle)
 	{
 		m_dynamicResourceSets.Free(freedHandle);
+	}
+
+
+	DeviceResourceSetHandle OpenGL4MaterialManager::AllocateResourceSet(ResourceSetsDescription const& setDescription)
+	{
+		DeviceResourceSetHandle handle = m_dynamicResourceSets.Emplace(setDescription);
+
+		return handle;
+	}
+
+
+	void OpenGL4MaterialManager::FreeResourceSet(DeviceResourceSetHandle setHandle)
+	{
+		m_dynamicResourceSets.Free(setHandle.Get());
 	}
 
 
@@ -158,6 +172,13 @@ namespace moe
 
 		BindResourceSets(rhi, usedProgram, rscDescs);
 	}
+
+
+	//void OpenGL4MaterialManager::BindResourceSet(DeviceResourceSetHandle setHandle)
+	//{
+	//	ResourceSetsDescription const& resourceSet = m_dynamicResourceSets.Get(setHandle.Get());
+	//	BindResourceSets(m_ resourceSet)
+	//}
 
 
 	uint32_t OpenGL4MaterialManager::FindOrBuildShaderProgram(ShaderProgramDescription const& progDesc)

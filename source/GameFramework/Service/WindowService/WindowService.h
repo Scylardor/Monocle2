@@ -35,6 +35,16 @@ namespace moe
 			return m_windows[windowIdx].get();
 		}
 
+		IWindow const* GetWindow(uint32_t windowIdx = 0) const
+		{
+			MOE_DEBUG_ASSERT(windowIdx < m_windows.Size());
+			if (windowIdx >= m_windows.Size())
+				return nullptr;
+
+			return m_windows[windowIdx].get();
+		}
+
+
 
 		void	Update();
 

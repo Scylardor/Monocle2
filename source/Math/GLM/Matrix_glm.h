@@ -336,7 +336,7 @@ namespace moe
 			template<typename = std::enable_if_t<ColsT == 4 && RowsT == 4>>
 			Matrix& Rotate(Degs<ValT> angle, ValT x, ValT y, ValT z)
 			{
-				m_mat = glm::rotate(m_mat, (ValT)angle, glm::vec<3, ValT>(x, y, z));
+				m_mat = glm::rotate(m_mat, (ValT)Rads<ValT>(angle), glm::vec<3, ValT>(x, y, z));
 				return *this;
 			}
 

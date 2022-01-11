@@ -19,16 +19,11 @@ namespace moe
 
 	void SC_ObjectTransform::OnInitialized(RenderScene* scene, RenderObject& object)
 	{
-		uint32_t transfID = scene->AllocateTransform();
-		object.SetTransformID(transfID);
+		RenderScene::TransformInfo transformInfos = scene->AllocateTransform();
 
-		auto [bufID, bufOffset] = scene->GetTransformBufferHandle().DecodeBufferHandle();
-
-		DeviceBufferHandle transfBufHandle = DeviceBufferHandle::Encode(bufID, bufOffset + sizeof(Mat4) * transfID);
-
+		object.SetTransformID(transformInfos.ID);
 		DeviceDynamicResourceSetHandle dynamicHandle =
-			scene->MutRenderer()->MutRHI()->MaterialManager().AddDynamicBufferBinding(object.GetDynamicSetsHandle(),
-			(uint32_t) ReservedCapacitySets::OBJECT_TRANSFORMS, 0, transfBufHandle, sizeof(Mat4));
+			scene->MutRenderer()->MutRHI()->MaterialManager().AddDynamicBufferBinding(object.GetDynamicSetsHandle(), transformInfos.TransformBufferBinding);
 
 		object.SetDynamicSetsHandle(dynamicHandle);
 
@@ -39,5 +34,24 @@ namespace moe
 	void SC_ObjectTransform::OnRemoved(RenderScene* scene, RenderObject& object)
 	{
 		scene->DeallocateTransform(object.GetTransformID());
+	}
+
+
+	void SC_ViewMatrices::OnAdded(MaterialPassDescription& shaderPass)
+	{
+		shaderPass.ResourceSetLayouts.AddResourceLayout(
+			(uint16_t)ReservedCapacitySets::VIEW_MATRICES,
+			{ {0, BindingType::UniformBuffer, ShaderStage::All} });
+	}
+
+
+	void SC_ViewMatrices::OnInitialized(RenderScene* scene, RenderObject& /*object*/)
+	{
+		scene->RegisterViewMatricesResources();
+	}
+
+
+	void SC_ViewMatrices::OnRemoved(RenderScene*, RenderObject&)
+	{
 	}
 }
