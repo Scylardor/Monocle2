@@ -50,6 +50,7 @@ set(Monocle_Graphics_SOURCES
 ./Geometry/Cube.h
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.cpp
 ./GraphicsAllocator/OpenGL/OpenGLBuddyAllocator.h
+./GraphicsSparseArray/GraphicsSparseArray.h
 ./Handle/DeviceHandles.h
 ./Handle/ObjectHandle.h
 ./Light/LightObject.cpp
@@ -114,6 +115,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/basic.vert
 ./Resources/shaders/OpenGL/basic_textured.frag
 ./Resources/shaders/OpenGL/basic_textured.vert
+./Resources/shaders/OpenGL/basic_textured_nocolor.frag
+./Resources/shaders/OpenGL/basic_textured_nocolor.vert
 ./Resources/shaders/OpenGL/blending.frag
 ./Resources/shaders/OpenGL/blending.vert
 ./Resources/shaders/OpenGL/blinn_phong.frag
@@ -153,6 +156,8 @@ set(Monocle_Graphics_SOURCES
 ./Resources/shaders/OpenGL/fullscreen_quad.vert
 ./Resources/shaders/OpenGL/fullscreen_quad2.frag
 ./Resources/shaders/OpenGL/fullscreen_quad2.vert
+./Resources/shaders/OpenGL/fullscreen_triangle.frag
+./Resources/shaders/OpenGL/fullscreen_triangle.vert
 ./Resources/shaders/OpenGL/gamma_correction.frag
 ./Resources/shaders/OpenGL/gamma_correction.vert
 ./Resources/shaders/OpenGL/geometry_shader.frag

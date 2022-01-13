@@ -22,8 +22,8 @@ namespace moe
 
 
 		RenderObject() = default;
-		RenderObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle matHandle, Mat4 modelMatrix = Mat4::Identity()) :
-			m_modelMatrix(modelMatrix), m_meshHandle(meshHandle), m_matHandle(matHandle)
+		RenderObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle matHandle) :
+			 m_meshHandle(meshHandle), m_matHandle(matHandle)
 		{}
 
 
@@ -31,17 +31,6 @@ namespace moe
 		[[nodiscard]] uint32_t GetTransformID() const
 		{
 			return m_transformID;
-		}
-
-
-		[[nodiscard]] Mat4 const& GetModelMatrix() const
-		{
-			return m_modelMatrix;
-		}
-
-		void	SetModelMatrix(const Mat4& modelMat)
-		{
-			m_modelMatrix = modelMat;
 		}
 
 
@@ -86,8 +75,6 @@ namespace moe
 
 
 	protected:
-
-		Mat4				m_modelMatrix{ Mat4::Identity() };
 
 		uint32_t				m_transformID{ (uint32_t) -1 };
 		DeviceMeshHandle		m_meshHandle{ 0 };

@@ -46,6 +46,7 @@ namespace moe
 		virtual void	FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle) = 0;
 
 		virtual DeviceResourceSetHandle	AllocateResourceSet(struct ResourceSetsDescription const& setDescription) = 0;
+		virtual void					UpdateResourceSet(DeviceResourceSetHandle handle, ResourceSetsDescription const& newDescription) = 0;
 		virtual void					FreeResourceSet(DeviceResourceSetHandle setHandle) = 0;
 
 

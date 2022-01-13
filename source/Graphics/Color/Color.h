@@ -147,7 +147,9 @@ namespace moe
 	typedef Color<4, uint8_t>	ColorRGBA;
 
 	typedef Color<3, float>	ColorRGBf;
+	typedef Color<3, float>	Color3f;
 	typedef Color<4, float>	ColorRGBAf;
+	typedef Color<4, float>	Color4f;
 
 
 }

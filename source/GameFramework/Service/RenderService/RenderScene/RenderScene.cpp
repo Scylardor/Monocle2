@@ -18,20 +18,23 @@ namespace moe
 		m_sceneRenderer(&sceneRenderer)
 	{
 		auto const* config = sceneRenderer.GetRenderService()->GetEngine()->GetService<ConfigService>();
+
 		const int defaultSceneSize = config->GetInt("rendering.default_scene_size").value_or(32);
+		m_transforms = GraphicsPool<ObjectMatrices>(sceneRenderer.MutRHI(), defaultSceneSize);
 
-		m_transforms.AvailableTransforms.Resize(defaultSceneSize);
-		// Push indices in reverse order so we can PopBack the first ones first.
-		std::iota(m_transforms.AvailableTransforms.RBegin(), m_transforms.AvailableTransforms.REnd(), 0);
-		m_transforms.Transforms = sceneRenderer.MutRHI()->BufferManager().MapCoherentDeviceBuffer(sizeof(Mat4), defaultSceneSize);
+		const int defaultNumLights = config->GetInt("rendering.default_scene_lights").value_or(32);
+		m_lights.Initialize(m_sceneRenderer->MutRHI(), defaultNumLights);
 
-		m_transforms.TransformsNumber = defaultSceneSize;
+		ResourceSetsDescription lightsSetDesc;
+		lightsSetDesc.EmplaceBinding<BufferBinding>(m_lights.GetDeviceHandle(), 0, (int)ReservedCapacitySets::SCENE_LIGHTS, 0, m_lights.GetDataBytesRange(), BindingType::StructuredBuffer);
+		m_lightsResourceHandle = sceneRenderer.MutRHI()->MaterialManager().AllocateResourceSet(lightsSetDesc);
+		OnRenderShaderChange().Add<&RenderScene::BindLightsResourceSet>();
 
 		sceneRenderer.MutSurface()->OnSurfaceResizedEvent().Add<RenderScene, &RenderScene::OnSurfaceResized>(this);
 
 	}
 
-	RenderObjectHandle RenderScene::AddObject(Ref<MeshResource> model, Ref<MaterialResource> material, Mat4 const& modelMatrix)
+	RenderObjectHandle RenderScene::AddObject(Ref<MeshResource> model, Ref<MaterialResource> material)
 	{
 		RenderHardwareInterface* rhi = m_sceneRenderer->MutRHI();
 
@@ -43,7 +46,7 @@ namespace moe
 			matHandle = rhi->MaterialManager().CreateMaterial(material->GetDescription());
 		}
 
-		RenderObjectHandle handle = AddObject(meshHandle, matHandle, modelMatrix);
+		RenderObjectHandle handle = AddObject(meshHandle, matHandle);
 		RenderObject* object = handle.MutObject();
 
 		// TODO: dealing with first pass only for now
@@ -57,16 +60,75 @@ namespace moe
 	}
 
 
-	RenderObjectHandle RenderScene::AddObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle materialHandle, Mat4 const& modelMatrix)
+	RenderObjectHandle RenderScene::AddObject(DeviceMeshHandle meshHandle, DeviceMaterialHandle materialHandle)
 	{
-		auto newObjID = m_objects.Emplace(meshHandle, materialHandle, modelMatrix);
+		auto newObjID = m_objects.Emplace(meshHandle, materialHandle);
 
 		return RenderObjectHandle{ this, newObjID };
 	}
 
 
+	RenderScene::LightID RenderScene::AddLight(DirectionalLight const& dir)
+	{
+		auto id = m_lights.New();
+		LightObject& newLight = m_lights.Mut(id);
+
+		newLight.Direction = dir.Direction;
+		newLight.Ambient = dir.Ambient;
+		newLight.Diffuse = dir.Diffuse;
+		newLight.Specular = dir.Specular;
+
+		// To let the shader know this is a directional light
+		newLight.ConstantAttenuation = LightObject::DIRECTIONAL_ATTENUATION;
+
+		UpdateLightsResourceSet();
+
+		return id;
+	}
+
+
+	RenderScene::LightID RenderScene::AddLight(PointLight const& point)
+	{
+		auto id = m_lights.New();
+		LightObject& newLight = m_lights.Mut(id);
+
+		newLight.Position = point.Position;
+		newLight.Ambient = point.Ambient;
+		newLight.Diffuse = point.Diffuse;
+		newLight.Specular = point.Specular;
+
+		// To let the shader know this is a point light
+		newLight.SpotInnerCutoff = LightObject::OMNIDIRECTIONAL_CUTOFF;
+
+		UpdateLightsResourceSet();
+
+		return id;
+	}
+
+
+	RenderScene::LightID RenderScene::AddLight(SpotLight const& spot)
+	{
+		auto id = m_lights.New();
+		LightObject& newLight = m_lights.Mut(id);
+
+		newLight.Position = spot.Position;
+		newLight.Direction = spot.Direction;
+		newLight.Ambient = spot.Ambient;
+		newLight.Diffuse = spot.Diffuse;
+		newLight.Specular = spot.Specular;
+
+		MOE_DEBUG_ASSERT(spot.InnerCutoff >= 0 && spot.OuterCutoff >= 0);
+		newLight.SpotInnerCutoff = spot.InnerCutoff;
+		newLight.SpotOuterCutoff = spot.OuterCutoff;
+
+		UpdateLightsResourceSet();
+
+		return id;
+	}
+
+
 	RenderScene::ViewID RenderScene::AddView(Mat4 const& view, PerspectiveProjectionData const& perspective,
-		Rect2Df const& clipVp, Rect2Df const& clipSc)
+	                                         Rect2Df const& clipVp, Rect2Df const& clipSc)
 	{
 		auto surfDims = m_sceneRenderer->GetSurface()->GetDimensions();
 
@@ -129,29 +191,18 @@ namespace moe
 	}
 
 
-	RenderScene::TransformInfo RenderScene::AllocateTransform(Mat4 const& transform)
+	RenderScene::TransformInfo RenderScene::AllocateTransform(Mat4 const& modelMatrix)
 	{
-		if (m_transforms.AvailableTransforms.Empty())
+		if (m_transforms.IsFull())
 		{
-			uint32_t prevTransfNumber = m_transforms.TransformsNumber;
-			m_transforms.TransformsNumber *= 2;
-
-			m_sceneRenderer->MutRHI()->BufferManager().ResizeMapping(m_transforms.Transforms, m_transforms.TransformsNumber);
-
-			// Fill the free transform index list with all the newly allocated transforms.
-			m_transforms.AvailableTransforms.Resize(prevTransfNumber);
-			std::generate(m_transforms.AvailableTransforms.begin(), m_transforms.AvailableTransforms.end(),
-				[n = m_transforms.TransformsNumber-1]() mutable { return n--; });
+			m_transforms.Grow(m_sceneRenderer->MutRHI());
 		}
 
-		uint32_t nextTransformID = m_transforms.AvailableTransforms.Back();
-		m_transforms.AvailableTransforms.PopBack();
+		uint32_t nextTransformID = m_transforms.SetFirstAvailableBlock(modelMatrix);
 
-		m_transforms.Set(nextTransformID, transform);
+		auto [bufID, bufOffset] = m_transforms.GetBufferMapping().Handle().DecodeBufferHandle();
 
-		auto [bufID, bufOffset] = m_transforms.Transforms.Handle().DecodeBufferHandle();
-
-		auto off = bufOffset + m_transforms.Transforms.AlignedBlockSize() * nextTransformID;
+		auto off = bufOffset + m_transforms.GetBufferMapping().AlignedBlockSize() * nextTransformID;
 		DeviceBufferHandle transfBufHandle = DeviceBufferHandle::Encode(bufID, off);
 
 		BufferBinding transformBufferBinding{ transfBufHandle, 0, (uint32_t)ReservedCapacitySets::OBJECT_TRANSFORMS,
@@ -163,21 +214,43 @@ namespace moe
 
 	void RenderScene::DeallocateTransform(uint32_t transfID)
 	{
-		m_transforms.AvailableTransforms.PushBack(transfID);
+		m_transforms.Free(transfID);
 	}
 
 
-	void RenderScene::SetObjectTransform(uint32_t objectID, Mat4 const& newTransf)
+	void RenderScene::UpdateObjectViewMatrices(uint32_t objectID, Mat4 const& view, Mat4 const& viewProjection)
 	{
 		auto transfID = m_objects.Get(objectID).GetTransformID();
-		m_transforms.Set(transfID, newTransf);
+
+		ObjectMatrices& objMats = m_transforms.Mut(transfID);
+		objMats.MVP = viewProjection * objMats.ModelView;
+		objMats.ModelView = view * objMats.Model;
+		objMats.Normal = objMats.ModelView.GetInverseTransposed();
+	}
+
+
+	void RenderScene::UpdateObjectModel(uint32_t objectID, Mat4 const& model)
+	{
+		auto transfID = m_objects.Get(objectID).GetTransformID();
+
+		ObjectMatrices& objMats = m_transforms.Mut(transfID);
+		objMats.Model = model;
 	}
 
 
 	DeviceBufferHandle RenderScene::GetTransformBufferHandle() const
 	{
-		return m_transforms.Transforms.Handle();
+		return m_transforms.GetBufferMapping().Handle();
 
+	}
+
+
+	void RenderScene::UpdateLightsResourceSet()
+	{
+		ResourceSetsDescription lightsSetDesc;
+		lightsSetDesc.EmplaceBinding<BufferBinding>(m_lights.GetDeviceHandle(), 0, (int)ReservedCapacitySets::SCENE_LIGHTS, 0, m_lights.GetDataBytesRange(), BindingType::StructuredBuffer);
+
+		m_sceneRenderer->MutRHI()->MaterialManager().UpdateResourceSet(m_lightsResourceHandle, lightsSetDesc);
 	}
 
 

@@ -25,6 +25,7 @@ set(Monocle_GameFramework_SOURCES
 ./Service/InputService/CameraControllers/FlyingCameraController.h
 ./Service/InputService/InputService.cpp
 ./Service/InputService/InputService.h
+./Service/InputService/InputSource.h
 ./Service/LogService/LogService.cpp
 ./Service/LogService/LogService.h
 ./Service/LogService/LogService.inl
@@ -48,6 +49,8 @@ set(Monocle_GameFramework_SOURCES
 ./Service/RenderService/RenderPass/RenderPass.cpp
 ./Service/RenderService/RenderPass/RenderPass.h
 ./Service/RenderService/RenderPass/RenderPassType.h
+./Service/RenderService/RenderScene/LightObject.cpp
+./Service/RenderService/RenderScene/LightObject.h
 ./Service/RenderService/RenderScene/RenderObject.cpp
 ./Service/RenderService/RenderScene/RenderObject.h
 ./Service/RenderService/RenderScene/RenderScene.cpp

@@ -116,6 +116,12 @@ namespace moe
 		}
 
 
+		Mat4 const& GetViewMatrix() const
+		{
+			return m_viewMatrices.GetBlock<ViewMatrices>().View;
+		}
+
+
 		Rect2Du const& ScreenViewport() const
 		{
 			return m_screenViewport;

@@ -54,4 +54,25 @@ namespace moe
 	void SC_ViewMatrices::OnRemoved(RenderScene*, RenderObject&)
 	{
 	}
+
+
+	void SC_PhongLighting::OnAdded(MaterialPassDescription& shaderPass)
+	{
+		shaderPass.ResourceSetLayouts.AddResourceLayout(
+			(uint16_t)ReservedCapacitySets::SCENE_LIGHTS,
+			{ {0, BindingType::StructuredBuffer, ShaderStage::Fragment} });
+
+	}
+
+
+	void SC_PhongLighting::OnInitialized(RenderScene*, RenderObject&)
+	{
+
+	}
+
+
+	void SC_PhongLighting::OnRemoved(RenderScene*, RenderObject&)
+	{
+
+	}
 }

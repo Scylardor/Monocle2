@@ -14,6 +14,7 @@ namespace moe
 	{
 		OBJECT_TRANSFORMS	= 0,
 		VIEW_MATRICES		= 1,
+		SCENE_LIGHTS		= 2,
 	};
 
 
@@ -27,6 +28,13 @@ namespace moe
 
 
 	struct SC_ViewMatrices
+	{
+		static void OnAdded(MaterialPassDescription& shaderPass);
+		static void	OnInitialized(RenderScene*, RenderObject&);
+		static void	OnRemoved(RenderScene*, RenderObject&);
+	};
+
+	struct SC_PhongLighting
 	{
 		static void OnAdded(MaterialPassDescription& shaderPass);
 		static void	OnInitialized(RenderScene*, RenderObject&);

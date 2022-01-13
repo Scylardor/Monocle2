@@ -18,9 +18,11 @@ namespace moe
 		m_cameraUp(up)
 	{
 		Mat4 viewMatrix = Mat4::LookAtMatrix(pos, target, up);
-		m_viewID = cameraScene.AddView(viewMatrix, perspective);
+		m_viewID = cameraScene.AddView(Mat4::Identity(), perspective);
 
 		SetupInputDelegates();
+
+		RecomputeCameraVectors(0, 0);
 
 	}
 
@@ -122,14 +124,20 @@ namespace moe
 		horizDelta *= m_rotationSensitivity;
 		vertiDelta *= m_rotationSensitivity;
 
-		m_yaw += horizDelta;
-		m_pitch += vertiDelta;
+		RecomputeCameraVectors(horizDelta, vertiDelta);
+
+		MOE_LOG("Camera pos %f %f %f\n", m_cameraPos.x(), m_cameraPos.y(), m_cameraPos.z());
+	}
+
+
+	void FlyingCameraController::RecomputeCameraVectors(float xDelta, float yDelta)
+	{
+		m_yaw += xDelta;
+		m_pitch += yDelta;
 
 		// make sure that when pitch is out of bounds, screen doesn't get flipped
-		if (m_pitch > m_pitchThreshold)
-			m_pitch = m_pitchThreshold;
-		if (m_pitch < -m_pitchThreshold)
-			m_pitch = -m_pitchThreshold;
+
+		m_pitch = std::clamp(m_pitch, -m_pitchThreshold, m_pitchThreshold);
 
 		// update Front, Right and Up Vectors using the updated Euler angles
 		// calculate the new Front vector
@@ -138,14 +146,14 @@ namespace moe
 
 		// Calculate the new Front vector
 		m_cameraFront = Vec3{
-			cosf(yawRads) * cosf(pitchRads),
-			sinf(pitchRads),
-			sinf(yawRads) * cosf(pitchRads)
+			cosf(glm::radians(m_yaw)) * cosf(glm::radians(m_pitch)),
+			sinf(glm::radians(m_pitch)),
+			sinf(glm::radians(m_yaw)) * cosf(glm::radians(m_pitch))
 		}.GetNormalized();
 
 		// Also re-calculate the Right and Up vector
 		// Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-		const Vec3 worldUp{ 0, 1, 0 };
+		static const Vec3 worldUp{ 0, 1, 0 };
 		m_cameraRight = m_cameraFront.Cross(worldUp).GetNormalized();
 		m_cameraUp = m_cameraRight.Cross(m_cameraFront).GetNormalized();
 

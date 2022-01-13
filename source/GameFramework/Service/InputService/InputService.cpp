@@ -12,7 +12,7 @@ namespace moe
 	}
 
 
-	void InputService::Update()
+	void InputService::Update(float dt)
 	{
 		// Fire events for held keys
 		for (Scancode heldScancode : m_heldKeysToNotify)
@@ -31,10 +31,6 @@ namespace moe
 			MOE_DEBUG_ASSERT(it->second.OnHeld.IsBound()); // if no one listens to the held event we shouldn't be here
 			it->second.OnHeld.Broadcast();
 		}
-
-
-		auto* svcTime = GetEngine()->GetService< TimeService >();
-		float dt = (svcTime ? svcTime->GetFrameDeltaTime() : 0);
 
 		for (auto& controller : m_controllers)
 		{

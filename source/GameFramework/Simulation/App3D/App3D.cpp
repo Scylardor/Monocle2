@@ -49,15 +49,15 @@ void moe::App3D::Update()
 {
 	TimeService* time = EditEngine()->EditService<TimeService>();
 	time->Update();
+	float dt = time->GetFrameDeltaTime();
 
 	auto* winSvc = EditEngine()->EditService<WindowService>();
 	winSvc->Update();
 
 	InputService* inputs = EditEngine()->EditService<InputService>();
-	inputs->Update();
-	//float dt = time->GetFrameDeltaTime();
+	if (inputs)
+		inputs->Update(dt);
 
-	//MOE_LOG("Delta time: %f!", dt);
 
 
 

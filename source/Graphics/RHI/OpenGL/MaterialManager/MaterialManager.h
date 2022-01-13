@@ -170,6 +170,7 @@ namespace moe
 		void									FreeDynamicSets(DeviceDynamicResourceSetHandle freedHandle) override;
 
 		[[nodiscard]] DeviceResourceSetHandle	AllocateResourceSet(ResourceSetsDescription const& setDescription) override;
+		void									UpdateResourceSet(DeviceResourceSetHandle handle, ResourceSetsDescription const& newDescription) override;
 		void									FreeResourceSet(DeviceResourceSetHandle setHandle) override;
 
 		GLuint	BindMaterial(OpenGL4RHI* rhi, uint32_t materialIdx);

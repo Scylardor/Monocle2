@@ -3,7 +3,9 @@
 #include "GameFramework/Engine/Engine.h"
 
 #include "BasicQuad.h"
+#include "BlinnPhong.h"
 #include "CubeWorld.h"
+#include "MutliViewportCubeWorld.h"
 
 
 int main(int argc, char **argv)

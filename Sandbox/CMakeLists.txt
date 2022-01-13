@@ -20,6 +20,10 @@ set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/BasicQuad.cpp"
 	"${SOURCE_DIR}/CubeWorld.h"
 	"${SOURCE_DIR}/CubeWorld.cpp"
+	"${SOURCE_DIR}/MutliViewportCubeWorld.h"
+	"${SOURCE_DIR}/MutliViewportCubeWorld.cpp"
+	"${SOURCE_DIR}/BlinnPhong.h"
+	"${SOURCE_DIR}/BlinnPhong.cpp"
 )
 
 add_compile_options(

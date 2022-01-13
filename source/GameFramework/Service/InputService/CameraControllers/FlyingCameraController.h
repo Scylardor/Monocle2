@@ -94,6 +94,8 @@ namespace moe
 
 		void	OnCursorMove(double newX, double newY);
 
+		void	RecomputeCameraVectors(float xDelta, float yDelta);
+
 		void	MoveForward();
 		void	MoveBackward();
 		void	StrafeLeft();
@@ -110,17 +112,17 @@ namespace moe
 		Vec3	m_cameraFront{ 0, 0, -1 };
 		Vec3	m_cameraRight{ 1, 0, 0 };
 		Vec3	m_cameraUp{ 0, 1, 0 };
-		Degs_f	m_yaw{ -90.0f };
-		Degs_f	m_pitch{ 0.f };
-		Degs_f	m_pitchThreshold{ 89.f };
+		float	m_yaw{ -90.0f };
+		float	m_pitch{ -89.f };
+		float	m_pitchThreshold{ 89.f };
 
 		float	m_lastCursorX = NAN;
 		float	m_lastCursorY = NAN;
 
 		float	m_rotationSensitivity = 0.1f;
 
-		float	m_dollySpeed = 10.f;
-		float	m_truckSpeed = 10.f;
+		float	m_dollySpeed = 1;
+		float	m_truckSpeed = 1;
 
 		// TODO: should be Degs_f !
 		float	m_minZoomFOVy = 1.f;

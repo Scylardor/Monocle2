@@ -143,6 +143,13 @@ namespace moe
 	}
 
 
+	void OpenGL4MaterialManager::UpdateResourceSet(DeviceResourceSetHandle handle,
+		ResourceSetsDescription const& newDescription)
+	{
+		m_dynamicResourceSets.Mut(handle.Get()) = newDescription;
+	}
+
+
 	void OpenGL4MaterialManager::FreeResourceSet(DeviceResourceSetHandle setHandle)
 	{
 		m_dynamicResourceSets.Free(setHandle.Get());
@@ -770,7 +777,16 @@ std::optional<OpenGLVertexBindingFormat> OpenGLVertexBindingFormat::TranslateFor
 				{
 					GLuint bufferID = rhi->GLBufferManager().GetBuffer(buffBind.BufferHandle);
 					glUniformBlockBinding(programID, blockBindingIdx, buffBind.BindingNumber);
-					glBindBufferRange(GL_UNIFORM_BUFFER, buffBind.BindingNumber, bufferID, buffBind.Offset, buffBind.Range);
+
+					GLenum bufferType = 0;
+					if (buffBind.BufferType == BindingType::UniformBuffer)
+						bufferType = GL_UNIFORM_BUFFER;
+					else if (buffBind.BufferType == BindingType::StructuredBuffer)
+						bufferType = GL_SHADER_STORAGE_BUFFER;
+					else
+						MOE_ASSERT(false); // unimplemented !
+
+					glBindBufferRange(bufferType, buffBind.BindingNumber, bufferID, buffBind.Offset, buffBind.Range);
 				},
 				[&](TextureBinding const& texBind)
 				{

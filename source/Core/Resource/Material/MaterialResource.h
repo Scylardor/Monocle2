@@ -136,13 +136,14 @@ namespace moe
 
 	struct BufferBinding : ResourceSetBinding
 	{
-		inline static const uint64_t WHOLE_RANGE = (uint64_t)-1;
+		inline static const uint64_t WHOLE_RANGE = UINT64_MAX;
 
-		BufferBinding(DeviceBufferHandle buffer, int binding, int set, uint64_t off = 0, uint64_t range = WHOLE_RANGE) :
+		BufferBinding(DeviceBufferHandle buffer, int binding, int set, uint64_t off = 0, uint64_t range = WHOLE_RANGE, BindingType type = BindingType::UniformBuffer) :
 			ResourceSetBinding(binding, set),
 			BufferHandle(buffer),
 			Offset(off),
-			Range(range)
+			Range(range),
+			BufferType(type)
 		{}
 
 		bool operator==(const BufferBinding& other) const
@@ -155,7 +156,8 @@ namespace moe
 
 		DeviceBufferHandle	BufferHandle{};
 		uint64_t			Offset{ 0 }; // TODO : this information is also in the buffer's MeshData
-		uint64_t			Range{ WHOLE_RANGE };
+		uint64_t			Range{ WHOLE_RANGE }; // TODO: I think we should change them to uint32 to save some space, except if we want to manage 4GB+ meshes...
+		BindingType			BufferType{ BindingType::UniformBuffer }; // bound buffers can either be uniform or structured, most of the time.
 	};
 
 
@@ -210,6 +212,11 @@ namespace moe
 			return std::get<T>(Bindings.Back());
 		}
 
+
+		void	Clear()
+		{
+			Bindings.Clear();
+		}
 	};
 
 

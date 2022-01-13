@@ -94,7 +94,7 @@ namespace moe
 
 		svcInput->AttachInputSource(*winSvc->MutWindow());
 
-		Vec3 cameraPos{ 0, 0, 3 };
+		Vec3 cameraPos{ 0, 1.f, 0.f };
 		Vec3 cameraTarget{ Vec3::ZeroVector() };
 		Vec3 up{ 0, 1, 0 };
 
@@ -104,23 +104,6 @@ namespace moe
 		perspective.Far = 1000.f;
 		svcInput->EmplaceController<FlyingCameraController>(scene, cameraPos, cameraTarget, up, perspective);
 
-		//Mat4 viewMatrix = Mat4::LookAtMatrix(cameraPos, cameraTarget, up);
-		//
-		//Rect2Df viewport;
-		//viewport.x = 0;
-		//viewport.y = 0;
-		//viewport.Width = 0.5f;
-		//viewport.Height = 0.5f;
-		//scene.AddView(viewMatrix, perspective, viewport, viewport);
-		//viewport.x = 0.5f;
-		//viewport.y = 0;
-		//scene.AddView(viewMatrix, perspective, viewport, viewport);
-		//viewport.x = 0;
-		//viewport.y = 0.5f;
-		//scene.AddView(viewMatrix, perspective, viewport, viewport);
-		//viewport.x = 0.5f;
-		//viewport.y = 0.5f;
-		//scene.AddView(viewMatrix, perspective, viewport, viewport);
 	}
 
 	void CubeWorld::Update()
@@ -146,8 +129,8 @@ namespace moe
 		for (int i = 0; i < 10; i++)
 		{
 			auto angle = Degs_f(time * 50);
-			Mat4 cubeMatrix = Mat4::Translation(cubePositions[i]).Rotate(angle, 0.5f, 1.0f, 0.f);
-			m_cubes[i].MutObject()->SetModelMatrix(cubeMatrix);
+			Mat4 cubeMatrix = Mat4::Translation(cubePositions[i]);// .Rotate(angle, 0.5f, 1.0f, 0.f);
+			m_scene->UpdateObjectModel(m_cubes[i].GetID(), cubeMatrix);
 		}
 	}
 

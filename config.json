@@ -18,6 +18,7 @@
 	},
 	"rendering":
 	{
-		"defaut_scene_size": 32
+		"defaut_scene_size": 32,
+		"defaut_scene_lights": 32
 	}
 }

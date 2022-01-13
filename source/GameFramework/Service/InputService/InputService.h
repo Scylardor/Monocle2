@@ -58,7 +58,7 @@ namespace moe
 
 		InputService(Engine& ownerEngine);
 
-		void	Update();
+		void	Update(float dt);
 
 		using ButtonEvent = Event<void()>;
 
