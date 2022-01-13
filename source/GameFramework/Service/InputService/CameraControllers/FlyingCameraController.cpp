@@ -17,8 +17,15 @@ namespace moe
 		m_cameraPos(pos),
 		m_cameraUp(up)
 	{
+		m_cameraFront = (target - pos).GetNormalized();
+		Rads_f rads(std::acosf(m_cameraFront.Dot({ 1, 0, 0 })));
+		m_yaw = -rads;
+
+		rads = Rads_f( std::acosf(m_cameraFront.Dot({ 0, 0, -1 })));
+		m_pitch = rads;
+
 		Mat4 viewMatrix = Mat4::LookAtMatrix(pos, target, up);
-		m_viewID = cameraScene.AddView(Mat4::Identity(), perspective);
+		m_viewID = cameraScene.AddView(viewMatrix, perspective);
 
 		SetupInputDelegates();
 
@@ -32,6 +39,13 @@ namespace moe
 		m_cameraPos(pos),
 		m_cameraUp(up)
 	{
+		m_cameraFront = (target - pos).GetNormalized();
+		Rads_f rads(std::acosf(m_cameraFront.Dot({ 1, 0, 0 })));
+		m_yaw = -rads;
+
+		rads = Rads_f(std::acosf(m_cameraFront.Dot({ 0, 0, -1 })));
+		m_pitch = rads;
+
 		Mat4 viewMatrix = Mat4::LookAtMatrix(pos, target, up);
 		m_viewID = cameraScene.AddView(viewMatrix, ortho);
 
@@ -125,8 +139,6 @@ namespace moe
 		vertiDelta *= m_rotationSensitivity;
 
 		RecomputeCameraVectors(horizDelta, vertiDelta);
-
-		MOE_LOG("Camera pos %f %f %f\n", m_cameraPos.x(), m_cameraPos.y(), m_cameraPos.z());
 	}
 
 
@@ -137,7 +149,7 @@ namespace moe
 
 		// make sure that when pitch is out of bounds, screen doesn't get flipped
 
-		m_pitch = std::clamp(m_pitch, -m_pitchThreshold, m_pitchThreshold);
+		m_pitch = Degs_f( std::clamp(m_pitch(), -m_pitchThreshold, m_pitchThreshold) );
 
 		// update Front, Right and Up Vectors using the updated Euler angles
 		// calculate the new Front vector
@@ -146,9 +158,9 @@ namespace moe
 
 		// Calculate the new Front vector
 		m_cameraFront = Vec3{
-			cosf(glm::radians(m_yaw)) * cosf(glm::radians(m_pitch)),
-			sinf(glm::radians(m_pitch)),
-			sinf(glm::radians(m_yaw)) * cosf(glm::radians(m_pitch))
+			cosf(yawRads) * cosf(pitchRads),
+			sinf(pitchRads),
+			sinf(yawRads) * cosf(pitchRads)
 		}.GetNormalized();
 
 		// Also re-calculate the Right and Up vector

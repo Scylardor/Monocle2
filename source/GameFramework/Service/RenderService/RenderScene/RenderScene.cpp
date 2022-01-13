@@ -223,7 +223,7 @@ namespace moe
 		auto transfID = m_objects.Get(objectID).GetTransformID();
 
 		ObjectMatrices& objMats = m_transforms.Mut(transfID);
-		objMats.MVP = viewProjection * objMats.ModelView;
+		objMats.MVP = viewProjection * objMats.Model;
 		objMats.ModelView = view * objMats.Model;
 		objMats.Normal = objMats.ModelView.GetInverseTransposed();
 	}

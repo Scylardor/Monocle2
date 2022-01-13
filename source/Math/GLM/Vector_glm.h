@@ -201,7 +201,7 @@ namespace moe
 			* It is advised to use the squared distance when possible to reduce computations to a minimum.
 			* \return the distance between the position expressed by this vector and the parameter vector.
 			*/
-			ValT	SquaredDistance(const Vector& vec) const
+			[[nodiscard]] ValT	SquaredDistance(const Vector& vec) const
 			{
 				return glm::distance2(m_vec, vec.m_vec);
 			}
@@ -231,7 +231,7 @@ namespace moe
 			 */
 			[[nodiscard]] ValT	Dot(const Vector& vec) const
 			{
-				return Vector(glm::dot(m_vec, vec.m_vec));
+				return ValT(glm::dot(m_vec, vec.m_vec));
 			}
 
 
@@ -245,7 +245,7 @@ namespace moe
 			 * \return The cross product of vec3 and this
 			 */
 			template<typename = std::enable_if_t<NumT >= 3>>
-			Vector	Cross(const Vector& vec) const
+			[[nodiscard]] Vector	Cross(const Vector& vec) const
 			{
 				return Vector(glm::cross(m_vec, vec.m_vec));
 			}
@@ -274,7 +274,7 @@ namespace moe
 			* \return The dot product of vec2 and the perpendicular vector of this
 			*/
 			template<typename = std::enable_if_t<NumT == 2>>
-			[[nodiscard]] Vector	PerpDot(const Vector& vec2) const
+			[[nodiscard]] ValT	PerpDot(const Vector& vec2) const
 			{
 				return Perp().Dot(vec2);
 			}
@@ -285,7 +285,7 @@ namespace moe
 			 *	It's a kind of code smell but AFAICT it's the easiest way to achieve matrix*vector operations without introducing some kind of odd coupling.
 			 * \return the underlying GLM vector (const)
 			 */
-			const VectorType&	glmVector() const
+			[[nodiscard]] const VectorType&	glmVector() const
 			{
 				return m_vec;
 			}

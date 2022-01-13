@@ -94,7 +94,7 @@ namespace moe
 
 		svcInput->AttachInputSource(*winSvc->MutWindow());
 
-		Vec3 cameraPos{ 0, 1.f, 0.f };
+		Vec3 cameraPos{ 0, 0.f, 3.f };
 		Vec3 cameraTarget{ Vec3::ZeroVector() };
 		Vec3 up{ 0, 1, 0 };
 
@@ -115,21 +115,21 @@ namespace moe
 		static const Vec3 cubePositions[] =
 		{
 			Vec3(0.0f,  0.0f,  0.0f),
-			Vec3(3.0f,  5.0f, -15.0f),
-			Vec3(-3.f, -2.2f, -2.5f),
-			Vec3(-3.8f,0.f, -12.3f),
-			Vec3(2.4f, 0, -3.5f),
-			Vec3(-1.7f,0.f, -7.5f),
-			Vec3(1.3f, 0, -2.5f),
-			Vec3(1.5f, 0, -2.5f),
-			Vec3(1.5f, 0, -1.5f),
-			Vec3(-1.3f,0.f, -1.5f)
+			Vec3(2.0f,  5.0f, -15.0f),
+			Vec3(-1.5f, -2.2f, -2.5f),
+			Vec3(-3.8f, -2.0f, -12.3f),
+			Vec3(2.4f, -0.4f, -3.5f),
+			Vec3(-1.7f,  3.0f, -7.5f),
+			Vec3(1.3f, -2.0f, -2.5f),
+			Vec3(1.5f,  2.0f, -2.5f),
+			Vec3(1.5f,  0.2f, -1.5f),
+			Vec3(-1.3f,  1.0f, -1.5f)
 		};
 
 		for (int i = 0; i < 10; i++)
 		{
 			auto angle = Degs_f(time * 50);
-			Mat4 cubeMatrix = Mat4::Translation(cubePositions[i]);// .Rotate(angle, 0.5f, 1.0f, 0.f);
+			Mat4 cubeMatrix = Mat4::Translation(cubePositions[i]).Rotate(angle, 0.5f, 1.0f, 0.f);
 			m_scene->UpdateObjectModel(m_cubes[i].GetID(), cubeMatrix);
 		}
 	}

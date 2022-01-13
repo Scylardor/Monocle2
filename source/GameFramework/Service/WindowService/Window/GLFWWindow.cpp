@@ -132,7 +132,7 @@ namespace moe
 		}
 
 		// vsync is enabled by default
-		bool const vsync = windowConfig.GetBool("vsync").value_or(true);
+ 		bool const vsync = windowConfig.GetBool("vsync").value_or(true);
 
 		// swap interval of 1 means "wait 1 vblank" so vsync is ON, 0 means vsync OFF
 		// there's not really any point in waiting for more vblanks than creating more latency, so stick to 1 or 0
@@ -151,7 +151,7 @@ namespace moe
 	void GLFWWindow::WindowCursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 	{
 		GLFWWindow* myWindow = reinterpret_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
-		myWindow->CursorPositionUpdateEvent.Broadcast(xpos, ypos);
+ 		myWindow->CursorPositionUpdateEvent.Broadcast(xpos, ypos);
 	}
 
 	void GLFWWindow::WindowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
