@@ -55,6 +55,16 @@ namespace moe
 
 		void	Update(float dt) override;
 
+		Vec3 const&	GetCameraPosition() const
+		{
+			return m_cameraPos;
+		}
+
+		Vec3 const&	GetCameraFront() const
+		{
+			return m_cameraFront;
+		}
+
 
 	private:
 

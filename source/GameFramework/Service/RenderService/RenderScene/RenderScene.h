@@ -11,6 +11,7 @@
 #include "Graphics/RHI/BufferManager/BufferManager.h"
 #include "Math/Vec3.h"
 #include "GameFramework/Service/RenderService/RenderScene/LightObject.h"
+#include "Math/Vec4.h"
 
 
 namespace moe
@@ -112,6 +113,8 @@ namespace moe
 		LightID	AddLight(DirectionalLight const& dir);
 		LightID	AddLight(PointLight const& point);
 		LightID	AddLight(SpotLight const& spot);
+		void	UpdateLightPosition(LightID lightID, Vec3 const& newPos);
+		void	UpdateLightTransform(LightID lightID, Vec3 const& newPos, Vec3 const& newDir);
 
 		auto	GetLightsNumber() const
 		{
@@ -152,8 +155,8 @@ namespace moe
 
 
 		float	OffsetViewFoVy(ViewID view, float FoVDelta, float min, float max);
-		void	UpdateViewProjectionMatrix(ViewID vID, Mat4 const& newProj);
-		void	UpdateViewMatrix(ViewID vID, Mat4 const& newView);
+		void	UpdateProjectionMatrix(ViewID vID, Mat4 const& newProj);
+		void	UpdateViewMatrix(ViewID vID, Mat4 const& newView, Vec3 const& newPos);
 
 
 		void				RemoveObject(RenderObjectHandle handle);
@@ -236,11 +239,15 @@ namespace moe
 		{
 			ObjectMatrices() = default;
 			ObjectMatrices(Mat4 const& model) :
-				MVP(model), ModelView(model), Model(model), Normal(model.GetInverseTransposed())
+				MVP(model),
+				ModelView(model), // MV is gonna be updated at render time anyway
+				Normal(model.GetInverseTransposed()), Model(model)
 			{}
 
 			ObjectMatrices(Mat4 const& model, Mat4 const& viewProj) :
-				MVP(viewProj * model), ModelView(model), Model(model), Normal(model.GetInverseTransposed())
+				MVP(viewProj * model),
+				ModelView(model), // MV is gonna be updated at render time anyway
+				Normal(model.GetInverseTransposed()), Model(model)
 			{}
 
 			Mat4	MVP{ Mat4::Identity() };
@@ -250,9 +257,9 @@ namespace moe
 		};
 
 
-		GraphicsPool<ObjectMatrices>	m_transforms;
+		GraphicsPool<ObjectMatrices>		m_transforms;
 
-		Renderer*						m_sceneRenderer{ nullptr };
+		Renderer*							m_sceneRenderer{ nullptr };
 
 		SparseArray<RenderObject>			m_objects{};
 

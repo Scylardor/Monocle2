@@ -1,167 +1,193 @@
-#version 420 core
-// Require version 420 to be able to use "binding = ..." extension.
-//
-//#define LIGHTS_NBR 16
-//
-//struct LightData
-//{
-//	vec4	lightPosition;
-//	vec4	lightDirection;
-//	vec4	lightAmbient;
-//	vec4	lightDiffuse;
-//	vec4	lightSpecular;
-//	float	lightConstantAttenuation;
-//	float	lightLinearAttenuation;
-//	float	lightQuadraticAttenuation;
-//	float	lightSpotInnerCutoff;
-//	float	lightSpotOuterCutoff;
-//};
-//
-//layout (std140, binding = 1) uniform LightCastersData
-//{
-//	uint		lightsNumber;
-//	LightData	lightsData[LIGHTS_NBR];
-//};
-//
+#version 430 core
+// Require version 430 to be able to use "layout (std430, binding = 2) readonly buffer" extension.
 
-//
-//layout (std140, binding = 3) uniform PhongMaterial
-//{
-//	vec4	materialAmbient;
-//	vec4	materialDiffuse;
-//	vec4	materialSpecular;
-//	float	shininess;
-//};
 
-layout (binding = 0) uniform sampler2D T_Diffuse;
+struct Light
+{
+	vec4	Position;
+	vec4	Direction;
+	vec4	Ambient;
+	vec4	Diffuse;
+	vec4	Specular;
+};
+
+layout (std140, binding = 1) uniform ViewData
+{
+	vec4	positionWS;
+	mat4	view;
+	mat4	projection;
+	mat4	viewProjection;
+}	View;
+
+
+
+layout (std430, binding = 2) readonly buffer LightData
+{
+	Light array[];
+}	Lights;
+
+
+layout (binding = 0) uniform sampler2D T_Ambient;
+layout (binding = 1) uniform sampler2D T_Diffuse;
+layout (binding = 2) uniform sampler2D T_Specular;
+layout (binding = 3) uniform sampler2D T_Emission;
+
+float	SHININESS = 3.0;
+float	DIRECTIONAL_ATTENUATION = -1.0;
+float	OMNIDIRECTIONAL_CUTOFF = -1.0;
 
 
 in VS_OUT {
-	vec3	PosVS;
-	vec3	NormalVS;
+	vec3	PosWS;
+	vec3	NormalWS;
 	vec2	UV0;
 } fs_in;
 
 out vec4	FragColor;
 
 
+vec3 g_sampledAmbient	= texture2D(T_Ambient, fs_in.UV0).xyz;
+vec3 g_sampledDiffuse	= texture2D(T_Diffuse, fs_in.UV0).xyz;
+vec3 g_sampledSpecular	= texture2D(T_Specular, fs_in.UV0).xyz;
+vec3 g_sampledEmission	= texture2D(T_Emission, fs_in.UV0).xyz;
 
-//vec4	ComputeDirectionalLight(int iLight)
-//{
-//	// First compute ambient because it will be used no matter what
-//	vec4 diffuseMapVal = texture(diffuseMap, vs_texCoords);
-//	vec4 ambient  = lightsData[iLight].lightAmbient * diffuseMapVal;
-//
-//	// Negate direction vector because we specify the light direction as pointing from the light source.
-//	// Therefore we negate the light direction to get a direction vector pointing towards the light source.
-//	vec4 lightDirEye = normalize(view * -lightsData[iLight].lightDirection);
-//
-//	// Diffuse
-//	vec3 normalizedNorm = normalize(vs_normal); // just to be sure
-//	float diffuseStrength = max(dot(normalizedNorm, lightDirEye.xyz), 0.0);
-//	vec4 diffuse = lightsData[iLight].lightDiffuse * diffuseStrength * diffuseMapVal;
-//
-//	// Specular
-//	float specularStrength = 0.0;
-//	if (diffuse != vec4(0)) // Do not produce a specular highlight if the object is back lit.
-//	{
-//		vec3 vertToEyeDir = normalize(-vs_fragPosEye); // formula is eye pos - vertex pos but in eye space, eye is at (0, 0, 0) !
-//		// Compute Blinn-Phong half vector
-//		vec3 halfwayDir = normalize(lightDirEye.xyz + vertToEyeDir.xyz);
-//		specularStrength = pow(max(dot(normalizedNorm, halfwayDir), 0.0), shininess);
-//	}
-//
-//	vec4 specular = lightsData[iLight].lightSpecular * specularStrength;
-//	return ambient + diffuse + specular;
-//}
-//
-//
-//vec4	ComputePointLight(int iLight, vec4 lightDirEye, float attenuation)
-//{
-//	// First compute ambient because it will be used no matter what
-//	vec4 diffuseMapVal = texture(diffuseMap, vs_texCoords);
-//	vec4 ambient  = lightsData[iLight].lightAmbient * diffuseMapVal;
-//
-//	// Diffuse
-//	vec3 normalizedNorm = normalize(vs_normal); // just to be sure
-//	float diffuseStrength = max(dot(normalizedNorm, lightDirEye.xyz), 0.0);
-//	vec4 diffuse = lightsData[iLight].lightDiffuse * diffuseStrength * diffuseMapVal;
-//
-//	// Specular
-//	float specularStrength = 0.0;
-//	if (diffuse != vec4(0)) // Do not produce a specular highlight if the object is back lit.
-//	{
-//		vec3 vertToEyeDir = normalize(-vs_fragPosEye); // formula is eye pos - vertex pos but in eye space, eye is at (0, 0, 0) !
-//		// Compute Blinn-Phong half vector
-//		vec3 halfwayDir = normalize(lightDirEye.xyz + vertToEyeDir.xyz);
-//		specularStrength = pow(max(dot(normalizedNorm, halfwayDir), 0.0), shininess);
-//	}
-//	vec4 specular = lightsData[iLight].lightSpecular * specularStrength;
-//
-//	return ((ambient + diffuse + specular) * attenuation);
-//}
-//
-//
-//vec4	ComputeSpotLight(int iLight, vec4 lightDirEye, float attenuation)
-//{
-//	// First compute ambient because it will be used no matter what
-//	vec4 diffuseMapVal = texture(diffuseMap, vs_texCoords);
-//	vec4 ambient  = lightsData[iLight].lightAmbient * diffuseMapVal;
-//
-//	float theta = dot(lightDirEye, normalize(view * -lightsData[iLight].lightDirection)); // -lightDirection : same as above
-//	float epsilon = lightsData[iLight].lightSpotInnerCutoff - lightsData[iLight].lightSpotOuterCutoff;
-//	float intensity = clamp((theta - lightsData[iLight].lightSpotOuterCutoff) / epsilon, 0.0, 1.0);
-//
-//	// Diffuse
-//	vec3 normalizedNorm = normalize(vs_normal); // just to be sure
-//	float diffuseStrength = max(dot(normalizedNorm, lightDirEye.xyz), 0.0);
-//	vec4 diffuse = lightsData[iLight].lightDiffuse * diffuseStrength * diffuseMapVal;
-//
-//	// Specular
-//	vec3 vertToEyeDir = normalize(-vs_fragPosEye); // formula is eye pos - vertex pos but in eye space, eye is at (0, 0, 0) !
-//	vec3 reflectDir = reflect(-lightDirEye.xyz, normalizedNorm);
-//	float specularStrength = pow(max(dot(vertToEyeDir, reflectDir), 0.0), shininess);
-//	vec4 specular = lightsData[iLight].lightSpecular * specularStrength;
-//
-//	return ((ambient + diffuse + specular) * attenuation * intensity);
-//}
-//
+vec3 PhongDirectionalLight(vec3 PosWS, vec3 normalWS, int iLight)
+{
+	float constantAttenuation = Lights.array[iLight].Position.w;
+	vec3 ambient = Lights.array[iLight].Ambient.xyz * g_sampledAmbient * constantAttenuation;
 
+	// Direction towards the light position
+	vec3 L = - Lights.array[iLight].Direction.xyz; // assume it was sent normalized...
+
+	float LDotN = max(dot(normalWS, L), 0.0);
+
+	vec3 diffuse = Lights.array[iLight].Diffuse.xyz * g_sampledDiffuse * LDotN;
+
+	vec3 specular = vec3(0.0);
+	if (LDotN > 0.0)
+	{
+		// Direction towards the viewer position
+		vec3 V = normalize(View.positionWS.xyz - PosWS);
+
+		// Reflection of the light ray on the surface
+		vec3 R = reflect(-L, normalWS);
+		float RDotV = max(dot(V, R), 0.0);
+
+		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(RDotV, SHININESS);
+	}
+
+	return ambient + diffuse + specular;
+}
+
+
+vec3 PhongPointLight(vec3 PosWS, vec3 normalWS, int iLight)
+{
+	float constantAttenuation = Lights.array[iLight].Position.w;
+
+	vec3 ambient = Lights.array[iLight].Ambient.xyz * g_sampledAmbient * constantAttenuation;
+
+	// Direction towards the light position
+	vec3 lightVec = Lights.array[iLight].Position.xyz - PosWS;
+	vec3 L = normalize(lightVec);
+
+	float LDotN = max(dot(normalWS, L), 0.0);
+
+	vec3 diffuse = Lights.array[iLight].Diffuse.xyz * g_sampledDiffuse * LDotN;
+
+	vec3 specular = vec3(0.0);
+	if (LDotN > 0.0)
+	{
+		// Direction towards the viewer position
+		vec3 V = normalize(View.positionWS.xyz - PosWS);
+
+		// Reflection of the light ray on the surface
+		vec3 R = reflect(-L, normalWS);
+		float RDotV = max(dot(V, R), 0.0);
+
+		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(RDotV, SHININESS);
+
+		float linearAttenuation = Lights.array[iLight].Direction.w;
+		float quadraticAttenuation = Lights.array[iLight].Ambient.w;
+		float distance = length(lightVec);
+		float attenuation = 1.0 / (constantAttenuation + linearAttenuation * distance + quadraticAttenuation * (distance * distance));
+		diffuse *= attenuation;
+		specular *= attenuation;
+	}
+
+	return ambient + diffuse + specular;
+}
+
+
+vec3 PhongSpotLight(vec3 PosWS, vec3 normalWS, int iLight)
+{
+	float constantAttenuation = Lights.array[iLight].Position.w;
+
+	// First compute ambient because it will be used no matter what
+	vec3 ambient = Lights.array[iLight].Ambient.xyz * g_sampledAmbient * constantAttenuation;
+
+	// Direction towards the light position
+	vec3 lightVec = Lights.array[iLight].Position.xyz - PosWS;
+	vec3 L = normalize(lightVec);
+
+	float theta = dot(L, normalize(-Lights.array[iLight].Direction.xyz));
+
+	float spotInnerCutoff = Lights.array[iLight].Diffuse.w;
+	float spotOuterCutoff = Lights.array[iLight].Specular.w;
+	float epsilon = spotInnerCutoff - spotOuterCutoff;
+	float intensity = clamp((theta - spotOuterCutoff) / epsilon, 0.0, 1.0);
+
+	// Diffuse
+	float LDotN = max(dot(normalWS, L), 0.0);
+
+	vec3 diffuse = Lights.array[iLight].Diffuse.xyz * g_sampledDiffuse * LDotN * intensity;
+
+	// Specular
+	vec3 specular = vec3(0.0);
+	if (LDotN > 0.0)
+	{
+		// Direction towards the viewer position
+		vec3 V = normalize(View.positionWS.xyz - PosWS);
+
+		// Reflection of the light ray on the surface
+		vec3 R = reflect(-L, normalWS);
+		float RDotV = max(dot(V, R), 0.0);
+
+		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(RDotV, SHININESS) * intensity;
+
+		float linearAttenuation = Lights.array[iLight].Direction.w;
+		float quadraticAttenuation = Lights.array[iLight].Ambient.w;
+		float distance = length(lightVec);
+		float attenuation = 1.0 / (constantAttenuation + linearAttenuation * distance + quadraticAttenuation * (distance * distance));
+		diffuse *= attenuation;
+		specular *= attenuation;
+	}
+
+	return ambient + diffuse + specular;
+}
+
+vec3 PhongLightingModel(vec3 PosWS, vec3 normalWS, int nbLights)
+{
+	vec3 lightingColor = vec3(0);
+	for (int i = 0; i < nbLights; ++i)
+	{
+		if (Lights.array[i].Position.w == DIRECTIONAL_ATTENUATION) // this is a directional light
+			lightingColor += PhongDirectionalLight(PosWS, normalWS, i);
+		else if (Lights.array[i].Diffuse.w == OMNIDIRECTIONAL_CUTOFF) // this is a point light
+			lightingColor += PhongPointLight(PosWS, normalWS, i);
+		else // this is a spot light
+			lightingColor += PhongSpotLight(PosWS, normalWS, i);
+	}
+
+	return lightingColor;
+}
 
 
 void main()
 {
-	//vec4 fragPos4 = vec4(vs_fragPosEye, 1.0);
-	//
-	//for (int iLight = 0; iLight < lightsNumber; iLight++)
-	//{
-	//	if (lightsData[iLight].lightPosition.w == 0) // it's a directional light
-	//	{
-	//		FragColor += ComputeDirectionalLight(iLight);
-	//	}
-	//	else // it's a position light (point or spot) : start calculations
-	//	{
-	//		vec4 lightPosEye = (view * lightsData[iLight].lightPosition);
-	//		vec4 lightDirEye = lightPosEye - fragPos4;
-	//
-	//		float distance = length(lightDirEye);
-	//		float attenuation = 1.0 /
-	//		 (lightsData[iLight].lightConstantAttenuation + (lightsData[iLight].lightLinearAttenuation * distance) + (lightsData[iLight].lightQuadraticAttenuation * distance * distance));
-	//
-	//		lightDirEye = normalize(lightDirEye);
-	//
-	//		if (lightsData[iLight].lightDirection != vec4(0)) // it has position and direction : it's a spot light
-	//		{
-	//			FragColor += ComputeSpotLight(iLight, lightDirEye, attenuation);
-	//		}
-	//		else
-	//		{
-	//			FragColor += ComputePointLight(iLight, lightDirEye, attenuation);
-	//		}
-	//	}
-	//}
-	//
-	//FragColor.w = 1.0;
+	vec3 fragNormalWS = normalize(fs_in.NormalWS);
+	vec3 color = vec3(1, 0, 1);
+	int nbLights = Lights.array.length();
+	color = PhongLightingModel(fs_in.PosWS, fragNormalWS, nbLights);
 
-	FragColor = texture(T_Diffuse, fs_in.UV0);
+	FragColor = vec4(color, 1);
 }

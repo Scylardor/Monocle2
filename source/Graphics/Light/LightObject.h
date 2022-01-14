@@ -42,6 +42,7 @@ namespace moe
 
 		Monocle_Graphics_API void	SetSpotInnerCutoff(Degs_f cutoffAngle);
 		Monocle_Graphics_API void	SetSpotOuterCutoff(Degs_f cutoffAngle);
+
 	private:
 		LightSystem*	m_parentSystem = nullptr;
 

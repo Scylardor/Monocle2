@@ -184,17 +184,13 @@ namespace moe
 			MOE_ASSERT(materialIdx < m_materials.Size());
 			OpenGL4Material const& material = m_materials[materialIdx];
 
-			MOE_ASSERT(material.VAOIdx < m_VAOs.Size() || material.VAOIdx == NO_VAO);
-			if (material.VAOIdx == NO_VAO)
-				return nullptr;
-
+			MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
 			return &m_VAOs[material.VAOIdx];
 		}
 
 
 	private:
 
-		inline static const auto NO_VAO = UINT32_MAX;
 
 		uint32_t	FindOrBuildShaderProgram(ShaderProgramDescription const& progDesc);
 

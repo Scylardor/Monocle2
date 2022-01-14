@@ -18,8 +18,9 @@ namespace moe
 
 		void	Initialize(RenderHardwareInterface* RHI, uint32_t nbReserved)
 		{
+			MOE_ASSERT(nbReserved != 0);
 			m_RHI = RHI;
-			m_objects = m_RHI->BufferManager().MapCoherentDeviceBuffer((uint32_t)sizeof(T), nbReserved);
+			m_objects = m_RHI->BufferManager().MapCoherentDeviceBuffer((uint32_t)sizeof(T), nbReserved, nullptr, false);
 			m_capacity = nbReserved;
 			m_size = 0;
 			m_denseIndices.reserve(nbReserved);
@@ -121,6 +122,10 @@ namespace moe
 			return m_size;
 		}
 
+		[[nodiscard]] auto	GetCapacity() const
+		{
+			return m_capacity;
+		}
 
 		[[nodiscard]] auto	GetDataBytesRange() const
 		{
@@ -144,6 +149,12 @@ namespace moe
 		{
 			return m_objects.Handle();
 		}
+
+		auto const&		GetDeviceMapping() const
+		{
+			return m_objects;
+		}
+
 
 
 		template <typename ForEachFunction>

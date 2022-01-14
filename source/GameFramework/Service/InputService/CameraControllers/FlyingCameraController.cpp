@@ -82,7 +82,7 @@ namespace moe
 		if (IsMoving() || m_needsViewUpdate)
 		{
 			Mat4 viewMatrix = Mat4::LookAtMatrix(m_cameraPos, m_cameraPos + m_cameraFront, m_cameraUp);
-			m_cameraScene->UpdateViewMatrix(m_viewID, viewMatrix);
+			m_cameraScene->UpdateViewMatrix(m_viewID, viewMatrix, m_cameraPos);
 			m_needsViewUpdate = false;
 		}
 	}

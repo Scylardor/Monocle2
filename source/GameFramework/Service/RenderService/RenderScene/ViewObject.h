@@ -6,6 +6,7 @@
 #include "Graphics/RHI/RenderHardwareInterface.h"
 #include "Math/Matrix.h"
 #include "Math/Rect2D.h"
+#include "Math/Vec4.h"
 
 namespace moe
 {
@@ -61,6 +62,7 @@ namespace moe
 
 	struct ViewMatrices
 	{
+		Vec4	Position;		// in world space
 		Mat4	View;			// The "world to view" matrix
 		Mat4	Projection;		// The projection matrix (usually orthographic or perspective)
 		Mat4	ViewProjection;	// projection * view (has to be kept uptodate at all times)
@@ -88,9 +90,10 @@ namespace moe
 
 
 
-		void	UpdateView(Mat4 const& newViewMat)
+		void	UpdateView(Mat4 const& newViewMat, Vec3 const& newPos)
 		{
 			ViewMatrices& matrices = m_viewMatrices.MutBlock<ViewMatrices>();
+			matrices.Position = Vec4(newPos, 1);
 			matrices.View = newViewMat;
 			matrices.ViewProjection = matrices.Projection * matrices.View;
 		}

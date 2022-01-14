@@ -62,12 +62,15 @@ namespace moe
 			(uint16_t)ReservedCapacitySets::SCENE_LIGHTS,
 			{ {0, BindingType::StructuredBuffer, ShaderStage::Fragment} });
 
+		shaderPass.ResourceSetLayouts.AddResourceLayout(
+			(uint16_t)ReservedCapacitySets::VIEW_MATRICES,
+			{ {0, BindingType::UniformBuffer, ShaderStage::Fragment} });
 	}
 
 
-	void SC_PhongLighting::OnInitialized(RenderScene*, RenderObject&)
+	void SC_PhongLighting::OnInitialized(RenderScene* scene, RenderObject&)
 	{
-
+		scene->RegisterViewMatricesResources();
 	}
 
 

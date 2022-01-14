@@ -14,8 +14,8 @@ layout (std140, binding = 0) uniform ObjectMatrices
 }	Matrices;
 
 out VS_OUT {
-	vec3	PosVS;
-	vec3	NormalVS;
+	vec3	PosWS;
+	vec3	NormalWS;
 	vec2	UV0;
 } vs_out;
 
@@ -23,8 +23,8 @@ void main()
 {
 	vec4 position = vec4(VertexPosition, 1.0);
 
-	vs_out.NormalVS = normalize(mat3(Matrices.Normal) * VertexNormal);
-	vs_out.PosVS = (Matrices.ModelView * position).xyz;
+	vs_out.NormalWS = normalize(mat3(Matrices.Normal) * VertexNormal);
+	vs_out.PosWS = (Matrices.Model * position).xyz;
 	vs_out.UV0 = VertexUV0;
 
 	gl_Position = Matrices.MVP * position;

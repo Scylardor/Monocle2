@@ -78,12 +78,9 @@ namespace moe
 		uint32_t psoIdx = FindOrBuildPipelineStateObject(firstPass.Pipeline);
 
 		// It's possible for some special materials (e.g. full screen triangle) to not require a VAO.
-		// In that case, there are no vertex bindings and we should just ignore it.
-		uint32_t vaoIdx;
-		if (firstPass.Pipeline.VertexLayout.Bindings.Empty())
-			vaoIdx = NO_VAO;
-		else
-			vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout, firstPass.Pipeline.Topology);
+		// In that case, there are no vertex bindings, but we should still create a VAO (empty).
+		// cf. https://forums.developer.nvidia.com/t/gldrawarrays-without-vao-for-procedural-geometry-using-gl-vertexid-doesnt-work-in-debug-context/30167
+		uint32_t vaoIdx = FindOrCreateVAO(firstPass.Pipeline.VertexLayout, firstPass.Pipeline.Topology);
 
 		// Now build and return the material object.
 		auto matIt = std::find_if(m_materials.begin(), m_materials.end(),
@@ -169,13 +166,10 @@ namespace moe
 		GLuint program = m_shaderPrograms[material.ProgramIdx].Program;
 		glUseProgram(program);
 
-		MOE_ASSERT(material.VAOIdx < m_VAOs.Size() || material.VAOIdx == NO_VAO);
-		if (material.VAOIdx != NO_VAO)
-		{
-			GLuint vao = m_VAOs[material.VAOIdx].VAO;
-			glBindVertexArray(vao);
-		}
+		MOE_ASSERT(material.VAOIdx < m_VAOs.Size());
 
+		GLuint vao = m_VAOs[material.VAOIdx].VAO;
+		glBindVertexArray(vao);
 
 		// TODO: use glBindSamplers in OGL 4.5?
 		BindResourceSets(rhi, program, material.ResourceSets);
@@ -766,17 +760,14 @@ std::optional<OpenGLVertexBindingFormat> OpenGLVertexBindingFormat::TranslateFor
 	template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
 	template<class... Ts> overload(Ts...)->overload<Ts...>;
 
-	void OpenGL4MaterialManager::BindResourceSets(OpenGL4RHI* rhi, GLuint programID, ResourceSetsDescription const& rscDesc)
+	void OpenGL4MaterialManager::BindResourceSets(OpenGL4RHI* rhi, GLuint /*programID*/, ResourceSetsDescription const& rscDesc)
 	{
-		uint32_t blockBindingIdx = 0;
-
 		for (auto const& binding : rscDesc.Bindings)
 		{
 			std::visit(overload{
 				[&](BufferBinding const& buffBind)
 				{
 					GLuint bufferID = rhi->GLBufferManager().GetBuffer(buffBind.BufferHandle);
-					glUniformBlockBinding(programID, blockBindingIdx, buffBind.BindingNumber);
 
 					GLenum bufferType = 0;
 					if (buffBind.BufferType == BindingType::UniformBuffer)
@@ -790,7 +781,10 @@ std::optional<OpenGLVertexBindingFormat> OpenGLVertexBindingFormat::TranslateFor
 				},
 				[&](TextureBinding const& texBind)
 				{
-					GLuint texID = m_textureManager.GetTextureData(texBind.TextureHandle).TextureID;
+					GLuint texID = 0;
+					if (texBind.TextureHandle.IsNotNull())
+						texID = m_textureManager.GetTextureData(texBind.TextureHandle).TextureID;
+
 					glBindTextureUnit(texBind.BindingNumber, texID);
 				},
 				[&](SamplerBinding const& sampler)

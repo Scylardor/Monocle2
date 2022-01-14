@@ -17,8 +17,8 @@
 #include "Graphics/Sampler/SamplerDescriptor.h"
 #include "Graphics/ShaderCapabilities/ShaderCapabilities.h"
 #include "Graphics/Vertex/VertexFormats.h"
-#include "GameFramework/Service/TimeService/TimeService.h"
 #include "Graphics/Geometry/Cube.h"
+#include "GameFramework/Service/TimeService/TimeService.h"
 
 namespace moe
 {
@@ -57,6 +57,9 @@ namespace moe
 		Ref<TextureResource> woodTex = rscSvc->EmplaceResource<TextureResource>(HashString("Tex_Wood"), "Sandbox/assets/textures/wood.png");
 		DeviceTextureHandle texHandle = forwardRenderer.MutRHI()->TextureManager().CreateTexture2DFromFile(woodTex);
 
+		Ref<TextureResource> whiteTex = rscSvc->EmplaceResource<TextureResource>(HashString("Tex_White"), "Sandbox/assets/textures/white.png");
+		DeviceTextureHandle whiteTexHandle = forwardRenderer.MutRHI()->TextureManager().CreateTexture2DFromFile(whiteTex);
+
 		SamplerDescription samplerDesc;
 		samplerDesc.m_anisotropy = SamplerDescription::AnisotropyLevel::Maximum;
 
@@ -66,8 +69,9 @@ namespace moe
 										{0, BindingType::Sampler, ShaderStage::Fragment },
 										{0, BindingType::TextureReadOnly, ShaderStage::Fragment } };
 		passDesc.ResourceSetLayouts.AddResourceLayout(0, std::move(bindings));
-		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, texHandle);
-		passDesc.ResourceBindings.EmplaceBinding<SamplerBinding>(0, 0, sampler);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, whiteTexHandle);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 1, texHandle);
+		passDesc.ResourceBindings.EmplaceBinding<SamplerBinding>(0, 1, sampler);
 		passDesc.AddShaderCapability<SC_PhongLighting>();
 
 		Ref<MaterialResource> woodMat = rscSvc->EmplaceResource<MaterialResource>(HashString("Mat_Wood"), matDesc);
@@ -76,8 +80,9 @@ namespace moe
 		texHandle = forwardRenderer.MutRHI()->TextureManager().CreateTexture2DFromFile(containerTex);
 
 		passDesc.ResourceBindings.Clear();
-		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, texHandle);
-		passDesc.ResourceBindings.EmplaceBinding<SamplerBinding>(0, 0, sampler);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 0, whiteTexHandle);
+		passDesc.ResourceBindings.EmplaceBinding<TextureBinding>(0, 1, texHandle);
+		passDesc.ResourceBindings.EmplaceBinding<SamplerBinding>(0, 1, sampler);
 		Ref<MaterialResource> containerMat = rscSvc->EmplaceResource<MaterialResource>(HashString("Mat_Container"), matDesc);
 
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
@@ -105,10 +110,12 @@ namespace moe
 			MeshData{ plane.Data(), sizeof(plane[0]), plane.Size() });
 
 
-		Mat4 modelMatrices[] = {
-			Mat4::Translation(0, 1.5f, 0) * Mat4::Scaling(Vec3(0.5f)),
-			Mat4::Translation(2, 3, 1) * Mat4::Scaling(Vec3(0.5f)),
-			Mat4::Translation(-1, 5, 2) * Mat4::Rotation(60_degf, Vec3(1.f, 0.f, 1.f).GetNormalized()) * Mat4::Scaling(Vec3(0.25f))
+		Mat4 modelMatrices[NUM_CUBES]{
+			Mat4::Translation(0, 1.5f, 3) * Mat4::Scaling(Vec3(0.5f)),
+			Mat4::Translation(5, 3, 1) * Mat4::Scaling(Vec3(3.f)),
+			Mat4::Translation(-1, 5, 2) * Mat4::Rotation(60_degf, Vec3(1.f, 0.f, 1.f).GetNormalized()) * Mat4::Scaling(Vec3(0.25f)),
+			Mat4::Identity(),
+			Mat4::Translation(10, 3, 1) * Mat4::Scaling(Vec3(0.5f))
 		};
 
 		for (int i = 0; i < NUM_CUBES; i++)
@@ -127,7 +134,7 @@ namespace moe
 
 		svcInput->AttachInputSource(*winSvc->MutWindow());
 
-		Vec3 cameraPos{ 0, 0, 3 };
+		Vec3 cameraPos{ 0, 1, 3 };
 		Vec3 cameraTarget{ Vec3::ZeroVector() };
 		Vec3 up{ 0, 1, 0 };
 
@@ -135,8 +142,33 @@ namespace moe
 		perspective.FoVY = 45_degf;
 		perspective.Near = 1.f;
 		perspective.Far = 1000.f;
-		svcInput->EmplaceController<FlyingCameraController>(scene, cameraPos, cameraTarget, up, perspective);
+		m_camCtrl = svcInput->EmplaceController<FlyingCameraController>(scene, cameraPos, cameraTarget, up, perspective);
 
+		PointLight pl;
+		pl.Position = Vec3(0, 5, 0);
+		pl.ConstantAttenuation = 1;
+		pl.LinearAttenuation = 0.05f;
+		pl.QuadraticAttenuation = 0.015f;
+ 		pl.Ambient = Color3f(0.05f, 0.05f, 0.05f);
+		m_pointLightID = scene.AddLight(pl);
+
+		DirectionalLight dl;
+		dl.Direction = Vec3(1, 0, 0);
+		dl.Diffuse = Color3f::White();
+		m_DirLightID = scene.AddLight(dl);
+
+		SpotLight sl;
+		sl.Position = Vec3(10, 3, 1);
+		sl.Direction = Vec3(1, 0, 0);
+		sl.Diffuse = Color3f::Yellow();
+		sl.InnerCutoff = Degs_f{ 12.5 };
+		sl.OuterCutoff = Degs_f{ 15.F };
+		sl.ConstantAttenuation = 1;
+		sl.LinearAttenuation = 0.09f;
+		sl.QuadraticAttenuation = 0.032f;
+		m_SpotLightID = scene.AddLight(sl);
+
+		m_svcTime = EditEngine()->EditService<TimeService>();
 
 	}
 
@@ -144,6 +176,19 @@ namespace moe
 	{
 		OpenGLApp3D::Update();
 
+		float time = m_svcTime->GetSecondsSinceGameStart();
+
+		float sin = std::sinf(time);
+		Vec3 lightPos = Vec3(0, 5 + sin * 4, 0);
+
+		m_scene->UpdateObjectModel(m_cubes[NUM_CUBES - 1].GetID(), Mat4::Translation(lightPos));
+		m_scene->UpdateLightPosition(m_pointLightID, lightPos);
+		MOE_LOG("sine: %f", sin);
+
+		lightPos = m_camCtrl->GetCameraPosition();
+		Vec3 lightDir = m_camCtrl->GetCameraFront();
+
+		m_scene->UpdateLightTransform(m_SpotLightID, lightPos, lightDir);
 	}
 
 

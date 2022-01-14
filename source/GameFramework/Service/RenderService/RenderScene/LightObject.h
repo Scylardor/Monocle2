@@ -1,6 +1,8 @@
 #pragma once
 #include "Graphics/Color/Color.h"
 #include "Math/Vec3.h"
+#include "Math/Vec4.h"
+#include "Math/Angles/Angles.h"
 
 
 namespace moe
@@ -9,20 +11,20 @@ namespace moe
 	{
 		Vec3	Direction{ Vec3::ZeroVector() };
 
-		Color3f	Ambient;
-		Color3f	Diffuse;
-		Color3f	Specular;
+		Color3f	Ambient{ 1 };
+		Color3f	Diffuse{ 1 };
+		Color3f	Specular{ 1 };
 	};
 
 	struct PointLight
 	{
 		Vec3	Position{ Vec3::ZeroVector() };
 
-		Color3f	Ambient;
-		Color3f	Diffuse;
-		Color3f	Specular;
+		Color3f	Ambient {1};
+		Color3f	Diffuse {1};
+		Color3f	Specular{1};
 
-		float	ConstantAttenuation{ 0 };
+		float	ConstantAttenuation{ 1 };
 		float	LinearAttenuation{ 0 };
 		float	QuadraticAttenuation{ 0 };
 	};
@@ -32,16 +34,16 @@ namespace moe
 		Vec3	Position{ Vec3::ZeroVector() };
 		Vec3	Direction{ Vec3::ZeroVector() };
 
-		Color3f	Ambient;
-		Color3f	Diffuse;
-		Color3f	Specular;
+		Color3f	Ambient{ 1 };
+		Color3f	Diffuse{ 1 };
+		Color3f	Specular{ 1 };
 
-		float	ConstantAttenuation{ 0 };
+		float	ConstantAttenuation{ 1 };
 		float	LinearAttenuation{ 0 };
 		float	QuadraticAttenuation{ 0 };
 
-		float	InnerCutoff{ 0 };
-		float	OuterCutoff{0};
+		Rads_f	InnerCutoff{ 0 };
+		Rads_f	OuterCutoff{0};
 	};
 
 

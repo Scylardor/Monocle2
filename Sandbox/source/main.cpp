@@ -12,7 +12,7 @@ int main(int argc, char **argv)
 {
 	moe::Engine monocleEngine;
 
-	monocleEngine.AddSimulation<moe::CubeWorld>(argc, argv);
+	monocleEngine.AddSimulation<moe::BlinnPhong>(argc, argv);
 
 	monocleEngine.Run();
 

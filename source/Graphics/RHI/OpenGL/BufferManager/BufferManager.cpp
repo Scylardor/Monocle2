@@ -53,7 +53,7 @@ namespace moe
 
 
 	DeviceBufferMapping OpenGL4BufferManager::MapCoherentDeviceBuffer(uint32_t dataBlockSize, uint32_t numBlocks, void const* data,
-		uint32_t mappingOffset, size_t mappingRange)
+		bool alignUniform, uint32_t mappingOffset, size_t mappingRange)
 	{
 		constexpr GLbitfield
 			mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
@@ -64,7 +64,9 @@ namespace moe
 		// see https://community.khronos.org/t/uniform-buffers-and-bindbufferrange/65397/2
 
 		static const GLint uboOffsetAlignment = GetUniformBufferOffsetAlignment();
-		dataBlockSize = (dataBlockSize + uboOffsetAlignment - 1) & ~(uboOffsetAlignment - 1);
+
+		if (alignUniform)
+			dataBlockSize = (dataBlockSize + uboOffsetAlignment - 1) & ~(uboOffsetAlignment - 1);
 
 		auto totalSize = dataBlockSize * numBlocks;
 

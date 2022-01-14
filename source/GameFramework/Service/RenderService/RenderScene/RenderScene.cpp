@@ -11,6 +11,7 @@
 
 #include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
 #include "Graphics/ShaderCapabilities/ShaderCapabilities.h"
+#include "Math/Vec4.h"
 
 namespace moe
 {
@@ -26,7 +27,7 @@ namespace moe
 		m_lights.Initialize(m_sceneRenderer->MutRHI(), defaultNumLights);
 
 		ResourceSetsDescription lightsSetDesc;
-		lightsSetDesc.EmplaceBinding<BufferBinding>(m_lights.GetDeviceHandle(), 0, (int)ReservedCapacitySets::SCENE_LIGHTS, 0, m_lights.GetDataBytesRange(), BindingType::StructuredBuffer);
+		lightsSetDesc.EmplaceBinding<BufferBinding>(m_lights.GetDeviceHandle(), (int)ReservedCapacitySets::SCENE_LIGHTS, 0, 0, m_lights.GetDataBytesRange(), BindingType::StructuredBuffer);
 		m_lightsResourceHandle = sceneRenderer.MutRHI()->MaterialManager().AllocateResourceSet(lightsSetDesc);
 		OnRenderShaderChange().Add<&RenderScene::BindLightsResourceSet>();
 
@@ -93,9 +94,14 @@ namespace moe
 		LightObject& newLight = m_lights.Mut(id);
 
 		newLight.Position = point.Position;
+
 		newLight.Ambient = point.Ambient;
 		newLight.Diffuse = point.Diffuse;
 		newLight.Specular = point.Specular;
+
+		newLight.ConstantAttenuation = point.ConstantAttenuation;
+		newLight.LinearAttenuation = point.LinearAttenuation;
+		newLight.QuadraticAttenuation = point.QuadraticAttenuation;
 
 		// To let the shader know this is a point light
 		newLight.SpotInnerCutoff = LightObject::OMNIDIRECTIONAL_CUTOFF;
@@ -113,17 +119,37 @@ namespace moe
 
 		newLight.Position = spot.Position;
 		newLight.Direction = spot.Direction;
+
 		newLight.Ambient = spot.Ambient;
 		newLight.Diffuse = spot.Diffuse;
 		newLight.Specular = spot.Specular;
 
+		newLight.ConstantAttenuation = spot.ConstantAttenuation;
+		newLight.LinearAttenuation = spot.LinearAttenuation;
+		newLight.QuadraticAttenuation = spot.QuadraticAttenuation;
+
 		MOE_DEBUG_ASSERT(spot.InnerCutoff >= 0 && spot.OuterCutoff >= 0);
-		newLight.SpotInnerCutoff = spot.InnerCutoff;
-		newLight.SpotOuterCutoff = spot.OuterCutoff;
+		newLight.SpotInnerCutoff = std::cosf(spot.InnerCutoff);
+		newLight.SpotOuterCutoff = std::cosf(spot.OuterCutoff);
 
 		UpdateLightsResourceSet();
 
 		return id;
+	}
+
+
+	void RenderScene::UpdateLightPosition(LightID lightID, Vec3 const& newPos)
+	{
+		LightObject& light = m_lights.Mut(lightID);
+		light.Position = newPos;
+	}
+
+
+	void RenderScene::UpdateLightTransform(LightID lightID, Vec3 const& newPos, Vec3 const& newDir)
+	{
+		LightObject& light = m_lights.Mut(lightID);
+		light.Position = newPos;
+		light.Direction = newDir;
 	}
 
 
@@ -159,19 +185,18 @@ namespace moe
 	}
 
 
-	void RenderScene::UpdateViewProjectionMatrix(ViewID vID, Mat4 const& newProj)
+	void RenderScene::UpdateProjectionMatrix(ViewID vID, Mat4 const& newProj)
 	{
 		ViewObject& view = m_views.Mut(vID);
 		view.UpdateProjection(newProj);
 	}
 
 
-	void RenderScene::UpdateViewMatrix(ViewID vID, Mat4 const& newView)
+	void RenderScene::UpdateViewMatrix(ViewID vID, Mat4 const& newView, Vec3 const& newPos)
 	{
 		ViewObject& view = m_views.Mut(vID);
-		view.UpdateView(newView);
+		view.UpdateView(newView, newPos);
 	}
-
 
 	void RenderScene::RemoveObject(RenderObjectHandle handle)
 	{
@@ -225,7 +250,6 @@ namespace moe
 		ObjectMatrices& objMats = m_transforms.Mut(transfID);
 		objMats.MVP = viewProjection * objMats.Model;
 		objMats.ModelView = view * objMats.Model;
-		objMats.Normal = objMats.ModelView.GetInverseTransposed();
 	}
 
 
@@ -248,7 +272,7 @@ namespace moe
 	void RenderScene::UpdateLightsResourceSet()
 	{
 		ResourceSetsDescription lightsSetDesc;
-		lightsSetDesc.EmplaceBinding<BufferBinding>(m_lights.GetDeviceHandle(), 0, (int)ReservedCapacitySets::SCENE_LIGHTS, 0, m_lights.GetDataBytesRange(), BindingType::StructuredBuffer);
+		lightsSetDesc.EmplaceBinding<BufferBinding>(m_lights.GetDeviceHandle(), (int)ReservedCapacitySets::SCENE_LIGHTS, 0, 0, sizeof(LightObject) * m_lights.GetSize(), BindingType::StructuredBuffer);
 
 		m_sceneRenderer->MutRHI()->MaterialManager().UpdateResourceSet(m_lightsResourceHandle, lightsSetDesc);
 	}

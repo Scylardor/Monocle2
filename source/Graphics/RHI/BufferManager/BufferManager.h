@@ -74,7 +74,7 @@ namespace moe
 		virtual DeviceMeshHandle	FindOrCreateMeshBuffer(MeshData const& meshData) = 0;
 
 		virtual DeviceBufferMapping	MapCoherentDeviceBuffer(uint32_t dataBlockSize, uint32_t numBlocks = 1, void const* data = nullptr,
-			uint32_t mappingOffset = 0, size_t mappingRange = DeviceBufferMapping::WHOLE_RANGE) = 0;
+			bool alignUniform = true, uint32_t mappingOffset = 0, size_t mappingRange = DeviceBufferMapping::WHOLE_RANGE) = 0;
 
 		virtual void				Unmap(DeviceBufferMapping const& bufferMap) = 0;
 		virtual void				ResizeMapping(DeviceBufferMapping & bufferMap, uint32_t newSize) = 0;

@@ -57,7 +57,7 @@ namespace moe
 			Normalize();
 		}
 
-		template<typename = std::enable_if_t<NumChannels == 3>>
+		template<typename = std::enable_if_t<NumChannels >= 3>>
 		Color(Val red, Val green, Val blue) :
 			Rgba{ red, green, blue }
 		{
@@ -65,7 +65,7 @@ namespace moe
 		}
 
 		template<typename = std::enable_if_t<NumChannels == 4>>
-		Color(Val red, Val green, Val blue, Val alpha = Val(1)) :
+		Color(Val red, Val green, Val blue, Val alpha) :
 			Rgba{red, green, blue, alpha}
 		{
 			Normalize();
@@ -132,6 +132,10 @@ namespace moe
 			return Color(0);
 		}
 
+		static Color	Yellow()
+		{
+			return Color(255, 255, 0);
+		}
 
 		bool operator==(const Color& rhs) const
 		{

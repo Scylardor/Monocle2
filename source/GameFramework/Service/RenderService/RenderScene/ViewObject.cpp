@@ -89,7 +89,7 @@ namespace moe
 		m_viewMatrices.MutBlock<ViewMatrices>().View = view;
 
 		ResourceSetsDescription cameraSetDesc;
-		cameraSetDesc.EmplaceBinding<BufferBinding>(m_viewMatrices.Handle(), 0, (int) ReservedCapacitySets::VIEW_MATRICES, 0, sizeof(ViewMatrices));
+		cameraSetDesc.EmplaceBinding<BufferBinding>(m_viewMatrices.Handle(), (int)ReservedCapacitySets::VIEW_MATRICES, 0, 0, sizeof(ViewMatrices));
 		m_matricesResourceHandle = rhi->MaterialManager().AllocateResourceSet(cameraSetDesc);
 	}
 }
