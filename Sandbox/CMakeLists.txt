@@ -22,6 +22,8 @@ set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/CubeWorld.cpp"
 	"${SOURCE_DIR}/MutliViewportCubeWorld.h"
 	"${SOURCE_DIR}/MutliViewportCubeWorld.cpp"
+	"${SOURCE_DIR}/Phong.h"
+	"${SOURCE_DIR}/Phong.cpp"
 	"${SOURCE_DIR}/BlinnPhong.h"
 	"${SOURCE_DIR}/BlinnPhong.cpp"
 )

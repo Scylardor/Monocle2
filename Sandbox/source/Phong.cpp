@@ -1,7 +1,6 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#include "BlinnPhong.h"
-
+#include "Phong.h"
 
 #include "Core/Containers/Array/Array.h"
 #include "Core/Resource/FileResource.h"
@@ -23,14 +22,14 @@
 namespace moe
 {
 
-	void BlinnPhong::Start()
+	void Phong::Start()
 	{
 		OpenGLApp3D::Start();
 
 		auto* rscSvc = EditEngine()->AddService<ResourceService>();
 
-		auto blinnPhongVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.vert"), "source/Graphics/Resources/shaders/OpenGL/blinn_phong_v2.vert", FileMode::Text);
-		auto blinnPhongFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.frag"), "source/Graphics/Resources/shaders/OpenGL/blinn_phong_v2.frag", FileMode::Text);
+		auto blinnPhongVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.vert"), "source/Graphics/Resources/shaders/OpenGL/phong_phong_v2.vert", FileMode::Text);
+		auto blinnPhongFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.frag"), "source/Graphics/Resources/shaders/OpenGL/phong_phong_v2.frag", FileMode::Text);
 
 		VertexLayoutDescription vertexLayout = { {
 			{ "position", VertexBindingFormat::Float3 },
@@ -157,14 +156,12 @@ namespace moe
 		DirectionalLight dl;
 		dl.Direction = Vec3(0, 0, 1);
 		dl.Diffuse = Color3f::White();
-		dl.Specular = Color3f::Black();
 		m_DirLightID = scene.AddLight(dl);
 
 		SpotLight sl;
 		sl.Position = Vec3(10, 3, 1);
 		sl.Direction = Vec3(1, 0, 0);
 		sl.Diffuse = Color3f::Yellow();
-		sl.Specular = Color3f(0.5f, 0.5f, 0);
 		sl.InnerCutoff = Degs_f{ 12.5 };
 		sl.OuterCutoff = Degs_f{ 15.F };
 		sl.ConstantAttenuation = 1;
@@ -176,7 +173,7 @@ namespace moe
 
 	}
 
-	void BlinnPhong::Update()
+	void Phong::Update()
 	{
 		OpenGLApp3D::Update();
 
@@ -196,7 +193,7 @@ namespace moe
 	}
 
 
-	Renderer& BlinnPhong::InitializeRenderer()
+	Renderer& Phong::InitializeRenderer()
 	{
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 

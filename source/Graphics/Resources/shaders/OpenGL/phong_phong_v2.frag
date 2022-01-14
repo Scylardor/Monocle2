@@ -32,7 +32,7 @@ layout (binding = 1) uniform sampler2D T_Diffuse;
 layout (binding = 2) uniform sampler2D T_Specular;
 layout (binding = 3) uniform sampler2D T_Emission;
 
-float	SHININESS = 80.0; // Hardcoded for now...
+float	SHININESS = 7.0;
 float	DIRECTIONAL_ATTENUATION = -1.0;
 float	OMNIDIRECTIONAL_CUTOFF = -1.0;
 
@@ -66,11 +66,11 @@ vec3 PhongDirectionalLight(vec3 PosWS, vec3 normalWS, vec3 viewDirWS, int iLight
 	vec3 specular = vec3(0.0);
 	if (LDotN > 0.0)
 	{
-		// Blinn's half-way vector between view and light directions
-		vec3 H = normalize(L + viewDirWS);
-		float HDotV = max(dot(normalWS, H), 0.0);
+		// Reflection of the light ray on the surface
+		vec3 R = reflect(-L, normalWS);
+		float RDotV = max(dot(viewDirWS, R), 0.0);
 
-		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(HDotV, SHININESS);
+		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(RDotV, SHININESS);
 	}
 
 	return ambient + diffuse + specular;
@@ -94,11 +94,11 @@ vec3 PhongPointLight(vec3 PosWS, vec3 normalWS, vec3 viewDirWS, int iLight)
 	vec3 specular = vec3(0.0);
 	if (LDotN > 0.0)
 	{
-		// Blinn's half-way vector between view and light directions
-		vec3 H = normalize(L + viewDirWS);
-		float HDotV = max(dot(normalWS, H), 0.0);
+		// Reflection of the light ray on the surface
+		vec3 R = reflect(-L, normalWS);
+		float RDotV = max(dot(viewDirWS, R), 0.0);
 
-		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(HDotV, SHININESS);
+		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(RDotV, SHININESS);
 
 		float linearAttenuation = Lights.array[iLight].Direction.w;
 		float quadraticAttenuation = Lights.array[iLight].Ambient.w;
@@ -139,11 +139,11 @@ vec3 PhongSpotLight(vec3 PosWS, vec3 normalWS, vec3 viewDirWS, int iLight)
 	vec3 specular = vec3(0.0);
 	if (LDotN > 0.0)
 	{
-		// Blinn's half-way vector between view and light directions
-		vec3 H = normalize(L + viewDirWS);
-		float HDotV = max(dot(normalWS, H), 0.0);
+		// Reflection of the light ray on the surface
+		vec3 R = reflect(-L, normalWS);
+		float RDotV = max(dot(viewDirWS, R), 0.0);
 
-		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(HDotV, SHININESS) * intensity;
+		specular = Lights.array[iLight].Specular.xyz * g_sampledSpecular * pow(RDotV, SHININESS) * intensity;
 
 		float linearAttenuation = Lights.array[iLight].Direction.w;
 		float quadraticAttenuation = Lights.array[iLight].Ambient.w;

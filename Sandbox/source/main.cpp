@@ -6,6 +6,7 @@
 #include "BlinnPhong.h"
 #include "CubeWorld.h"
 #include "MutliViewportCubeWorld.h"
+#include "Phong.h"
 
 
 int main(int argc, char **argv)
