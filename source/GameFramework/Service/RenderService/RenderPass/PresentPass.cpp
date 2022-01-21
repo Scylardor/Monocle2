@@ -3,7 +3,6 @@
 #include "../Renderer/Renderer.h"
 #include "Core/HashString/HashString.h"
 #include "Graphics/RHI/RenderHardwareInterface.h"
-#include "Graphics/Vertex/VertexFormats.h"
 
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/RenderService/GraphicsSurface/GraphicsSurface.h"
@@ -15,12 +14,14 @@
 namespace moe
 {
 	PresentRenderPass::PresentRenderPass(Renderer& owner, DeviceSwapchainHandle attachedSwapchain) :
+		// No need to resize according to surface dimensions because the swap chain already does it automatically
+		IRenderPass(owner, SurfaceDimensionsSync::No),
 		m_ownerRenderer(&owner),
 		m_swapchain(attachedSwapchain)
 	{
 		auto* RHI = owner.MutRHI();
 
-		m_framebuffer = RHI->SwapchainManager().GetMainSwapchainFramebufferHandle();
+		SetFramebuffer(RHI->SwapchainManager().GetMainSwapchainFramebufferHandle());
 
 		DeviceTextureHandle swapchainColorTex = RHI->SwapchainManager().GetMainSwapchainColorAttachment();
 
@@ -48,10 +49,9 @@ namespace moe
 	}
 
 
-	void PresentRenderPass::Update(RenderQueue& drawQueue, uint8_t passIndex)
+	RenderQueueKey PresentRenderPass::Update(RenderQueue& drawQueue, RenderQueueKey key)
 	{
-		RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
-		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, m_framebuffer, ColorRGBAf::Red());
+		key = drawQueue.EmplaceCommand<CmdBeginRenderPass>(key, RenderPassFramebuffer(), PassClearColor());
 
 		auto [matIdx, programIdx] = m_fullscreenQuadMaterial.DecomposeMaterialAndShaderIndices();
 
@@ -73,6 +73,6 @@ namespace moe
 
 		key = drawQueue.EmplaceCommand<CmdPresentSwapchain>(key, m_swapchain);
 
-
+		return key;
 	}
 }

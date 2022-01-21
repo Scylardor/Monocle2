@@ -1,5 +1,6 @@
 #pragma once
 
+#include <imgui.h>
 #include <variant>
 #include <Math/Rect2D.h>
 
@@ -10,6 +11,8 @@
 #include "Graphics/RHI/FramebufferManager/FramebufferManager.h"
 #include "Graphics/RHI/MaterialManager/MaterialManager.h"
 #include "Graphics/RHI/SwapchainManager/SwapchainManager.h"
+
+
 
 namespace moe
 {
@@ -93,6 +96,15 @@ namespace moe
 		uint32_t			Count = 0;
 	};
 
+	struct CmdRenderImGuiDrawData
+	{
+		CmdRenderImGuiDrawData(ImDrawData* imGuiFrameData) :
+			DrawData(imGuiFrameData)
+		{}
+
+		ImDrawData*	DrawData = nullptr;
+	};
+
 	using CommandBufferVariant = std::variant<
 		CmdBeginRenderPass,
 		CmdBindMaterial,
@@ -101,7 +113,8 @@ namespace moe
 		CmdEndRenderPass,
 		CmdPresentSwapchain,
 		CmdSetViewportScissor,
-		CmdDrawArrays
+		CmdDrawArrays,
+		CmdRenderImGuiDrawData
 	>;
 
 

@@ -15,6 +15,7 @@ namespace moe
 	{
 		LAST = 0,
 		HUD = LAST, // HUD is always the last because we never want to draw something on top of it
+		GUI = HUD,
 		Skybox = 1, // Skybox is always drawn last in the world to profit from depth testing
 		World
 	};
@@ -27,12 +28,12 @@ namespace moe
 	struct RenderQueueKey
 	{
 		uint64_t	Pass		: PASS_BITS;
+		uint64_t	ViewLayer	: 3;
 		uint64_t	Cmd			: 3;
 		uint64_t	Program		: 16;
 		uint64_t	Material	: 16;
 		uint64_t	Depth		: 9;
 		uint64_t	Translucent : 3;
-		uint64_t	ViewLayer	: 3;
 		uint64_t	ViewportID	: VIEWPORT_BITS;
 		uint64_t	Fullscreen	: 3;
 
@@ -101,7 +102,7 @@ namespace moe
 		static RenderQueueKey ComputeRenderQueueKey(uint8_t passIndex, uint32_t cmd = 0, uint32_t program = 0, uint32_t matID = 0,
 		                                            float Depth = 0,
 		                                            TranslucencyType translut = TranslucencyType::Opaque,
-		                                            ViewportLayer layer = ViewportLayer::LAST, uint8_t viewportID = 0,
+		                                            ViewportLayer layer = ViewportLayer::World, uint8_t viewportID = 0,
 		                                            uint8_t fullscreen = 0);
 
 

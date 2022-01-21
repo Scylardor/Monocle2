@@ -5,6 +5,7 @@
 #include "BasicQuad.h"
 #include "BlinnPhong.h"
 #include "CubeWorld.h"
+#include "ImGUI.h"
 #include "MutliViewportCubeWorld.h"
 #include "Phong.h"
 
@@ -13,7 +14,7 @@ int main(int argc, char **argv)
 {
 	moe::Engine monocleEngine;
 
-	monocleEngine.AddSimulation<moe::BlinnPhong>(argc, argv);
+	monocleEngine.AddSimulation<moe::ImGUI>(argc, argv);
 
 	monocleEngine.Run();
 

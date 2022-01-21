@@ -206,10 +206,12 @@ namespace moe
 		forwardRenderer.AttachSurface(*winSvc->MutWindow());
 		DeviceSwapchainHandle swapchain = forwardRenderer.MutRHI()->SwapchainManager().CreateSwapchain(forwardRenderer.MutSurface());
 
-		forwardRenderer.EmplaceRenderPass<GeometryRenderPass>();
+		IRenderPass& grp = forwardRenderer.EmplaceRenderPass<IRenderPass>();
+		grp.EmplaceSubpass<GeometryRenderPass>(forwardRenderer);
 
 		forwardRenderer.EmplaceRenderPass<PresentRenderPass>(swapchain);
 
 		return forwardRenderer;
 	}
+
 }

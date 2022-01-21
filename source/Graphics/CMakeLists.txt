@@ -48,3 +48,21 @@ endif()
 if(${PROJECT_NAME}_USE_STB_IMAGE_IMPORTER)
 	target_include_directories(${GRAPHICS_TARGET} PUBLIC "${PROJECT_SOURCE_DIR}/vendor/stb")
 endif()
+
+# Integrate ImGUI into the build.
+add_library(ImGui STATIC EXCLUDE_FROM_ALL
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/imgui.cpp"
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/imgui_demo.cpp"
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/imgui_draw.cpp"
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/imgui_tables.cpp"
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/imgui_widgets.cpp"
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/backends/imgui_impl_glfw.cpp"
+	"${PROJECT_SOURCE_DIR}/vendor/imgui/backends/imgui_impl_opengl3.cpp"
+)
+
+target_include_directories(ImGui
+							PUBLIC "${PROJECT_SOURCE_DIR}/vendor/imgui" # Needs to be PUBLIC because imgui glfw files depend themselves on the include dir
+							PRIVATE ${GLFW3_INCLUDE_DIR} # Needed by imgui glfw files
+							)
+
+target_link_libraries(${GRAPHICS_TARGET} PUBLIC ImGui)

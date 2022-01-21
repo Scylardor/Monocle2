@@ -4,9 +4,7 @@
 
 #include "Core/Containers/ObjectPool/ObjectPool.h"
 #include "Core/Containers/Vector/Vector.h"
-#include "GameFramework/Service/RenderService/MaterialSystem/MaterialSystem.h"
 #include "GameFramework/Service/RenderService/RenderPass/RenderPass.h"
-#include "GameFramework/Service/RenderService/RenderPass/RenderPassType.h"
 
 namespace moe
 {
@@ -35,7 +33,6 @@ namespace moe
 			TRp& rp = static_cast<TRp&>(*m_renderPasses.Back().get());
 			return rp;
 		}
-
 
 		void	ClearRenderPasses()
 		{

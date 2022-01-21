@@ -2,10 +2,8 @@
 
 #pragma once
 #include "RenderPass.h"
-#include "Graphics/RHI/BufferManager/BufferManager.h"
-
+#include "Graphics/Handle/DeviceHandles.h"
 #include "Graphics/RHI/FramebufferManager/FramebufferManager.h"
-#include "Graphics/RHI/MaterialManager/MaterialManager.h"
 #include "Graphics/RHI/SwapchainManager/SwapchainManager.h"
 
 namespace moe
@@ -19,13 +17,11 @@ namespace moe
 
 		~PresentRenderPass() override = default;
 
-		void	Update(RenderQueue& drawQueue, uint8_t passIndex) override;
+		RenderQueueKey	Update(RenderQueue& drawQueue, RenderQueueKey key) override;
 
 	private:
 
 		Renderer*				m_ownerRenderer{ nullptr };
-
-		DeviceFramebufferHandle	m_framebuffer{};
 
 		DeviceSwapchainHandle	m_swapchain{};
 

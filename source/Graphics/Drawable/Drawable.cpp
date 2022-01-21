@@ -6,7 +6,6 @@
 
 #include "Graphics/Vulkan/Pipeline/VulkanPipeline.h"
 
-
 namespace moe
 {
 

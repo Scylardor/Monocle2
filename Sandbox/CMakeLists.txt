@@ -26,6 +26,8 @@ set(${SANDBOX_TARGET}_SOURCES
 	"${SOURCE_DIR}/Phong.cpp"
 	"${SOURCE_DIR}/BlinnPhong.h"
 	"${SOURCE_DIR}/BlinnPhong.cpp"
+	"${SOURCE_DIR}/ImGUI.h"
+	"${SOURCE_DIR}/ImGUI.cpp"
 )
 
 add_compile_options(

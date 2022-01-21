@@ -1,5 +1,8 @@
 #include "OGL4RHI.h"
 
+#include <backends/imgui_impl_opengl3.h>
+
+
 #include "Graphics/CommandBuffer/CommandBuffer.h"
 
 
@@ -141,6 +144,13 @@ namespace moe
 					{
 						auto topo = OpenGLPipeline::GetOpenGLPrimitiveTopology(cda.Topo);
 						glDrawArrays(topo, cda.First, cda.Count);
+					},
+					[](CmdRenderImGuiDrawData const& cridd)
+					{
+						// I want to keep the variant const, but Imgui expects its draw data non-const.
+						// So cast the const away
+						ImDrawData* drawData = const_cast<ImDrawData*>(cridd.DrawData);
+						ImGui_ImplOpenGL3_RenderDrawData(drawData);
 					}
 				}, cmd
 			);
@@ -149,7 +159,7 @@ namespace moe
 
 
 	void OpenGL4RHI::OpenGLDebugMessageRoutine(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*length*/,
-	                                           const char* message, const void* /*userParam*/)
+											   const char* message, const void* /*userParam*/)
 	{
 		static const auto ignoredErrorNumbers = std::array<GLuint,4>{ 131169, 131185, 131218, 131204 };
 		// ignore non-significant error/warning codes

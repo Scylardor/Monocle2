@@ -1,6 +1,7 @@
 // Monocle Game Engine source files - Alexandre Baron
 
-#include "Phong.h"
+#include "ImGUI.h"
+
 
 #include "Core/Containers/Array/Array.h"
 #include "Core/Resource/FileResource.h"
@@ -10,6 +11,7 @@
 #include "GameFramework/Service/InputService/InputService.h"
 #include "GameFramework/Service/RenderService/RenderService.h"
 #include "GameFramework/Service/RenderService/RenderPass/GeometryRenderPass.h"
+#include "GameFramework/Service/RenderService/RenderPass/ImGUIPass.h"
 #include "GameFramework/Service/RenderService/RenderPass/PresentPass.h"
 #include "GameFramework/Service/ResourceService/ResourceService.h"
 #include "GameFramework/Service/WindowService/WindowService.h"
@@ -22,14 +24,14 @@
 namespace moe
 {
 
-	void Phong::Start()
+	void ImGUI::Start()
 	{
 		OpenGLApp3D::Start();
 
 		auto* rscSvc = EditEngine()->AddService<ResourceService>();
 
-		auto blinnPhongVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.vert"), "source/Graphics/Resources/shaders/OpenGL/phong_phong_v2.vert", FileMode::Text);
-		auto blinnPhongFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.frag"), "source/Graphics/Resources/shaders/OpenGL/phong_phong_v2.frag", FileMode::Text);
+		auto ImGUIVertShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.vert"), "source/Graphics/Resources/shaders/OpenGL/blinn_phong_v2.vert", FileMode::Text);
+		auto ImGUIFragShaderFile = rscSvc->EmplaceResource<FileResource>(HashString("BlinnPhong.frag"), "source/Graphics/Resources/shaders/OpenGL/blinn_phong_v2.frag", FileMode::Text);
 
 		VertexLayoutDescription vertexLayout = { {
 			{ "position", VertexBindingFormat::Float3 },
@@ -38,8 +40,8 @@ namespace moe
 
 		ShaderProgramDescription shaderDesc{
 			{
-				{	ShaderStage::Vertex, blinnPhongVertShaderFile},
-				{	ShaderStage::Fragment, blinnPhongFragShaderFile}
+				{	ShaderStage::Vertex, ImGUIVertShaderFile},
+				{	ShaderStage::Fragment, ImGUIFragShaderFile}
 			} };
 
 		MaterialDescription matDesc;
@@ -156,12 +158,14 @@ namespace moe
 		DirectionalLight dl;
 		dl.Direction = Vec3(0, 0, 1);
 		dl.Diffuse = Color3f::White();
+		dl.Specular = Color3f::Black();
 		m_DirLightID = scene.AddLight(dl);
 
 		SpotLight sl;
 		sl.Position = Vec3(10, 3, 1);
 		sl.Direction = Vec3(1, 0, 0);
 		sl.Diffuse = Color3f::Yellow();
+		sl.Specular = Color3f(0.5f, 0.5f, 0);
 		sl.InnerCutoff = Degs_f{ 12.5 };
 		sl.OuterCutoff = Degs_f{ 15.F };
 		sl.ConstantAttenuation = 1;
@@ -171,9 +175,10 @@ namespace moe
 
 		m_svcTime = EditEngine()->EditService<TimeService>();
 
+		svcInput->MutKeyActionEvent(MOE_KEY(K), ButtonPressedState::Released).Add<ImGUI, &ImGUI::ToggleCursor>(this);
 	}
 
-	void Phong::Update()
+	void ImGUI::Update()
 	{
 		OpenGLApp3D::Update();
 
@@ -193,7 +198,7 @@ namespace moe
 	}
 
 
-	Renderer& Phong::InitializeRenderer()
+	Renderer& ImGUI::InitializeRenderer()
 	{
 		auto* rdrSvc = EditEngine()->EditService<RenderService>();
 
@@ -205,9 +210,17 @@ namespace moe
 
 		IRenderPass& grp = forwardRenderer.EmplaceRenderPass<IRenderPass>();
 		grp.EmplaceSubpass<GeometryRenderPass>(forwardRenderer);
+		grp.EmplaceSubpass<ImGUIPass>(forwardRenderer);
 
 		forwardRenderer.EmplaceRenderPass<PresentRenderPass>(swapchain);
 
 		return forwardRenderer;
+	}
+
+
+	void ImGUI::ToggleCursor()
+	{
+		auto* winSvc = EditEngine()->EditService<WindowService>();
+		winSvc->MutWindow()->SetCursorMode(CursorMode::Normal);
 	}
 }

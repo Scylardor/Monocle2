@@ -4,7 +4,6 @@
 
 #include "Graphics/RenderQueue/RenderQueue.h"
 
-#include "GraphicsSurface/GraphicsSurface.h"
 
 namespace moe
 {
@@ -25,11 +24,18 @@ namespace moe
 			RenderQueue drawCallQueue;
 
 			uint8_t passIndex = 0;
+
 			for (auto& renderPass : rdr)
 			{
-				renderPass->Update(drawCallQueue, passIndex);
+				RenderQueueKey key = RenderQueue::ComputeRenderQueueKey(passIndex);
+
+
+				key = renderPass->Update(drawCallQueue, key);
+
+
 				passIndex++;
 				MOE_ASSERT(passIndex < RenderQueueKey::MAX_PASSES);
+
 			}
 
 			rdr.MutRHI()->SubmitCommandBuffer(drawCallQueue.GetCommandBuffer());

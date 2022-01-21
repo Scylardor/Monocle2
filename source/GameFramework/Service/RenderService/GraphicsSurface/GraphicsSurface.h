@@ -19,15 +19,17 @@ namespace moe
 			m_onSurfaceLost.Broadcast();
 		}
 
-		virtual void					SwapBuffers() = 0;
+		virtual void									SwapBuffers() = 0;
 
-		virtual std::pair<int, int>		GetDimensions() const = 0;
+		[[nodiscard]] virtual std::pair<int, int>		GetDimensions() const = 0;
 
-		float	GetAspectRatio() const
+
+		[[nodiscard]] float	GetAspectRatio() const
 		{
 			auto [width, height] = GetDimensions();
 			return (float)width / (float)height;
 		}
+
 
 		SurfaceResizedEvent&	OnSurfaceResizedEvent()
 		{
